@@ -5,6 +5,9 @@
 // Created by Jens Alfke on 6/19/10.
 // Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+// Modified by Michael Rhodes, 2013
+// Copyright (c) 2013 Cloudant, Inc. All rights reserved.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -96,21 +99,62 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     NSFileManager* fmgr = [NSFileManager defaultManager];
     return [fmgr copyItemAtPath: databasePath toPath: _path error: outError] &&
            removeItemIfExists(dstAttachmentsPath, outError) &&
-           (!attachmentsPath || [fmgr copyItemAtPath: attachmentsPath 
+           (!attachmentsPath || [fmgr copyItemAtPath: attachmentsPath
                                               toPath: dstAttachmentsPath
                                                error: outError]);
 }
 
 
-- (BOOL) initialize: (NSString*)statements {
-    for (NSString* statement in [statements componentsSeparatedByString: @";"]) {
-        if (statement.length && ![_fmdb executeUpdate: statement]) {
-            Warn(@"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
-                  "SQLite error: %@", _path, _fmdb.lastErrorMessage);
-            [_fmdb close];
-            return NO;
+- (BOOL) migrateWithUpdates:(NSString*)updates queries:(NSString*)queries version:(NSInteger)version {
+    
+    if (nil != updates) {
+        for (NSString* statement in [updates componentsSeparatedByString: @";"]) {
+            if (statement.length && ![_fmdb executeUpdate: statement]) {
+                Warn(@"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
+                     "SQLite error: %@", _path, _fmdb.lastErrorMessage);
+                [_fmdb close];
+                return NO;
+            }
         }
     }
+    
+    if (nil != queries) {
+        for (NSString* statement in [queries componentsSeparatedByString: @";"]) {
+            if (statement.length && ![_fmdb executeQuery:statement]) {
+                Warn(@"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
+                     "SQLite error: %@", _path, _fmdb.lastErrorMessage);
+                [_fmdb close];
+                return NO;
+            }
+        }
+    }
+    // at the end, update user_version
+    NSString *statement = [NSString stringWithFormat:@"PRAGMA user_version = %i", version];
+    if (statement.length && ![_fmdb executeUpdate: statement]) {
+        Warn(@"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
+             "SQLite error: %@", _path, _fmdb.lastErrorMessage);
+        [_fmdb close];
+        return NO;
+    }
+    
+    
+    return YES;
+}
+
+
+- (BOOL) initialize:(NSString*)updates {
+    
+    if (nil != updates) {
+        for (NSString* statement in [updates componentsSeparatedByString: @";"]) {
+            if (statement.length && ![_fmdb executeUpdate: statement]) {
+                Warn(@"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
+                     "SQLite error: %@", _path, _fmdb.lastErrorMessage);
+                [_fmdb close];
+                return NO;
+            }
+        }
+    }
+    
     return YES;
 }
 
@@ -147,17 +191,17 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
         return YES;
     if (![self openFMDB])
         return NO;
-    
+
     // Check the user_version number we last stored in the database:
     int dbVersion = [_fmdb intForQuery: @"PRAGMA user_version"];
-    
+
     // Incompatible version changes increment the hundreds' place:
     if (dbVersion >= 100) {
         Warn(@"TD_Database: Database version (%d) is newer than I know how to work with", dbVersion);
         [_fmdb close];
         return NO;
     }
-    
+
     if (dbVersion < 1) {
         // First-time initialization:
         // (Note: Declaring revs.sequence as AUTOINCREMENT means the values will always be
@@ -207,72 +251,72 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
                 remote TEXT NOT NULL, \
                 push BOOLEAN, \
                 last_sequence TEXT, \
-                UNIQUE (remote, push)); \
-            PRAGMA user_version = 3";             // at the end, update user_version
-        if (![self initialize: schema])
+                UNIQUE (remote, push))";
+        if (![self migrateWithUpdates:schema queries:nil version:3]) {
             return NO;
+        }
         dbVersion = 3;
     }
-    
+
     if (dbVersion < 2) {
         // Version 2: added attachments.revpos
-        NSString* sql = @"ALTER TABLE attachments ADD COLUMN revpos INTEGER DEFAULT 0; \
-                          PRAGMA user_version = 2";
-        if (![self initialize: sql])
+        NSString* sql = @"ALTER TABLE attachments ADD COLUMN revpos INTEGER DEFAULT 0";
+        if (![self migrateWithUpdates:sql queries:nil version:2]) {
             return NO;
+        }
         dbVersion = 2;
     }
-    
+
     if (dbVersion < 3) {
         // Version 3: added localdocs table
         NSString* sql = @"CREATE TABLE IF NOT EXISTS localdocs ( \
                             docid TEXT UNIQUE NOT NULL, \
                             revid TEXT NOT NULL, \
                             json BLOB); \
-                            CREATE INDEX IF NOT EXISTS localdocs_by_docid ON localdocs(docid); \
-                          PRAGMA user_version = 3";
-        if (![self initialize: sql])
+                            CREATE INDEX IF NOT EXISTS localdocs_by_docid ON localdocs(docid)";
+        if (![self migrateWithUpdates:sql queries:nil version:3]) {
             return NO;
+        }
         dbVersion = 3;
     }
-    
+
     if (dbVersion < 4) {
         // Version 4: added 'info' table
         NSString* sql = $sprintf(@"CREATE TABLE info ( \
                                      key TEXT PRIMARY KEY, \
                                      value TEXT); \
                                    INSERT INTO INFO (key, value) VALUES ('privateUUID', '%@');\
-                                   INSERT INTO INFO (key, value) VALUES ('publicUUID',  '%@');\
-                                   PRAGMA user_version = 4",
+                                   INSERT INTO INFO (key, value) VALUES ('publicUUID',  '%@')",
                                  TDCreateUUID(), TDCreateUUID());
-        if (![self initialize: sql])
+        if (![self migrateWithUpdates:sql queries:nil version:4]) {
             return NO;
+        }
         dbVersion = 4;
     }
 
     if (dbVersion < 5) {
         // Version 5: added encoding for attachments
         NSString* sql = @"ALTER TABLE attachments ADD COLUMN encoding INTEGER DEFAULT 0; \
-                          ALTER TABLE attachments ADD COLUMN encoded_length INTEGER; \
-                          PRAGMA user_version = 5";
-        if (![self initialize: sql])
+                          ALTER TABLE attachments ADD COLUMN encoded_length INTEGER";
+        if (![self migrateWithUpdates:sql queries:nil version:5]) {
             return NO;
+        }
         dbVersion = 5;
     }
-    
+
     if (dbVersion < 6) {
         // Version 6: enable Write-Ahead Log (WAL) <http://sqlite.org/wal.html>
-        NSString* sql = @"PRAGMA journal_mode=WAL; \
-                          PRAGMA user_version = 6";
-        if (![self initialize: sql])
+        NSString* sql = @"PRAGMA journal_mode=WAL";
+        if (![self migrateWithUpdates:nil queries:sql version:6]) {
             return NO;
+        }
         //dbVersion = 6;
     }
 
 #if DEBUG
     _fmdb.crashOnErrors = YES;
 #endif
-    
+
     // Open attachment store:
     NSString* attachmentsPath = self.attachmentStorePath;
     NSError* error;
@@ -290,19 +334,19 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
 - (BOOL) close {
     if (!_open)
         return NO;
-    
+
     LogTo(TD_Database, @"Close %@", _path);
     [[NSNotificationCenter defaultCenter] postNotificationName: TD_DatabaseWillCloseNotification
                                                         object: self];
     for (TD_View* view in _views.allValues)
         [view databaseClosing];
-    
+
     _views = nil;
     for (TDReplicator* repl in _activeReplicators.copy)
         [repl databaseClosing];
-    
+
     _activeReplicators = nil;
-    
+
     if (![_fmdb close])
         return NO;
     _open = NO;
@@ -320,7 +364,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     } else if (!self.exists) {
         return YES;
     }
-    return removeItemIfExists(_path, outError) 
+    return removeItemIfExists(_path, outError)
         && removeItemIfExists(self.attachmentStorePath, outError);
 }
 
@@ -402,7 +446,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
         result = [r intForColumnIndex: 0];
     }
     [r close];
-    return result;    
+    return result;
 }
 
 
@@ -420,11 +464,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     SequenceNumber sequence = rev.sequence;
     Assert(revID);
     Assert(sequence > 0);
-    
+
     // Get attachment metadata, and optionally the contents:
     NSDictionary* attachmentsDict = [self getAttachmentDictForSequence: sequence
                                                                options: options];
-    
+
     // Get more optional stuff to put in the properties:
     //OPT: This probably ends up making redundant SQL queries if multiple options are enabled.
     id localSeq=nil, revs=nil, revsInfo=nil, conflicts=nil;
@@ -434,7 +478,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     if (options & kTDIncludeRevs) {
         revs = [self getRevisionHistoryDict: rev];
     }
-    
+
     if (options & kTDIncludeRevsInfo) {
         revsInfo = [[self getRevisionHistory: rev] my_map: ^id(TD_Revision* rev) {
             NSString* status = @"available";
@@ -445,7 +489,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
             return $dict({@"rev", [rev revID]}, {@"status", status});
         }];
     }
-    
+
     if (options & kTDIncludeConflicts) {
         TD_RevisionList* revs = [self getAllRevisionsOfDocumentID: docID onlyCurrent: YES];
         if (revs.count > 1) {
@@ -538,7 +582,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
         BOOL deleted = [r boolForColumnIndex: 1];
         result = [[TD_Revision alloc] initWithDocID: docID revID: revID deleted: deleted];
         result.sequence = [r longLongIntForColumnIndex: 2];
-        
+
         if (options != kTDNoBody) {
             NSData* json = nil;
             if (!(options & kTDNoBody))
@@ -685,11 +729,11 @@ static NSArray* revIDsFromResultSet(FMResultSet* r) {
         return nil;
     NSString* sql = $sprintf(@"SELECT revid FROM revs "
                               "WHERE doc_id=? and revid in (%@) and revid <= ? "
-                              "ORDER BY revid DESC LIMIT 1", 
+                              "ORDER BY revid DESC LIMIT 1",
                               [TD_Database joinQuotedStrings: revIDs]);
     return [_fmdb stringForQuery: sql, @(docNumericID), rev.revID];
 }
-    
+
 
 - (NSArray*) getRevisionHistory: (TD_Revision*)rev {
     NSString* docID = rev.docID;
@@ -701,7 +745,7 @@ static NSArray* revIDsFromResultSet(FMResultSet* r) {
         return nil;
     else if (docNumericID == 0)
         return @[];
-    
+
     FMResultSet* r = [_fmdb executeQuery: @"SELECT sequence, parent, revid, deleted, json isnull "
                                            "FROM revs WHERE doc_id=? ORDER BY sequence DESC",
                                           @(docNumericID)];
@@ -736,7 +780,7 @@ static NSArray* revIDsFromResultSet(FMResultSet* r) {
 static NSDictionary* makeRevisionHistoryDict(NSArray* history) {
     if (!history)
         return nil;
-    
+
     // Try to extract descending numeric prefixes:
     NSMutableArray* suffixes = $marray();
     id start = nil;
@@ -758,7 +802,7 @@ static NSDictionary* makeRevisionHistoryDict(NSArray* history) {
             break;
         }
     }
-    
+
     NSArray* revIDs = start ? suffixes : [history my_map: ^(id rev) {return [rev revID];}];
     return $dict({@"ids", revIDs}, {@"start", start});
 }
@@ -828,7 +872,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
                     continue;
                 lastDocID = docNumericID;
             }
-            
+
             TD_Revision* rev = [[TD_Revision alloc] initWithDocID: [r stringForColumnIndex: 2]
                                                           revID: [r stringForColumnIndex: 3]
                                                         deleted: [r boolForColumnIndex: 4]];
@@ -843,7 +887,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
         }
     }
     [r close];
-    
+
     if (options->sortBySequence) {
         [changes sortBySequence];
         [changes limit: options->limit];
@@ -919,7 +963,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
     TD_View* view = [self existingViewNamed: tdViewName];
     if (view && view.mapBlock)
         return view;
-    
+
     // No TouchDB view is defined, or it hasn't had a map block assigned;
     // see if there's a CouchDB view definition we can compile:
     NSArray* path = [tdViewName componentsSeparatedByString: @"/"];
@@ -939,7 +983,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
         *outStatus = kTDStatusNotFound;
         return nil;
     }
-    
+
     // If there is a CouchDB view, see if it can be compiled from source:
     view = [self viewNamed: tdViewName];
     if (![view compileFromProperties: viewProps]) {
@@ -954,11 +998,11 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 - (NSDictionary*) getDocsWithIDs: (NSArray*)docIDs options: (const TDQueryOptions*)options {
     if (!options)
         options = &kDefaultTDQueryOptions;
-    
+
     SequenceNumber update_seq = 0;
     if (options->updateSeq)
         update_seq = self.lastSequence;     // TODO: needs to be atomic with the following SELECT
-    
+
     // Generate the SELECT statement, based on the options:
     NSMutableString* sql = [@"SELECT revs.doc_id, docid, revid" mutableCopy];
     if (options->includeDocs)
@@ -991,18 +1035,18 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
         [sql appendString: (inclusiveMax ? @" AND docid <= ?" :  @" AND docid < ?")];
         [args addObject: maxKey];
     }
-    
+
     [sql appendFormat: @" ORDER BY docid %@, %@ revid DESC LIMIT ? OFFSET ?",
                        (options->descending ? @"DESC" : @"ASC"),
                        (options->includeDeletedDocs ? @"deleted ASC," : @"")];
     [args addObject: @(options->limit)];
     [args addObject: @(options->skip)];
-    
+
     // Now run the database query:
     FMResultSet* r = [_fmdb executeQuery: sql withArgumentsInArray: args];
     if (!r)
         return nil;
-    
+
     int64_t lastDocID = 0;
     NSMutableArray* rows = $marray();
     NSMutableDictionary* docs = docIDs ? $mdict() : nil;
@@ -1013,7 +1057,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
             if (docNumericID == lastDocID)
                 continue;
             lastDocID = docNumericID;
-            
+
             NSString* docID = [r stringForColumnIndex: 1];
             NSString* revID = [r stringForColumnIndex: 2];
             BOOL deleted = options->includeDeletedDocs && [r boolForColumn: @"deleted"];
@@ -1097,10 +1141,10 @@ TestCase(TD_Database_MakeRevisionHistoryDict) {
     NSArray* revs = @[mkrev(@"4-jkl"), mkrev(@"3-ghi"), mkrev(@"2-def")];
     CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"jkl", @"ghi", @"def"]},
                                                       {@"start", @4}));
-    
+
     revs = @[mkrev(@"4-jkl"), mkrev(@"2-def")];
     CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"4-jkl", @"2-def"]}));
-    
+
     revs = @[mkrev(@"12345"), mkrev(@"6789")];
     CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"12345", @"6789"]}));
 }
