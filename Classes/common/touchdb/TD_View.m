@@ -23,6 +23,8 @@
 #import "FMDatabaseAdditions.h"
 #import "FMResultSet.h"
 
+#import "FMDatabase+LongLong.h"
+
 
 #define kReduceBatchSize 100
 
@@ -79,20 +81,20 @@ static id<TDViewCompiler> sCompiler;
     Assert(version);
     _mapBlock = mapBlock; // copied implicitly in ARC
     _reduceBlock = reduceBlock; // copied implicitly in ARC
-    
+
     if (![_db open])
         return NO;
 
     // Update the version column in the db. This is a little weird looking because we want to
     // avoid modifying the db if the version didn't change, and because the row might not exist yet.
     FMDatabase* fmdb = _db.fmdb;
-    if (![fmdb executeUpdate: @"INSERT OR IGNORE INTO views (name, version) VALUES (?, ?)", 
+    if (![fmdb executeUpdate: @"INSERT OR IGNORE INTO views (name, version) VALUES (?, ?)",
                               _name, version])
         return NO;
     if (fmdb.changes)
         return YES;     // created new view
     if (![fmdb executeUpdate: @"UPDATE views SET version=?, lastSequence=0 "
-                               "WHERE name=? AND version!=?", 
+                               "WHERE name=? AND version!=?",
                               version, _name, version])
         return NO;
     return (fmdb.changes > 0);
@@ -171,7 +173,7 @@ static NSString* toJSONString( id object ) {
 static id fromJSON( NSData* json ) {
     if (!json)
         return nil;
-    return [TDJSON JSONObjectWithData: json 
+    return [TDJSON JSONObjectWithData: json
                               options: TDJSONReadingAllowFragments
                                 error: NULL];
 }
@@ -185,11 +187,11 @@ static id fromJSON( NSData* json ) {
 - (TDStatus) updateIndex {
     LogTo(View, @"Re-indexing view %@ ...", _name);
     Assert(_mapBlock, @"Cannot reindex view '%@' which has no map block set", _name);
-    
+
     int viewID = self.viewID;
     if (viewID <= 0)
         return kTDStatusNotFound;
-    
+
     [_db beginTransaction];
     FMResultSet* r = nil;
     TDStatus status = kTDStatusDBError;
@@ -205,7 +207,7 @@ static id fromJSON( NSData* json ) {
         __block BOOL emitFailed = NO;
         __block unsigned inserted = 0;
         FMDatabase* fmdb = _db.fmdb;
-        
+
         // First remove obsolete emitted results from the 'maps' table:
         __block SequenceNumber sequence = lastSequence;
         if (lastSequence < 0)
@@ -226,7 +228,7 @@ static id fromJSON( NSData* json ) {
 #ifndef MY_DISABLE_LOGGING
         unsigned deleted = fmdb.changes;
 #endif
-        
+
         // This is the emit() block, which gets called from within the user-defined map() block
         // that's called down below.
         TDMapEmitBlock emit = ^(id key, id value) {
@@ -242,7 +244,7 @@ static id fromJSON( NSData* json ) {
             else
                 emitFailed = YES;
         };
-        
+
         // Now scan every revision added since the last time the view was indexed:
         r = [fmdb executeQuery: @"SELECT revs.doc_id, sequence, docid, revid, json FROM revs, docs "
                                  "WHERE sequence>? AND current!=0 AND deleted=0 "
@@ -264,7 +266,7 @@ static id fromJSON( NSData* json ) {
                 }
                 NSString* revID = [r stringForColumnIndex: 3];
                 NSData* json = [r dataForColumnIndex: 4];
-            
+
                 // Iterate over following rows with the same doc_id -- these are conflicts.
                 // Skip them, but collect their revIDs:
                 int64_t doc_id = [r longLongIntForColumnIndex: 0];
@@ -274,7 +276,7 @@ static id fromJSON( NSData* json ) {
                         conflicts = $marray();
                     [conflicts addObject: [r stringForColumnIndex: 3]];
                 }
-            
+
                 if (lastSequence > 0) {
                     // Find conflicts with documents from previous indexings.
                     BOOL first = YES;
@@ -308,7 +310,7 @@ static id fromJSON( NSData* json ) {
                         }
                     }
                     [r2 close];
-                    
+
                     if (!first) {
                         // Re-sort the conflict array if we added more revisions to it:
                         [conflicts sortUsingComparator: ^(NSString *r1, NSString* r2) {
@@ -316,7 +318,7 @@ static id fromJSON( NSData* json ) {
                         }];
                     }
                 }
-                
+
                 // Get the document properties, to pass to the map function:
                 NSDictionary* properties = [_db documentPropertiesFromJSON: json
                                                                      docID: docID revID:revID
@@ -327,14 +329,14 @@ static id fromJSON( NSData* json ) {
                     Warn(@"Failed to parse JSON of doc %@ rev %@", docID, revID);
                     continue;
                 }
-                
+
                 if (conflicts) {
                     // Add a "_conflicts" property if there were conflicting revisions:
                     NSMutableDictionary* mutableProps = [properties mutableCopy];
                     mutableProps[@"_conflicts"] = conflicts;
                     properties = mutableProps;
                 }
-                
+
                 // Call the user-defined map() to emit new key/value pairs from this revision:
                 LogTo(View, @"  call map for sequence=%lld...", sequence);
                 _mapBlock(properties, emit);
@@ -342,16 +344,16 @@ static id fromJSON( NSData* json ) {
                     return kTDStatusCallbackError;
             }
         }
-        
+
         // Finally, record the last revision sequence number that was indexed:
         if (![fmdb executeUpdate: @"UPDATE views SET lastSequence=? WHERE view_id=?",
                                    @(dbMaxSequence), @(viewID)])
             return kTDStatusDBError;
-        
+
         LogTo(View, @"...Finished re-indexing view %@ to #%lld (deleted %u, added %u)",
               _name, dbMaxSequence, deleted, inserted);
         status = kTDStatusOK;
-        
+
     } @finally {
         [r close];
         if (status >= kTDStatusBadRequest)
@@ -395,7 +397,7 @@ static id fromJSON( NSData* json ) {
         }
         [sql appendString:@")"];
     }
-    
+
     id minKey = options->startKey, maxKey = options->endKey;
     BOOL inclusiveMin = YES, inclusiveMax = options->inclusiveEnd;
     if (options->descending) {
@@ -414,7 +416,7 @@ static id fromJSON( NSData* json ) {
         [sql appendString: collationStr];
         [args addObject: toJSONString(maxKey)];
     }
-    
+
     [sql appendString: @" AND revs.sequence = maps.sequence AND docs.doc_id = revs.doc_id "
                         "ORDER BY key"];
     [sql appendString: collationStr];
@@ -428,9 +430,9 @@ static id fromJSON( NSData* json ) {
         [sql appendString: @" OFFSET ?"];
         [args addObject: @(options->skip)];
     }
-    
+
     LogTo(View, @"Query %@: %@\n\tArguments: %@", _name, sql, args);
-    
+
     FMResultSet* r = [_db.fmdb executeQuery: sql withArgumentsInArray: args];
     if (!r)
         *outStatus = kTDStatusDBError;
@@ -443,13 +445,13 @@ static id fromJSON( NSData* json ) {
 {
     if (!options)
         options = &kDefaultTDQueryOptions;
-    
+
     FMResultSet* r = [self resultSetWithOptions: options status: outStatus];
     if (!r)
         return nil;
-    
+
     NSMutableArray* rows;
-    
+
     unsigned groupLevel = options->groupLevel;
     bool group = options->group || groupLevel > 0;
     if (options->reduce || group) {

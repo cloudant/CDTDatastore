@@ -23,6 +23,7 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
+#import "FMDatabase+LongLong.h"
 
 
 NSString* const TD_DatabaseWillCloseNotification = @"TD_DatabaseWillClose";
