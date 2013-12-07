@@ -1,5 +1,5 @@
 xcodeproj 'Tests'
-# workspace '../CDTDatastore'
+workspace '../CDTDatastore'
 
 platform :ios, '7.0'
 link_with ['Tests']
