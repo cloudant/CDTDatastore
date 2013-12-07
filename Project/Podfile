@@ -1,7 +1,5 @@
+xcodeproj 'Project'
+
+platform :ios, '7.0'
+
 pod "CDTDatastore", :path => "../"
-
-# target "Demo" do
-# end
-
-# target "DemoTests" do
-# end
