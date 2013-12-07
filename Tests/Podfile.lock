@@ -1,0 +1,24 @@
+PODS:
+  - CDTDatastore (0.0.1):
+    - CDTDatastore/no-arc
+    - FMDB (~> 2.0)
+  - CDTDatastore/no-arc (0.0.1):
+    - FMDB (~> 2.0)
+  - FMDB (2.1):
+    - FMDB/standard
+  - FMDB/common (2.1)
+  - FMDB/standard (2.1):
+    - FMDB/common
+
+DEPENDENCIES:
+  - CDTDatastore (from `../`)
+
+EXTERNAL SOURCES:
+  CDTDatastore:
+    :path: ../
+
+SPEC CHECKSUMS:
+  CDTDatastore: 02642e98dcd1d1d7c7cf9f9519ba394b868fc1d5
+  FMDB: 3fd5aaf632ca4ed39e3f101e0398504e6d5b0918
+
+COCOAPODS: 0.28.0

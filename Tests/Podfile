@@ -1,0 +1,7 @@
+xcodeproj 'Tests'
+# workspace '../CDTDatastore'
+
+platform :ios, '7.0'
+link_with ['Tests']
+
+pod "CDTDatastore", :path => "../"
