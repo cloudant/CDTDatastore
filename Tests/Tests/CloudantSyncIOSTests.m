@@ -17,11 +17,8 @@
 
 @implementation CloudantSyncIOSTests
 
-- (void)setUp
+- (NSString*)createTemporaryDirectoryAndReturnPath
 {
-    [super setUp];
-    
-    // Set-up code here.
     NSString *tempDirectoryTemplate =
     [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
     const char *tempDirectoryTemplateCString = [tempDirectoryTemplate fileSystemRepresentation];
@@ -34,10 +31,19 @@
         STFail(@"Couldn't create temporary directory");
     }
     
-    self.factoryPath = [[NSFileManager defaultManager]
+    NSString *path = [[NSFileManager defaultManager]
                         stringWithFileSystemRepresentation:tempDirectoryNameCString
                         length:strlen(result)];
     free(tempDirectoryNameCString);
+    
+    return path;
+}
+
+- (void)setUp
+{
+    [super setUp];
+    
+    self.factoryPath = [self createTemporaryDirectoryAndReturnPath];
     
     NSError *error;
     self.factory = [[CDTDatastoreManager alloc] initWithDirectory:self.factoryPath error:&error];
@@ -48,11 +54,11 @@
 
 - (void)tearDown
 {
-    // Tear-down code here.
     self.factory = nil;
     
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:self.factoryPath error:&error];
+    STAssertNil(error, @"Error deleting temporary directory.");
     
     [super tearDown];
 }

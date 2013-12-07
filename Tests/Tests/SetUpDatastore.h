@@ -8,6 +8,8 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-@interface SetUpDatastore : SenTestCase
+#import "CloudantSyncIOSTests.h"
+
+@interface SetUpDatastore : CloudantSyncIOSTests
 
 @end

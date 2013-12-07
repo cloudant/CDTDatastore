@@ -11,35 +11,37 @@
 
 @implementation SetUpDatastore
 
+/**
+ * This test makes sure we're able to setup and
+ * teardown a datastore factory correctly. To help
+ * debug issues in other tests where the datastore 
+ * factory can't be created.
+ */
+- (void)testSetupAndTeardownDatastoreFactory
+{
+    STAssertNotNil(self.factory, @"Factory is nil");
+}
+
+/**
+ * This test makes sure we're able to get a datastore
+ * from a factory. To help debug issues in other tests
+ * where the datastore can't be created.
+ */
 - (void)testSetupAndTeardownDatastore
 {
-    // Set-up code here.
-    NSString *tempDirectoryTemplate =
-    [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
-    const char *tempDirectoryTemplateCString = [tempDirectoryTemplate fileSystemRepresentation];
-    char *tempDirectoryNameCString =  (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
-    strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
-    
-    char *result = mkdtemp(tempDirectoryNameCString);
-    if (!result)
-    {
-        STFail(@"Couldn't create temporary directory");
-    }
-    
-    NSString *factoryPath = [[NSFileManager defaultManager]
-                        stringWithFileSystemRepresentation:tempDirectoryNameCString
-                        length:strlen(result)];
-    free(tempDirectoryNameCString);
-    
-    NSError *error;
-    CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
-    
-    STAssertNotNil(factory, @"Factory was nil");
-    
-    // Tear-down code here.
-    factory = nil;
-    
-    [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:&error];
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"test"];
+    STAssertNotNil(datastore, @"datastore is nil");
+}
+
+/**
+ * Make sure we can create several datastores.
+ */
+- (void)testSetupAndTeardownSeveralDatastores
+{
+    CDTDatastore *datastore1 = [self.factory datastoreNamed:@"test"];
+    CDTDatastore *datastore2 = [self.factory datastoreNamed:@"test2"];
+    STAssertNotNil(datastore1, @"datastore1 is nil");
+    STAssertNotNil(datastore2, @"datastore2 is nil");
 }
 
 @end
