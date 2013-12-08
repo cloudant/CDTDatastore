@@ -390,6 +390,9 @@
       location = "group:Tests/Tests.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:Project/Project.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:Tests/Pods/Pods.xcodeproj">
    </FileRef>
 </Workspace>
