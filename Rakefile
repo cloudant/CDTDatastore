@@ -3,6 +3,17 @@ task :spec do
   # Provide your own implementation
 end
 
+desc "Run the CDTDatastore Tests for iOS"
+task :test do
+  $ios_success = system("xctool -workspace CDTDatastore.xcworkspace -scheme 'Tests' -sdk iphonesimulator -configuration Release test -test-sdk iphonesimulator")
+  puts "\033[0;31m! iOS unit tests failed" unless $ios_success
+  if $ios_success
+    puts "\033[0;32m** All tests executed successfully"
+  else
+    exit(-1)
+  end
+end
+
 task :version do
   git_remotes = `git remote`.strip.split("\n")
 
@@ -20,7 +31,7 @@ task :version do
     puts "The current released version of your pod is " + remote_spec_version.to_s()
     version = suggested_version_number
   end
-  
+
   puts "Enter the version you want to release (" + version + ") "
   new_version_number = $stdin.gets.strip
   if new_version_number == ""
@@ -53,7 +64,7 @@ task :release do
 
   puts "* Running specs"
   sh "rake spec"
- 
+
   puts "* Linting the podspec"
   sh "pod lib lint"
 
