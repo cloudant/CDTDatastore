@@ -11,6 +11,9 @@
 @class TD_Revision;
 @class TD_RevisionList;
 
+/**
+ * Represents a single revision of a document in a datastore.
+ */
 @interface CDTDocumentRevision : NSObject
 
 @property (nonatomic,strong,readonly) NSString *docId;

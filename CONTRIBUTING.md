@@ -31,6 +31,11 @@ brew update
 brew install xctool
 ```
 
+[adc]: http://developer.apple.com/
+[xctool]: https://github.com/facebook/xctool
+[homebrew]: http://brew.sh
+[cpinstall]: http://guides.cocoapods.org/using/index.html
+
 ## Getting started with the project
 
 Open up `CDTDatastore.xcworkspace`. This workspace is where you should do all
@@ -71,15 +76,18 @@ be rebuilt when you run the tests as it references the code in `Classes`.
 At this point, run both the tests from the Tests project and the example app
 to make sure you're setup correctly.
 
+### Documentation
+
+Install [appledocs][appledocs].
+
+Use `rake docs` to build the docs and install into Xcode.
+
+[appledocs]: http://gentlebytes.com/appledoc/
+
 ### Using xctool to run the tests
 
 Tests can also be run from the command line with xctool. If you installed
 xctool, run the tests with `rake test`.
-
-[adc]: http://developer.apple.com/
-[xctool]: https://github.com/facebook/xctool
-[homebrew]: http://brew.sh
-[cpinstall]: http://guides.cocoapods.org/using/index.html
 
 ## Contributing your changes
 

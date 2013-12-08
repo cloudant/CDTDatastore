@@ -14,6 +14,11 @@ task :test do
   end
 end
 
+desc "Build docs and install to Xcode"
+task :docs do
+  system("appledoc --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -x Classes/vendor -x Classes/common/touchdb/ Classes/")
+end
+
 task :version do
   git_remotes = `git remote`.strip.split("\n")
 

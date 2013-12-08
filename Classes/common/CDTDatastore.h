@@ -13,6 +13,9 @@
 
 @class TD_Database;
 
+/**
+ * A datastore containing heterogeneous JSON documents.
+ */
 @interface CDTDatastore : NSObject
 
 +(NSString*)versionString;
