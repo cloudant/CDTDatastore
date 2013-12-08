@@ -5,22 +5,37 @@
 
 ## Usage
 
-To run the example project; clone the repo, and run `pod install` from the Project directory first.
+To run the example project:
+
+* Run `pod install` from the `Project` directory, then open the
+  `Project.xcworkspace` workspace.
+
+## Running the tests
+
+See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Requirements
+
+None.
 
 ## Installation
 
 CDTDatastore is available through [CocoaPods](http://cocoapods.org), to install
-it simply add the following line to your Podfile:
+it add the following line to your Podfile:
 
     pod "CDTDatastore"
 
-## Author
+## Contributors
 
-See CONTRIBUTORS
+See [CONTRIBUTORS](CONTRIBUTORS).
+
+## Contributing to the project
+
+See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## License
+
+See [LICENSE](LICENSE)
 
 ### CDTDatastore classes and TouchDB classes
 
