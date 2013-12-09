@@ -35,7 +35,8 @@
  * @return revision of the newly created document
  */
 -(CDTDocumentRevision *) createDocumentWithId:(NSString*)docId
-                                      body:(CDTDocumentBody*)body;
+                                         body:(CDTDocumentBody*)body
+                                        error:(NSError * __autoreleasing *)error;
 
 
 /**
@@ -44,29 +45,34 @@
  * @param body JSON body for the document
  * @return revision of the newly created document
  */
--(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body;
+-(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
+                                          error:(NSError * __autoreleasing *)error;
 
 
 /**
  * @param documentId id of the specified document
  * @return current revision as CDTDocumentRevision of given document
  */
--(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId;
+-(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
+                                     error:(NSError * __autoreleasing *)error;
 
 
 /**
  * @param documentId id of the specified document
  * @param revisionId id of the specified revision
- * @return specified CDTDocumentRevision of the document for given document id or nil if it doesn't exist
+ * @return specified CDTDocumentRevision of the document for given 
+ *     document id or nil if it doesn't exist
  */
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
-                                    rev:(NSString*)rev;
+                                       rev:(NSString*)rev
+                                     error:(NSError * __autoreleasing *)error;
 
 
 /**
- * Pagination read of all documents. Logically, it lists all the documents in descending order if descending option
- * is true, otherwise in ascending order. Then start from offset (included) position, and return up to maxItem
- * items.
+ * Pagination read of all documents. Logically, it lists all the documents
+ * in descending order if descending option is true, otherwise in 
+ * ascending order. Then start from offset (included) position, and 
+ * return up to maxItem items.
  *
  * Only the current revision of each document is returned.
  *
@@ -81,29 +87,35 @@
 
 
 /**
- * Return a list of the documents for the given list of documentIds, only current revision of each document returned
+ * Return a list of the documents for the given list of documentIds, 
+ * only current revision of each document returned
  *
  * @param documentIds list of document id
  * @param descending  if true, the list is in descending order
  * @return list of the documents
  */
--(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
+-(NSArray*) getDocumentsWithIds:(NSArray*)docIds
+                          error:(NSError * __autoreleasing *)error;
 
 
 /**
  * Stores a new (or initial) revision of a document.
  * <p/>
- * The previous revision id must be supplied when necessary and the call will fail if it doesn't match.
+ * The previous revision id must be supplied when necessary and the 
+ * call will fail if it doesn't match.
  *
- * @param prevRevisionId id of the revision to replace , or null if this is a new document.
- * @param allowConflict  if false, an ConflictException is thrown out if the insertion would create a conflict,
- *                      i.e. if the previous revision already has a child.
+ * @param prevRevisionId id of the revision to replace , or null if this 
+ *         is a new document.
+ * @param allowConflict  if false, an ConflictException is thrown out 
+           if the insertion would create a conflict,
+ *         i.e. if the previous revision already has a child.
  * @param body          document body of the new revision
  * @return new DBObject with the documentId, revisionId
  */
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                    prevRev:(NSString*)prevRev
-                                      body:(CDTDocumentBody*)body;
+                                         body:(CDTDocumentBody*)body
+                                        error:(NSError * __autoreleasing *)error;
 
 
 
@@ -115,6 +127,7 @@
  * Returns NO if the document couldn't be deleted.
  */
 -(BOOL) deleteDocumentWithId:(NSString*)docId
-                         rev:(NSString*)rev;
+                         rev:(NSString*)rev
+                       error:(NSError * __autoreleasing *)error;
 
 @end

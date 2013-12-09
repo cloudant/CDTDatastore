@@ -45,27 +45,20 @@
 }
 
 
--(NSData*)documentAsData
+-(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {
-    // First remove extra _properties added by TD_Database.m#extraPropertiesForRevision:options:
-    // and put them into attributes
+    NSError *innerError = nil;
+    
     NSDictionary *processed_document = [self documentAsDictionary];
-    NSData *json = [[TDJSON dataWithJSONObject:processed_document options:0 error:NULL] copy];
+    NSData *json = [[TDJSON dataWithJSONObject:processed_document options:0 error:&innerError] copy];
+    
     if (!json) {
         Warn(@"CDTDocumentRevision: couldn't convert to JSON");
+        *error = innerError;
+        return nil;
     }
-    return json;
-
-
-//    if (!_json && !_error) {
-//        _json = [[TDJSON dataWithJSONObject: _object options: 0 error: NULL] copy];
-//        if (!_json) {
-//            Warn(@"TD_Body: couldn't convert to JSON");
-//            _error = YES;
-//        }
-//    }
-//    return _json;
-}
+    
+    return json;}
 
 -(NSDictionary*)documentAsDictionary
 {

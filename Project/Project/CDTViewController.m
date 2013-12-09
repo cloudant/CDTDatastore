@@ -49,12 +49,24 @@
     NSDictionary *doc = @{@"description": item, @"completed": @NO};
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
     
-    [self.datastore createDocumentWithBody:body];
+    NSError *error;
+    [self.datastore createDocumentWithBody:body error:&error];
+    
+    if (error != nil) {
+        NSLog(@"Error adding item: %@", error);
+    }
 }
 
 - (void)deleteTodoItem:(CDTDocumentRevision*)revision {
+    
+    NSError *error;
     [self.datastore deleteDocumentWithId:revision.docId
-                                     rev:revision.revId];
+                                     rev:revision.revId
+                                   error:&error];
+    
+    if (error != nil) {
+        NSLog(@"Error deleting item: %@", error);
+    }
 }
 
 - (void)toggleTodoCheckedForRevision:(CDTDocumentRevision*)revision {
@@ -62,9 +74,17 @@
     NSLog(@"Toggling checked status for %@", body[@"description"]);
     NSNumber *current = body[@"checked"];
     body[@"checked"] = [NSNumber numberWithBool:![current boolValue]];
+    
+    
+    NSError *error;
     [self.datastore updateDocumentWithId:revision.docId
                                  prevRev:revision.revId
-                                    body:[[CDTDocumentBody alloc] initWithDictionary:body]];
+                                    body:[[CDTDocumentBody alloc] initWithDictionary:body]
+                                   error:&error];
+    
+    if (error != nil) {
+        NSLog(@"Error updating item: %@", error);
+    }
 }
 
 - (void)reloadTasks {

@@ -62,17 +62,19 @@
 }
 
 -(CDTDocumentRevision *) createDocumentWithId:(NSString*)docId
-                                      body:(CDTDocumentBody*)body
+                                         body:(CDTDocumentBody*)body
+                                        error:(NSError * __autoreleasing *)error
 {
     __block CDTDocumentRevision *ob = nil;
+    __block TDStatus status = kTDStatusException;
     __weak CDTDatastore *weakSelf = self;
+    
     dispatch_sync([CDTDatastore storeSerialQueue], ^{
         CDTDatastore *strongSelf = weakSelf;
         if (![strongSelf ensureDatabaseOpen]) {
-            return ;
+            return;
         }
 
-        TDStatus status;
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:nil
                                                            deleted:NO];
@@ -85,21 +87,28 @@
             ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
         }
     });
+    
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+    }
+    
     return ob;
 }
 
 
 -(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
+                                          error:(NSError * __autoreleasing *)error
 {
     __block CDTDocumentRevision *ob = nil;
+    __block TDStatus status = kTDStatusException;
     __weak CDTDatastore *weakSelf = self;
+    
     dispatch_sync([CDTDatastore storeSerialQueue], ^{
         CDTDatastore *strongSelf = weakSelf;
         if (![strongSelf ensureDatabaseOpen]) {
             return;
         }
 
-        TDStatus status;
         TD_Revision *new = [strongSelf.database putRevision:[body TD_RevisionValue]
                                              prevRevisionID:nil
                                               allowConflict:NO
@@ -108,20 +117,28 @@
             ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
         }
     });
+    
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+    }
+    
     return ob;
 }
 
 
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
+                                     error:(NSError * __autoreleasing *)error
 {
-    return [self getDocumentWithId:docId rev:nil];
+    return [self getDocumentWithId:docId rev:nil error: error];
 }
 
 
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
-                                    rev:(NSString*)revId
+                                       rev:(NSString*)revId
+                                     error:(NSError * __autoreleasing *)error
 {
     __block CDTDocumentRevision *ob = nil;
+    __block TDStatus status = kTDStatusException;
     __weak CDTDatastore *weakSelf = self;
     dispatch_sync([CDTDatastore storeSerialQueue], ^{
         CDTDatastore *strongSelf = weakSelf;
@@ -129,15 +146,19 @@
             return;
         }
 
-        TDStatus status;
         TD_Revision *rev = [strongSelf.database getDocumentWithID:docId
                                                        revisionID:revId
-                                                          options:nil
+                                                          options:0
                                                            status:&status];
         if (!TDStatusIsError(status)) {
             ob = [[CDTDocumentRevision alloc] initWithTDRevision:rev];
         }
     });
+    
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+    }
+    
     return ob;
 }
 
@@ -162,7 +183,6 @@
             .includeDocs = YES
         };
         NSDictionary *dictResults = [strongSelf.database getAllDocs:&query];
-//        NSLog(@"some logging");
 
         for (NSDictionary *row in dictResults[@"rows"]) {
 //            NSLog(@"%@", row);
@@ -183,11 +203,19 @@
 
 
 -(NSArray*) getDocumentsWithIds:(NSArray*)docIds
+                          error:(NSError * __autoreleasing *)error
+
 {
+    NSError *innerError = nil;
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:docIds.count];
 
     for (NSString *docId in docIds) {
-        CDTDocumentRevision *ob = [self getDocumentWithId:docId];
+        CDTDocumentRevision *ob = [self getDocumentWithId:docId
+                                                    error:&innerError];
+        if (innerError != nil) {
+            *error = innerError;
+            return nil;
+        }
         [result addObject:ob];
     }
 
@@ -196,18 +224,20 @@
 
 
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
-                                   prevRev:(NSString*)prevRev
-                                      body:(CDTDocumentBody*)body
+                                      prevRev:(NSString*)prevRev
+                                         body:(CDTDocumentBody*)body
+                                        error:(NSError * __autoreleasing *)error
 {
     __block CDTDocumentRevision *ob = nil;
+    __block TDStatus status = kTDStatusException;
     __weak CDTDatastore *weakSelf = self;
+    
     dispatch_sync([CDTDatastore storeSerialQueue], ^{
         CDTDatastore *strongSelf = weakSelf;
         if (![strongSelf ensureDatabaseOpen]) {
             return ;
         }
 
-        TDStatus status;
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:nil
                                                            deleted:NO];
@@ -220,22 +250,29 @@
             ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
         }
     });
+    
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+    }
+    
     return ob;
 }
 
 
 -(BOOL) deleteDocumentWithId:(NSString*)docId
                          rev:(NSString*)rev
+                       error:(NSError * __autoreleasing *)error
 {
     __block NSNumber *result = [NSNumber numberWithBool:NO];
+    __block TDStatus status = kTDStatusException;
     __weak CDTDatastore *weakSelf = self;
+    
     dispatch_sync([CDTDatastore storeSerialQueue], ^{
         CDTDatastore *strongSelf = weakSelf;
         if (![strongSelf ensureDatabaseOpen]) {
             return ;
         }
 
-        TDStatus status;
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:nil
                                                            deleted:YES];
@@ -247,6 +284,11 @@
             result = [NSNumber numberWithBool:YES];
         }
     });
+    
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+    }
+    
     return [result boolValue];
 }
 
