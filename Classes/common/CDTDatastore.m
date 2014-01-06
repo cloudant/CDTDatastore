@@ -61,6 +61,10 @@
     return self.database.documentCount;
 }
 
+- (NSString*)name {
+    return self.database.name;
+}
+
 -(CDTDocumentRevision *) createDocumentWithId:(NSString*)docId
                                          body:(CDTDocumentBody*)body
                                         error:(NSError * __autoreleasing *)error

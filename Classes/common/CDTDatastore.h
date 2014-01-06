@@ -28,6 +28,11 @@
 @property (readonly) NSUInteger documentCount;
 
 /**
+ * The name of the datastore.
+ */
+@property (readonly) NSString *name;
+
+/**
  * Create a new document with the given document id and JSON body
  *
  * @param documentId id for the document
