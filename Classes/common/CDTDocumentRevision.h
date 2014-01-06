@@ -29,7 +29,7 @@
 -(id)initWithTDRevision:(TD_Revision*)rev;
 
 
--(NSData*)documentAsData;
+-(NSData*)documentAsDataError:(NSError * __autoreleasing *)error;
 -(NSDictionary*)documentAsDictionary;
 
 @end
