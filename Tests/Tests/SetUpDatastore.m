@@ -29,7 +29,8 @@
  */
 - (void)testSetupAndTeardownDatastore
 {
-    CDTDatastore *datastore = [self.factory datastoreNamed:@"test"];
+    NSError *error;
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"test" error:&error];
     STAssertNotNil(datastore, @"datastore is nil");
 }
 
@@ -38,10 +39,22 @@
  */
 - (void)testSetupAndTeardownSeveralDatastores
 {
-    CDTDatastore *datastore1 = [self.factory datastoreNamed:@"test"];
-    CDTDatastore *datastore2 = [self.factory datastoreNamed:@"test2"];
+    NSError *error;
+    CDTDatastore *datastore1 = [self.factory datastoreNamed:@"test" error:&error];
+    CDTDatastore *datastore2 = [self.factory datastoreNamed:@"test2" error:&error];
     STAssertNotNil(datastore1, @"datastore1 is nil");
     STAssertNotNil(datastore2, @"datastore2 is nil");
+}
+
+/**
+ * Check there's an error for _name datastores.
+ */
+- (void)testUnderscoreNonReplicatorDbGivesError
+{
+    NSError *error;
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"_test" error:&error];
+    STAssertNil(datastore, @"datastore is not nil");
+    STAssertNotNil(error, @"error is nil");
 }
 
 @end

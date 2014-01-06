@@ -18,8 +18,9 @@
 - (void)setUp
 {
     [super setUp];
-    
-    self.datastore = [self.factory datastoreNamed:@"test"];
+
+    NSError *error;
+    self.datastore = [self.factory datastoreNamed:@"test" error:&error];
     
     STAssertNotNil(self.datastore, @"datastore is nil");
 }

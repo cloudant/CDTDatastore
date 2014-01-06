@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString* const CDTDatastoreErrorDomain;
+
 @class CDTDatastore;
 
 /**
@@ -30,6 +32,7 @@
 /**
  * Returns a datastore for the given name.
  */
--(CDTDatastore *)datastoreNamed:(NSString*)name;
+-(CDTDatastore *)datastoreNamed:(NSString*)name
+                          error:(NSError * __autoreleasing *)error;
 
 @end

@@ -42,6 +42,7 @@
 - (void)setUp
 {
     [super setUp];
+    // Put setup code here; it will be run once, before the first test case.
     
     self.factoryPath = [self createTemporaryDirectoryAndReturnPath];
     
@@ -59,7 +60,8 @@
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:self.factoryPath error:&error];
     STAssertNil(error, @"Error deleting temporary directory.");
-    
+
+    // Put teardown code here; it will be run once, after the last test case.
     [super tearDown];
 }
 

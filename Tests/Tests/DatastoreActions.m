@@ -15,7 +15,8 @@
 
 - (void)testGetADatabase
 {
-    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database"];
+    NSError *error;
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     STAssertNotNil(tmp, @"Could not create test database");
     STAssertTrue([tmp isKindOfClass:[CDTDatastore class]], @"Returned database not CDTDatastore");
 }
