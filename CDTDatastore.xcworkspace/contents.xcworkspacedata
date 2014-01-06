@@ -7,6 +7,31 @@
       <Group
          location = "group:Classes/common"
          name = "common">
+         <Group
+            location = "group:CDTReplicator"
+            name = "CDTReplicator">
+            <FileRef
+               location = "group:CDTReplicationErrorInfo.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicationErrorInfo.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicator.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicator.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorFactory.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorFactory.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorListener.h">
+            </FileRef>
+         </Group>
          <FileRef
             location = "group:CDTDatastore.h">
          </FileRef>
