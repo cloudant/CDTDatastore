@@ -10,7 +10,7 @@
 
 #import "CDTAppDelegate.h"
 
-#import <CloudantSyncIOS.h>
+#import <CloudantSync.h>
 
 @interface CDTViewController ()
 

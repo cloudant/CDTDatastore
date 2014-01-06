@@ -1,6 +1,6 @@
 //
-//  CloudantSyncIOSTests.h
-//  CloudantSyncIOSTests
+//  CloudantSyncTests.h
+//  CloudantSyncTests
 //
 //  Created by Michael Rhodes on 05/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
@@ -10,7 +10,7 @@
 
 @class CDTDatastoreManager;
 
-@interface CloudantSyncIOSTests : SenTestCase
+@interface CloudantSyncTests : SenTestCase
 
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;

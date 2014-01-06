@@ -1,17 +1,26 @@
 //
 //  DatastoreCrud.m
-//  CloudantSyncIOS
+//  CloudantSync
 //
 //  Created by Michael Rhodes on 05/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
 //
 
-#import "DatastoreCrud.h"
+#import <SenTestingKit/SenTestingKit.h>
+
+#import "CloudantSyncTests.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 #import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
+
+@interface DatastoreCrud : CloudantSyncTests
+
+@property (nonatomic,strong) CDTDatastore *datastore;
+
+@end
+
 
 @implementation DatastoreCrud
 

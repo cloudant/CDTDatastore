@@ -1,15 +1,21 @@
 //
 //  DatastoreActions.m
-//  CloudantSyncIOS
+//  CloudantSync
 //
 //  Created by Michael Rhodes on 05/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
 //
 
-#import "DatastoreActions.h"
+#import <SenTestingKit/SenTestingKit.h>
+
+#import "CloudantSyncTests.h"
 
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
+
+@interface DatastoreActions : CloudantSyncTests
+
+@end
 
 @implementation DatastoreActions
 

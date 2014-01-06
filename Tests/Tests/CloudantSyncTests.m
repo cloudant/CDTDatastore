@@ -1,21 +1,21 @@
 //
-//  CloudantSyncIOSTests.m
-//  CloudantSyncIOSTests
+//  CloudantSyncTests.m
+//  CloudantSyncTests
 //
 //  Created by Michael Rhodes on 05/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
 //
 
-#import "CloudantSyncIOSTests.h"
+#import "CloudantSyncTests.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 
-@interface CloudantSyncIOSTests ()
+@interface CloudantSyncTests ()
 
 @end
 
-@implementation CloudantSyncIOSTests
+@implementation CloudantSyncTests
 
 - (NSString*)createTemporaryDirectoryAndReturnPath
 {

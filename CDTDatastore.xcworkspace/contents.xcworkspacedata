@@ -57,7 +57,7 @@
             location = "group:CDTDocumentRevision.m">
          </FileRef>
          <FileRef
-            location = "group:CloudantSyncIOS.h">
+            location = "group:CloudantSync.h">
          </FileRef>
          <Group
             location = "group:fmdb"

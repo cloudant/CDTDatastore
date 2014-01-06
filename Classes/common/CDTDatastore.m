@@ -1,6 +1,6 @@
  //
 //  CDTDatastore.m
-//  CloudantSyncIOS
+//  CloudantSync
 //
 //  Created by Michael Rhodes on 02/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
@@ -39,7 +39,7 @@
     static dispatch_once_t pred;
     static dispatch_queue_t storeDispatchQueue = NULL;
     dispatch_once(&pred, ^{
-        storeDispatchQueue = dispatch_queue_create("com.cloudant.cloudantsyncios.IOQueue", NULL);
+        storeDispatchQueue = dispatch_queue_create("com.cloudant.cloudantsync.IOQueue", NULL);
     });
     return storeDispatchQueue;
 }

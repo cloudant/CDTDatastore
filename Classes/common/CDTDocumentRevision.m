@@ -1,6 +1,6 @@
 //
 //  CDTDocumentRevision.m
-//  CloudantSyncIOS
+//  CloudantSync
 //
 //  Created by Michael Rhodes on 02/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
