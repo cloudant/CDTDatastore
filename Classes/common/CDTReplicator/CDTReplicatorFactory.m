@@ -20,8 +20,6 @@
 
 @property (nonatomic,strong) CDTDatastoreManager *manager;
 
-- (CDTReplicator*)setUpReplicatorWithBody:(CDTDocumentBody*)body;
-
 @end
 
 @implementation CDTReplicatorFactory
@@ -47,13 +45,21 @@
 
 - (CDTReplicator*)onewaySourceURI:(NSURL*)source
                   targetDatastore:(CDTDatastore*)target {
+    NSError *error;
+
     NSDictionary *replicationDoc = @{
                                      @"source": [source absoluteString],
                                      @"target": target.name
                                      };
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:replicationDoc];
-    
-    return [self setUpReplicatorWithBody:body];
+
+    CDTDatastoreManager *m = self.manager;
+    CDTDatastore *datastore = [m datastoreNamed:kTDReplicatorDatabaseName error:&error];
+
+    CDTReplicator *replicator = [[CDTReplicator alloc] initWithReplicatorDatastore:datastore
+                                                           replicationDocumentBody:body];
+
+    return replicator;
 }
 
 @end

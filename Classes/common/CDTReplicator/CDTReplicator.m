@@ -40,6 +40,8 @@
     CDTDocumentRevision *rev = [self.replicatorDb createDocumentWithBody:self.body
                                                                    error:&error];
 
+    // We only store the docId as the rev will change as the replicator
+    // updates the state of the replication so the revId will be changing.
     self.replicationDocumentId = rev.docId;
 }
 
@@ -51,6 +53,9 @@
 
     NSError *error;
 
+    // We have to get the latest version as the we need the revId
+    // for deleting.
+    // TODO revision could be changed before we delete.
     CDTDocumentRevision *current = [self.replicatorDb getDocumentWithId:self.replicationDocumentId
                                                                   error:&error];
 

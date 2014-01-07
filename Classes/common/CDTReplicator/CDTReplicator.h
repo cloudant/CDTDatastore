@@ -8,9 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+#import "CDTReplicatorListener.h"
+
 @class CDTDatastore;
 @class CDTDocumentBody;
-@class CDTReplicationListener;
 
 /**
  * <p>Describes the state of a {@link Replicator} at a given moment.</p>
@@ -141,6 +142,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see ReplicationListener
  */
-@property (nonatomic,strong) CDTReplicationListener *listener;
+@property (nonatomic,strong) NSObject<CDTReplicatorListener> *listener;
 
 @end
