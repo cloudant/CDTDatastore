@@ -88,8 +88,7 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
 
 - (void) stop {
     LogTo(Sync, @"STOP %@", self);
-    [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock: nil];
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
+    [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock: nil];    [[NSNotificationCenter defaultCenter] removeObserver: self];
     _replicatorsByDocID = nil;
 }
 

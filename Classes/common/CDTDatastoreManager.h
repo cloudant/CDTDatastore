@@ -11,6 +11,7 @@
 extern NSString* const CDTDatastoreErrorDomain;
 
 @class CDTDatastore;
+@class TD_DatabaseManager;
 
 /**
  * A CDTDatastoreManager manages a group of CDTDatastores. It also manages
@@ -18,6 +19,8 @@ extern NSString* const CDTDatastoreErrorDomain;
  * database is accessed safely.
  */
 @interface CDTDatastoreManager : NSObject
+
+@property (nonatomic,strong,readonly) TD_DatabaseManager *manager;
 
 /**
  * Initialises the datastore manager with a directory where the files

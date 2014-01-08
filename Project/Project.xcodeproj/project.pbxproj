@@ -21,6 +21,7 @@
 		27C1CDE8184E2D9C000604EF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDCA184E2D9C000604EF /* UIKit.framework */; };
 		27C1CDF0184E2D9C000604EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27C1CDEE184E2D9C000604EF /* InfoPlist.strings */; };
 		27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CDF1184E2D9C000604EF /* ProjectTests.m */; };
+		27E16BDE187D6FBA00F8A3B2 /* CDTReplicateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */; };
 		27FD647D187D684A0095AFC4 /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27FD647C187D684A0095AFC4 /* libPods-ios.a */; };
 /* End PBXBuildFile section */
 
@@ -54,7 +55,9 @@
 		27C1CDED184E2D9C000604EF /* ProjectTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ProjectTests-Info.plist"; sourceTree = "<group>"; };
 		27C1CDEF184E2D9C000604EF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27C1CDF1184E2D9C000604EF /* ProjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProjectTests.m; sourceTree = "<group>"; };
-		27FD647C187D684A0095AFC4 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
+		27E16BDC187D6FBA00F8A3B2 /* CDTReplicateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTReplicateController.h; sourceTree = "<group>"; };
+		27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplicateController.m; sourceTree = "<group>"; };
+		27FD647C187D684A0095AFC4 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
 		4D0E3AC9C50B4EBE8CF4AF2B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		8D351C6636E34098974F71A9 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -125,6 +128,8 @@
 				27C1CDD8184E2D9C000604EF /* Main.storyboard */,
 				27C1CDDB184E2D9C000604EF /* CDTViewController.h */,
 				27C1CDDC184E2D9C000604EF /* CDTViewController.m */,
+				27E16BDC187D6FBA00F8A3B2 /* CDTReplicateController.h */,
+				27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */,
 				27C1CDDE184E2D9C000604EF /* Images.xcassets */,
 				27C1CDCD184E2D9C000604EF /* Supporting Files */,
 			);
@@ -296,6 +301,7 @@
 				27C1CDD7184E2D9C000604EF /* CDTAppDelegate.m in Sources */,
 				27C1CDD3184E2D9C000604EF /* main.m in Sources */,
 				27C1CDDD184E2D9C000604EF /* CDTViewController.m in Sources */,
+				27E16BDE187D6FBA00F8A3B2 /* CDTReplicateController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

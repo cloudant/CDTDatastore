@@ -33,6 +33,11 @@
 @property (readonly) NSString *name;
 
 /**
+ * The internal database.
+ */
+@property (nonatomic,strong,readonly) TD_Database *database;
+
+/**
  * Create a new document with the given document id and JSON body
  *
  * @param documentId id for the document

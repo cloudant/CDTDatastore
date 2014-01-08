@@ -23,6 +23,8 @@
 
 const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
+const NSString *TD_Server = @"TD_Server";
+
 
 @implementation TD_DatabaseManager
 

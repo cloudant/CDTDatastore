@@ -46,7 +46,11 @@
 
 
 - (void)addTodoItem:(NSString*)item {
-    NSDictionary *doc = @{@"description": item, @"completed": @NO};
+    NSDictionary *doc = @{
+                          @"description": item,
+                          @"completed": @NO,
+                          @"type": @"com.cloudant.sync.example.task"
+                        };
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
     
     NSError *error;
@@ -69,12 +73,11 @@
     }
 }
 
-- (void)toggleTodoCheckedForRevision:(CDTDocumentRevision*)revision {
+- (void)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
     NSMutableDictionary *body = [revision documentAsDictionary].mutableCopy;
-    NSLog(@"Toggling checked status for %@", body[@"description"]);
-    NSNumber *current = body[@"checked"];
-    body[@"checked"] = [NSNumber numberWithBool:![current boolValue]];
-    
+    NSLog(@"Toggling completed status for %@", body[@"description"]);
+    NSNumber *current = body[@"completed"];
+    body[@"completed"] = [NSNumber numberWithBool:![current boolValue]];
     
     NSError *error;
     [self.datastore updateDocumentWithId:revision.docId
@@ -117,11 +120,11 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"Selected row at [%i, %i]", indexPath.section, indexPath.row);
     if (indexPath.section == 1) {
-        // Get the revision, toggle checked status on the body
+        // Get the revision, toggle completed status on the body
         // and save a new revision, passing the current revision
         // ID and rev.
         CDTDocumentRevision *revision = [self.taskRevisions objectAtIndex:indexPath.row];
-        [self toggleTodoCheckedForRevision:revision];
+        [self toggleTodoCompletedForRevision:revision];
         [self reloadTasks];
         [self.tableView reloadData];
     }
@@ -178,8 +181,8 @@
         
         NSDictionary *body = [task documentAsDictionary];
         cell.textLabel.text = (NSString*)[body objectForKey:@"description"];
-        NSNumber *checked = (NSNumber*)[body objectForKey:@"checked"];
-        if ([checked boolValue]) {
+        NSNumber *completed = (NSNumber*)[body objectForKey:@"completed"];
+        if ([completed boolValue]) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
         } else {
             cell.accessoryType = UITableViewCellAccessoryNone;

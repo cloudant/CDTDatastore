@@ -25,6 +25,8 @@
 @property (nonatomic,strong,readonly) NSArray *revsInfo;
 @property (nonatomic,strong,readonly) NSArray *conflicts;
 
+@property (nonatomic,strong,readonly) TD_Revision *td_rev;
+
 
 -(id)initWithTDRevision:(TD_Revision*)rev;
 
