@@ -9,10 +9,12 @@
 #import <UIKit/UIKit.h>
 
 @class CDTDatastore;
+@class CDTReplicatorFactory;
 
 @interface CDTAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (nonatomic, strong) CDTDatastore *datastore;
+@property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 
 @property (strong, nonatomic) UIWindow *window;
 

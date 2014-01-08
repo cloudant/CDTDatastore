@@ -47,6 +47,8 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 @interface CDTReplicator : NSObject
 
++(NSString*)stringForReplicatorState:(CDTReplicatorState)state;
+
 
 -(id)initWithReplicatorDatastore:(CDTDatastore*)replicatorDb
          replicationDocumentBody:(CDTDocumentBody*)body;
@@ -127,6 +129,12 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * is idle with no background threads.</p>
  */
 - (CDTReplicatorState)state;
+
+/**
+ * Returns true if the state is CDTReplicatorStateStarted or 
+ * CDTReplicatorStateStopping.
+ */
+-(BOOL)isActive;
 
 /**
  * <p>Sets the replicator's {@link ReplicationListener}.</p>

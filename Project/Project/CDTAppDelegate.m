@@ -50,6 +50,8 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+
+    [self.replicatorFactory stop];
 }
 
 /**
@@ -96,6 +98,13 @@
         NSLog(@"Error creating manager: %@", outError);
         exit(1);
     }
+
+    self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
+
+    __block CDTAppDelegate *weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [weakSelf.replicatorFactory start];
+    });
     
     CDTDatastore *datastore = [manager datastoreNamed:@"todo_items" error:&outError];
 

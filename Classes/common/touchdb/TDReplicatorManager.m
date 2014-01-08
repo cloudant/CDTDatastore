@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 2/15/12.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -88,8 +90,7 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
 
 - (void) stop {
     LogTo(Sync, @"STOP %@", self);
-    [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock: nil];
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
+    [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock: nil];    [[NSNotificationCenter defaultCenter] removeObserver: self];
     _replicatorsByDocID = nil;
 }
 

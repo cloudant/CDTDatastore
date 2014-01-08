@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 3/22/12.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 
 #import <Foundation/Foundation.h>
 #import "TDStatus.h"

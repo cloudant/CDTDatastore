@@ -10,6 +10,7 @@
 
 @class CDTDatastore;
 @class CDTReplicator;
+@class CDTDatastoreManager;
 
 /**
  * <p>Factory for {@link CDTDatastore} objects.</p>
@@ -26,6 +27,11 @@
  * Using a <em>database_name</em> containing a {@code /} is not supported.</p>
  */
 @interface CDTReplicatorFactory : NSObject
+
+- (id) initWithDatastoreManager: (CDTDatastoreManager*)dsManager;
+
+- (void) start;
+- (void) stop;
 
 /**
  * <p>Creates a Replicator object set up to replicate changes from the

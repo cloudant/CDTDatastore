@@ -14,7 +14,6 @@
 
 @interface CDTDocumentRevision ()
 
-@property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
 @end
 

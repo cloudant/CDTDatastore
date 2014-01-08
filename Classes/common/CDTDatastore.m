@@ -21,8 +21,6 @@
 
 +(dispatch_queue_t)storeSerialQueue;
 
-@property (nonatomic,strong,readonly) TD_Database *database;
-
 @end
 
 @implementation CDTDatastore

@@ -16,8 +16,6 @@ NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
 
 @interface CDTDatastoreManager ()
 
-@property (nonatomic,strong,readonly) TD_DatabaseManager *manager;
-
 @end
 
 @implementation CDTDatastoreManager
