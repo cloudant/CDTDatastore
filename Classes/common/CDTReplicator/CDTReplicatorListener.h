@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+@class CDTReplicator;
+@class CDTReplicationErrorInfo;
+
 @protocol CDTReplicatorListener <NSObject>
 
 /**

@@ -21,7 +21,7 @@
 		27C1CDE8184E2D9C000604EF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDCA184E2D9C000604EF /* UIKit.framework */; };
 		27C1CDF0184E2D9C000604EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27C1CDEE184E2D9C000604EF /* InfoPlist.strings */; };
 		27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CDF1184E2D9C000604EF /* ProjectTests.m */; };
-		E7EEBE34D2F14248905428D8 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D351C6636E34098974F71A9 /* libPods.a */; };
+		27FD647D187D684A0095AFC4 /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27FD647C187D684A0095AFC4 /* libPods-ios.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +54,7 @@
 		27C1CDED184E2D9C000604EF /* ProjectTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ProjectTests-Info.plist"; sourceTree = "<group>"; };
 		27C1CDEF184E2D9C000604EF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27C1CDF1184E2D9C000604EF /* ProjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProjectTests.m; sourceTree = "<group>"; };
+		27FD647C187D684A0095AFC4 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
 		4D0E3AC9C50B4EBE8CF4AF2B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		8D351C6636E34098974F71A9 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -63,10 +64,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27FD647D187D684A0095AFC4 /* libPods-ios.a in Frameworks */,
 				27C1CDC9184E2D9C000604EF /* CoreGraphics.framework in Frameworks */,
 				27C1CDCB184E2D9C000604EF /* UIKit.framework in Frameworks */,
 				27C1CDC7184E2D9C000604EF /* Foundation.framework in Frameworks */,
-				E7EEBE34D2F14248905428D8 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +107,7 @@
 		27C1CDC5184E2D9C000604EF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27FD647C187D684A0095AFC4 /* libPods-ios.a */,
 				27C1CDC6184E2D9C000604EF /* Foundation.framework */,
 				27C1CDC8184E2D9C000604EF /* CoreGraphics.framework */,
 				27C1CDCA184E2D9C000604EF /* UIKit.framework */,
@@ -224,8 +226,6 @@
 			mainGroup = 27C1CDBA184E2D9C000604EF;
 			productRefGroup = 27C1CDC4184E2D9C000604EF /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-			);
 			projectRoot = "";
 			targets = (
 				27C1CDC2184E2D9C000604EF /* Project */,
@@ -506,6 +506,7 @@
 				27C1CDF7184E2D9C000604EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		27C1CDF8184E2D9C000604EF /* Build configuration list for PBXNativeTarget "ProjectTests" */ = {
 			isa = XCConfigurationList;
@@ -514,6 +515,7 @@
 				27C1CDFA184E2D9C000604EF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

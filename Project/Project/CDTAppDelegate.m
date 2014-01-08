@@ -97,7 +97,15 @@
         exit(1);
     }
     
-    return [manager datastoreNamed:@"todo_items"];
+    CDTDatastore *datastore = [manager datastoreNamed:@"todo_items" error:&outError];
+
+    if (nil != outError) {
+        NSLog(@"Error creating datastore: %@", outError);
+        exit(1);
+    }
+
+    return datastore;
+
 }
 
 @end

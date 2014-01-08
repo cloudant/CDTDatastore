@@ -12,3 +12,8 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDocumentBody.h"
+
+#import "CDTReplicator.h"
+#import "CDTReplicatorFactory.h"
+#import "CDTReplicatorListener.h"
+#import "CDTReplicationErrorInfo.h"
