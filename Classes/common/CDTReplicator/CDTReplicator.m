@@ -99,6 +99,8 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 -(void)stop
 {
+    self.mState = CDTReplicatorStateStopping;
+
     if (self.replicationDocumentId == nil) {
         return;   // not started yet
     }
