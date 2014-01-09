@@ -43,6 +43,11 @@
     return self.td_rev.revID;
 }
 
+-(BOOL)deleted
+{
+    return self.td_rev.deleted;
+}
+
 
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {

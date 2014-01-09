@@ -17,9 +17,16 @@
 #import "TD_Database+Insertion.h"
 
 
+NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotification";
+
+
 @interface CDTDatastore ()
 
 +(dispatch_queue_t)storeSerialQueue;
+
+- (void) TDdbChanged:(NSNotification*)n;
+
+@property (nonatomic,strong,readonly) TD_Database *database;
 
 @end
 
@@ -48,9 +55,64 @@
     self = [super init];
     if (self) {
         _database = database;
+
+        [[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(TDdbChanged:)
+                                                     name: TD_DatabaseChangeNotification
+                                                   object: _database];
     }
     return self;
 }
+
+-(void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
+#pragma mark Observer methods
+
+/**
+ * Notified that a document has been created/modified/deleted in the
+ * database we're wrapping. Wrap it up into a notification containing
+ * CDT* classes and re-notify.
+ *
+ * All this wrapping is to prevent TD* types escaping.
+ */
+- (void) TDdbChanged:(NSNotification*)n {
+
+    // Notification structure:
+
+    /** NSNotification posted when a document is updated.
+     UserInfo keys: 
+      - @"rev": the new TD_Revision,
+      - @"source": NSURL of remote db pulled from,
+      - @"winner": new winning TD_Revision, _if_ it changed (often same as rev). 
+    */
+
+    LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
+
+    NSDictionary *nUserInfo = n.userInfo;
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+
+    if (nil != nUserInfo[@"rev"]) {
+        userInfo[@"rev"] = [[CDTDocumentRevision alloc]
+                            initWithTDRevision:nUserInfo[@"rev"]];
+    }
+
+    if (nil != nUserInfo[@"winner"]) {
+        userInfo[@"winner"] = [[CDTDocumentRevision alloc]
+                            initWithTDRevision:nUserInfo[@"rev"]];
+    }
+
+    if (nil != nUserInfo[@"source"]) {
+        userInfo[@"winner"] = nUserInfo[@"source"];
+    }
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
+                                                        object:self
+                                                      userInfo:userInfo];
+}
+
+#pragma mark Datastore implementation
 
 -(NSUInteger)documentCount {
     if (![self ensureDatabaseOpen]) {

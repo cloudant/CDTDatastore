@@ -77,8 +77,8 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
     [[NSNotificationCenter defaultCenter] addObserver: self
                                              selector: @selector(dbChanged:)
-                                                 name: TD_DatabaseChangeNotification
-                                               object: self.replicatorDb.database];
+                                                 name: CDTDatastoreChangeNotification
+                                               object: self.replicatorDb];
 
     // starts the replication immediately
     CDTDocumentRevision *rev = [self.replicatorDb createDocumentWithBody:self.body
@@ -94,7 +94,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     self.replicationDocumentId = rev.docId;
     LogTo(CDTReplicatorLog, @"start: Replication document ID: %@", self.replicationDocumentId);
 
-    [self updatedStateFromRevision:rev.td_rev];
+    [self updatedStateFromRevision:rev];
 }
 
 -(void)stop
@@ -133,13 +133,13 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
  */
 - (void) dbChanged: (NSNotification*)n {
     LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
-    TD_Revision* rev = (n.userInfo)[@"rev"];
+    CDTDocumentRevision* rev = (n.userInfo)[@"rev"];
     LogTo(CDTReplicatorLog, @"CDTReplicator: %@ %@", n.name, rev);
     [self updatedStateFromRevision:rev];
 }
 
--(void)updatedStateFromRevision:(TD_Revision*)rev {
-    NSString* docID = rev.docID;
+-(void)updatedStateFromRevision:(CDTDocumentRevision*)rev {
+    NSString* docID = rev.docId;
     if (![docID isEqualToString:self.replicationDocumentId])
         return;
 
@@ -150,7 +150,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
         // Should not happen, but we can assume completed
         self.mState = CDTReplicatorStateComplete;
     } else {
-        NSString *state = rev[@"_replication_state"];
+        NSString* state = [rev documentAsDictionary][@"_replication_state"];
 
         if ([state isEqualToString:@"triggered"]) {
             self.mState = CDTReplicatorStateStarted;
