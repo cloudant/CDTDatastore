@@ -19,6 +19,8 @@
 @property (nonatomic,strong,readonly) NSString *docId;
 @property (nonatomic,strong,readonly) NSString *revId;
 
+@property (nonatomic,readonly) BOOL deleted;
+
 @property (nonatomic,strong,readonly) NSDictionary *attachments;
 @property (nonatomic,strong,readonly) NSString *localSeq;
 @property (nonatomic,strong,readonly) TD_RevisionList *revs;

@@ -11,6 +11,15 @@
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
 
+
+/** NSNotification posted when a document is updated.
+ UserInfo keys: 
+  - @"rev": the new CDTDocumentRevision, 
+  - @"source": NSURL of remote db pulled from,
+  - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev). 
+ */
+extern NSString* const CDTDatastoreChangeNotification;
+
 @class TD_Database;
 
 /**
@@ -31,11 +40,6 @@
  * The name of the datastore.
  */
 @property (readonly) NSString *name;
-
-/**
- * The internal database.
- */
-@property (nonatomic,strong,readonly) TD_Database *database;
 
 /**
  * Create a new document with the given document id and JSON body
