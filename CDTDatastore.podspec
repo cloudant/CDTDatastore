@@ -41,6 +41,7 @@ Pod::Spec.new do |s|
   s.ios.exclude_files = 'Classes/osx'
   s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/common/CloudantSync.h'
+
   s.dependency 'FMDB', '>= 2.0'
 
   s.frameworks = 'SystemConfiguration'

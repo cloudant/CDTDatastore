@@ -20,14 +20,13 @@
 #import "TDRemoteRequest.h"
 #import "TDAuthorizer.h"
 #import "TDBatcher.h"
-#import "TDReachability.h"
 #import "TDInternal.h"
 #import "TDMisc.h"
 #import "TDBase64.h"
 #import "TDCanonicalJSON.h"
 #import "MYBlockUtils.h"
+#import "TDReachability.h"
 #import "MYURLUtils.h"
-
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
@@ -243,18 +242,20 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
 #endif
     
     _online = NO;
-    
+
     // Start reachability checks. (This creates another ref cycle, because
     // the block also retains a ref to self. Cycle is also broken in -stopped.)
     _host = [[TDReachability alloc] initWithHostName: _remote.host];
-    
     __weak id weakSelf = self;
     _host.onChange = ^{
         TDReplicator *strongSelf = weakSelf;
         [strongSelf reachabilityChanged:strongSelf->_host];
     };
     [_host start];
-    [self reachabilityChanged: _host];
+
+    [self reachabilityChanged:_host];
+
+
 }
 
 
@@ -347,7 +348,6 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
     }
     return YES;
 }
-
 
 - (void) reachabilityChanged: (TDReachability*)host {
     LogTo(Sync, @"%@: Reachability state = %@ (%02X)", self, host, host.reachabilityFlags);

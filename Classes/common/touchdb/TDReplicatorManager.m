@@ -82,7 +82,13 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
                                                  name: UIApplicationWillEnterForegroundNotification
                                                object: nil];
 #endif
-    
+
+    _serverThread = [[NSThread alloc] initWithTarget: self
+                                            selector: @selector(runServerThread)
+                                              object: nil];
+    LogTo(Sync, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
+    [_serverThread start];
+
 }
 
 
@@ -90,11 +96,46 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
     LogTo(Sync, @"STOP %@", self);
     [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock: nil];    [[NSNotificationCenter defaultCenter] removeObserver: self];
     _replicatorsByDocID = nil;
+    _stopRunLoop = YES;
+    _serverThread = nil;
 }
 
 
 - (NSString*) docIDForReplicator: (TDReplicator*)repl {
     return [[_replicatorsByDocID allKeysForObject: repl] lastObject];
+}
+
+#pragma mark - Replication thread management
+
+/**
+ * We want a server thread only for the replicator stuff.
+ * Taken from TDServer.m.
+ */
+- (void) runServerThread {
+    @autoreleasepool {
+        LogTo(Sync, @"TDReplicatorManager thread starting...");
+
+        [[NSThread currentThread] setName:@"TDReplicatorManager"];
+#ifndef GNUSTEP
+        // Add a no-op source so the runloop won't stop on its own:
+        CFRunLoopSourceContext context = {}; // all zeros
+        CFRunLoopSourceRef source = CFRunLoopSourceCreate(NULL, 0, &context);
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+        CFRelease(source);
+#endif
+
+        // Now run:
+        while (!_stopRunLoop && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                                         beforeDate: [NSDate distantFuture]])
+            ;
+
+        LogTo(Sync, @"TDReplicatorManager thread exiting");
+    }
+}
+
+- (void) queue: (void(^)())block {
+    Assert(_serverThread, @"-queue: called after -stop");
+    MYOnThread(_serverThread, block);
 }
 
 
@@ -222,29 +263,33 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
 
 // A replication document has been created, so create the matching TDReplicator:
 - (void) processInsertion: (TD_Revision*)rev {
-    if (_replicatorsByDocID[rev.docID])
-        return;
-    LogTo(Sync, @"ReplicatorManager: %@ was created", rev);
-    NSDictionary* properties = rev.properties;
-    TDReplicator* repl = [_dbManager replicatorWithProperties: properties status: NULL];
-    if (!repl) {
-        Warn(@"TDReplicatorManager: Can't create replicator for %@", properties);
-        return;
-    }
-    NSString* replicationID = properties[@"_replication_id"] ?: TDCreateUUID();
-    repl.sessionID = replicationID;
-    
-    if (!_replicatorsByDocID)
-        _replicatorsByDocID = [[NSMutableDictionary alloc] init];
-    _replicatorsByDocID[rev.docID] = repl;
-    
-    [[NSNotificationCenter defaultCenter] addObserver: self
-                                             selector: @selector(replicatorChanged:)
-                                                 name: nil
-                                               object: repl];
+    __weak TDReplicatorManager *weakSelf = self;
+    [self queue:^{
+        TDReplicatorManager *strongSelf = weakSelf;
+        if (_replicatorsByDocID[rev.docID])
+            return;
+        LogTo(Sync, @"ReplicatorManager: %@ was created", rev);
+        NSDictionary* properties = rev.properties;
+        TDReplicator* repl = [_dbManager replicatorWithProperties: properties status: NULL];
+        if (!repl) {
+            Warn(@"TDReplicatorManager: Can't create replicator for %@", properties);
+            return;
+        }
+        NSString* replicationID = properties[@"_replication_id"] ?: TDCreateUUID();
+        repl.sessionID = replicationID;
 
-    [repl start];
-    [self updateDoc: rev forReplicator: repl];
+        if (!_replicatorsByDocID)
+            _replicatorsByDocID = [[NSMutableDictionary alloc] init];
+        _replicatorsByDocID[rev.docID] = repl;
+
+        [[NSNotificationCenter defaultCenter] addObserver: strongSelf
+                                                 selector: @selector(replicatorChanged:)
+                                                     name: nil
+                                                   object: repl];
+        
+        [repl start];
+        [strongSelf updateDoc: rev forReplicator: repl];
+    }];
 }
 
 
@@ -311,6 +356,8 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
     });
 }
 
+
+#pragma mark - NSNotifcationCenter handlers
 
 // Notified that a _replicator database document has been created/updated/deleted:
 - (void) dbChanged: (NSNotification*)n {

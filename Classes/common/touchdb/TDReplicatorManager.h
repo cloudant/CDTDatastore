@@ -24,6 +24,9 @@ extern NSString* const kTDReplicatorDatabaseName;
     NSThread* _thread;
     NSMutableDictionary* _replicatorsByDocID;
     BOOL _updateInProgress;
+
+    NSThread* _serverThread;
+    BOOL _stopRunLoop;
 }
 
 - (id) initWithDatabaseManager: (TD_DatabaseManager*)dbManager;
