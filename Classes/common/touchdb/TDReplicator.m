@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 12/6/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -20,14 +22,13 @@
 #import "TDRemoteRequest.h"
 #import "TDAuthorizer.h"
 #import "TDBatcher.h"
-#import "TDReachability.h"
 #import "TDInternal.h"
 #import "TDMisc.h"
 #import "TDBase64.h"
 #import "TDCanonicalJSON.h"
 #import "MYBlockUtils.h"
+#import "TDReachability.h"
 #import "MYURLUtils.h"
-
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
@@ -243,18 +244,20 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
 #endif
     
     _online = NO;
-    
+
     // Start reachability checks. (This creates another ref cycle, because
     // the block also retains a ref to self. Cycle is also broken in -stopped.)
     _host = [[TDReachability alloc] initWithHostName: _remote.host];
-    
     __weak id weakSelf = self;
     _host.onChange = ^{
         TDReplicator *strongSelf = weakSelf;
         [strongSelf reachabilityChanged:strongSelf->_host];
     };
     [_host start];
-    [self reachabilityChanged: _host];
+
+    [self reachabilityChanged:_host];
+
+
 }
 
 
@@ -347,7 +350,6 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
     }
     return YES;
 }
-
 
 - (void) reachabilityChanged: (TDReachability*)host {
     LogTo(Sync, @"%@: Reachability state = %@ (%02X)", self, host, host.reachabilityFlags);

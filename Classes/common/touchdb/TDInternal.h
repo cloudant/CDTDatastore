@@ -15,6 +15,7 @@
 #import "TDReplicator.h"
 #import "TDRemoteRequest.h"
 #import "TDBlobStore.h"
+
 @class TD_Attachment;
 
 
@@ -131,7 +132,7 @@
 - (void) revisionFailed;    // subclasses call this if a transfer fails
 - (void) retry;
 
-- (void) reachabilityChanged: (TDReachability*)host;
+- (void) reachabilityChanged: (TDReachability*)reachability;
 - (BOOL) goOffline;
 - (BOOL) goOnline;
 #if DEBUG
