@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 12/8/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 
 #import <Foundation/Foundation.h>
 #import "TD_Database.h"

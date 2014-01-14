@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 12/2/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -466,8 +468,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     LogTo(SyncVerbose, @"%@ inserting %u revisions...", self, (unsigned)downloads.count);
     CFAbsoluteTime time = CFAbsoluteTimeGetCurrent();
         
-    [_db beginTransaction];
-    BOOL success = NO;
+//    [_db beginTransaction];
+//    BOOL success = NO;
     @try{
         downloads = [downloads sortedArrayUsingSelector: @selector(compareSequences:)];
         for (TD_Revision* rev in downloads) {
@@ -507,13 +509,14 @@ static NSString* joinQuotedEscaped(NSArray* strings);
         // Checkpoint:
         self.lastSequence = _pendingSequences.checkpointedValue;
         
-        success = YES;
+//        success = YES;
     } @catch (NSException *x) {
         MYReportException(x, @"%@: Exception inserting revisions", self);
-    } @finally {
-        [_db endTransaction: success];
     }
-    
+//    @finally {
+//        [_db endTransaction: success];
+//    }
+
     time = CFAbsoluteTimeGetCurrent() - time;
     LogTo(Sync, @"%@ inserted %u revs in %.3f sec (%.1f/sec)",
           self, (unsigned)downloads.count, time, downloads.count/time);

@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 12/19/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -36,6 +38,7 @@
 
 #import "CollectionUtils.h"
 #import "FMDatabase.h"
+#import "FMDatabaseQueue.h"
 #import "FMDatabaseAdditions.h"
 #import "FMResultSet.h"
 #import "GTMNSData+zlib.h"
@@ -126,18 +129,23 @@
 
 - (TDStatus) insertAttachment: (TD_Attachment*)attachment
                   forSequence: (SequenceNumber)sequence
+                   inDatabase: (FMDatabase*)db
 {
     Assert(sequence > 0);
     Assert(attachment.isValid);
     NSData* keyData = [NSData dataWithBytes: &attachment->blobKey length: sizeof(TDBlobKey)];
     id encodedLengthObj = attachment->encoding ? @(attachment->encodedLength) : nil;
-    if (![_fmdb executeUpdate: @"INSERT INTO attachments "
-                                  "(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
-                                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                                 @(sequence), attachment.name, keyData,
-                                 attachment.contentType, @(attachment->encoding),
-                                 @(attachment->length), encodedLengthObj,
-                                 @(attachment->revpos)]) {
+
+    __block bool success;
+    success = [db executeUpdate: @"INSERT INTO attachments "
+               "(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
+               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+               @(sequence), attachment.name, keyData,
+               attachment.contentType, @(attachment->encoding),
+               @(attachment->length), encodedLengthObj,
+               @(attachment->revpos)];
+
+    if (!success) {
         return kTDStatusDBError;
     }
     return kTDStatusCreated;
@@ -153,22 +161,30 @@
     Assert(toSequence > fromSequence);
     if (fromSequence <= 0)
         return kTDStatusNotFound;
-    if (![_fmdb executeUpdate: @"INSERT INTO attachments "
-                    "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
-                    "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
-                        "FROM attachments WHERE sequence=? AND filename=?",
-                    @(toSequence), name,
-                    @(fromSequence), name]) {
-        return kTDStatusDBError;
-    }
-    if (_fmdb.changes == 0) {
-        // Oops. This means a glitch in our attachment-management or pull code,
-        // or else a bug in the upstream server.
-        Warn(@"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld",
-             name, fromSequence, toSequence);
-        return kTDStatusNotFound;         // Fail if there is no such attachment on fromSequence
-    }
-    return kTDStatusOK;
+
+    __block TDStatus result = kTDStatusOK;
+
+    [_fmdbQueue inDatabase:^(FMDatabase* db) {
+        if (![db executeUpdate: @"INSERT INTO attachments "
+              "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
+              "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
+              "FROM attachments WHERE sequence=? AND filename=?",
+              @(toSequence), name,
+              @(fromSequence), name]) {
+            result = kTDStatusDBError;
+            return;
+        }
+        if (db.changes == 0) {
+            // Oops. This means a glitch in our attachment-management or pull code,
+            // or else a bug in the upstream server.
+            Warn(@"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld",
+                 name, fromSequence, toSequence);
+            result = kTDStatusNotFound;  // Fail if there is no such attachment on fromSequence
+            return;
+        }
+    }];
+
+    return result;
 }
 
 
@@ -194,35 +210,40 @@
 {
     Assert(sequence > 0);
     Assert(filename);
-    NSString* filePath = nil;
-    FMResultSet* r = [_fmdb executeQuery:
-                      @"SELECT key, type, encoding FROM attachments WHERE sequence=? AND filename=?",
-                      @(sequence), filename];
-    if (!r) {
-        *outStatus = kTDStatusDBError;
-        return nil;
-    }
-    @try {
-        if (![r next]) {
-            *outStatus = kTDStatusNotFound;
-            return nil;
+    __block NSString* filePath = nil;
+
+
+    [_fmdbQueue inDatabase:^(FMDatabase* db) {
+        FMResultSet* r = [db executeQuery:
+                          @"SELECT key, type, encoding FROM attachments WHERE sequence=? AND filename=?",
+                          @(sequence), filename];
+        if (!r) {
+            *outStatus = kTDStatusDBError;
+            return;
         }
-        NSData* keyData = [r dataNoCopyForColumnIndex: 0];
-        if (keyData.length != sizeof(TDBlobKey)) {
-            Warn(@"%@: Attachment %lld.'%@' has bogus key size %u",
-                 self, sequence, filename, (unsigned)keyData.length);
-            *outStatus = kTDStatusCorruptError;
-            return nil;
+        @try {
+            if (![r next]) {
+                *outStatus = kTDStatusNotFound;
+                return;
+            }
+            NSData* keyData = [r dataNoCopyForColumnIndex: 0];
+            if (keyData.length != sizeof(TDBlobKey)) {
+                Warn(@"%@: Attachment %lld.'%@' has bogus key size %u",
+                     self, sequence, filename, (unsigned)keyData.length);
+                *outStatus = kTDStatusCorruptError;
+                return;
+            }
+            filePath = [_attachments pathForKey: *(TDBlobKey*)keyData.bytes];
+            *outStatus = kTDStatusOK;
+            if (outType)
+                *outType = [r stringForColumnIndex: 1];
+
+            *outEncoding = [r intForColumnIndex: 2];
+        } @finally {
+            [r close];
         }
-        filePath = [_attachments pathForKey: *(TDBlobKey*)keyData.bytes];
-        *outStatus = kTDStatusOK;
-        if (outType)
-            *outType = [r stringForColumnIndex: 1];
-        
-        *outEncoding = [r intForColumnIndex: 2];
-    } @finally {
-        [r close];
-    }
+    }];
+
     return filePath;
 }
 
@@ -261,12 +282,15 @@
 /** Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. */
 - (NSDictionary*) getAttachmentDictForSequence: (SequenceNumber)sequence
                                        options: (TDContentOptions)options
+                                    inDatabase: (FMDatabase*)db
 {
     Assert(sequence > 0);
-    FMResultSet* r = [_fmdb executeQuery:
-                      @"SELECT filename, key, type, encoding, length, encoded_length, revpos "
-                       "FROM attachments WHERE sequence=?",
-                      @(sequence)];
+    __block NSMutableDictionary* attachments;
+
+        FMResultSet* r = [db executeQuery:
+                          @"SELECT filename, key, type, encoding, length, encoded_length, revpos "
+                          "FROM attachments WHERE sequence=?",
+                          @(sequence)];
     if (!r)
         return nil;
     if (![r next]) {
@@ -274,14 +298,14 @@
         return nil;
     }
     BOOL decodeAttachments = !(options & kTDLeaveAttachmentsEncoded);
-    NSMutableDictionary* attachments = $mdict();
+    attachments = $mdict();
     do {
         NSData* keyData = [r dataNoCopyForColumnIndex: 1];
         NSString* digestStr = [@"sha1-" stringByAppendingString: [TDBase64 encode: keyData]];
         TDAttachmentEncoding encoding = [r intForColumnIndex: 3];
         UInt64 length = [r longLongIntForColumnIndex: 4];
         UInt64 encodedLength = [r longLongIntForColumnIndex: 5];
-        
+
         // Get the attachment contents if asked to:
         NSData* data = nil;
         BOOL dataSuppressed = NO;
@@ -295,7 +319,7 @@
                     Warn(@"TD_Database: Failed to get attachment for key %@", keyData);
             }
         }
-        
+
         NSString* encodingStr = nil;
         id encodedLengthObj = nil;
         if (encoding != kTDAttachmentEncodingNone) {
@@ -309,16 +333,17 @@
         }
 
         attachments[[r stringForColumnIndex: 0]] = $dict({@"stub", ((data || dataSuppressed) ? nil : $true)},
-                                      {@"data", (data ? [TDBase64 encode: data] : nil)},
-                                      {@"follows", (dataSuppressed ? $true : nil)},
-                                      {@"digest", digestStr},
-                                      {@"content_type", [r stringForColumnIndex: 2]},
-                                      {@"encoding", encodingStr},
-                                      {@"length", @(length)},
-                                      {@"encoded_length", encodedLengthObj},
-                                      {@"revpos", @([r intForColumnIndex: 6])});
+                                                         {@"data", (data ? [TDBase64 encode: data] : nil)},
+                                                         {@"follows", (dataSuppressed ? $true : nil)},
+                                                         {@"digest", digestStr},
+                                                         {@"content_type", [r stringForColumnIndex: 2]},
+                                                         {@"encoding", encodingStr},
+                                                         {@"length", @(length)},
+                                                         {@"encoded_length", encodedLengthObj},
+                                                         {@"revpos", @([r intForColumnIndex: 6])});
     } while ([r next]);
     [r close];
+
     return attachments;
 }
 
@@ -568,12 +593,13 @@
 
 
 - (TD_Revision*) updateAttachment: (NSString*)filename
-                            body: (TDBlobStoreWriter*)body
-                            type: (NSString*)contentType
-                        encoding: (TDAttachmentEncoding)encoding
-                         ofDocID: (NSString*)docID
-                           revID: (NSString*)oldRevID
-                          status: (TDStatus*)outStatus
+                             body: (TDBlobStoreWriter*)body
+                             type: (NSString*)contentType
+                         encoding: (TDAttachmentEncoding)encoding
+                          ofDocID: (NSString*)docID
+                            revID: (NSString*)oldRevID
+                           status: (TDStatus*)outStatus
+                       inDatabase: (FMDatabase*)db
 {
     *outStatus = kTDStatusBadAttachment;
     if (filename.length == 0 || (body && !contentType) || (oldRevID && !docID) || (body && !docID))
@@ -586,7 +612,7 @@
         // Load existing revision if this is a replacement:
         *outStatus = [self loadRevisionBody: oldRev options: 0];
         if (TDStatusIsError(*outStatus)) {
-            if (*outStatus == kTDStatusNotFound && [self existsDocumentWithID: docID revisionID: nil])
+            if (*outStatus == kTDStatusNotFound && [self existsDocumentWithID: docID revisionID: nil database:db])
                 *outStatus = kTDStatusConflict;   // if some other revision exists, it's a conflict
             return nil;
         }
@@ -629,25 +655,30 @@
     return newRev;
 }
 
-
-- (TDStatus) garbageCollectAttachments {
+/**
+ * db argument must be from inside _fmdbQueue inDatabase
+ */
+- (TDStatus) garbageCollectAttachments:(FMDatabase*)db {
     // First delete attachment rows for already-cleared revisions:
     // OPT: Could start after last sequence# we GC'd up to
-    [_fmdb executeUpdate:  @"DELETE FROM attachments WHERE sequence IN "
-                            "(SELECT sequence from revs WHERE json IS null)"];
-    
+
+    [db executeUpdate:  @"DELETE FROM attachments WHERE sequence IN "
+     "(SELECT sequence from revs WHERE json IS null)"];
+
     // Now collect all remaining attachment IDs and tell the store to delete all but these:
-    FMResultSet* r = [_fmdb executeQuery: @"SELECT DISTINCT key FROM attachments"];
-    if (!r)
+    FMResultSet* r = [db executeQuery: @"SELECT DISTINCT key FROM attachments"];
+    if (!r) {
         return kTDStatusDBError;
+    }
     NSMutableSet* allKeys = [NSMutableSet set];
     while ([r next]) {
         [allKeys addObject: [r dataForColumnIndex: 0]];
     }
     [r close];
     NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys: allKeys];
-    if (numDeleted < 0)
+    if (numDeleted < 0) {
         return kTDStatusAttachmentError;
+    }
     Log(@"Deleted %d attachments", (int)numDeleted);
     return kTDStatusOK;
 }

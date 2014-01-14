@@ -1,24 +1,31 @@
 PODS:
   - CDTDatastore (0.0.1):
     - CDTDatastore/no-arc
-    - FMDB (~> 2.0)
+    - FMDB (>= 2.0)
+    - Reachability (~> 3.1.1)
   - CDTDatastore/no-arc (0.0.1):
-    - FMDB (~> 2.0)
+    - FMDB (>= 2.0)
+    - Reachability (~> 3.1.1)
   - FMDB (2.1):
     - FMDB/standard
   - FMDB/common (2.1)
   - FMDB/standard (2.1):
     - FMDB/common
+  - Reachability (3.1.1)
 
 DEPENDENCIES:
   - CDTDatastore (from `../`)
+  - FMDB (from `https://github.com/mikerhodes/fmdb.git`)
 
 EXTERNAL SOURCES:
   CDTDatastore:
     :path: ../
+  FMDB:
+    :git: https://github.com/mikerhodes/fmdb.git
 
 SPEC CHECKSUMS:
-  CDTDatastore: cd05623c0bc426ec346fae0d191d1146d2e68557
+  CDTDatastore: 37233d84a411a84a8de51ccd4d389f6d16dfab82
   FMDB: 3fd5aaf632ca4ed39e3f101e0398504e6d5b0918
+  Reachability: be4883bb93f31e38266ae3365e5600a317aae735
 
 COCOAPODS: 0.28.0

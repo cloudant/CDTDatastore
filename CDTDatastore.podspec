@@ -14,7 +14,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "CDTDatastore"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "CDTDatastore is a document datastore which syncs."
   s.description  = <<-DESC
                     CDTDatastore is a JSON document datastore which speaks the
@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   s.ios.exclude_files = 'Classes/osx'
   s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/common/CloudantSync.h'
-  s.dependency 'FMDB', '~> 2.0'
+  s.dependency 'FMDB', '>= 2.0'
 
   s.frameworks = 'SystemConfiguration'
   s.library = 'sqlite3', 'z'

@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 12/27/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -20,6 +22,7 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
+#import "FMDatabaseQueue.h"
 
 
 #define kActiveReplicatorCleanupDelay 10.0
@@ -73,14 +76,22 @@
 - (NSString*) lastSequenceWithCheckpointID: (NSString*)checkpointID {
     // This table schema is out of date but I'm keeping it the way it is for compatibility.
     // The 'remote' column now stores the opaque checkpoint IDs, and 'push' is ignored.
-    return [_fmdb stringForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?",
-                                 checkpointID];
+    __block NSString *result = nil;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        result = [db stringForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?",
+                                    checkpointID];
+    }];
+    return result;
 }
 
 - (BOOL) setLastSequence: (NSString*)lastSequence withCheckpointID: (NSString*)checkpointID {
-    return [_fmdb executeUpdate: 
-            @"INSERT OR REPLACE INTO replicators (remote, push, last_sequence) VALUES (?, -1, ?)",
-            checkpointID, lastSequence];
+    __block BOOL result;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        result = [db executeUpdate:
+                @"INSERT OR REPLACE INTO replicators (remote, push, last_sequence) VALUES (?, -1, ?)",
+                checkpointID, lastSequence];
+    }];
+    return result;
 }
 
 
@@ -107,26 +118,33 @@
 - (BOOL) findMissingRevisions: (TD_RevisionList*)revs {
     if (revs.count == 0)
         return YES;
-    NSString* sql = $sprintf(@"SELECT docid, revid FROM revs, docs "
-                              "WHERE revid in (%@) AND docid IN (%@) "
-                              "AND revs.doc_id == docs.doc_id",
-                             [TD_Database joinQuotedStrings: revs.allRevIDs],
-                             [TD_Database joinQuotedStrings: revs.allDocIDs]);
-    // ?? Not sure sqlite will optimize this fully. May need a first query that looks up all
-    // the numeric doc_ids from the docids.
-    FMResultSet* r = [_fmdb executeQuery: sql];
-    if (!r)
-        return NO;
-    while ([r next]) {
-        @autoreleasepool {
-            TD_Revision* rev = [revs revWithDocID: [r stringForColumnIndex: 0]
-                                           revID: [r stringForColumnIndex: 1]];
-            if (rev)
-                [revs removeRev: rev];
+
+    __block BOOL result = YES;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        NSString* sql = $sprintf(@"SELECT docid, revid FROM revs, docs "
+                                 "WHERE revid in (%@) AND docid IN (%@) "
+                                 "AND revs.doc_id == docs.doc_id",
+                                 [TD_Database joinQuotedStrings: revs.allRevIDs],
+                                 [TD_Database joinQuotedStrings: revs.allDocIDs]);
+        // ?? Not sure sqlite will optimize this fully. May need a first query that looks up all
+        // the numeric doc_ids from the docids.
+        FMResultSet* r = [db executeQuery: sql];
+        if (!r) {
+            result = NO;
+            return;
         }
-    }
-    [r close];
-    return YES;
+        while ([r next]) {
+            @autoreleasepool {
+                TD_Revision* rev = [revs revWithDocID: [r stringForColumnIndex: 0]
+                                                revID: [r stringForColumnIndex: 1]];
+                if (rev) {
+                    [revs removeRev: rev];
+                }
+            }
+        }
+        [r close];
+    }];
+    return result;
 }
 
 
