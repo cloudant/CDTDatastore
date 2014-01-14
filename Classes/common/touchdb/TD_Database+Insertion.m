@@ -24,6 +24,7 @@
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
+#import "FMDatabaseQueue.h"
 
 #ifdef GNUSTEP
 #import <openssl/sha.h>
@@ -125,12 +126,16 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 }
 
 
-/** Adds a new document ID to the 'docs' table. */
-- (SInt64) insertDocumentID: (NSString*)docID {
+/** 
+ * Adds a new document ID to the 'docs' table.
+ * Must be called from within an FMDatabaseQueue block */
+- (SInt64) insertDocumentID: (NSString*)docID inDatabase:(FMDatabase*)db {
     Assert([TD_Database isValidDocumentID: docID]);  // this should be caught before I get here
-    if (![_fmdb executeUpdate: @"INSERT INTO docs (docid) VALUES (?)", docID])
+
+    if (![db executeUpdate: @"INSERT INTO docs (docid) VALUES (?)", docID]) {
         return -1;
-    return _fmdb.lastInsertRowId;
+    }
+    return db.lastInsertRowId;
 }
 
 
@@ -192,6 +197,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                       oldWinner: (NSString*)oldWinningRevID
                      oldDeleted: (BOOL)oldWinnerWasDeletion
                          newRev: (TD_Revision*)newRev
+                        database:(FMDatabase*)db
 {
     if (!oldWinningRevID)
         return newRev;
@@ -206,7 +212,8 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         // Doc was alive. How does this deletion affect the winning rev ID?
         BOOL deleted;
         NSString* winningRevID = [self winningRevIDOfDocNumericID: docNumericID
-                                                        isDeleted: &deleted];
+                                                        isDeleted: &deleted
+                                                         database:db];
         if (!$equal(winningRevID, oldWinningRevID)) {
             if ($equal(winningRevID, newRev.revID))
                 return newRev;
@@ -242,17 +249,19 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                    parentSequence: (SequenceNumber)parentSequence
                           current: (BOOL)current
                              JSON: (NSData*)json
+                         database: (FMDatabase*)db
 {
-    if (![_fmdb executeUpdate: @"INSERT INTO revs (doc_id, revid, parent, current, deleted, json) "
-                                "VALUES (?, ?, ?, ?, ?, ?)",
-                               @(docNumericID),
-                               rev.revID,
-                               (parentSequence ? @(parentSequence) : nil ),
-                               @(current),
-                               @(rev.deleted),
-                               json])
+    if (![db executeUpdate: @"INSERT INTO revs (doc_id, revid, parent, current, deleted, json) "
+          "VALUES (?, ?, ?, ?, ?, ?)",
+          @(docNumericID),
+          rev.revID,
+          (parentSequence ? @(parentSequence) : nil ),
+          @(current),
+          @(rev.deleted),
+          json]) {
         return 0;
-    return rev.sequence = _fmdb.lastInsertRowId;
+    }
+    return rev.sequence = db.lastInsertRowId;
 }
 
 
@@ -266,198 +275,217 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
 
 /** Public method to add a new revision of a document. */
-- (TD_Revision*) putRevision: (TD_Revision*)rev
-             prevRevisionID: (NSString*)prevRevID   // rev ID being replaced, or nil if an insert
+- (TD_Revision*) putRevision: (TD_Revision*)revToInsert
+             prevRevisionID: (NSString*)previousRevID   // rev ID being replaced, or nil if an insert
               allowConflict: (BOOL)allowConflict
                      status: (TDStatus*)outStatus
 {
-    LogTo(TD_Database, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev, prevRevID, allowConflict);
+    LogTo(TD_Database, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", revToInsert, previousRevID, allowConflict);
     Assert(outStatus);
-    NSString* docID = rev.docID;
-    BOOL deleted = rev.deleted;
-    if (!rev || (prevRevID && !docID) || (deleted && !docID)
-             || (docID && ![TD_Database isValidDocumentID: docID])) {
+    NSString* docIdToInsert = revToInsert.docID;
+    BOOL deleted = revToInsert.deleted;
+    if (!revToInsert || (previousRevID && !docIdToInsert) || (deleted && !docIdToInsert)
+             || (docIdToInsert && ![TD_Database isValidDocumentID: docIdToInsert])) {
         *outStatus = kTDStatusBadID;
         return nil;
     }
-    
+
+    // Reassign variables passed in that we (possibly) modify to __block variables.
+    __block NSString* docID = docIdToInsert;
+    __block NSString* prevRevId = previousRevID;
+    __block TD_Revision *result = nil;
+    __block TD_Revision *winningRev;
+    __block TD_Revision *rev = revToInsert;
+
     *outStatus = kTDStatusDBError;  // default error is Internal Server Error, if we return nil below
-    [self beginTransaction];
-    FMResultSet* r = nil;
-    TDStatus status;
-    TD_Revision* winningRev = nil;
-    @try {
-        //// PART I: In which are performed lookups and validations prior to the insert...
+    __weak TD_Database *weakSelf = self;
+    [_fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        FMResultSet* r = nil;
+        TDStatus status;
+        TD_Revision* winningRev = nil;
+        TD_Database *strongSelf = weakSelf;
+        @try {
+            //// PART I: In which are performed lookups and validations prior to the insert...
 
-        // Get the doc's numeric ID (doc_id) and its current winning revision:
-        SInt64 docNumericID = docID ? [self getDocNumericID: docID] : 0;
-        BOOL oldWinnerWasDeletion = NO;
-        NSString* oldWinningRevID = nil;
-        if (docNumericID > 0) {
-            // Look up which rev is the winner, before this insertion
-            //OPT: This rev ID could be cached in the 'docs' row
-            oldWinningRevID = [self winningRevIDOfDocNumericID: docNumericID
-                                                     isDeleted: &oldWinnerWasDeletion];
-        }
+            // Get the doc's numeric ID (doc_id) and its current winning revision:
+            SInt64 docNumericID = docID ? [strongSelf getDocNumericID: docID database:db] : 0;
+            BOOL oldWinnerWasDeletion = NO;
+            NSString* oldWinningRevID = nil;
+            if (docNumericID > 0) {
+                // Look up which rev is the winner, before this insertion
+                //OPT: This rev ID could be cached in the 'docs' row
+                oldWinningRevID = [strongSelf winningRevIDOfDocNumericID: docNumericID
+                                                               isDeleted: &oldWinnerWasDeletion
+                                                                database:db];
+            }
 
-        SequenceNumber parentSequence = 0;
-        if (prevRevID) {
-            // Replacing: make sure given prevRevID is current & find its sequence number:
-            if (docNumericID <= 0) {
-                *outStatus = kTDStatusNotFound;
-                return nil;
-            }
-            parentSequence = [self getSequenceOfDocument: docNumericID revision: prevRevID
-                                             onlyCurrent: !allowConflict];
-            if (parentSequence == 0) {
-                // Not found: kTDStatusNotFound or a kTDStatusConflict, depending on whether there is any current revision
-                if (!allowConflict && [self existsDocumentWithID: docID revisionID: nil])
-                    *outStatus = kTDStatusConflict;
-                else
-                    *outStatus = kTDStatusNotFound;
-                return nil;
-            }
-            
-            if (_validations.count > 0) {
-                // Fetch the previous revision and validate the new one against it:
-                TD_Revision* prevRev = [[TD_Revision alloc] initWithDocID: docID revID: prevRevID
-                                                                  deleted: NO];
-                status = [self validateRevision: rev previousRevision: prevRev];
-                if (TDStatusIsError(status)) {
-                    *outStatus = status;
-                    return nil;
-                }
-            }
-            
-        } else {
-            // Inserting first revision.
-            if (deleted && docID) {
-                // Didn't specify a revision to delete: NotFound or a Conflict, depending
-                *outStatus = [self existsDocumentWithID: docID revisionID: nil] ? kTDStatusConflict : kTDStatusNotFound;
-                return nil;
-            }
-            
-            // Validate:
-            status = [self validateRevision: rev previousRevision: nil];
-            if (TDStatusIsError(status)) {
-                *outStatus = status;
-                return nil;
-            }
-            
-            if (docID) {
-                // Inserting first revision, with docID given (PUT):
+            SequenceNumber parentSequence = 0;
+            if (prevRevId) {
+                // Replacing: make sure given prevRevID is current & find its sequence number:
                 if (docNumericID <= 0) {
-                    // Doc ID doesn't exist at all; create it:
-                    docNumericID = [self insertDocumentID: docID];
-                    if (docNumericID <= 0)
-                        return nil;
-                } else {
-                    // Doc ID exists; check whether current winning revision is deleted:
-                    if (oldWinnerWasDeletion) {
-                        prevRevID = oldWinningRevID;
-                        parentSequence = [self getSequenceOfDocument: docNumericID
-                                                            revision: prevRevID
-                                                         onlyCurrent: NO];
-                    } else if (oldWinningRevID) {
-                        // The current winning revision is not deleted, so this is a conflict
+                    *outStatus = kTDStatusNotFound;
+                    return;
+                }
+                parentSequence = [strongSelf getSequenceOfDocument: docNumericID
+                                                    revision: prevRevId
+                                                 onlyCurrent: !allowConflict
+                                                    database: db];
+                if (parentSequence == 0) {
+                    // Not found: kTDStatusNotFound or a kTDStatusConflict, depending on whether there is any current revision
+                    if (!allowConflict && [strongSelf existsDocumentWithID: docID revisionID: nil database:db])
                         *outStatus = kTDStatusConflict;
-                        return nil;
+                    else
+                        *outStatus = kTDStatusNotFound;
+                    return;
+                }
+
+                if (_validations.count > 0) {
+                    // Fetch the previous revision and validate the new one against it:
+                    TD_Revision* prevRev = [[TD_Revision alloc] initWithDocID: docID revID: prevRevId
+                                                                      deleted: NO];
+                    status = [strongSelf validateRevision: rev previousRevision: prevRev];
+                    if (TDStatusIsError(status)) {
+                        *outStatus = status;
+                        return;
                     }
                 }
+
             } else {
-                // Inserting first revision, with no docID given (POST): generate a unique docID:
-                docID = [[self class] generateDocumentID];
-                docNumericID = [self insertDocumentID: docID];
-                if (docNumericID <= 0)
-                    return nil;
+                // Inserting first revision.
+                if (deleted && docID) {
+                    // Didn't specify a revision to delete: NotFound or a Conflict, depending
+                    *outStatus = [strongSelf existsDocumentWithID: docID revisionID: nil database:db] ? kTDStatusConflict : kTDStatusNotFound;
+                    return;
+                }
+
+                // Validate:
+                status = [strongSelf validateRevision: rev previousRevision: nil];
+                if (TDStatusIsError(status)) {
+                    *outStatus = status;
+                    return;
+                }
+
+                if (docID) {
+                    // Inserting first revision, with docID given (PUT):
+                    if (docNumericID <= 0) {
+                        // Doc ID doesn't exist at all; create it:
+                        docNumericID = [strongSelf insertDocumentID: docID inDatabase:db];
+                        if (docNumericID <= 0)
+                            return;
+                    } else {
+                        // Doc ID exists; check whether current winning revision is deleted:
+                        if (oldWinnerWasDeletion) {
+                            prevRevId = oldWinningRevID;
+                            parentSequence = [strongSelf getSequenceOfDocument: docNumericID
+                                                                      revision: prevRevId
+                                                                   onlyCurrent: NO
+                                                                      database:db];
+                        } else if (oldWinningRevID) {
+                            // The current winning revision is not deleted, so this is a conflict
+                            *outStatus = kTDStatusConflict;
+                            return;
+                        }
+                    }
+                } else {
+                    // Inserting first revision, with no docID given (POST): generate a unique docID:
+                    docID = [[strongSelf class] generateDocumentID];
+                    docNumericID = [strongSelf insertDocumentID: docID inDatabase:db];
+                    if (docNumericID <= 0)
+                        return;
+                }
             }
-        }
 
-        //// PART II: In which we prepare for insertion...
-        
-        // Get the attachments:
-        NSDictionary* attachments = [self attachmentsFromRevision: rev status: &status];
-        if (!attachments) {
-            *outStatus = status;
-            return nil;
-        }
-        
-        // Bump the revID and update the JSON:
-        NSData* json = nil;
-        if (rev.properties) {
-            json = [self encodeDocumentJSON: rev];
-            if (!json) {
-                *outStatus = kTDStatusBadJSON;
-                return nil;
+            //// PART II: In which we prepare for insertion...
+
+            // Get the attachments:
+            NSDictionary* attachments = [strongSelf attachmentsFromRevision: rev status: &status];
+            if (!attachments) {
+                *outStatus = status;
+                return;
             }
-            if (json.length == 2 && memcmp(json.bytes, "{}", 2)==0)
-                json = nil;
-        }
-        NSString* newRevID = [self generateIDForRevision: rev
-                                                withJSON: json
-                                             attachments: attachments
-                                                  prevID: prevRevID];
-        if (!newRevID) {
-            *outStatus = kTDStatusBadID;  // invalid previous revID (no numeric prefix)
-            return nil;
-        }
-        Assert(docID);
-        rev = [rev copyWithDocID: docID revID: newRevID];
-        
-        // Don't store a SQL null in the 'json' column -- I reserve it to mean that the revision data
-        // is missing due to compaction or replication.
-        // Instead, store an empty zero-length blob.
-        if (json == nil)
-            json = [NSData data];
-        
-        //// PART III: In which the actual insertion finally takes place:
-        
-        SequenceNumber sequence = [self insertRevision: rev
-                                          docNumericID: docNumericID
-                                        parentSequence: parentSequence
-                                               current: YES
-                                                  JSON: json];
-        if (!sequence) {
-            // The insert failed. If it was due to a constraint violation, that means a revision
-            // already exists with identical contents and the same parent rev. We can ignore this
-            // insert call, then.
-            if (_fmdb.lastErrorCode != SQLITE_CONSTRAINT)
-                return nil;
-            LogTo(TD_Database, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
-            *outStatus = kTDStatusOK;
-            rev.body = nil;
-            return rev;
-        }
-        
-        // Make replaced rev non-current:
-        if (parentSequence > 0) {
-            if (![_fmdb executeUpdate: @"UPDATE revs SET current=0 WHERE sequence=?",
-                                       @(parentSequence)])
-                return nil;
+
+            // Bump the revID and update the JSON:
+            NSData* json = nil;
+            if (rev.properties) {
+                json = [strongSelf encodeDocumentJSON: rev];
+                if (!json) {
+                    *outStatus = kTDStatusBadJSON;
+                    return;
+                }
+                if (json.length == 2 && memcmp(json.bytes, "{}", 2)==0)
+                    json = nil;
+            }
+            NSString* newRevID = [strongSelf generateIDForRevision: rev
+                                                          withJSON: json
+                                                       attachments: attachments
+                                                            prevID: prevRevId];
+            if (!newRevID) {
+                *outStatus = kTDStatusBadID;  // invalid previous revID (no numeric prefix)
+                return;
+            }
+            Assert(docID);
+            rev = [rev copyWithDocID: docID revID: newRevID];
+
+            // Don't store a SQL null in the 'json' column -- I reserve it to mean that the revision data
+            // is missing due to compaction or replication.
+            // Instead, store an empty zero-length blob.
+            if (json == nil)
+                json = [NSData data];
+
+            //// PART III: In which the actual insertion finally takes place:
+
+            SequenceNumber sequence = [strongSelf insertRevision: rev
+                                                    docNumericID: docNumericID
+                                                  parentSequence: parentSequence
+                                                         current: YES
+                                                            JSON: json
+                                                        database:db];
+            if (!sequence) {
+                // The insert failed. If it was due to a constraint violation, that means a revision
+                // already exists with identical contents and the same parent rev. We can ignore this
+                // insert call, then.
+                if (db.lastErrorCode != SQLITE_CONSTRAINT)
+                    return;
+                LogTo(TD_Database, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
+                *outStatus = kTDStatusOK;
+                rev.body = nil;
+                result = rev;
+                return;;
+            }
+
+            // Make replaced rev non-current:
+            if (parentSequence > 0) {
+                if (![db executeUpdate: @"UPDATE revs SET current=0 WHERE sequence=?",
+                      @(parentSequence)])
+                    return;
+            }
+
+            // Store any attachments:
+            status = [strongSelf processAttachments: attachments
+                                  forRevision: rev
+                           withParentSequence: parentSequence];
+            if (TDStatusIsError(status)) {
+                *outStatus = status;
+                return;
+            }
+            
+            // Figure out what the new winning rev ID is:
+            winningRev = [strongSelf winnerWithDocID: docNumericID
+                                           oldWinner: oldWinningRevID oldDeleted: oldWinnerWasDeletion
+                                              newRev: rev
+                                            database:db];
+            
+            // Success!
+            *outStatus = deleted ? kTDStatusOK : kTDStatusCreated;
+            
+        } @finally {
+            // Remember, we could have gotten here via a 'return' inside the @try block above.
+            [r close];
+            bool success = (*outStatus < 300);
+            *rollback = !success;
         }
 
-        // Store any attachments:
-        status = [self processAttachments: attachments
-                              forRevision: rev
-                       withParentSequence: parentSequence];
-        if (TDStatusIsError(status)) {
-            *outStatus = status;
-            return nil;
-        }
-
-        // Figure out what the new winning rev ID is:
-        winningRev = [self winnerWithDocID: docNumericID
-                                 oldWinner: oldWinningRevID oldDeleted: oldWinnerWasDeletion
-                                    newRev: rev];
-
-        // Success!
-        *outStatus = deleted ? kTDStatusOK : kTDStatusCreated;
-        
-    } @finally {
-        // Remember, we could have gotten here via a 'return' inside the @try block above.
-        [r close];
-        [self endTransaction: (*outStatus < 300)];
-    }
+    }];
     
     if (TDStatusIsError(*outStatus)) 
         return nil;
@@ -484,122 +512,144 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         historyCount = 1;
     } else if (!$equal(history[0], revID))
         return kTDStatusBadID;
-    
-    BOOL success = NO;
-    TD_Revision* winningRev = nil;
-    [self beginTransaction];
-    @try {
-        // First look up the document's row-id and all locally-known revisions of it:
-        TD_RevisionList* localRevs = nil;
-        SInt64 docNumericID = [self getDocNumericID: docID];
-        if (docNumericID > 0) {
-            localRevs = [self getAllRevisionsOfDocumentID: docID
-                                                numericID: docNumericID
-                                              onlyCurrent: NO];
-            if (!localRevs)
-                return kTDStatusDBError;
-        } else {
-            docNumericID = [self insertDocumentID: docID];
-            if (docNumericID <= 0)
-                return kTDStatusDBError;
-        }
 
-        // Validate against the latest common ancestor:
-        if (_validations.count > 0) {
-            TD_Revision* oldRev = nil;
-            for (NSUInteger i = 1; i<historyCount; ++i) {
-                oldRev = [localRevs revWithDocID: docID revID: history[i]];
-                if (oldRev)
-                    break;
-            }
-            TDStatus status = [self validateRevision: rev previousRevision: oldRev];
-            if (TDStatusIsError(status))
-                return status;
-        }
-        
-        // Look up which rev is the winner, before this insertion
-        //OPT: This rev ID could be cached in the 'docs' row
-        BOOL oldWinnerWasDeletion;
-        NSString* oldWinningRevID = [self winningRevIDOfDocNumericID: docNumericID
-                                                           isDeleted: &oldWinnerWasDeletion];
-
-        // Walk through the remote history in chronological order, matching each revision ID to
-        // a local revision. When the list diverges, start creating blank local revisions to fill
-        // in the local history:
-        SequenceNumber sequence = 0;
-        SequenceNumber localParentSequence = 0;
-        for (NSInteger i = historyCount - 1; i>=0; --i) {
-            NSString* revID = history[i];
-            TD_Revision* localRev = [localRevs revWithDocID: docID revID: revID];
-            if (localRev) {
-                // This revision is known locally. Remember its sequence as the parent of the next one:
-                sequence = localRev.sequence;
-                Assert(sequence > 0);
-                localParentSequence = sequence;
-                
+    __block TD_Revision* winningRev = nil;
+    __block TDStatus result = kTDStatusCreated;
+    __weak TD_Database *weakSelf = self;
+    [_fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        TD_Database *strongSelf = weakSelf;
+        BOOL success = NO;
+        @try {
+            // First look up the document's row-id and all locally-known revisions of it:
+            TD_RevisionList* localRevs = nil;
+            SInt64 docNumericID = [strongSelf getDocNumericID: docID database:db];
+            if (docNumericID > 0) {
+                localRevs = [strongSelf getAllRevisionsOfDocumentID: docID
+                                                          numericID: docNumericID
+                                                        onlyCurrent: NO
+                                                           database:db];
+                if (!localRevs) {
+                    result = kTDStatusDBError;
+                    return;
+                }
             } else {
-                // This revision isn't known, so add it:
-                TD_Revision* newRev;
-                NSData* json = nil;
-                BOOL current = NO;
-                if (i==0) {
-                    // Hey, this is the leaf revision we're inserting:
-                    newRev = rev;
-                    json = [self encodeDocumentJSON: rev];
-                    if (!json)
-                        return kTDStatusBadJSON;
-                    current = YES;
-                } else {
-                    // It's an intermediate parent, so insert a stub:
-                    newRev = [[TD_Revision alloc] initWithDocID: docID revID: revID deleted: NO];
-                }
-
-                // Insert it:
-                sequence = [self insertRevision: newRev
-                                   docNumericID: docNumericID
-                                 parentSequence: sequence
-                                        current: current 
-                                           JSON: json];
-                if (sequence <= 0)
-                    return kTDStatusDBError;
-                newRev.sequence = sequence;
-                
-                if (i==0) {
-                    // Write any changed attachments for the new revision. As the parent sequence use
-                    // the latest local revision (this is to copy attachments from):
-                    TDStatus status;
-                    NSDictionary* attachments = [self attachmentsFromRevision: rev status: &status];
-                    if (attachments)
-                        status = [self processAttachments: attachments
-                                              forRevision: rev
-                                       withParentSequence: localParentSequence];
-                    if (TDStatusIsError(status)) 
-                        return status;
+                docNumericID = [strongSelf insertDocumentID: docID inDatabase:db];
+                if (docNumericID <= 0) {
+                    result = kTDStatusDBError;
+                    return;
                 }
             }
+
+            // Validate against the latest common ancestor:
+            if (_validations.count > 0) {
+                TD_Revision* oldRev = nil;
+                for (NSUInteger i = 1; i<historyCount; ++i) {
+                    oldRev = [localRevs revWithDocID: docID revID: history[i]];
+                    if (oldRev)
+                        break;
+                }
+                TDStatus status = [strongSelf validateRevision: rev previousRevision: oldRev];
+                if (TDStatusIsError(status)) {
+                    result = status;
+                    return;
+                }
+            }
+
+            // Look up which rev is the winner, before this insertion
+            //OPT: This rev ID could be cached in the 'docs' row
+            BOOL oldWinnerWasDeletion;
+            NSString* oldWinningRevID = [strongSelf winningRevIDOfDocNumericID: docNumericID
+                                                               isDeleted: &oldWinnerWasDeletion
+                                                                database:db];
+
+            // Walk through the remote history in chronological order, matching each revision ID to
+            // a local revision. When the list diverges, start creating blank local revisions to fill
+            // in the local history:
+            SequenceNumber sequence = 0;
+            SequenceNumber localParentSequence = 0;
+            for (NSInteger i = historyCount - 1; i>=0; --i) {
+                NSString* revID = history[i];
+                TD_Revision* localRev = [localRevs revWithDocID: docID revID: revID];
+                if (localRev) {
+                    // This revision is known locally. Remember its sequence as the parent of the next one:
+                    sequence = localRev.sequence;
+                    Assert(sequence > 0);
+                    localParentSequence = sequence;
+
+                } else {
+                    // This revision isn't known, so add it:
+                    TD_Revision* newRev;
+                    NSData* json = nil;
+                    BOOL current = NO;
+                    if (i==0) {
+                        // Hey, this is the leaf revision we're inserting:
+                        newRev = rev;
+                        json = [strongSelf encodeDocumentJSON: rev];
+                        if (!json) {
+                            result = kTDStatusBadJSON;
+                            return;
+                        }
+                        current = YES;
+                    } else {
+                        // It's an intermediate parent, so insert a stub:
+                        newRev = [[TD_Revision alloc] initWithDocID: docID revID: revID deleted: NO];
+                    }
+
+                    // Insert it:
+                    sequence = [strongSelf insertRevision: newRev
+                                             docNumericID: docNumericID
+                                           parentSequence: sequence
+                                                  current: current
+                                                     JSON: json
+                                                 database:db];
+                    if (sequence <= 0) {
+                        result = kTDStatusDBError;
+                        return;
+                    }
+                    newRev.sequence = sequence;
+
+                    if (i==0) {
+                        // Write any changed attachments for the new revision. As the parent sequence use
+                        // the latest local revision (this is to copy attachments from):
+                        TDStatus status;
+                        NSDictionary* attachments = [strongSelf attachmentsFromRevision: rev status: &status];
+                        if (attachments)
+                            status = [strongSelf processAttachments: attachments
+                                                        forRevision: rev
+                                                 withParentSequence: localParentSequence];
+                        if (TDStatusIsError(status)) {
+                            result = status;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Mark the latest local rev as no longer current:
+            if (localParentSequence > 0 && localParentSequence != sequence) {
+                if (![db executeUpdate: @"UPDATE revs SET current=0 WHERE sequence=?",
+                      @(localParentSequence)]) {
+                    result = kTDStatusDBError;
+                    return;
+                }
+            }
+            
+            // Figure out what the new winning rev ID is:
+            winningRev = [strongSelf winnerWithDocID: docNumericID
+                                           oldWinner: oldWinningRevID oldDeleted: oldWinnerWasDeletion
+                                              newRev: rev
+                                            database:db];
+            
+            
+            success = YES;
+        } @finally {
+            *rollback = !success;
         }
-
-        // Mark the latest local rev as no longer current:
-        if (localParentSequence > 0 && localParentSequence != sequence) {
-            if (![_fmdb executeUpdate: @"UPDATE revs SET current=0 WHERE sequence=?",
-                  @(localParentSequence)])
-                return kTDStatusDBError;
-        }
-
-        // Figure out what the new winning rev ID is:
-        winningRev = [self winnerWithDocID: docNumericID
-                                 oldWinner: oldWinningRevID oldDeleted: oldWinnerWasDeletion
-                                    newRev: rev];
-
-
-        success = YES;
-    } @finally {
-        [self endTransaction: success];
-    }
+    }];
     
     // Notify and return:
     [self notifyChange: rev source: source winningRev: winningRev];
-    return kTDStatusCreated;
+    return result;
 }
 
 
@@ -609,28 +659,48 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 - (TDStatus) compact {
     // Can't delete any rows because that would lose revision tree history.
     // But we can remove the JSON of non-current revisions, which is most of the space.
-    Log(@"TD_Database: Deleting JSON of old revisions...");
-    if (![_fmdb executeUpdate: @"UPDATE revs SET json=null WHERE current=0"])
-        return kTDStatusDBError;
 
-    Log(@"Deleting old attachments...");
-    TDStatus status = [self garbageCollectAttachments];
+    __block TDStatus result;
+    __weak TD_Database *weakSelf = self;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        TD_Database *strongSelf = weakSelf;
+        Log(@"TD_Database: Deleting JSON of old revisions...");
+        if (![db executeUpdate: @"UPDATE revs SET json=null WHERE current=0"]) {
+            result = kTDStatusDBError;
+            return;
+        }
 
-    Log(@"Flushing SQLite WAL...");
-    if (![_fmdb executeUpdate: @"PRAGMA wal_checkpoint(RESTART)"])
-        return kTDStatusDBError;
+        Log(@"Deleting old attachments...");
+        result = [strongSelf garbageCollectAttachments:db];
 
-    Log(@"Vacuuming SQLite database...");
-    if (![_fmdb executeUpdate: @"VACUUM"])
-        return kTDStatusDBError;
+        Log(@"Flushing SQLite WAL...");
+        if (![db executeUpdate: @"PRAGMA wal_checkpoint(RESTART)"]) {
+            result = kTDStatusDBError;
+            return;
+        }
+
+        Log(@"Vacuuming SQLite database...");
+        if (![db executeUpdate: @"VACUUM"]) {
+            result = kTDStatusDBError;
+            return;
+        }
+
+    }];
+
+    if (result == kTDStatusDBError) {
+        return result;
+    }
+
+    // TODO syncronise the open/close?
 
     Log(@"Closing and re-opening database...");
-    [_fmdb close];
+    [_fmdbQueue close];
+
     if (![self openFMDB])
         return kTDStatusDBError;
 
     Log(@"...Finished database compaction.");
-    return status;
+    return result;
 }
 
 
@@ -643,9 +713,12 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         *outResult = result;
     if (docsToRevs.count == 0)
         return kTDStatusOK;
-    return [self inTransaction: ^TDStatus {
+
+    __weak TD_Database *weakSelf = self;
+    return [self inTransaction: ^TDStatus(FMDatabase *db) {
+        TD_Database *strongSelf = weakSelf;
         for (NSString* docID in docsToRevs) {
-            SInt64 docNumericID = [self getDocNumericID: docID];
+            SInt64 docNumericID = [strongSelf getDocNumericID: docID database:db];
             if (!docNumericID) {
                 continue;  // no such document; skip it
             }
@@ -657,7 +730,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 revsPurged = @[];
             } else if ([revIDs containsObject: @"*"]) {
                 // Delete all revisions if magic "*" revision ID is given:
-                if (![_fmdb executeUpdate: @"DELETE FROM revs WHERE doc_id=?",
+                if (![db executeUpdate: @"DELETE FROM revs WHERE doc_id=?",
                                            @(docNumericID)]) {
                     return kTDStatusDBError;
                 }
@@ -667,7 +740,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 // Iterate over all the revisions of the doc, in reverse sequence order.
                 // Keep track of all the sequences to delete, i.e. the given revs and ancestors,
                 // but not any non-given leaf revs or their ancestors.
-                FMResultSet* r = [_fmdb executeQuery: @"SELECT revid, sequence, parent FROM revs "
+                FMResultSet* r = [db executeQuery: @"SELECT revid, sequence, parent FROM revs "
                                                        "WHERE doc_id=? ORDER BY sequence DESC",
                                   @(docNumericID)];
                 if (!r)
@@ -704,11 +777,11 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                     // Now delete the sequences to be purged.
                     NSString* sql = $sprintf(@"DELETE FROM revs WHERE sequence in (%@)",
                                            [seqsToPurge.allObjects componentsJoinedByString: @","]);
-                    if (![_fmdb executeUpdate: sql])
+                    if (![db executeUpdate: sql])
                         return kTDStatusDBError;
-                    if ((NSUInteger)_fmdb.changes != seqsToPurge.count)
+                    if ((NSUInteger)db.changes != seqsToPurge.count)
                         Warn(@"purgeRevisions: Only %i sequences deleted of (%@)",
-                             _fmdb.changes, [seqsToPurge.allObjects componentsJoinedByString:@","]);
+                             db.changes, [seqsToPurge.allObjects componentsJoinedByString:@","]);
                 }
                 revsPurged = revsToPurge.allObjects;
             }

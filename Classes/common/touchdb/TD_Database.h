@@ -10,7 +10,7 @@
 #import "TD_Revision.h"
 #import "TDStatus.h"
 
-@class FMDatabase, TD_View, TDBlobStore;
+@class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
 struct TDQueryOptions;      // declared in TD_View.h
 
 
@@ -63,7 +63,7 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     @private
     NSString* _path;
     NSString* _name;
-    FMDatabase *_fmdb;
+    FMDatabaseQueue *_fmdbQueue;
     BOOL _readOnly;
     BOOL _open;
     int _transactionLevel;
@@ -105,17 +105,10 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 @property (readonly) NSString* privateUUID;
 @property (readonly) NSString* publicUUID;
 
-/** Begins a database transaction. Transactions can nest. Every -beginTransaction must be balanced by a later -endTransaction:. */
-- (BOOL) beginTransaction;
-
-/** Commits or aborts (rolls back) a transaction.
-    @param commit  If YES, commits; if NO, aborts and rolls back, undoing all changes made since the matching -beginTransaction call, *including* any committed nested transactions. */
-- (BOOL) endTransaction: (BOOL)commit;
-
 /** Executes the block within a database transaction.
     If the block returns a non-OK status, the transaction is aborted/rolled back.
     Any exception raised by the block will be caught and treated as kTDStatusException. */
-- (TDStatus) inTransaction: (TDStatus(^)())block;
+- (TDStatus) inTransaction: (TDStatus(^)(FMDatabase*))block;
 
 // DOCUMENTS:
 
@@ -127,21 +120,28 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
                        revisionID: (NSString*)revID;
 
 - (BOOL) existsDocumentWithID: (NSString*)docID
-                   revisionID: (NSString*)revID;
+                   revisionID: (NSString*)revID
+                     database: (FMDatabase*)db;
 
 - (TDStatus) loadRevisionBody: (TD_Revision*)rev
                       options: (TDContentOptions)options;
 
+- (TDStatus) loadRevisionBody: (TD_Revision*)rev
+                      options: (TDContentOptions)options
+                     database: (FMDatabase*)db;
+
 /** Returns an array of TDRevs in reverse chronological order,
-    starting with the given revision. */
+ starting with the given revision. */
 - (NSArray*) getRevisionHistory: (TD_Revision*)rev;
+- (NSArray*) getRevisionHistory: (TD_Revision*)rev database:(FMDatabase*)db;
 
 /** Returns the revision history as a _revisions dictionary, as returned by the REST API's ?revs=true option. */
-- (NSDictionary*) getRevisionHistoryDict: (TD_Revision*)rev;
+- (NSDictionary*) getRevisionHistoryDict: (TD_Revision*)rev inDatabase:(FMDatabase*)db;
 
 /** Returns all the known revisions (or all current/conflicting revisions) of a document. */
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
-                                    onlyCurrent: (BOOL)onlyCurrent;
+                                     onlyCurrent: (BOOL)onlyCurrent
+                                        database: (FMDatabase*)db;
 
 /** Returns IDs of local revisions of the same document, that have a lower generation number.
     Does not return revisions whose bodies have been compacted away, or deletion markers. */
@@ -149,7 +149,7 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
                                       limit: (unsigned)limit;
 
 /** Returns the most recent member of revIDs that appears in rev's ancestry. */
-- (NSString*) findCommonAncestorOf: (TD_Revision*)rev withRevIDs: (NSArray*)revIDs;
+- (NSString*) findCommonAncestorOf: (TD_Revision*)rev withRevIDs: (NSArray*)revIDs database:(FMDatabase*)db;
 
 // VIEWS & QUERIES:
 

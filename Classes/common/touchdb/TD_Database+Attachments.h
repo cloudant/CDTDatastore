@@ -7,7 +7,7 @@
 //
 
 #import "TD_Database.h"
-@class TDBlobStoreWriter, TDMultipartWriter;
+@class TDBlobStoreWriter, TDMultipartWriter, FMDatabase;
 
 
 /** Types of encoding/compression of stored attachments. */
@@ -33,7 +33,8 @@ typedef enum {
 
 /** Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. */
 - (NSDictionary*) getAttachmentDictForSequence: (SequenceNumber)sequence
-                                       options: (TDContentOptions)options;
+                                       options: (TDContentOptions)options
+                                    inDatabase: (FMDatabase*)db;
 
 /** Modifies a TD_Revision's _attachments dictionary by changing all attachments with revpos < minRevPos into stubs; and if 'attachmentsFollow' is true, the remaining attachments will be modified to _not_ be stubs but include a "follows" key instead of a body. */
 + (void) stubOutAttachmentsIn: (TD_Revision*)rev
@@ -63,7 +64,7 @@ typedef enum {
 - (NSURL*) fileForAttachmentDict: (NSDictionary*)attachmentDict;
 
 /** Deletes obsolete attachments from the database and blob store. */
-- (TDStatus) garbageCollectAttachments;
+- (TDStatus) garbageCollectAttachments:(FMDatabase*)db;
 
 /** Updates or deletes an attachment, creating a new document revision in the process.
     Used by the PUT / DELETE methods called on attachment URLs. */
@@ -73,5 +74,6 @@ typedef enum {
                         encoding: (TDAttachmentEncoding)encoding
                          ofDocID: (NSString*)docID
                            revID: (NSString*)oldRevID
-                          status: (TDStatus*)outStatus;
+                          status: (TDStatus*)outStatus
+                       inDatabase: (FMDatabase*)db;
 @end

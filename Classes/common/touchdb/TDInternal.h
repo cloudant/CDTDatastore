@@ -18,25 +18,49 @@
 
 @interface TD_Database ()
 @property (readwrite, copy) NSString* name;  // make it settable
-@property (readonly) FMDatabase* fmdb;
+@property (readonly) FMDatabaseQueue* fmdbQueue;
 @property (readonly) TDBlobStore* attachmentStore;
 - (BOOL) openFMDB;
-- (SInt64) getDocNumericID: (NSString*)docID;
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
+- (SInt64) getDocNumericID: (NSString*)docID
+                  database:(FMDatabase*)db;
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
 - (SequenceNumber) getSequenceOfDocument: (SInt64)docNumericID
                                 revision: (NSString*)revID
-                             onlyCurrent: (BOOL)onlyCurrent;
+                             onlyCurrent: (BOOL)onlyCurrent
+                                database: (FMDatabase*)database;
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                       numericID: (SInt64)docNumericID
-                                    onlyCurrent: (BOOL)onlyCurrent;
+                                     onlyCurrent: (BOOL)onlyCurrent
+                                        database: (FMDatabase*)database;
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
+- (TD_Revision*) getDocumentWithID: (NSString*)docID
+                        revisionID: (NSString*)revID
+                           options: (TDContentOptions)options
+                            status: (TDStatus*)outStatus
+                          database: (FMDatabase*)database;
+
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
 - (TDStatus) deleteViewNamed: (NSString*)name;
+
 - (NSMutableDictionary*) documentPropertiesFromJSON: (NSData*)json
                                               docID: (NSString*)docID
                                               revID: (NSString*)revID
                                             deleted: (BOOL)deleted
                                            sequence: (SequenceNumber)sequence
-                                            options: (TDContentOptions)options;
+                                            options: (TDContentOptions)options
+                                         inDatabase: (FMDatabase*)db;
+
+/** Must be called from within a queue -inDatabase: or -inTransaction: **/
 - (NSString*) winningRevIDOfDocNumericID: (SInt64)docNumericID
-                               isDeleted: (BOOL*)outIsDeleted;
+                               isDeleted: (BOOL*)outIsDeleted
+                                database: (FMDatabase*)database;
 @end
 
 @interface TD_Database (Insertion_Internal)

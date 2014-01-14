@@ -19,6 +19,7 @@
 #import "TDInternal.h"
 
 #import "FMDatabase.h"
+#import "FMDatabaseQueue.h"
 
 
 @implementation TD_Database (LocalDocs)
@@ -27,29 +28,33 @@
 - (TD_Revision*) getLocalDocumentWithID: (NSString*)docID 
                             revisionID: (NSString*)revID
 {
-    TD_Revision* result = nil;
-    FMResultSet *r = [_fmdb executeQuery: @"SELECT revid, json FROM localdocs WHERE docid=?",docID];
-    if ([r next]) {
-        NSString* gotRevID = [r stringForColumnIndex: 0];
-        if (revID && !$equal(revID, gotRevID))
-            return nil;
-        NSData* json = [r dataNoCopyForColumnIndex: 1];
-        NSMutableDictionary* properties;
-        if (json.length==0 || (json.length==2 && memcmp(json.bytes, "{}", 2)==0))
-            properties = $mdict();      // workaround for issue #44
-        else {
-            properties = [TDJSON JSONObjectWithData: json
-                                            options:TDJSONReadingMutableContainers
-                                              error: NULL];
-            if (!properties)
-                return nil;
+    __block TD_Revision* result;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        FMResultSet *r = [db executeQuery: @"SELECT revid, json FROM localdocs WHERE docid=?", docID];
+        if ([r next]) {
+            NSString* gotRevID = [r stringForColumnIndex: 0];
+            if (revID && !$equal(revID, gotRevID)) {
+                return;
+            }
+            NSData* json = [r dataNoCopyForColumnIndex: 1];
+            NSMutableDictionary* properties;
+            if (json.length==0 || (json.length==2 && memcmp(json.bytes, "{}", 2)==0)) {
+                properties = $mdict();      // workaround for issue #44
+            } else {
+                properties = [TDJSON JSONObjectWithData: json
+                                                options:TDJSONReadingMutableContainers
+                                                  error: NULL];
+                if (!properties) {
+                    return;
+                }
+            }
+            properties[@"_id"] = docID;
+            properties[@"_rev"] = gotRevID;
+            result = [[TD_Revision alloc] initWithDocID: docID revID: gotRevID deleted:NO];
+            result.properties = properties;
         }
-        properties[@"_id"] = docID;
-        properties[@"_rev"] = gotRevID;
-        result = [[TD_Revision alloc] initWithDocID: docID revID: gotRevID deleted:NO];
-        result.properties = properties;
-    }
-    [r close];
+        [r close];
+    }];
     return result;
 }
 
@@ -66,38 +71,44 @@
     if (!revision.deleted) {
         // PUT:
         NSData* json = [self encodeDocumentJSON: revision];
-        NSString* newRevID;
-        if (prevRevID) {
-            unsigned generation = [TD_Revision generationFromRevID: prevRevID];
-            if (generation == 0) {
-                *outStatus = kTDStatusBadID;
-                return nil;
+        __block TD_Revision *result;
+        [_fmdbQueue inDatabase:^(FMDatabase *db) {
+            NSString* newRevID;
+            if (prevRevID) {
+
+                unsigned generation = [TD_Revision generationFromRevID: prevRevID];
+                if (generation == 0) {
+                    *outStatus = kTDStatusBadID;
+                    return;
+                }
+                newRevID = $sprintf(@"%d-local", ++generation);
+                if (![db executeUpdate: @"UPDATE localdocs SET revid=?, json=? "
+                      "WHERE docid=? AND revid=?",
+                      newRevID, json, docID, prevRevID]) {
+                    *outStatus = kTDStatusDBError;
+                    return;
+                }
+            } else {
+                newRevID = @"1-local";
+                // The docid column is unique so the insert will be a no-op if there is already
+                // a doc with this ID.
+                if (![db executeUpdate: @"INSERT OR IGNORE INTO localdocs (docid, revid, json) "
+                      "VALUES (?, ?, ?)",
+                      docID, newRevID, json]) {
+                    *outStatus = kTDStatusDBError;
+                    return;
+                }
             }
-            newRevID = $sprintf(@"%d-local", ++generation);
-            if (![_fmdb executeUpdate: @"UPDATE localdocs SET revid=?, json=? "
-                                        "WHERE docid=? AND revid=?", 
-                                       newRevID, json, docID, prevRevID]) {
-                *outStatus = kTDStatusDBError;
-                return nil;
+            if (db.changes == 0) {
+                *outStatus = kTDStatusConflict;
+                return;
             }
-        } else {
-            newRevID = @"1-local";
-            // The docid column is unique so the insert will be a no-op if there is already
-            // a doc with this ID.
-            if (![_fmdb executeUpdate: @"INSERT OR IGNORE INTO localdocs (docid, revid, json) "
-                                        "VALUES (?, ?, ?)",
-                                   docID, newRevID, json]) {
-                *outStatus = kTDStatusDBError;
-                return nil;
-            }
-        }
-        if (_fmdb.changes == 0) {
-            *outStatus = kTDStatusConflict;
-            return nil;
-        }
-        *outStatus = kTDStatusCreated;
-        return [revision copyWithDocID: docID revID: newRevID];
-        
+            *outStatus = kTDStatusCreated;
+            result = [revision copyWithDocID: docID revID: newRevID];
+
+        }];
+
+        return result;
     } else {
         // DELETE:
         *outStatus = [self deleteLocalDocumentWithID: docID revisionID: prevRevID];
@@ -113,11 +124,25 @@
         // Didn't specify a revision to delete: kTDStatusNotFound or a kTDStatusConflict, depending
         return [self getLocalDocumentWithID: docID revisionID: nil] ? kTDStatusConflict : kTDStatusNotFound;
     }
-    if (![_fmdb executeUpdate: @"DELETE FROM localdocs WHERE docid=? AND revid=?", docID, revID])
-        return kTDStatusDBError;
-    if (_fmdb.changes == 0)
+
+    __block TDStatus result = kTDStatusOK;
+    __block bool delete_successful = NO;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+
+        if (![db executeUpdate: @"DELETE FROM localdocs WHERE docid=? AND revid=?", docID, revID]) {
+            result = kTDStatusDBError;
+            return;
+        }
+
+        delete_successful = (db.changes > 0);
+
+    }];
+
+    if (!delete_successful) {
         return [self getLocalDocumentWithID: docID revisionID: nil] ? kTDStatusConflict : kTDStatusNotFound;
-    return kTDStatusOK;
+    }
+
+    return result;
 }
 
 
