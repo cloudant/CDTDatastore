@@ -65,11 +65,16 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
 
 
 - (void) start {
+    _serverThread = [[NSThread alloc] initWithTarget: self
+                                            selector: @selector(runServerThread)
+                                              object: nil];
+    LogTo(Sync, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
+    [_serverThread start];
+
     [_replicatorDB defineValidation: @"TDReplicatorManager" asBlock:
          ^BOOL(TD_Revision *newRevision, id<TD_ValidationContext> context) {
              return [self validateRevision: newRevision context: context];
          }];
-    [self processAllDocs];
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(dbChanged:) 
                                                  name: TD_DatabaseChangeNotification
                                                object: _replicatorDB];
@@ -83,12 +88,7 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
                                                object: nil];
 #endif
 
-    _serverThread = [[NSThread alloc] initWithTarget: self
-                                            selector: @selector(runServerThread)
-                                              object: nil];
-    LogTo(Sync, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
-    [_serverThread start];
-
+    [self processAllDocs];
 }
 
 
