@@ -132,7 +132,6 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
  * We need to update our state if it's our document.
  */
 - (void) dbChanged: (NSNotification*)n {
-    LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
     CDTDocumentRevision* rev = (n.userInfo)[@"rev"];
     LogTo(CDTReplicatorLog, @"CDTReplicator: %@ %@", n.name, rev);
     [self updatedStateFromRevision:rev];
