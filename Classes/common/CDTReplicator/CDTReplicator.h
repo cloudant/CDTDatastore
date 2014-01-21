@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTReplicatorListener.h"
+#import "CDTReplicatorDelegate.h"
 
 @class CDTDatastore;
 @class CDTDocumentBody;
@@ -46,6 +46,10 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 };
 
 @interface CDTReplicator : NSObject
+
+@property (nonatomic, readonly) CDTReplicatorState state;
+@property (nonatomic, readonly) NSInteger changesProcessed;
+@property (nonatomic, readonly) NSInteger changesTotal;
 
 +(NSString*)stringForReplicatorState:(CDTReplicatorState)state;
 
@@ -150,6 +154,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see ReplicationListener
  */
-@property (nonatomic,strong) NSObject<CDTReplicatorListener> *listener;
+@property (nonatomic,weak) NSObject<CDTReplicatorDelegate> *delegate;
 
 @end

@@ -168,7 +168,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             @"_deleted", @"_revisions", @"_revs_info", @"_conflicts", @"_deleted_conflicts",
             @"_local_seq", nil];
         sSpecialKeysToLeave = [[NSSet alloc] initWithObjects:
-            @"_replication_id", @"_replication_state", @"_replication_state_time", nil];
+            @"_replication_id", @"_replication_state", @"_replication_state_time", @"_replication_stats", nil];
     }
 
     NSDictionary* origProps = rev.properties;
