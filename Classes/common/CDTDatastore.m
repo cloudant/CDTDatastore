@@ -22,8 +22,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @interface CDTDatastore ()
 
-+(dispatch_queue_t)storeSerialQueue;
-
 - (void) TDdbChanged:(NSNotification*)n;
 
 @property (nonatomic,strong,readonly) TD_Database *database;
@@ -35,18 +33,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 +(NSString*)versionString
 {
     return @"0.1.0";
-}
-
-// Used internally to ensure serial access to datastore
-// (ensures read-your-writes in a trivial way).
-+(dispatch_queue_t)storeSerialQueue
-{
-    static dispatch_once_t pred;
-    static dispatch_queue_t storeDispatchQueue = NULL;
-    dispatch_once(&pred, ^{
-        storeDispatchQueue = dispatch_queue_create("com.cloudant.cloudantsync.IOQueue", NULL);
-    });
-    return storeDispatchQueue;
 }
 
 
@@ -88,7 +74,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
       - @"winner": new winning TD_Revision, _if_ it changed (often same as rev). 
     */
 
-    LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
+//    LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
 
     NSDictionary *nUserInfo = n.userInfo;
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
@@ -129,64 +115,52 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                          body:(CDTDocumentBody*)body
                                         error:(NSError * __autoreleasing *)error
 {
-    __block CDTDocumentRevision *ob = nil;
-    __block TDStatus status = kTDStatusException;
-    __weak CDTDatastore *weakSelf = self;
-    
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return;
-        }
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
 
-        TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-                                                             revID:nil
-                                                           deleted:NO];
-        revision.body = body.td_body;
-        TD_Revision *new = [strongSelf.database putRevision:revision
-                                             prevRevisionID:nil
-                                              allowConflict:NO
-                                                     status:&status];
-        if (!TDStatusIsError(status)) {
-            ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
-        }
-    });
-    
+
+    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                         revID:nil
+                                                       deleted:NO];
+    revision.body = body.td_body;
+
+    TDStatus status;
+    TD_Revision *new = [self.database putRevision:revision
+                                   prevRevisionID:nil
+                                    allowConflict:NO
+                                           status:&status];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        return nil;
     }
-    
-    return ob;
+
+    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 
 
 -(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
                                           error:(NSError * __autoreleasing *)error
 {
-    __block CDTDocumentRevision *ob = nil;
-    __block TDStatus status = kTDStatusException;
-    __weak CDTDatastore *weakSelf = self;
-    
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return;
-        }
 
-        TD_Revision *new = [strongSelf.database putRevision:[body TD_RevisionValue]
-                                             prevRevisionID:nil
-                                              allowConflict:NO
-                                                     status:&status];
-        if (!TDStatusIsError(status)) {
-            ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
-        }
-    });
-    
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
+
+    TDStatus status;
+    TD_Revision *new = [self.database putRevision:[body TD_RevisionValue]
+                                   prevRevisionID:nil
+                                    allowConflict:NO
+                                           status:&status];
+
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        return nil;
     }
-    
-    return ob;
+
+    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 
 
@@ -201,29 +175,22 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                        rev:(NSString*)revId
                                      error:(NSError * __autoreleasing *)error
 {
-    __block CDTDocumentRevision *ob = nil;
-    __block TDStatus status = kTDStatusException;
-    __weak CDTDatastore *weakSelf = self;
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return;
-        }
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
 
-        TD_Revision *rev = [strongSelf.database getDocumentWithID:docId
-                                                       revisionID:revId
-                                                          options:0
-                                                           status:&status];
-        if (!TDStatusIsError(status)) {
-            ob = [[CDTDocumentRevision alloc] initWithTDRevision:rev];
-        }
-    });
-    
+    TDStatus status;
+    TD_Revision *rev = [self.database getDocumentWithID:docId
+                                             revisionID:revId
+                                                options:0
+                                                 status:&status];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        return nil;
     }
-    
-    return ob;
+
+    return [[CDTDocumentRevision alloc] initWithTDRevision:rev];
 }
 
 
@@ -232,36 +199,34 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                        descending:(BOOL)descending
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:limit];
-    __weak CDTDatastore *weakSelf = self;
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return ;
-        }
 
-        struct TDQueryOptions query = {
-            .limit = limit,
-            .inclusiveEnd = YES,
-            .skip = offset,
-            .descending = descending,
-            .includeDocs = YES
-        };
-        NSDictionary *dictResults = [strongSelf.database getAllDocs:&query];
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
 
-        for (NSDictionary *row in dictResults[@"rows"]) {
-//            NSLog(@"%@", row);
-            NSString *docId = row[@"id"];
-            NSString *revId = row[@"value"][@"rev"];
+    struct TDQueryOptions query = {
+        .limit = limit,
+        .inclusiveEnd = YES,
+        .skip = offset,
+        .descending = descending,
+        .includeDocs = YES
+    };
+    NSDictionary *dictResults = [self.database getAllDocs:&query];
 
-            TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-                                                                 revID:revId
-                                                               deleted:NO];
-            revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+    for (NSDictionary *row in dictResults[@"rows"]) {
+        //            NSLog(@"%@", row);
+        NSString *docId = row[@"id"];
+        NSString *revId = row[@"value"][@"rev"];
 
-            CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
-            [result addObject:ob];
-        }
-    });
+        TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                             revID:revId
+                                                           deleted:NO];
+        revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
+        [result addObject:ob];
+    }
+
     return result;
 }
 
@@ -292,34 +257,27 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                          body:(CDTDocumentBody*)body
                                         error:(NSError * __autoreleasing *)error
 {
-    __block CDTDocumentRevision *ob = nil;
-    __block TDStatus status = kTDStatusException;
-    __weak CDTDatastore *weakSelf = self;
-    
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return ;
-        }
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
 
-        TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-                                                             revID:nil
-                                                           deleted:NO];
-        revision.body = body.td_body;
-        TD_Revision *new = [strongSelf.database putRevision:revision
-                                             prevRevisionID:prevRev
-                                              allowConflict:NO
-                                                     status:&status];
-        if (!TDStatusIsError(status)) {
-            ob = [[CDTDocumentRevision alloc] initWithTDRevision:new];
-        }
-    });
-    
+    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                         revID:nil
+                                                       deleted:NO];
+    revision.body = body.td_body;
+
+    TDStatus status;
+    TD_Revision *new = [self.database putRevision:revision
+                                   prevRevisionID:prevRev
+                                    allowConflict:NO
+                                           status:&status];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        return nil;
     }
-    
-    return ob;
+
+    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 
 
@@ -327,33 +285,25 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                          rev:(NSString*)rev
                        error:(NSError * __autoreleasing *)error
 {
-    __block NSNumber *result = [NSNumber numberWithBool:NO];
-    __block TDStatus status = kTDStatusException;
-    __weak CDTDatastore *weakSelf = self;
-    
-    dispatch_sync([CDTDatastore storeSerialQueue], ^{
-        CDTDatastore *strongSelf = weakSelf;
-        if (![strongSelf ensureDatabaseOpen]) {
-            return ;
-        }
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return NO;
+    }
 
-        TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-                                                             revID:nil
-                                                           deleted:YES];
-        [strongSelf.database putRevision:revision
-                          prevRevisionID:rev
-                           allowConflict:NO
-                                  status:&status];
-        if (!TDStatusIsError(status)) {
-            result = [NSNumber numberWithBool:YES];
-        }
-    });
-    
+    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                         revID:nil
+                                                       deleted:YES];
+    TDStatus status;
+    [self.database putRevision:revision
+                prevRevisionID:rev
+                 allowConflict:NO
+                        status:&status];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        return NO;
     }
-    
-    return [result boolValue];
+
+    return YES;
 }
 
 
