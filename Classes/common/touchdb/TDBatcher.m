@@ -41,7 +41,6 @@
 
 
 - (void) scheduleWithDelay: (NSTimeInterval)delay {
-    NSLog(@"scheduleWithDelay");
     if (_scheduled && delay < _scheduledDelay)
         [self unschedule];
     if (!_scheduled) {
