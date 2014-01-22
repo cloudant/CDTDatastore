@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 1/30/12.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
+
 
 #import <Foundation/Foundation.h>
 @protocol TDMultipartReaderDelegate;
@@ -41,6 +43,10 @@
 /** The MIME headers of the part currently being parsed.
     You can call this from your -appendToPart and/or -finishedPart overrides. */
 @property (readonly) NSDictionary* headers;
+
+#if DEBUG
+- (NSData*) boundary;  //made public to be used in external test framework. Adam Cox (Cloudant) 2014-1-17
+#endif
 
 @end
 
