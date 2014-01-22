@@ -5,6 +5,7 @@
 //  Created by Jens Alfke on 2/3/12.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
 
 #import <Foundation/Foundation.h>
 
@@ -26,7 +27,7 @@
     SInt64 _length;
     SInt64 _totalBytesWritten;
 }
-
+- (id)initWithBufferSize: (NSUInteger)bufferSize;  //added to public interface for testing. Adam Cox (Cloudant) 2014-1-17
 - (void) addStream: (NSInputStream*)stream length: (UInt64)length;
 - (void) addStream: (NSInputStream*)stream;
 - (void) addData: (NSData*)data;
