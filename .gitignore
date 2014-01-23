@@ -20,3 +20,4 @@ DerivedData
 Pods
 build
 contents.xcworkspacedata
+Podfile.lock
