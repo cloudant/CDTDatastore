@@ -3,7 +3,6 @@
 
 def import_pods
     pod "CDTDatastore", :path => "../"
-    pod "FMDB", :git => "https://github.com/mikerhodes/fmdb.git"
 end
 
 target :ios do

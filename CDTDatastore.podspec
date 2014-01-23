@@ -42,7 +42,7 @@ Pod::Spec.new do |s|
   s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/common/CloudantSync.h'
 
-  s.dependency 'FMDB', '>= 2.0'
+  s.dependency 'FMDB', '>= 2.2'
 
   s.frameworks = 'SystemConfiguration'
   s.library = 'sqlite3', 'z'
