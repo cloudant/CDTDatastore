@@ -95,8 +95,8 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param descending ordered descending if true, otherwise ascendingly
  * @return list of CSDatastoreObjects
  */
--(NSArray*) getAllDocumentsOffset:(NSInteger)offset
-                            limit:(NSInteger)limit
+-(NSArray*) getAllDocumentsOffset:(NSUInteger)offset
+                            limit:(NSUInteger)limit
                        descending:(BOOL)descending;
 
 
