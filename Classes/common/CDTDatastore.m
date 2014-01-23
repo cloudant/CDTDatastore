@@ -198,12 +198,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                             limit:(NSInteger)limit
                        descending:(BOOL)descending
 {
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:limit];
-
-    if (![self ensureDatabaseOpen]) {
-        return nil;
-    }
-
     struct TDQueryOptions query = {
         .limit = limit,
         .inclusiveEnd = YES,
@@ -211,7 +205,30 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         .descending = descending,
         .includeDocs = YES
     };
-    NSDictionary *dictResults = [self.database getAllDocs:&query];
+    return [self allDocsQuery:nil options:&query];
+}
+
+
+-(NSArray*) getDocumentsWithIds:(NSArray*)docIds
+{
+    struct TDQueryOptions query = {
+        .limit = UINT_MAX,
+        .inclusiveEnd = YES,
+        .includeDocs = YES
+    };
+    return [self allDocsQuery:docIds options:&query];
+}
+
+/** docIds can be null for getting all documents */
+-(NSArray*)allDocsQuery:(NSArray*)docIds options:(TDQueryOptions*)queryOptions
+{
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
+
+    NSMutableArray *result = [NSMutableArray array];
+
+    NSDictionary *dictResults = [self.database getDocsWithIDs:docIds options:queryOptions];
 
     for (NSDictionary *row in dictResults[@"rows"]) {
         //            NSLog(@"%@", row);
@@ -226,28 +243,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
         [result addObject:ob];
     }
-
-    return result;
-}
-
-
--(NSArray*) getDocumentsWithIds:(NSArray*)docIds
-                          error:(NSError * __autoreleasing *)error
-
-{
-    NSError *innerError = nil;
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:docIds.count];
-
-    for (NSString *docId in docIds) {
-        CDTDocumentRevision *ob = [self getDocumentWithId:docId
-                                                    error:&innerError];
-        if (innerError != nil) {
-            *error = innerError;
-            return nil;
-        }
-        [result addObject:ob];
-    }
-
+    
     return result;
 }
 

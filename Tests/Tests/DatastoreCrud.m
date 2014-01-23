@@ -135,8 +135,8 @@
     }
     
     NSArray *retrivedDocIds = @[docIds[5], docIds[7], docIds[12], docIds[170]];
-    NSArray *obs = [self.datastore getDocumentsWithIds:retrivedDocIds error:&error];
-    STAssertNil(error, @"Error getting documents");
+    NSArray *obs = [self.datastore getDocumentsWithIds:retrivedDocIds];
+    STAssertNotNil(obs, @"Error getting documents");
     
     int ob_index = 0;
     for (NSNumber *index in @[@5, @7, @12, @170]) {

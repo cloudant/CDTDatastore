@@ -108,8 +108,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param descending  if true, the list is in descending order
  * @return list of the documents
  */
--(NSArray*) getDocumentsWithIds:(NSArray*)docIds
-                          error:(NSError * __autoreleasing *)error;
+-(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
 
 
 /**
