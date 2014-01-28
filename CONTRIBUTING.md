@@ -93,6 +93,20 @@ Run the following at the command line:
 xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' test | xcpretty
 ```
 
+To test on a specific device you need to specify `-destination`:
+
+```
+// iOS
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination "platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)" test | xcpretty
+
+// Mac OS X
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination "platform=OS X" test | xcpretty
+```
+
+Xcodebuild references:
+
+* [man page](https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man1/xcodebuild.1.html)
+
 Miss out the `| xcpretty` if you didn't install that.
 
 ## Contributing your changes
