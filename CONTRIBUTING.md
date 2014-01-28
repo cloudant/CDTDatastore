@@ -8,8 +8,8 @@ you'll need:
 * Xcode
 * Xcode command line tools
 * Cocoapods
-* Homebrew
-* xctool (optional)
+* Homebrew (optional, but useful)
+* xcpretty (optional)
 
 First, download Xcode from the app store or [ADC][adc].
 
@@ -23,16 +23,17 @@ Install homebrew using the [guide on the homebrew site][homebrew].
 
 Install cocoapods using the [guide on their site][cpinstall].
 
-Finally, if you want to build from the command line, install [xctool][xctool].
-It's easiest to use homebrew:
+Finally, if you want to build from the command line, install [xcpretty][xcpretty],
+which makes the `xcodebuild` output more readable.
+
+It's a gem:
 
 ```bash
-brew update
-brew install xctool
+sudo gem install xcpretty
 ```
 
 [adc]: http://developer.apple.com/
-[xctool]: https://github.com/facebook/xctool
+[xcpretty]: https://github.com/mneorr/XCPretty
 [homebrew]: http://brew.sh
 [cpinstall]: http://guides.cocoapods.org/using/index.html
 
@@ -84,10 +85,15 @@ Use `rake docs` to build the docs and install into Xcode.
 
 [appledocs]: http://gentlebytes.com/appledoc/
 
-### Using xctool to run the tests
+### Using xcodebuild and xcpretty to run the tests
 
-Tests can also be run from the command line with xctool. If you installed
-xctool, run the tests with `rake test`.
+Run the following at the command line:
+
+```
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' test | xcpretty
+```
+
+Miss out the `| xcpretty` if you didn't install that.
 
 ## Contributing your changes
 
