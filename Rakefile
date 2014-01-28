@@ -4,14 +4,31 @@ task :spec do
 end
 
 desc "Run the CDTDatastore Tests for iOS"
-task :test do
-  $ios_success = system("xctool -workspace CDTDatastore.xcworkspace -scheme 'Tests' -sdk iphonesimulator -configuration Release test -test-sdk iphonesimulator")
+task :testios do
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)' test | xcpretty")
   puts "\033[0;31m! iOS unit tests failed" unless $ios_success
   if $ios_success
-    puts "\033[0;32m** All tests executed successfully"
+    puts "** All tests executed successfully"
   else
     exit(-1)
   end
+end
+
+desc "Run the CDTDatastore Tests for OS X"
+task :testosx do
+  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' test | xcpretty")
+  puts "\033[0;31m! OS X unit tests failed" unless $osx_success
+  if $osx_success
+    puts "** All tests executed successfully"
+  else
+    exit(-1)
+  end
+end
+
+desc "Run tests for all platforms"
+task :test do
+  sh "rake testios"
+  sh "rake testosx"
 end
 
 desc "Build docs and install to Xcode"
