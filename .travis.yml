@@ -1,0 +1,11 @@
+
+language: objective-c
+
+install:
+  - gem install cocoapods xcpretty
+  - cd Tests
+  - pod install
+  - cd ..
+
+script:
+  - xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' test
