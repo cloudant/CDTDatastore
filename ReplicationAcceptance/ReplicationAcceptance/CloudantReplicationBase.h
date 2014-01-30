@@ -12,6 +12,8 @@
 
 @interface CloudantReplicationBase : SenTestCase
 
++(NSString*)generateRandomString:(int)num;
+
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
 

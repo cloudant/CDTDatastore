@@ -13,6 +13,14 @@
 
 @implementation CloudantReplicationBase
 
++(NSString*)generateRandomString:(int)num {
+    NSMutableString* string = [NSMutableString stringWithCapacity:num];
+    for (int i = 0; i < num; i++) {
+        [string appendFormat:@"%C", (unichar)('a' + arc4random_uniform(25))];
+    }
+    return string;
+}
+
 - (NSString*)createTemporaryDirectoryAndReturnPath
 {
     NSString *tempDirectoryTemplate =
@@ -49,7 +57,7 @@
     STAssertNotNil(self.factory, @"Factory is nil");
 
     self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
-    self.remoteDbPrefix = @"ReplicationAcceptance_";
+    self.remoteDbPrefix = @"replication-acceptance";
 }
 
 - (void)tearDown
