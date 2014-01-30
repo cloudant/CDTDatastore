@@ -24,8 +24,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 - (void) TDdbChanged:(NSNotification*)n;
 
-@property (nonatomic,strong,readonly) TD_Database *database;
-
 @end
 
 @implementation CDTDatastore
@@ -41,6 +39,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     self = [super init];
     if (self) {
         _database = database;
+        NSString *dir = [[database path] stringByDeletingLastPathComponent];
+        _extensionsDir = [dir stringByAppendingPathComponent: @"extensions"];
 
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(TDdbChanged:)
@@ -302,6 +302,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return YES;
 }
 
+-(NSString*) extensionDataFolder:(NSString*)extensionName
+{
+    return [NSString pathWithComponents:@[_extensionsDir, extensionName]];
+}
 
 #pragma mark Helper methods
 
