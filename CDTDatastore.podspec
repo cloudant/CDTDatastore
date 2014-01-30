@@ -14,7 +14,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "CDTDatastore"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "CDTDatastore is a document datastore which syncs."
   s.description  = <<-DESC
                     CDTDatastore is a JSON document datastore which speaks the
@@ -27,9 +27,8 @@ Pod::Spec.new do |s|
   s.author       = { "Cloudant, Inc." => "support@cloudant.com" }
   s.source       = { :git => "https://github.com/cloudant/CDTDatastore.git", :tag => s.version.to_s }
 
-  s.platform     = :ios, '5.0'
-  # s.ios.deployment_target = '5.0'
-  s.osx.deployment_target = '10.7'
+  s.ios.deployment_target = '6.0'
+  s.osx.deployment_target = '10.8'
   s.requires_arc = true
 
   s.source_files = 'Classes/**/*.{h,m}'
