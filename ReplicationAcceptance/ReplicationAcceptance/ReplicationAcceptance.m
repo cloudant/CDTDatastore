@@ -32,6 +32,9 @@
 @implementation ReplicationAcceptance
 
 static NSUInteger n_docs = 100000;
+static NSUInteger largeRevTreeSize = 1500;
+
+#pragma mark - setUp and tearDown
 
 - (void)setUp
 {
@@ -83,6 +86,39 @@ static NSUInteger n_docs = 100000;
 }
 
 
+#pragma mark - Replication helpers
+
+-(void) pullFromRemote {
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceURI:self.remoteDatabaseURL
+                            targetDatastore:self.datastore];
+
+    NSLog(@"Replicating from %@", [self.remoteDatabaseURL absoluteString]);
+    [replicator start];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+}
+
+-(void) pushToRemote {
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceDatastore:self.datastore
+                                        targetURI:self.remoteDatabaseURL];
+
+    NSLog(@"Replicating to %@", [self.remoteDatabaseURL absoluteString]);
+    [replicator start];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+}
+
+
+#pragma mark - Tests
+
 -(void)testPush100kDocuments
 {
     NSError *error;
@@ -105,18 +141,7 @@ static NSUInteger n_docs = 100000;
     }
     STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
-    // Replicate
-    CDTReplicator *pushReplicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                        targetURI:self.remoteDatabaseURL];
-
-    NSLog(@"Replicating to %@", [self.remoteDatabaseURL absoluteString]);
-    [pushReplicator start];
-
-    while (pushReplicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:pushReplicator.state]);
-    }
+    [self pushToRemote];
 
     // Check document count in the remote DB
     NSDictionary* headers = @{@"accept": @"application/json"};
@@ -131,7 +156,7 @@ static NSUInteger n_docs = 100000;
 
 -(void) testPull100kDocuments {
 
-    NSError *error;
+//    NSError *error;
 
     // Create docs in remote database
     NSLog(@"Creating documents...");
@@ -158,21 +183,106 @@ static NSUInteger n_docs = 100000;
 //    NSLog(@"%@", response.body.array);
     STAssertTrue([response.body.array count] == n_docs, @"Remote db has wrong number of docs");
 
-
-    // Replicate
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:self.remoteDatabaseURL
-                            targetDatastore:self.datastore];
-
-    NSLog(@"Replicating from %@", [self.remoteDatabaseURL absoluteString]);
-    [replicator start];
-
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
+    [self pullFromRemote];
 
     STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+}
+
+-(void) testPushLargeRevTree {
+    NSError *error;
+
+    // Create the initial rev
+    NSString *docId = [NSString stringWithFormat:@"doc-0"];
+    NSDictionary *dict = @{@"hello": @"world"};
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
+                                                               body:body
+                                                              error:&error];
+    STAssertNil(error, @"Error creating docs: %@", error);
+    STAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
+
+    // Create revisions of document in local store
+    for (long i = 0; i < largeRevTreeSize-1; i++) {
+        rev = [self.datastore updateDocumentWithId:docId
+                                           prevRev:rev.revId
+                                              body:body
+                                             error:&error];
+    }
+    STAssertEquals(self.datastore.documentCount, (NSUInteger)1, @"Incorrect number of documents created");
+    STAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
+
+    [self pushToRemote];
+
+    // Check document count in the remote DB
+    NSDictionary* headers = @{@"accept": @"application/json"};
+    UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[self.remoteDatabaseURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    STAssertEquals([response.body.object[@"doc_count"] intValue],
+                   1,
+                   @"Wrong number of remote docs");
+
+    // Check number of revs
+    NSURL *docURL = [self.remoteDatabaseURL URLByAppendingPathComponent:docId];
+    response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+        [request setParameters:@{@"revs": @"true"}];
+    }] asJson];
+    NSDictionary *jsonResponse = response.body.object;
+
+    // default couchdb revs_limit is 1000
+    STAssertEquals([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)1000, @"Wrong number of revs");
+    STAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"1500"], @"Not all revs seem to be replicated");
+}
+
+-(void) testPullLargeRevTree {
+    NSError *error;
+    NSString *revId;
+
+    // Create the initial rev in remote datastore
+    NSString *docId = [NSString stringWithFormat:@"doc-0"];
+    NSDictionary *dict = @{@"hello": @"world"};
+
+    NSURL *docURL = [self.remoteDatabaseURL URLByAppendingPathComponent:docId];
+
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+        [request setBody:[NSJSONSerialization dataWithJSONObject:dict
+                                                         options:0
+                                                           error:nil]];
+    }] asJson];
+    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
+    revId = [response.body.object objectForKey:@"rev"];
+
+    // Create revisions of document in remote store
+    for (long i = 0; i < largeRevTreeSize-1; i++) {
+        headers = @{@"accept": @"application/json",
+                    @"content-type": @"application/json",
+                    @"If-Match": revId};
+        response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+            [request setUrl:[docURL absoluteString]];
+            [request setHeaders:headers];
+            [request setBody:[NSJSONSerialization dataWithJSONObject:dict
+                                                             options:0
+                                                               error:nil]];
+        }] asJson];
+        revId = [response.body.object objectForKey:@"rev"];
+    }
+    STAssertTrue([revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
+
+    [self pullFromRemote];
+
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
+                                                           error:&error];
+    STAssertNil(error, @"Error getting replicated doc: %@", error);
+    STAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
+
+    STAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
 }
 
 
