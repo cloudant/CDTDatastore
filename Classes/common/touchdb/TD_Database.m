@@ -15,6 +15,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TD_Database.h"
 #import "TD_Database+Attachments.h"
@@ -947,7 +949,12 @@ static NSArray* revIDsFromResultSet(FMResultSet* r) {
 }
 
 
-static NSDictionary* makeRevisionHistoryDict(NSArray* history) {
+//static designation was removed in order to use this function outside of this file
+//however, it was not declared in the header because we don't really want to expose
+//it to users. although it's not needed, specifically state 'extern' here
+//in order to be clear on intent.
+//Adam Cox, Cloudant, Inc. (2014)
+extern NSDictionary* makeRevisionHistoryDict(NSArray* history) {
     if (!history)
         return nil;
 

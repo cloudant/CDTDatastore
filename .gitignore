@@ -15,6 +15,7 @@ profile
 DerivedData
 .idea/
 *.hmap
+CDTDatastore.xcworkspace/xcshareddata/CDTDatastore.xccheckout
 
 #CocoaPods
 Pods
