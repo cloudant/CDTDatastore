@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMisc.h"
 
@@ -268,32 +270,3 @@ NSURL* TDAppendToURL(NSURL* baseURL, NSString* toAppend) {
     return [NSURL URLWithString: urlStr];
 }
 
-
-TestCase(TDQuoteString) {
-    CAssertEqual(TDQuoteString(@""), @"\"\"");
-    CAssertEqual(TDQuoteString(@"foo"), @"\"foo\"");
-    CAssertEqual(TDQuoteString(@"f\"o\"o"), @"\"f\\\"o\\\"o\"");
-    CAssertEqual(TDQuoteString(@"\\foo"), @"\"\\\\foo\"");
-    CAssertEqual(TDQuoteString(@"\""), @"\"\\\"\"");
-    CAssertEqual(TDQuoteString(@""), @"\"\"");
-
-    CAssertEqual(TDUnquoteString(@""), @"");
-    CAssertEqual(TDUnquoteString(@"\""), nil);
-    CAssertEqual(TDUnquoteString(@"\"\""), @"");
-    CAssertEqual(TDUnquoteString(@"\"foo"), nil);
-    CAssertEqual(TDUnquoteString(@"foo\""), @"foo\"");
-    CAssertEqual(TDUnquoteString(@"foo"), @"foo");
-    CAssertEqual(TDUnquoteString(@"\"foo\""), @"foo");
-    CAssertEqual(TDUnquoteString(@"\"f\\\"o\\\"o\""), @"f\"o\"o");
-    CAssertEqual(TDUnquoteString(@"\"\\foo\""), @"foo");
-    CAssertEqual(TDUnquoteString(@"\"\\\\foo\""), @"\\foo");
-    CAssertEqual(TDUnquoteString(@"\"foo\\\""), nil);
-}
-
-TestCase(TDEscapeID) {
-    CAssertEqual(TDEscapeID(@"foobar"), @"foobar");
-    CAssertEqual(TDEscapeID(@"<script>alert('ARE YOU MY DADDY?')</script>"),
-                            @"%3Cscript%3Ealert('ARE%20YOU%20MY%20DADDY%3F')%3C%2Fscript%3E");
-    CAssertEqual(TDEscapeID(@"foo/bar"), @"foo%2Fbar");
-    CAssertEqual(TDEscapeID(@"foo&bar"), @"foo%26bar");
-}

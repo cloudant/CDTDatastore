@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDReachability.h"
 #import <SystemConfiguration/SystemConfiguration.h>
@@ -152,49 +154,3 @@ static void ClientCallback(SCNetworkReachabilityRef target,
 
 
 @end
-
-
-
-
-#if DEBUG
-
-static void runReachability( NSString* hostname ) {
-    Log(@"Test reachability of %@ ...", hostname);
-    TDReachability* r = [[TDReachability alloc] initWithHostName: hostname];
-    CAssert(r);
-    Log(@"TDReachability = %@", r);
-    CAssertEqual(r.hostName, hostname);
-    __block BOOL resolved = NO;
-    
-    __weak TDReachability *weakR = r;
-    r.onChange = ^{
-        TDReachability *strongR = weakR;
-        Log(@"onChange: known=%d, flags=%x --> reachable=%d",
-            strongR.reachabilityKnown, strongR.reachabilityFlags, strongR.reachable);
-        Log(@"TDReachability = %@", strongR);
-        if (strongR.reachabilityKnown)
-            resolved = YES;
-    };
-    CAssert([r start]);
-
-    BOOL known = r.reachabilityKnown;
-    Log(@"Initially: known=%d, flags=%x --> reachable=%d", known, r.reachabilityFlags, r.reachable);
-    if (!known) {
-        while (!resolved) {
-            Log(@"waiting...");
-            [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate dateWithTimeIntervalSinceNow: 0.5]];
-        }
-    }
-    [r stop];
-    Log(@"...done!");
-}
-
-TestCase(TDReachability) {
-    runReachability(@"couchbase.com");
-    runReachability(@"localhost");
-    runReachability(@"127.0.0.1");
-    runReachability(@"67.221.231.37");  // couchbase.com
-    runReachability(@"fsdfsaf.fsdfdaf.fsfddf");
-}
-
-#endif

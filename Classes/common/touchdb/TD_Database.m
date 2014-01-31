@@ -1346,26 +1346,3 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 
 @end
 
-
-
-#pragma mark - TESTS:
-#if DEBUG
-
-static TD_Revision* mkrev(NSString* revID) {
-    return [[TD_Revision alloc] initWithDocID: @"docid" revID: revID deleted: NO];
-}
-
-
-TestCase(TD_Database_MakeRevisionHistoryDict) {
-    NSArray* revs = @[mkrev(@"4-jkl"), mkrev(@"3-ghi"), mkrev(@"2-def")];
-    CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"jkl", @"ghi", @"def"]},
-                                                      {@"start", @4}));
-
-    revs = @[mkrev(@"4-jkl"), mkrev(@"2-def")];
-    CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"4-jkl", @"2-def"]}));
-
-    revs = @[mkrev(@"12345"), mkrev(@"6789")];
-    CAssertEqual(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"12345", @"6789"]}));
-}
-
-#endif
