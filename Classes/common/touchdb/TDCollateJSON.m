@@ -14,6 +14,8 @@
 //  and limitations under the License.
 //
 //  http://wiki.apache.org/couchdb/View_collation#Collation_Specification
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDCollateJSON.h"
 
@@ -76,7 +78,12 @@ static ValueType valueTypeOf(char c) {
 }
 
 
-static char convertEscape(const char **in) {
+//static designation was removed in order to use this function outside of this file
+//however, it was not declared in the header because we don't really want to expose
+//it to users. although it's not needed, specifically state 'extern' here
+//in order to be clear on intent.
+//Adam Cox, Cloudant, Inc. (2014)
+extern char convertEscape(const char **in) {
     char c = *++(*in);
     switch (c) {
         case 'u': {

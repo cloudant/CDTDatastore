@@ -6,13 +6,13 @@ def import_pods
 end
 
 target :ios do
-     platform :ios, '7.0'
-     link_with ['Tests']
+    platform :ios, '7.0'
+    link_with ['Tests']
     import_pods
 end
 
 target :osx do
-  platform :osx, '10.9'
+  platform :osx, '10.8'
   link_with 'Tests OSX'
   import_pods
 end
