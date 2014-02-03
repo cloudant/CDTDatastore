@@ -19,10 +19,10 @@
 @class CDTDocumentBody;
 
 /** NSNotification posted when a document is updated.
- UserInfo keys: 
-  - @"rev": the new CDTDocumentRevision, 
+ UserInfo keys:
+  - @"rev": the new CDTDocumentRevision,
   - @"source": NSURL of remote db pulled from,
-  - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev). 
+  - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev).
  */
 extern NSString* const CDTDatastoreChangeNotification;
 
@@ -136,7 +136,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param rev id of the specified revision
  * @param error will point to an NSError object in case of error.
  *
- * @return specified CDTDocumentRevision of the document for given 
+ * @return specified CDTDocumentRevision of the document for given
  *     document id or nil if it doesn't exist
  */
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
@@ -174,6 +174,15 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @return NSArray containing CDTDocumentRevision objects
  */
 -(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
+
+
+/**
+ * Returns all revisions for document, as an array of CDTRevsions.
+ *
+ * Older revisions will not contain the document data as it will have
+ * been compacted away.
+ */
+-(NSArray*) getRevisionHistory:(CDTDocumentRevision*)revision;
 
 
 /**

@@ -8,12 +8,12 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 
-#import <SenTestingKit/SenTestingKit.h>
-
 #import <CloudantSync.h>
 #import <UNIRest.h>
+#import <TRVSMonitor.h>
 
 #import "CloudantReplicationBase.h"
+#import "CloudantReplicationBase+CompareDb.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
@@ -31,7 +31,7 @@
 
 @implementation ReplicationAcceptance
 
-static NSUInteger n_docs = 10000;
+static NSUInteger n_docs = 100;
 static NSUInteger largeRevTreeSize = 1500;
 
 #pragma mark - setUp and tearDown
@@ -120,10 +120,15 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) createLocalDocs:(NSInteger)count
 {
+    [self createLocalDocs:count suffixFrom:0];
+}
+
+-(void) createLocalDocs:(NSInteger)count suffixFrom:(NSInteger)start
+{
     NSError *error;
 
     for (long i = 1; i < count+1; i++) {
-        NSString *docId = [NSString stringWithFormat:@"doc-%li", i];
+        NSString *docId = [NSString stringWithFormat:@"doc-%li", start+i];
         NSDictionary *dict = @{@"hello": @"world"};
         CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
         CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
@@ -136,8 +141,6 @@ static NSUInteger largeRevTreeSize = 1500;
             NSLog(@" -> %li documents created", i);
         }
     }
-
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 }
 
 -(void) createLocalDocWithId:(NSString*)docId revs:(NSInteger)n_revs
@@ -237,19 +240,24 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue([revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", revId);
 }
 
--(void) assertRemoteDatabaseHasDocCount:(NSInteger)count deletedDocs:(NSInteger)deleted
+-(NSDictionary*) remoteDbMetadata
 {
     // Check document count in the remote DB
     NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
+    return [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[self.remoteDatabaseURL absoluteString]];
         [request setHeaders:headers];
-    }] asJson];
+    }] asJson].body.object;
+}
+
+-(void) assertRemoteDatabaseHasDocCount:(NSInteger)count deletedDocs:(NSInteger)deleted
+{
+    NSDictionary *dbMeta = [self remoteDbMetadata];
     STAssertEquals(count,
-                   [response.body.object[@"doc_count"] integerValue],
+                   [dbMeta[@"doc_count"] integerValue],
                    @"Wrong number of remote docs");
     STAssertEquals(deleted,
-                   [response.body.object[@"doc_del_count"] integerValue],
+                   [dbMeta[@"doc_del_count"] integerValue],
                    @"Wrong number of remote deleted docs");
 }
 
@@ -261,11 +269,16 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create docs in local store
     NSLog(@"Creating documents...");
     [self createLocalDocs:n_docs];
+    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     [self pushToRemote];
 
     [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
                               deletedDocs:0];
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) testPullLotsOfOneRevDocuments {
@@ -280,6 +293,10 @@ static NSUInteger largeRevTreeSize = 1500;
     [self pullFromRemote];
 
     STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) testPushLargeRevTree {
@@ -309,6 +326,10 @@ static NSUInteger largeRevTreeSize = 1500;
     // default couchdb revs_limit is 1000
     STAssertEquals([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)1000, @"Wrong number of revs");
     STAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"1500"], @"Not all revs seem to be replicated");
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) testPullLargeRevTree {
@@ -327,6 +348,10 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
 
     STAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 
@@ -371,6 +396,11 @@ static NSUInteger largeRevTreeSize = 1500;
         STAssertEquals([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)n_mods, @"Wrong number of revs");
         STAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"10"], @"Not all revs seem to be replicated");
     }
+
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 
@@ -400,6 +430,77 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [self assertRemoteDatabaseHasDocCount:0
                               deletedDocs:n_docs];
+
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+}
+
+-(void) test_pushDocsAsWritingThem
+{
+    TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
+    [self performSelectorInBackground:@selector(pushDocsAsWritingThem_pullReplicateThenSignal:)
+                           withObject:monitor];
+    [self performSelectorInBackground:@selector(pushDocsAsWritingThem_populateLocalDatabaseThenSignal:)
+                           withObject:monitor];
+
+    [monitor wait];
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+}
+
+-(void) pushDocsAsWritingThem_pullReplicateThenSignal:(TRVSMonitor*)monitor
+{
+    NSInteger count;
+    do {
+        [self pushToRemote];
+        NSDictionary *dbMeta = [self remoteDbMetadata];
+        count = [dbMeta[@"doc_count"] integerValue];
+        NSLog(@"Remote count: %ld", (long)count);
+    } while (count < n_docs);
+
+    [monitor signal];
+}
+
+-(void) pushDocsAsWritingThem_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
+{
+    [self createLocalDocs:n_docs];
+    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    [monitor signal];
+}
+
+-(void) test_pullDocsWhileWritingOthers
+{
+    [self createRemoteDocs:n_docs];
+
+    TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
+
+    // Replicate n_docs from remote
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingOthers_pullReplicateThenSignal:)
+                           withObject:monitor];
+
+    // Create documents that don't conflict as we pull
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingOthers_populateLocalDatabaseThenSignal:)
+                           withObject:monitor];
+
+    [monitor wait];
+
+    STAssertEquals(self.datastore.documentCount, (NSUInteger)n_docs*2, @"Wrong number of local docs");
+}
+
+-(void) pullDocsWhileWritingOthers_pullReplicateThenSignal:(TRVSMonitor*)monitor
+{
+    [self pullFromRemote];
+    [monitor signal];
+}
+
+-(void) pullDocsWhileWritingOthers_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
+{
+    [self createLocalDocs:n_docs suffixFrom:n_docs+1];
+    [monitor signal];
 }
 
 

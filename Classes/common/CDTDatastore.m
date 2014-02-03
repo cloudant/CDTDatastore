@@ -255,6 +255,26 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 
+-(NSArray*) getRevisionHistory:(CDTDocumentRevision*)revision
+{
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
+
+    NSMutableArray *result = [NSMutableArray array];
+
+    // Array of TD_Revision
+    NSArray *td_revs = [self.database getRevisionHistory:revision.td_rev];
+
+    for (TD_Revision *td_rev in td_revs) {
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
+        [result addObject:ob];
+    }
+    
+    return result;
+}
+
+
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                       prevRev:(NSString*)prevRev
                                          body:(CDTDocumentBody*)body
