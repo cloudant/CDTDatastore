@@ -28,6 +28,8 @@ NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
         _manager = [[TD_DatabaseManager alloc] initWithDirectory:directoryPath
                                                          options:nil
                                                            error:outError];
+        if(!_manager)
+            return nil;
     }
     return self;
 }
