@@ -455,8 +455,56 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) pullDocsWhileWritingSame_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
 {
+    // Write in reverse so we'll definitely cross-streams with the concurrent
+    // pull replication at some point.
     [self createLocalDocs:n_docs suffixFrom:0 reverse:YES updates:YES];
     [monitor signal];
+}
+
+-(void) test_pullDocsWhileWritingSameWriteToThirdDB
+{
+    [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
+    [self createRemoteDocs:n_docs];
+
+    TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
+
+    // Replicate n_docs from remote
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_pullReplicateThenSignal:)
+                           withObject:monitor];
+
+    // Create documents that don't conflict as we pull
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_populateLocalDatabaseThenSignal:)
+                           withObject:monitor];
+
+    [monitor wait];
+
+
+    // Push to a third database and check against it.
+    NSString *thirdDatabaseName = [NSString stringWithFormat:@"%@-test-third-database-%@",
+                                      self.remoteDbPrefix,
+                                      [CloudantReplicationBase generateRandomString:5]];
+
+    [self createRemoteDatabase:thirdDatabaseName];
+
+    NSURL *thirdDatabase = [self.remoteRootURL URLByAppendingPathComponent:thirdDatabaseName];
+
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceDatastore:self.datastore
+                                        targetURI:thirdDatabase];
+
+    NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
+    [replicator start];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:thirdDatabase];
+    STAssertTrue(same, @"Remote and local databases differ");
+
+    [self deleteRemoteDatabase:thirdDatabaseName];
 }
 
 
