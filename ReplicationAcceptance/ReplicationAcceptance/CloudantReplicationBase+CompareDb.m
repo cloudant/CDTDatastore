@@ -32,6 +32,11 @@
     return YES;
 }
 
+
+/**
+ * Basic check that we've the same number of documents in the local and remote
+ * databases.
+ */
 -(BOOL) compareDocCount:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
 {
     NSUInteger localCount = local.documentCount;
@@ -55,6 +60,10 @@
     return YES;
 }
 
+/**
+ * Check each database has the same (non-deleted) doc Ids and that the
+ * current revisions match.
+ */
 -(BOOL) compareDocIdsAndCurrentRevs:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
 {
     // Remote doc IDs
@@ -93,6 +102,12 @@
     return YES;
 }
 
+/**
+ * Check that the current revisions for all documents are the same and have the
+ * same revision history. That is, for each document, make sure the leaf revisions
+ * are the same and that each active leaf has the same revision history.
+ * We assume that we already know that the right docIds are present in each database.
+ */
 -(BOOL) compareDocIdsAndAllRevs:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
 {
     // By the time we're here, we know we have all the right docs, so we can assume that
