@@ -200,6 +200,55 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return [[CDTDocumentRevision alloc] initWithTDRevision:rev];
 }
 
+-(NSArray*) getAllDocuments
+{
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
+
+    NSArray *result = [NSArray array];
+    struct TDQueryOptions query = {
+        .limit = (unsigned int)self.database.documentCount,
+        .inclusiveEnd = YES,
+        .skip = 0,
+        .descending = NO,
+        .includeDocs = YES
+    };
+
+    // This method must loop to get around the fact that conflicted documents
+    // contribute more than one row in the query -getDocsWithIDs:options: uses,
+    // so in the face of conflicted documents, the initial query above will
+    // only return the winning revisions of a subset of the documents.
+    BOOL done = NO;
+    do {
+
+        NSMutableArray *batch = [NSMutableArray array];
+
+        NSDictionary *dictResults = [self.database getDocsWithIDs:nil options:&query];
+
+        for (NSDictionary *row in dictResults[@"rows"]) {
+            NSString *docId = row[@"id"];
+            NSString *revId = row[@"value"][@"rev"];
+
+            TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                                 revID:revId
+                                                               deleted:NO];
+            revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+
+            CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
+            [batch addObject:ob];
+        }
+        
+        result = [result arrayByAddingObjectsFromArray:batch];
+
+        done = ((NSArray*)dictResults[@"rows"]).count == 0;
+
+        query.skip = query.skip + query.limit;
+
+    } while (!done);
+
+    return result;
+}
 
 -(NSArray*) getAllDocumentsOffset:(NSUInteger)offset
                             limit:(NSUInteger)limit
@@ -252,6 +301,20 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
     
     return result;
+}
+
+-(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision
+{
+    TD_RevisionList* revs = [self.database getAllRevisionsOfDocumentID:revision.docId
+                                                           onlyCurrent:YES];
+    NSMutableArray *results = [NSMutableArray array];
+    for (TD_Revision *td_rev in revs.allRevisions) {
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
+        if (!ob.deleted) {
+            [results addObject:ob];
+        }
+    }
+    return results;
 }
 
 

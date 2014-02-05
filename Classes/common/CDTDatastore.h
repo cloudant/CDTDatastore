@@ -143,6 +143,25 @@ extern NSString* const CDTDatastoreChangeNotification;
                                        rev:(NSString*)rev
                                      error:(NSError * __autoreleasing *)error;
 
+/**
+ * Unpaginated read of all documents.
+ *
+ * All documents are read into memory before being returned.
+ *
+ * Only the current revision of each document is returned.
+ *
+ * @return NSArray of CSDatastoreObjects
+ */
+-(NSArray*) getAllDocuments;
+
+
+/**
+ * Get all the current revisions for a document.
+ *
+ * If there are >1 revisions in the array, there are conflicts.
+ */
+-(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision;
+
 
 /**
  * Enumerate the current winning revisions for all documents in the
@@ -177,7 +196,10 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * Returns all revisions for document, as an array of CDTRevsions.
+ * Returns the history of revisions for the passed revision.
+ *
+ * This is each revision on the branch that `revision` is on,
+ * from `revision` to the root of the tree.
  *
  * Older revisions will not contain the document data as it will have
  * been compacted away.
