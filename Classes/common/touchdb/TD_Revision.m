@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TD_Revision.h"
 #import "TD_Body.h"
@@ -293,66 +295,3 @@ NSComparisonResult TDCompareRevIDs(NSString* revID1, NSString* revID2) {
     const char* rev2str = [revID2 UTF8String];
     return TDCollateRevIDs(NULL, (int)strlen(rev1str), rev1str, (int)strlen(rev2str), rev2str);
 }
-
-
-
-#pragma mark - TESTS:
-#if DEBUG
-
-static BOOL parseRevID(NSString* revID, int *gen, NSString** suffix) {
-    return [TD_Revision parseRevID: revID intoGeneration: gen andSuffix: suffix];
-}
-
-static int collateRevs(const char* rev1, const char* rev2) {
-    return TDCollateRevIDs(NULL, (int)strlen(rev1), rev1, (int)strlen(rev2), rev2);
-}
-
-TestCase(TD_Database_ParseRevID) {
-    RequireTestCase(TD_Database);
-    int num;
-    NSString* suffix;
-    CAssert(parseRevID(@"1-utiopturoewpt", &num, &suffix));
-    CAssertEq(num, 1);
-    CAssertEqual(suffix, @"utiopturoewpt");
-    
-    CAssert(parseRevID(@"321-fdjfdsj-e", &num, &suffix));
-    CAssertEq(num, 321);
-    CAssertEqual(suffix, @"fdjfdsj-e");
-    
-    CAssert(!parseRevID(@"0-fdjfdsj-e", &num, &suffix));
-    CAssert(!parseRevID(@"-4-fdjfdsj-e", &num, &suffix));
-    CAssert(!parseRevID(@"5_fdjfdsj-e", &num, &suffix));
-    CAssert(!parseRevID(@" 5-fdjfdsj-e", &num, &suffix));
-    CAssert(!parseRevID(@"7 -foo", &num, &suffix));
-    CAssert(!parseRevID(@"7-", &num, &suffix));
-    CAssert(!parseRevID(@"7", &num, &suffix));
-    CAssert(!parseRevID(@"eiuwtiu", &num, &suffix));
-    CAssert(!parseRevID(@"", &num, &suffix));
-}
-
-TestCase(TDCollateRevIDs) {
-    // Single-digit:
-    CAssertEq(collateRevs("1-foo", "1-foo"), 0);
-    CAssertEq(collateRevs("2-bar", "1-foo"), 1);
-    CAssertEq(collateRevs("1-foo", "2-bar"), -1);
-    // Multi-digit:
-    CAssertEq(collateRevs("123-bar", "456-foo"), -1);
-    CAssertEq(collateRevs("456-foo", "123-bar"), 1);
-    CAssertEq(collateRevs("456-foo", "456-foo"), 0);
-    CAssertEq(collateRevs("456-foo", "456-foofoo"), -1);
-    // Different numbers of digits:
-    CAssertEq(collateRevs("89-foo", "123-bar"), -1);
-    CAssertEq(collateRevs("123-bar", "89-foo"), 1);
-    // Edge cases:
-    CAssertEq(collateRevs("123-", "89-"), 1);
-    CAssertEq(collateRevs("123-a", "123-a"), 0);
-    // Invalid rev IDs:
-    CAssertEq(collateRevs("-a", "-b"), -1);
-    CAssertEq(collateRevs("-", "-"), 0);
-    CAssertEq(collateRevs("", ""), 0);
-    CAssertEq(collateRevs("", "-b"), -1);
-    CAssertEq(collateRevs("bogus", "yo"), -1);
-    CAssertEq(collateRevs("bogus-x", "yo-y"), -1);
-}
-
-#endif

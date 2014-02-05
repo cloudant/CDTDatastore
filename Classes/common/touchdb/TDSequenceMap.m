@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDSequenceMap.h"
 
@@ -73,46 +75,3 @@
 
 
 @end
-
-
-
-TestCase(TDSequenceMap) {
-    TDSequenceMap* map = [[TDSequenceMap alloc] init];
-    CAssertEq(map.checkpointedSequence, 0);
-    CAssertEqual(map.checkpointedValue, nil);
-    CAssert(map.isEmpty);
-    
-    CAssertEq([map addValue: @"one"], 1);
-    CAssertEq(map.checkpointedSequence, 0);
-    CAssertEqual(map.checkpointedValue, nil);
-    CAssert(!map.isEmpty);
-    
-    CAssertEq([map addValue: @"two"], 2);
-    CAssertEq(map.checkpointedSequence, 0);
-    CAssertEqual(map.checkpointedValue, nil);
-    
-    CAssertEq([map addValue: @"three"], 3);
-    CAssertEq(map.checkpointedSequence, 0);
-    CAssertEqual(map.checkpointedValue, nil);
-    
-    [map removeSequence: 2];
-    CAssertEq(map.checkpointedSequence, 0);
-    CAssertEqual(map.checkpointedValue, nil);
-    
-    [map removeSequence: 1];
-    CAssertEq(map.checkpointedSequence, 2);
-    CAssertEqual(map.checkpointedValue, @"two");
-    
-    CAssertEq([map addValue: @"four"], 4);
-    CAssertEq(map.checkpointedSequence, 2);
-    CAssertEqual(map.checkpointedValue, @"two");
-    
-    [map removeSequence: 3];
-    CAssertEq(map.checkpointedSequence, 3);
-    CAssertEqual(map.checkpointedValue, @"three");
-    
-    [map removeSequence: 4];
-    CAssertEq(map.checkpointedSequence, 4);
-    CAssertEqual(map.checkpointedValue, @"four");
-    CAssert(map.isEmpty);
-}

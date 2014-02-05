@@ -22,18 +22,6 @@ extern char convertEscape(const char**);
 
 @implementation TDCollateJSONTests
 
-- (void)setUp
-{
-    [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
-}
-
-- (void)tearDown
-{
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
-}
-
 - (const char*)encode:(id) obj
 {
     // encodes an object to a C string in JSON format. JSON fragments are allowed.

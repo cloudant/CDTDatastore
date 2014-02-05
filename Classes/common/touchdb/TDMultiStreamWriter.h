@@ -27,7 +27,7 @@
     SInt64 _length;
     SInt64 _totalBytesWritten;
 }
-- (id)initWithBufferSize: (NSUInteger)bufferSize;  //added to public interface for testing. Adam Cox (Cloudant) 2014-1-17
+
 - (void) addStream: (NSInputStream*)stream length: (UInt64)length;
 - (void) addStream: (NSInputStream*)stream;
 - (void) addData: (NSData*)data;
@@ -60,4 +60,9 @@
 // protected:
 - (void) addInput: (id)input length: (UInt64)length;
 - (void) opened;
+
+#if DEBUG
+- (id)initWithBufferSize: (NSUInteger)bufferSize;  //added to public interface for testing. Adam Cox (Cloudant) 2014-1-17
+#endif
+
 @end

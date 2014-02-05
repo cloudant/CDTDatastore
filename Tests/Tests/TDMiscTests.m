@@ -19,19 +19,6 @@
 
 @implementation TDMiscTests
 
-- (void)setUp
-{
-    [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
-}
-
-- (void)tearDown
-{
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
-}
-
-
 - (void)quoteStringTest:(NSString *)str1 str2:(NSString *)str2
 {
     STAssertEqualObjects(TDQuoteString(str1), str2, @"TDQuoteString test failed for str1:%@ and str2:%@ in %s", str1, str2, __PRETTY_FUNCTION__);

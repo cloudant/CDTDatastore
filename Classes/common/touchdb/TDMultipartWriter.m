@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMultipartWriter.h"
 #import "TDMisc.h"
@@ -93,26 +95,3 @@
 
 
 @end
-
-
-
-
-
-TestCase(TDMultipartWriter) {
-    NSString* expectedOutput = @"\r\n--BOUNDARY\r\nContent-Length: 16\r\n\r\n<part the first>\r\n--BOUNDARY\r\nContent-Length: 10\r\nContent-Type: something\r\n\r\n<2nd part>\r\n--BOUNDARY--";
-    RequireTestCase(TDMultiStreamWriter);
-    for (unsigned bufSize = 1; bufSize < expectedOutput.length+1; ++bufSize) {
-        TDMultipartWriter* mp = [[TDMultipartWriter alloc] initWithContentType: @"foo/bar" 
-                                                                           boundary: @"BOUNDARY"];
-        CAssertEqual(mp.contentType, @"foo/bar; boundary=\"BOUNDARY\"");
-        CAssertEqual(mp.boundary, @"BOUNDARY");
-        [mp addData: [@"<part the first>" dataUsingEncoding: NSUTF8StringEncoding]];
-        [mp setNextPartsHeaders: $dict({@"Content-Type", @"something"})];
-        [mp addData: [@"<2nd part>" dataUsingEncoding: NSUTF8StringEncoding]];
-        CAssertEq((NSUInteger)mp.length, expectedOutput.length);
-
-        NSData* output = [mp allOutput];
-        CAssertEqual(output.my_UTF8ToString, expectedOutput);
-        [mp close];
-    }
-}

@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMultiStreamWriter.h"
 #import "Logging.h"
@@ -305,112 +307,3 @@
 
 
 @end
-
-
-
-
-#pragma mark - UNIT TESTS:
-#if DEBUG
-
-#define kExpectedOutputString @"<part the first, let us make it a bit longer for greater interest><2nd part, again unnecessarily prolonged for testing purposes beyond any reasonable length...>"
-
-static TDMultiStreamWriter* createWriter(unsigned bufSize) {
-    TDMultiStreamWriter* stream = [[TDMultiStreamWriter alloc] initWithBufferSize: bufSize];
-    [stream addData: [@"<part the first, let us make it a bit longer for greater interest>" dataUsingEncoding: NSUTF8StringEncoding]];
-    [stream addData: [@"<2nd part, again unnecessarily prolonged for testing purposes beyond any reasonable length...>" dataUsingEncoding: NSUTF8StringEncoding]];
-    CAssertEq(stream.length, (SInt64)kExpectedOutputString.length);
-    return stream;
-}
-
-TestCase(TDMultiStreamWriter_Sync) {
-    for (unsigned bufSize = 1; bufSize < 128; ++bufSize) {
-        Log(@"Buffer size = %u", bufSize);
-        TDMultiStreamWriter* mp = createWriter(bufSize);
-        NSData* outputBytes = [mp allOutput];
-        CAssertEqual(outputBytes.my_UTF8ToString, kExpectedOutputString);
-        // Run it a second time to make sure re-opening works:
-        outputBytes = [mp allOutput];
-        CAssertEqual(outputBytes.my_UTF8ToString, kExpectedOutputString);
-    }
-}
-
-
-@interface TDMultiStreamWriterTester : NSObject <NSStreamDelegate>
-{
-    @public
-    NSInputStream* _stream;
-    NSMutableData* _output;
-    BOOL _finished;
-}
-@end
-
-@implementation TDMultiStreamWriterTester
-
-- (id)initWithStream: (NSInputStream*)stream {
-    self = [super init];
-    if (self) {
-        _stream = stream;
-        _output = [[NSMutableData alloc] init];
-        stream.delegate = self;
-    }
-    return self;
-}
-
-
-- (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)event {
-    AssertEq(stream, _stream);
-    switch (event) {
-        case NSStreamEventOpenCompleted:
-            Log(@"NSStreamEventOpenCompleted");
-            break;
-        case NSStreamEventHasBytesAvailable: {
-            Log(@"NSStreamEventHasBytesAvailable");
-            uint8_t buffer[10];
-            NSInteger length = [_stream read: buffer maxLength: sizeof(buffer)];
-            Log(@"    read %d bytes", (int)length);
-            //Assert(length > 0);
-            [_output appendBytes: buffer length: length];
-            break;
-        }
-        case NSStreamEventEndEncountered:
-            Log(@"NSStreamEventEndEncountered");
-            _finished = YES;
-            break;
-        default:
-            Assert(NO, @"Unexpected stream event %d", (int)event);
-    }
-}
-
-@end
-
-TestCase(TDMultiStreamWriter_Async) {
-    TDMultiStreamWriter* writer = createWriter(16);
-    NSInputStream* input = [writer openForInputStream];
-    CAssert(input);
-    TDMultiStreamWriterTester *tester = [[TDMultiStreamWriterTester alloc] initWithStream: input];
-    NSRunLoop* rl = [NSRunLoop currentRunLoop];
-    [input scheduleInRunLoop: rl forMode: NSDefaultRunLoopMode];
-    Log(@"Opening stream");
-    [input open];
-    
-    while (!tester->_finished) {
-        Log(@"...waiting for stream...");
-        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate dateWithTimeIntervalSinceNow: 0.5]];
-    }
-
-    [input removeFromRunLoop: rl forMode: NSDefaultRunLoopMode];
-    Log(@"Closing stream");
-    [input close];
-    [writer close];
-    CAssertEqual(tester->_output.my_UTF8ToString, @"<part the first, let us make it a bit longer for greater interest><2nd part, again unnecessarily prolonged for testing purposes beyond any reasonable length...>");
-}
-
-
-TestCase(TDMultiStreamWriter) {
-#ifndef GNUSTEP     // FIXME: Fix NSString bugs in GNUstep to make these tests work
-    RequireTestCase(TDMultiStreamWriter_Sync);
-    RequireTestCase(TDMultiStreamWriter_Async);
-#endif
-}
-
-#endif // DEBUG

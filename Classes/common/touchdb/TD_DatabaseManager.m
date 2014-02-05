@@ -14,6 +14,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
@@ -355,29 +357,3 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 
 
 @end
-
-
-
-
-#pragma mark - TESTS
-#if DEBUG
-
-TestCase(TD_DatabaseManager) {
-    RequireTestCase(TD_Database);
-    TD_DatabaseManager* dbm = [TD_DatabaseManager createEmptyAtTemporaryPath: @"TD_DatabaseManagerTest"];
-    TD_Database* db = [dbm databaseNamed: @"foo"];
-    CAssert(db != nil);
-    CAssertEqual(db.name, @"foo");
-    CAssertEqual(db.path.stringByDeletingLastPathComponent, dbm.directory);
-    CAssert(!db.exists);
-    
-    CAssertEq([dbm databaseNamed: @"foo"], db);
-    
-    CAssertEqual(dbm.allDatabaseNames, @[]);    // because foo doesn't exist yet
-    
-    CAssert([db open]);
-    CAssert(db.exists);
-    CAssertEqual(dbm.allDatabaseNames, @[@"foo"]);    // because foo doesn't exist yet
-}
-
-#endif

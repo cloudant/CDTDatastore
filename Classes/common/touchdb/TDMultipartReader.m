@@ -14,6 +14,8 @@
 //  and limitations under the License.
 //
 //  http://tools.ietf.org/html/rfc2046#section-5.1
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMultipartReader.h"
 
@@ -264,95 +266,3 @@ static NSData* kCRLFCRLF;
 
 @end
 
-
-
-
-#if DEBUG  //// UNIT TESTS:
-
-
-@interface TestMultipartReaderDelegate : NSObject <TDMultipartReaderDelegate>
-{
-    NSMutableData* _currentPartData;
-    NSMutableArray* _partList, *_headersList;
-}
-@property (readonly) NSArray* partList, *headerList;
-@end
-
-
-@implementation TestMultipartReaderDelegate
-
-@synthesize partList=_partList, headerList=_headersList;
-
-- (void) startedPart: (NSDictionary*)headers {
-    Assert(!_currentPartData);
-    _currentPartData = [[NSMutableData alloc] init];
-    if (!_partList)
-        _partList = [[NSMutableArray alloc] init];
-    [_partList addObject: _currentPartData];
-    if (!_headersList)
-        _headersList = [[NSMutableArray alloc] init];
-    [_headersList addObject: headers];
-}
-
-- (void) appendToPart: (NSData*)data {
-    Assert(_currentPartData);
-    [_currentPartData appendData: data];
-}
-
-- (void) finishedPart {
-    Assert(_currentPartData);
-    _currentPartData = nil;
-    
-}
-
-
-@end
-
-
-TestCase(TDMultipartReader_Types) {
-    TDMultipartReader* reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY\"" delegate: nil];
-    CAssertEqual(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding]);
-
-    reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=BOUNDARY" delegate: nil];
-    CAssertEqual(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding]);
-    
-    reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY" delegate: nil];
-    CAssertNil(reader);
-
-    reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related;boundary=X" delegate: nil];
-    CAssertEqual(reader.boundary, [@"\r\n--X" dataUsingEncoding: NSUTF8StringEncoding]);
-}
-
-
-
-TestCase(TDMultipartReader_Simple) {
-    RequireTestCase(TDMultipartReader_Types);
-    NSData* mime = [@"--BOUNDARY\r\nFoo: Bar\r\n Header : Val ue \r\n\r\npart the first\r\n--BOUNDARY  \r\n\r\n2nd part\r\n--BOUNDARY--"
-                            dataUsingEncoding: NSUTF8StringEncoding];
-        
-    NSArray* expectedParts = @[[@"part the first" dataUsingEncoding: NSUTF8StringEncoding],
-                                    [@"2nd part" dataUsingEncoding: NSUTF8StringEncoding]];
-    NSArray* expectedHeaders = @[$dict({@"Foo", @"Bar"},
-                                            {@"Header", @"Val ue"}),
-                                      $dict()];
-
-    for (NSUInteger chunkSize = 1; chunkSize <= mime.length; ++chunkSize) {
-        Log(@"--- chunkSize = %u", (unsigned)chunkSize);
-        TestMultipartReaderDelegate* delegate = [[TestMultipartReaderDelegate alloc] init];
-        TDMultipartReader* reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY\"" delegate: delegate];
-        CAssert(!reader.finished);
-        
-        NSRange r = {0, 0};
-        do {
-            CAssert(r.location < mime.length, @"Parser didn't stop at end");
-            r.length = MIN(chunkSize, mime.length - r.location);
-            [reader appendData: [mime subdataWithRange: r]];
-            CAssert(!reader.error, @"Reader got a parse error: %@", reader.error);
-            r.location += chunkSize;
-        } while (!reader.finished);
-        CAssertEqual(delegate.partList, expectedParts);
-        CAssertEqual(delegate.headerList, expectedHeaders);
-    }
-}
-
-#endif

@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMultipartDownloader.h"
 #import "TDMultipartDocumentReader.h"
@@ -103,51 +105,3 @@
 
 
 @end
-
-
-
-#if DEBUG
-TestCase(TDMultipartDownloader) {
-    //These URLs only work for me!
-    if (!$equal(NSUserName(), @"snej"))
-        return;
-    
-    RequireTestCase(TDBlobStore);
-    RequireTestCase(TDMultipartReader_Simple);
-    RequireTestCase(TDMultipartReader_Types);
-    
-    TD_Database* db = [TD_Database createEmptyDBAtPath: [NSTemporaryDirectory() stringByAppendingPathComponent: @"TDMultipartDownloader"]];
-    //NSString* urlStr = @"http://127.0.0.1:5984/demo-shopping-attachments/2F9078DF-3C72-44C2-8332-B07B3A29FFE4"
-    NSString* urlStr = @"http://127.0.0.1:5984/attach-test/oneBigAttachment";
-    urlStr = [urlStr stringByAppendingString: @"?revs=true&attachments=true"];
-    NSURL* url = [NSURL URLWithString: urlStr];
-    __block BOOL done = NO;
-    [[[TDMultipartDownloader alloc] initWithURL: url
-                                       database: db
-                                 requestHeaders: nil
-                                   onCompletion: ^(id result, NSError * error)
-     {
-         CAssertNil(error);
-         TDMultipartDownloader* request = result;
-         Log(@"Got document: %@", request.document);
-         NSDictionary* attachments = (request.document)[@"_attachments"];
-         CAssert(attachments.count >= 1);
-         CAssertEq(db.attachmentStore.count, 0u);
-         for (NSDictionary* attachment in attachments.allValues) {
-             TDBlobStoreWriter* writer = [db attachmentWriterForAttachment: attachment];
-             CAssert(writer);
-             CAssert([writer install]);
-             NSData* blob = [db.attachmentStore blobForKey: writer.blobKey];
-             Log(@"Found %u bytes of data for attachment %@", (unsigned)blob.length, attachment);
-             NSNumber* lengthObj = attachment[@"encoded_length"] ?: attachment[@"length"];
-             CAssertEq(blob.length, [lengthObj unsignedLongLongValue]);
-             CAssertEq(writer.length, blob.length);
-         }
-         CAssertEq(db.attachmentStore.count, attachments.count);
-         done = YES;
-    }] start];
-    
-    while (!done)
-        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate dateWithTimeIntervalSinceNow: 0.5]];
-}
-#endif

@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDCanonicalJSON.h"
 #import <math.h>
@@ -209,81 +211,3 @@ static NSComparisonResult compareCanonStrings( id s1, id s2, void *context) {
 @end
 
 
-
-#if DEBUG
-
-static void roundtrip( id obj ) {
-    NSData* json = [TDCanonicalJSON canonicalData: obj];
-    Log(@"%@ --> `%@`", [obj description], [json my_UTF8ToString]);
-    NSError* error;
-    id reconstituted = [NSJSONSerialization JSONObjectWithData: json options:NSJSONReadingAllowFragments error: &error];
-    CAssert(reconstituted, @"Canonical JSON `%@` was unparseable: %@",
-            [json my_UTF8ToString], error);
-    CAssertEqual(reconstituted, obj);
-}
-
-static void roundtripFloat( double n ) {
-    NSData* json = [TDCanonicalJSON canonicalData: @(n)];
-    NSError* error;
-    id reconstituted = [NSJSONSerialization JSONObjectWithData: json options:NSJSONReadingAllowFragments error: &error];
-    CAssert(reconstituted, @"`%@` was unparseable: %@",
-            [json my_UTF8ToString], error);
-    double delta = [reconstituted doubleValue] / n - 1.0;
-    Log(@"%g --> `%@` (error = %g)", n, [json my_UTF8ToString], delta);
-    CAssert(fabs(delta) < 1.0e-15, @"`%@` had floating point roundoff error of %g (%g vs %g)",
-            [json my_UTF8ToString], delta, [reconstituted doubleValue], n);
-}
-
-TestCase(TDCanonicalJSON_Encoding) {
-    CAssertEqual([TDCanonicalJSON canonicalString: $true], @"true");
-    CAssertEqual([TDCanonicalJSON canonicalString: $false], @"false");
-    CAssertEqual([TDCanonicalJSON canonicalString: $null], @"null");
-}
-
-TestCase(TDCanonicalJSON_RoundTrip) {
-    roundtrip($true);
-    roundtrip($false);
-    roundtrip($null);
-    
-    roundtrip(@0);
-    roundtrip(@INT_MAX);
-    roundtrip(@INT_MIN);
-    roundtrip(@UINT_MAX);
-    roundtrip(@INT64_MAX);
-    roundtrip(@UINT64_MAX);
-    
-    roundtripFloat(111111.111111);
-    roundtripFloat(M_PI);
-    roundtripFloat(6.02e23);
-    roundtripFloat(1.23456e-18);
-    roundtripFloat(1.0e-37);
-    roundtripFloat(UINT_MAX);
-    roundtripFloat(UINT64_MAX);
-    roundtripFloat(UINT_MAX + 0.01);
-    roundtripFloat(1.0e38);
-    
-    roundtrip(@"");
-    roundtrip(@"ordinary string");
-    roundtrip(@"\\");
-    roundtrip(@"xx\\");
-    roundtrip(@"\\xx");
-    roundtrip(@"\"\\");
-    roundtrip(@"\\.\"");
-    roundtrip(@"...\\.\"...");
-    roundtrip(@"...\\..\"...");
-    roundtrip(@"\r\nHELO\r \tTHER");
-    roundtrip(@"\037wow\037");
-    roundtrip(@"\001");
-    roundtrip(@"\u1234");
-    
-    roundtrip(@[]);
-    roundtrip(@[@[]]);
-    roundtrip(@[@"foo", @"bar", $null]);
-    
-    roundtrip(@{});
-    roundtrip(@{@"key": @"value"});
-    roundtrip(@{@"\"key\"": $false});
-    roundtrip(@{@"\"key\"": $false, @"": @{}});
-}
-
-#endif

@@ -497,15 +497,3 @@ extern int findCommonAncestor(TD_Revision* rev, NSArray* possibleRevIDs) {
 
 
 @end
-
-
-
-
-TestCase(TDPusher_findCommonAncestor) {
-    NSDictionary* revDict = $dict({@"ids", @[@"second", @"first"]}, {@"start", @2});
-    TD_Revision* rev = [TD_Revision revisionWithProperties: $dict({@"_revisions", revDict})];
-    CAssertEq(findCommonAncestor(rev, @[]), 0);
-    CAssertEq(findCommonAncestor(rev, @[@"3-noway", @"1-nope"]), 0);
-    CAssertEq(findCommonAncestor(rev, @[@"3-noway", @"1-first"]), 1);
-    CAssertEq(findCommonAncestor(rev, @[@"3-noway", @"2-second", @"1-first"]), 2);
-}
