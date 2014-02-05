@@ -40,6 +40,8 @@
                       length:strlen(result)];
     free(tempDirectoryNameCString);
 
+    NSLog(@"Database path: %@", path);
+
     return path;
 }
 

@@ -31,7 +31,7 @@
 
 @implementation ReplicationAcceptance
 
-static NSUInteger n_docs = 100;
+static NSUInteger n_docs = 10000;
 static NSUInteger largeRevTreeSize = 1500;
 
 #pragma mark - setUp and tearDown
@@ -125,17 +125,67 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) createLocalDocs:(NSInteger)count suffixFrom:(NSInteger)start
 {
-    NSError *error;
+    [self createLocalDocs:count suffixFrom:start reverse:NO updates:NO];
+}
+
+/**
+ * Create a given number local documents, with IDs of the form doc-1, doc-2 etc.
+ *
+ * @param count number of documents to create
+ * @param start the number to start the suffix numbering, e.g., start = 100, first doc doc-101
+ * @param reverse go from doc-100 -> doc-1
+ * @param updates check for and update current doc if there is one
+ */
+-(void) createLocalDocs:(NSInteger)count
+             suffixFrom:(NSInteger)start
+                reverse:(BOOL)reverse
+                updates:(BOOL)updates
+{
 
     for (long i = 1; i < count+1; i++) {
-        NSString *docId = [NSString stringWithFormat:@"doc-%li", start+i];
+
+        NSError *error;
+
+        NSString *docId;
+        NSInteger currentIndex = start + i;
+
+        if (!reverse) {
+            docId = [NSString stringWithFormat:@"doc-%li", (long)currentIndex];
+        } else {
+            NSInteger endIndex = start + count;
+            docId = [NSString stringWithFormat:@"doc-%li", endIndex-currentIndex+1];
+        }
+
+        CDTDocumentRevision *rev;
+        if (updates) {
+            rev = [self.datastore getDocumentWithId:docId error:&error];
+            if (error.code != 404) {  // new doc, so not error
+                STAssertNil(error, @"Error creating docs: %@", error);
+                STAssertNotNil(rev, @"Error creating docs: rev was nil");
+            }
+        }
+
+        error = nil;
+
         NSDictionary *dict = @{@"hello": @"world"};
         CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
-        CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
-                                                                   body:body
-                                                                  error:&error];
-        STAssertNil(error, @"Error creating docs: %@", error);
-        STAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
+        if (rev == nil) {  // we need to update an existing rev
+            rev = [self.datastore createDocumentWithId:docId
+                                                  body:body
+                                                 error:&error];
+//            NSLog(@"Created %@", docId);
+            STAssertNil(error, @"Error creating doc: %@", error);
+            STAssertNotNil(rev, @"Error creating doc: rev was nil");
+        } else {
+            rev = [self.datastore updateDocumentWithId:docId
+                                               prevRev:rev.revId
+                                                  body:body
+                                                 error:&error];
+//            NSLog(@"Updated %@", docId);
+            STAssertNil(error, @"Error updating doc: %@", error);
+            STAssertNotNil(rev, @"Error updating doc: rev was nil");
+        }
+
 
         if (i % 1000 == 0) {
             NSLog(@" -> %li documents created", i);
@@ -489,6 +539,12 @@ static NSUInteger largeRevTreeSize = 1500;
     [monitor wait];
 
     STAssertEquals(self.datastore.documentCount, (NSUInteger)n_docs*2, @"Wrong number of local docs");
+
+    [self pushToRemote];
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) pullDocsWhileWritingOthers_pullReplicateThenSignal:(TRVSMonitor*)monitor
@@ -500,6 +556,44 @@ static NSUInteger largeRevTreeSize = 1500;
 -(void) pullDocsWhileWritingOthers_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
 {
     [self createLocalDocs:n_docs suffixFrom:n_docs+1];
+    [monitor signal];
+}
+
+-(void) test_pullDocsWhileWritingSame
+{
+    [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
+    [self createRemoteDocs:n_docs];
+
+    TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
+
+    // Replicate n_docs from remote
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_pullReplicateThenSignal:)
+                           withObject:monitor];
+
+    // Create documents that don't conflict as we pull
+    [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_populateLocalDatabaseThenSignal:)
+                           withObject:monitor];
+
+    [monitor wait];
+
+    [self pushToRemote];
+
+    STAssertEquals(self.datastore.documentCount, (NSUInteger)n_docs, @"Wrong number of local docs");
+
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.remoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+}
+
+-(void) pullDocsWhileWritingSame_pullReplicateThenSignal:(TRVSMonitor*)monitor
+{
+    [self pullFromRemote];
+    [monitor signal];
+}
+
+-(void) pullDocsWhileWritingSame_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
+{
+    [self createLocalDocs:n_docs suffixFrom:0 reverse:YES updates:YES];
     [monitor signal];
 }
 
