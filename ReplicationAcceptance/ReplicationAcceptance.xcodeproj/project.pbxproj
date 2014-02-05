@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */; };
+		277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */; };
+		277992BB18A2503C00BAB6ED /* ReplicationAcceptance.h in Resources */ = {isa = PBXBuildFile; fileRef = 277992BA18A2503C00BAB6ED /* ReplicationAcceptance.h */; };
+		277992BC18A2503C00BAB6ED /* ReplicationAcceptance.h in Resources */ = {isa = PBXBuildFile; fileRef = 277992BA18A2503C00BAB6ED /* ReplicationAcceptance.h */; };
 		27A7E68A18997412007FAF1C /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A7E673189973EE007FAF1C /* SenTestingKit.framework */; };
 		27A7E68B18997412007FAF1C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A7E675189973EE007FAF1C /* Foundation.framework */; };
 		27A7E68C18997412007FAF1C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27A7E677189973EE007FAF1C /* UIKit.framework */; };
@@ -24,6 +28,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		277992B618A24F0900BAB6ED /* ReplicationAcceptance+CRUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ReplicationAcceptance+CRUD.h"; sourceTree = "<group>"; };
+		277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ReplicationAcceptance+CRUD.m"; sourceTree = "<group>"; };
+		277992BA18A2503C00BAB6ED /* ReplicationAcceptance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicationAcceptance.h; sourceTree = "<group>"; };
 		27A7E673189973EE007FAF1C /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		27A7E675189973EE007FAF1C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		27A7E677189973EE007FAF1C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -112,12 +119,15 @@
 		27A7E679189973EE007FAF1C /* ReplicationAcceptance */ = {
 			isa = PBXGroup;
 			children = (
+				277992BA18A2503C00BAB6ED /* ReplicationAcceptance.h */,
 				27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */,
 				27A7E67A189973EE007FAF1C /* Supporting Files */,
 				27A7E6AD189975B2007FAF1C /* CloudantReplicationBase.h */,
 				27A7E6AE189975B2007FAF1C /* CloudantReplicationBase.m */,
 				27BE3CED189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.h */,
 				27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */,
+				277992B618A24F0900BAB6ED /* ReplicationAcceptance+CRUD.h */,
+				277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */,
 			);
 			path = ReplicationAcceptance;
 			sourceTree = "<group>";
@@ -245,6 +255,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				277992BB18A2503C00BAB6ED /* ReplicationAcceptance.h in Resources */,
 				27A7E69218997412007FAF1C /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -253,6 +264,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				277992BC18A2503C00BAB6ED /* ReplicationAcceptance.h in Resources */,
 				27A7E6A41899741C007FAF1C /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -328,6 +340,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
+				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
 				27A7E6AF189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 			);
@@ -338,6 +351,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27BE3CF0189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
+				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 			);
