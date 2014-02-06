@@ -1,5 +1,11 @@
 xcodeproj 'Project'
 
-platform :ios, '7.0'
+def import_pods
+    pod "CDTDatastore", :path => "../"
+end
 
-pod "CDTDatastore", :path => "../"
+target :ios do
+    platform :ios, '7.0'
+    link_with 'Project'
+    import_pods
+end
