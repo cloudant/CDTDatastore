@@ -39,6 +39,18 @@ sudo gem install xcpretty
 
 ## Getting started with the project
 
+The main workspace is `CDTDatastore.xcworkspace` in the root of the checkout.
+Before the projects inside will run, you need to use Cocoapods to get the
+dependencies set up correctly for each project. The `Podfile` is actually
+inside the `Tests` folder:
+
+```bash
+# Close the Xcode workspace before doing this!
+
+cd Tests
+pod install
+```
+
 Open up `CDTDatastore.xcworkspace`. This workspace is where you should do all
 your work. It contains:
 
@@ -48,34 +60,28 @@ your work. It contains:
 * `Pods` where the test and example app dependencies are built (including
   CDTDatastore itself).
 
-Initially, the Pods project will be missing and the tests and example app
-won't build or run.
-
-To run the tests, install the dependencies using Cocoapods:
-
-```bash
-# Close the Xcode workspace before doing this!
-
-cd Tests
-pod install
-```
-
-To run the example project, you'll need to run `pod install` from the project
-directory:
-
-```bash
-cd Project
-pod install
-```
-
-This will create the Pods project and add CDTDatastore and its dependencies
-to the projects. You can now run the tests and the example project from Xcode.
+If things don't work, you probably skipped over the bit above where the
+dependencies are set up.
 
 As you edit the source code in the `CDTDatastore` group, the Pods project will
 be rebuilt when you run the tests as it references the code in `Classes`.
 
 At this point, run both the tests from the Tests project and the example app
 to make sure you're setup correctly.
+
+### Adding and removing files
+
+First, make sure you add them to the right folder within the `Classes` structure:
+
+* `common` for most new files.
+  * Use a subfolder of `common` for discrete subsystems. 
+* `vendor` for any libraries that can't be brought in via cocoapods.
+
+**If you add or remove files, run `pod update` in `Tests` to get them into
+the build. Then add them to the workspace, under the CDTDatastore group.**
+
+When adding files to the workspace, make sure to keep the groups in the
+workspace up to date with the file locations on the file system.
 
 ### Documentation
 
@@ -90,7 +96,7 @@ Use `rake docs` to build the docs and install into Xcode.
 Run the following at the command line:
 
 ```
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' test | xcpretty
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' test | xcpretty -c
 ```
 
 To test on a specific device you need to specify `-destination`:
