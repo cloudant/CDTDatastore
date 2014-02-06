@@ -13,6 +13,11 @@ it add the following line to your Podfile:
 pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore'
 ```
 
+Once set up, read the [Getting Started][gs] guide for an introduction
+to the API.
+
+[gs]: https://github.com/cloudant/CDTDatastore/wiki/Getting-Started
+
 ## Example project
 
 There is an example project in the `Project` folder, for iOS 7. To get
