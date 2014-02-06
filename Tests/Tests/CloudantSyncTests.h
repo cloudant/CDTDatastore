@@ -15,4 +15,6 @@
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
 
+- (NSString*)createTemporaryDirectoryAndReturnPath;
+
 @end

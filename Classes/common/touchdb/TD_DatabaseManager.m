@@ -82,7 +82,10 @@ static NSCharacterSet* kIllegalNameChars;
                                        withIntermediateDirectories: NO
                                                         attributes: nil
                                                              error: &error]) {
-            if (!TDIsFileExistsError(error)) {
+            
+            BOOL isDir;
+            if( !TDIsFileExistsError(error) ||
+               ([[NSFileManager defaultManager] fileExistsAtPath:_dir isDirectory:&isDir] && !isDir) ){
                 if (outError) *outError = error;
                 return nil;
             }
