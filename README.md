@@ -5,10 +5,25 @@
 
 ## Usage
 
-To run the example project:
+CDTDatastore is available through [CocoaPods](http://cocoapods.org), to install
+it add the following line to your Podfile:
 
-* Run `pod install` from the `Project` directory, then open the
-  `Project.xcworkspace` workspace.
+```ruby
+# At the moment, the pod spec isn't in Cocoapods main repo
+pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore'
+```
+
+## Example project
+
+There is an example project in the `Project` folder, for iOS 7. To get
+this up and running independently of the main codebase, a Podfile is
+included:
+
+```bash
+$ cd Project
+$ pod install
+$ open Project.xcworkspace
+```
 
 ## Running the tests
 
@@ -16,14 +31,8 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Requirements
 
-None.
-
-## Installation
-
-CDTDatastore is available through [CocoaPods](http://cocoapods.org), to install
-it add the following line to your Podfile:
-
-    pod "CDTDatastore"
+All requirements are included in the source code or pulled in as dependecies
+via `pod`.
 
 ## Contributors
 
