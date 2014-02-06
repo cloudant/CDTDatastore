@@ -13,6 +13,10 @@
 #import "CDTDatastoreManager.h"
 #import "CDTDocumentRevision.h"
 
+#import "TD_Revision.h"
+#import "TD_Body.h"
+
+
 @implementation IndexManagerTests
 
 - (void)testCreateIndexManager
@@ -120,8 +124,8 @@
     
     [im updateAllIndexes:&error];
 
-    CDTQueryResult *res1 = [im queryWithDictionary:@{@"index1":@"tom"}];
-    CDTQueryResult *res2 = [im queryWithDictionary:@{@"index1":@"bill"}];
+    CDTQueryResult *res1 = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
+    CDTQueryResult *res2 = [im queryWithDictionary:@{@"index1":@"bill"} error:&error];
     
     unsigned long count1 = [[res1 documentIds] count];
     unsigned long count2 = [[res2 documentIds] count];
@@ -152,7 +156,7 @@
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
     
-    CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom"}];
+    CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom"} error:&error];
     unsigned long count = [[res documentIds] count];
     STAssertEquals(count, 3UL, @"Query should return 3 documents");
 }
@@ -179,7 +183,7 @@
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
     
-    CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom",@"surname":@"Blench"}];
+    CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom",@"surname":@"Blench"} error:&error];
     STAssertEquals([[res documentIds] count], 1UL, @"Query should return 1 document");
 }
 
@@ -222,7 +226,7 @@
     [im ensureIndexedWithIndexName:@"dinner" fieldName:@"dinner" error:&error];
     NSLog(@"end index");
     
-    CDTQueryResult *res = [im queryWithDictionary:@{@"breakfast":@"bacon",@"elevenses":@"ham",@"lunch":@"eggs",@"dinner":@"brie"}];
+    CDTQueryResult *res = [im queryWithDictionary:@{@"breakfast":@"bacon",@"elevenses":@"ham",@"lunch":@"eggs",@"dinner":@"brie"} error:&error];
 
     NSLog(@"end query");
     unsigned long count=[[res documentIds] count];
@@ -248,7 +252,7 @@
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
     
-    CDTQueryResult *res = [im queryWithDictionary:@{@"index1":@"tom"}];
+    CDTQueryResult *res = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
     
     // helper fn countResults is a for loop which tests enumerator
     int count=[self countResults:res];
@@ -320,8 +324,8 @@
     
     [im ensureIndexedWithIndexName:@"animal" type:CDTIndexTypeInteger indexFunction:indexer error:&error];
     
-    CDTQueryResult *res1 = [im queryWithDictionary:@{@"animal":@"du"}];
-    CDTQueryResult *res2 = [im queryWithDictionary:@{@"animal":@"d"}];
+    CDTQueryResult *res1 = [im queryWithDictionary:@{@"animal":@"du"} error:&error];
+    CDTQueryResult *res2 = [im queryWithDictionary:@{@"animal":@"d"} error:&error];
 
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
@@ -360,14 +364,54 @@
     
     [im ensureIndexedWithIndexName:@"numeral" fieldName:@"numeral" type:CDTIndexTypeInteger error:&error];
     
-    CDTQueryResult *res1 = [im queryWithDictionary:@{@"numeral":@1}];
-    CDTQueryResult *res2 = [im queryWithDictionary:@{@"numeral":@{@"min":@2}}];
+    CDTQueryResult *res1 = [im queryWithDictionary:@{@"numeral":@1} error:&error];
+    CDTQueryResult *res2 = [im queryWithDictionary:@{@"numeral":@{@"min":@2}} error:&error];
     
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
     
     STAssertEquals(count1, 3UL, @"Didn't get expected number of results");
     STAssertEquals(count2, 6UL, @"Didn't get expected number of results");
+}
+
+- (void)testUniqueValues
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    // create some docs
+    
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"one", @"numeral": @"1"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"eins", @"numeral": @"1"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"一", @"numeral": @"1"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"two", @"numeral": @"2"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"ニ", @"numeral": @"2"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"three", @"numeral": @"3"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"four", @"numeral": @"4"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"five", @"numeral": @"5"}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"six", @"numeral": @"6"}]
+                                     error:&error];
+    
+    [im ensureIndexedWithIndexName:@"number" fieldName:@"number" type:CDTIndexTypeString error:&error];
+    [im ensureIndexedWithIndexName:@"numeral" fieldName:@"numeral" type:CDTIndexTypeInteger error:&error];
+    
+    NSArray *res1 = [im uniqueValuesForIndex:@"numeral" error:&error];
+    NSArray *res2 = [im uniqueValuesForIndex:@"number" error:&error];
+
+    unsigned long count1=[res1 count];
+    unsigned long count2=[res2 count];
+    
+    STAssertEquals(count1, 6UL, @"Didn't get expected number of results");
+    STAssertEquals(count2, 9UL, @"Didn't get expected number of results");
 }
 
 - (void)testComplexQuery
@@ -388,10 +432,186 @@
                                                      @"elec_consumption": @{@"min": @(652200000)},
                                                      @"population": @{@"max": @(3563112)},
                                                      @"area": @{@"min": @(200), @"max": @(2381740)}
-                                                     }];
+                                                     }
+                                            error:&error];
     
     unsigned long count=[[res documentIds] count];
     STAssertEquals(count, 1UL, @"Didn't get expected number of results");
+}
+
+- (void)testOrderQuery1
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    // create some docs
+    [self initLotsOfData];
+    
+    [im ensureIndexedWithIndexName:@"area" fieldName:@"area" type:CDTIndexTypeInteger error:&error];
+    [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"max": @(100000000)}}
+                                          options:@{@"sort_by": @"area", @"descending": @(YES)}
+                                            error:&error];
+    int lastVal = 100000000;
+    
+    STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
+    
+    for(CDTDocumentRevision *doc in res) {
+        NSNumber *val = [[[[doc td_rev] body] properties] objectForKey:@"area"];
+        int valInt = [val intValue];
+        STAssertTrue(valInt <= lastVal, @"Not sorted");
+        lastVal = valInt;
+    }
+}
+
+- (void)testOrderQuery2
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    // create some docs
+    [self initLotsOfData];
+    
+    [im ensureIndexedWithIndexName:@"name" fieldName:@"name" type:CDTIndexTypeString error:&error];
+    [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"min": @(10000000)}}
+                                          options:@{@"sort_by": @"name", @"descending": @(YES)}
+                                            error:&error];
+    NSString *lastName = @"Zzzzzzzzistan"; // probably the last country in the alphabet
+    
+    STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
+    
+    for(CDTDocumentRevision *doc in res) {
+        NSString *val = [[[[doc td_rev] body] properties] objectForKey:@"name"];
+
+        STAssertTrue([val compare:lastName] < 0, @"Not sorted correctly");
+        lastName = val;
+    }
+}
+
+
+- (void)testOffsetLimitQuery
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    // create some docs
+    [self initLotsOfData];
+    
+    [im ensureIndexedWithIndexName:@"area" fieldName:@"area" type:CDTIndexTypeInteger error:&error];
+    
+    // this will give 194 in total
+    NSDictionary *query = @{@"area": @{@"min": @(200), @"max": @(2381740)}};
+    
+    CDTQueryResult *res1 = [im queryWithDictionary:query
+                                           options:@{@"limit": @(10)}
+                                             error:&error];
+    CDTQueryResult *res2 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(190), @"limit": @(10)}
+                                             error:&error];
+    CDTQueryResult *res3 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(193), @"limit": @(1)}
+                                             error:&error];
+    CDTQueryResult *res4 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(194), @"limit": @(10)}
+                                             error:&error];
+    CDTQueryResult *res5 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(200), @"limit": @(100)}
+                                             error:&error];
+    CDTQueryResult *res6 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(10)}
+                                             error:&error];
+    CDTQueryResult *res7 = [im queryWithDictionary:query
+                                           options:@{@"offset": @(-1)}
+                                             error:&error];
+    CDTQueryResult *res8 = [im queryWithDictionary:query
+                                           options:@{@"limit": @(-1)}
+                                             error:&error];
+    
+    unsigned long count1=[[res1 documentIds] count];
+    unsigned long count2=[[res2 documentIds] count];
+    unsigned long count3=[[res3 documentIds] count];
+    unsigned long count4=[[res4 documentIds] count];
+    unsigned long count5=[[res5 documentIds] count];
+    unsigned long count6=[[res6 documentIds] count];
+    unsigned long count7=[[res7 documentIds] count];
+    unsigned long count8=[[res8 documentIds] count];
+    
+    STAssertEquals(count1, 10UL, @"Didn't get expected number of results");
+    STAssertEquals(count2, 4UL, @"Didn't get expected number of results");
+    STAssertEquals(count3, 1UL, @"Didn't get expected number of results");
+    STAssertEquals(count4, 0UL, @"Didn't get expected number of results");
+    STAssertEquals(count5, 0UL, @"Didn't get expected number of results");
+    STAssertEquals(count6, 184UL, @"Didn't get expected number of results");
+    STAssertEquals(count7, 194UL, @"Didn't get expected number of results");
+    STAssertEquals(count8, 0UL, @"Didn't get expected number of results");
+}
+
+- (void)testQueryError1
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"index2": @"value"}
+                                            error:&error];
+
+    STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
+    STAssertNil(res, @"Result was not nil");
+}
+
+- (void)testQueryError2
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"abc123^&*^&%^^*^&(; drop table customer": @"value"}
+                                            error:&error];
+    
+    STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
+    STAssertNil(res, @"Result was not nil");
+}
+
+- (void)testQueryError3
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
+                                          options:@{@"sort_by": @"index2"}
+                                            error:&error];
+    
+    STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
+    STAssertNil(res, @"Result was not nil");
+}
+
+- (void)testQueryError4
+{
+    NSError *error;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
+                                          options:@{@"sort_by": @"abc123^&*^&%^^*^&(; drop table customer"}
+                                            error:&error];
+    
+    STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
+    STAssertNil(res, @"Result was not nil");
 }
 
 
