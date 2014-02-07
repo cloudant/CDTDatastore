@@ -89,6 +89,9 @@ Install [appledocs][appledocs].
 
 Use `rake docs` to build the docs and install into Xcode.
 
+As the `appledocs` docs themselves are down, here's a
+[good introduction to the format](http://www.cocoanetics.com/2011/11/amazing-apple-like-documentation/).
+
 [appledocs]: http://gentlebytes.com/appledoc/
 
 ### Using xcodebuild and xcpretty to run the tests
