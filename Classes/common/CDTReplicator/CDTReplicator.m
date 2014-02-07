@@ -141,7 +141,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     }
 }
 
-/**
+/*
  * Notified that a _replicator database document has been created/updated/deleted.
  * We need to update our state if it's our document.
  */
@@ -151,7 +151,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     [self updatedStateFromRevision:rev];
 }
 
-/**
+/*
  * Called when the replication document in the _replicator database has changed.
  */
 -(void)updatedStateFromRevision:(CDTDocumentRevision*)rev {
@@ -234,7 +234,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     return [self isActiveState:self.state];
 }
 
-/**
+/*
  * Returns whether `state` is an active state for the replicator.
  */
 -(BOOL)isActiveState:(CDTReplicatorState)state

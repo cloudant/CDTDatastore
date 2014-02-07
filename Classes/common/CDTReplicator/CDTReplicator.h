@@ -14,7 +14,9 @@
 @class CDTDocumentBody;
 
 /**
- * <p>Describes the state of a {@link Replicator} at a given moment.</p>
+ * Describes the state of a CDTReplicator at a given moment.
+ 
+ @see CDTReplicator
  */
 typedef NS_ENUM(NSInteger, CDTReplicatorState) {
     /**
@@ -26,12 +28,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
      */
     CDTReplicatorStateStarted,
     /**
-     * The last replication was stopped using
-     * {@link com.cloudant.sync.replication.Replicator#stop()}.
+     * The last replication was stopped using -stop
      */
     CDTReplicatorStateStopped,
     /**
-     * {@link com.cloudant.sync.replication.Replicator#stop()} has
+     * -stop has
      * been called and the replicator is stopping its worker threads.
      */
     CDTReplicatorStateStopping,
@@ -45,115 +46,144 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
     CDTReplicatorStateError
 };
 
+/**
+ A CDTReplicator instance represents a replication job.
+ 
+ In CouchDB terms, it wraps a document in the `_replicator` database.
+ 
+ Use the CDTReplicatorFactory to create instances of this class.
+ 
+ @see CDTReplicatorFactory
+ */
 @interface CDTReplicator : NSObject
 
+
+/**---------------------------------------------------------------------------------------
+ * @name Replication status
+ *  --------------------------------------------------------------------------------------
+ */
+
+/**
+ The current replication state.
+ 
+ @see CDTReplicatorState
+ */
 @property (nonatomic, readonly) CDTReplicatorState state;
+
+/**
+ The number of changes from the source's `_changes` feed this
+ replicator has processed.
+ */
 @property (nonatomic, readonly) NSInteger changesProcessed;
+
+/** Total number of changes read so far from the source's `_changes`
+ feed.
+ 
+ Note that this will increase as the replication continues and
+ further reads of the `_changes` feed happen.
+ */
 @property (nonatomic, readonly) NSInteger changesTotal;
 
+/**
+ * Set the replicator's delegate.
+ *
+ * This allows for more efficient tracking of replication state than polling.
+ *
+ * @see CDTReplicatorDelegate
+ */
+@property (nonatomic,weak) NSObject<CDTReplicatorDelegate> *delegate;
+
+/**
+ Returns true if the state is `CDTReplicatorStatePending`, `CDTReplicatorStateStarted` or
+ `CDTReplicatorStateStopping`.
+
+ @see CDTReplicatorState
+ */
+-(BOOL)isActive;
+
+
+/**
+ Returns a string representation of a CDTReplicatorState value.
+ 
+ @param state state to return string representation
+ */
 +(NSString*)stringForReplicatorState:(CDTReplicatorState)state;
 
 
+/*
+ Private so no docs
+ */
 -(id)initWithReplicatorDatastore:(CDTDatastore*)replicatorDb
          replicationDocumentBody:(CDTDocumentBody*)body;
 
+
+/**---------------------------------------------------------------------------------------
+ * @name Starting and stopping
+ *  --------------------------------------------------------------------------------------
+ */
+
 /**
- * <p>Starts a replication.</p>
+ * Starts a replication.
  *
- * <p>The replication will continue until the
+ * The replication will continue until the
  * replication is caught up with the source database; that is, until
- * there are no current changes to replicate.</p>
+ * there are no current changes to replicate.
  *
- * <p>{@code start} can be called from any thread. It spawns background
+ * -start can be called from any thread. It spawns background
  * threads for its work. The methods on the ReplicationListener
  * may be called from the background threads; any work that needs
  * to be on the main thread will need to be explicitly executed
- * on that thread.</p>
+ * on that thread.
  *
- * <p>{@code start} will spawn a manager thread for the replication and
- * immediately return.</p>
+ * -start will spawn a manager thread for the replication and
+ * immediately return.
  *
- * <p>A given replicator instance can be reused:</p>
+ * A given replicator instance can be reused:
  *
- * <ul>
- *  <li>If you call start when in {@link Replicator.State#PENDING},
- *   replication will start.</li>
- *  <li>In {@link Replicator.State#STARTED}, nothing changes.</li>
- *  <li>In {@link Replicator.State#STOPPING}, nothing changes.</li>
- *  <li>In {@link Replicator.State#ERROR}, the replication will restart.
+ * - If you call -start when in `CDTReplicatorStatePending`,
+ *   replication will start.
+ * - In `CDTReplicatorStateStarted`, nothing changes.
+ * - In `CDTReplicatorStateStopping`, nothing changes.
+ * - In `CDTReplicatorStateError`, the replication will restart.
  *   It's likely its going to error again, however, depending on whether
- *   the error is transient or not.</li>
- *  <li>In {@link Replicator.State#STOPPED} or
- *   {@link Replicator.State#COMPLETE}, the replication will start a
- *   second or further time.</li>
- * </ul>
+ *   the error is transient or not.
+ * - In `CDTReplicatorStateStopped` or `CDTReplicatorStateComplete`, the
+ *   replication will start a second or further time.
+ *
+ * @see CDTReplicatorState
  */
 - (void)start;
 
 /**
- * <p>Stops an in-progress replication.</p>
+ * Stop an in-progress replication.
  *
- * <p>Already replicated changes will remain
- * in the datastore database.</p>
+ * Already replicated changes will remain in the datastore.
  *
- * <p>{@code stop} can be called from any thread. It will initiate a
- * shutdown process and return immediately.</p>
+ * -stop can be called from any thread. It will initiate a
+ * shutdown process and return immediately.
  *
- * <p>The shutdown process may take time as we need to wait for in-flight
+ * The shutdown process may take time as we need to wait for in-flight
  * network requests to complete before background threads can be safely
  * stopped. However, no modifications to the database will be made
- * after {@code stop} is called, including checkpoint related
- * operations.</p>
+ * after -stop is called, including checkpoint related
+ * operations.
  *
- * <p>Consumers should check
- * {@link com.cloudant.sync.replication.Replicator#getState()} if they need
- * to know when the replicator has fully stopped. After {@code stop} is
- * called, the replicator will be in the {@link Replicator.State#STOPPING}
+ * Consumers should check -state if they need
+ * to know when the replicator has fully stopped. After -stop is
+ * called, the replicator will be in the `CDTReplicatorStateStopping`
  * state while operations complete and will move to the
- * {@link Replicator.State#STOPPED} state when the replicator has fully
- * shutdown.</p>
+ * `CDTReplicatorStateStopped` state when the replicator has fully
+ * shutdown.
  *
- * <p>It is also possible the replicator moves to the
- * {@link Replicator.State#ERROR} state if an error happened during the
- * shutdown process.</p>
+ * It is also possible the replicator moves to the
+ * `CDTReplicatorStateError` state if an error happened during the
+ * shutdown process.
  *
- * <p>If the replicator is in the {@link Replicator.State#PENDING} state,
- * it will immediately move to the {@link Replicator.State#STOPPED} state.
- * </p>
+ * If the replicator is in the `CDTReplicatorStateStopping` state,
+ * it will immediately move to the `CDTReplicatorStateStopped` state.
+ *
+ * @see CDTReplicatorState
  */
 - (void)stop;
-
-/**
- * <p>Returns the {@link Replicator.State} this replicator is in.</p>
- *
- * <p>{@code getState} may be called from any thread.</p>
- *
- * <p>In all states other than {@link CDTReplicatorStateStarted} and
- * {@link CDTReplicatorStateStopping}, the replicator object
- * is idle with no background threads.</p>
- */
-- (CDTReplicatorState)state;
-
-/**
- * Returns true if the state is CDTReplicatorStateStarted or 
- * CDTReplicatorStateStopping.
- */
--(BOOL)isActive;
-
-/**
- * <p>Sets the replicator's {@link ReplicationListener}.</p>
- *
- * <p>Providing a listener is optional, but is a more efficient method
- * for keeping track of the replication than polling.</p>
- *
- * <p>To remove the listener, call send {@code null} as the
- * {@code listener} parameter.</p>
- *
- * @param listener a new listener to replace the current one. Use
- *                 {@code null} to set no listener.
- *
- * @see ReplicationListener
- */
-@property (nonatomic,weak) NSObject<CDTReplicatorDelegate> *delegate;
 
 @end

@@ -412,6 +412,9 @@
       </Group>
    </Group>
    <FileRef
+      location = "group:Rakefile">
+   </FileRef>
+   <FileRef
       location = "group:Tests/Tests.xcodeproj">
    </FileRef>
    <FileRef

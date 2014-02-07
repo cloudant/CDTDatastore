@@ -13,48 +13,75 @@
 @class CDTDatastoreManager;
 
 /**
- * <p>Factory for {@link CDTDatastore} objects.</p>
- *
- * <p>The {@code source} or {@code target} {@link URI} parameters used in the
- * methods below must include:</p>
- *
- * <pre>
- *   protocol://[username:password@]host[:port]/database_name
- * </pre>
- *
- * <p><em>protocol</em>, <em>host</em> and <em>database_name</em> are required.
- * If no <em>port</em> is provided, the default for <em>protocol</em> is used.
- * Using a <em>database_name</em> containing a {@code /} is not supported.</p>
+ Factory for CDTReplicator objects.
+
+ The _source_ or _target_ NSURL parameters used in the
+ methods below must include:
+
+     protocol://[username:password@]host[:port]/database_name
+
+ _protocol_, _host_ and _database_name_ are required.
+ If no _port_ is provided, the default for _protocol_ is used.
+ Using a _database_name_ containing a `/` is not supported.
  */
 @interface CDTReplicatorFactory : NSObject
 
-- (id) initWithDatastoreManager: (CDTDatastoreManager*)dsManager;
-
-- (void) start;
-- (void) stop;
+/**---------------------------------------------------------------------------------------
+ * @name Getting a replicator factory set up
+ *  --------------------------------------------------------------------------------------
+ */
 
 /**
- * <p>Creates a Replicator object set up to replicate changes from the
- * local datastore to a remote database.</p>
+ Initialise with a datastore manager object.
+ 
+ This manager is used for the `_replicator` database used to manage
+ replications internally.
+ 
+ @param dsManager the manager of the datastores that this factory will replicate to and from.
+ */
+- (id) initWithDatastoreManager: (CDTDatastoreManager*)dsManager;
+
+/**
+ Start the background thread for replications.
+ 
+ No replications will progress until -start is called.
+ */
+- (void) start;
+
+/**
+ Stop the background thread for replications.
+ 
+ This will stop all in progress replications.
+ */
+- (void) stop;
+
+
+/**---------------------------------------------------------------------------------------
+ * @name Creating replication jobs
+ *  --------------------------------------------------------------------------------------
+ */
+
+/**
+ * Create a CDTReplicator object set up to replicate changes from the
+ * local datastore to a remote database.
  *
- * @param source local {@link CDTDatastore} to replicate changes from.
+ * @param source local CDTDatastore to replicate changes from.
  * @param target remote database to replicate changes to.
  *
- * @return a {@link CDTReplicator} instance which can be used to start and
+ * @return a CDTReplicator instance which can be used to start and
  *  stop the replication itself.
- *
  */
 - (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
                               targetURI:(NSURL*)target;
 
 /**
- * <p>Creates a Replicator object set up to replicate changes from a
- * remote database to the local datastore.</p>
+ * Create a CDTReplicator object set up to replicate changes from a
+ * remote database to the local datastore.
  *
  * @param source remote database to replicate changes from.
- * @param target local {@link CDTDatastore} to replicate changes to.
+ * @param target local CDTDatastore to replicate changes to.
  *
- * @return a {@link CDTReplicator} instance which can be used to start and
+ * @return a CDTReplicator instance which can be used to start and
  *  stop the replication itself.
  */
 - (CDTReplicator*)onewaySourceURI:(NSURL*)source

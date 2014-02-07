@@ -11,10 +11,17 @@
 @class CDTReplicator;
 @class CDTReplicationErrorInfo;
 
+/**
+ The delegate of a CDTReplicator must adopt the CDTReplicatorDelegate protocol. The protocol
+ allows the delegate to be notified of updates during replication. All methods are optional.
+ */
 @protocol CDTReplicatorDelegate <NSObject>
 
+// all methods are optional
+@optional
+
 /**
- * <p>Called whenever the replicator changes state.</p>
+ * <p>Called when the replicator changes state.</p>
  *
  * <p>May be called from any worker thread.</p>
  *
@@ -57,7 +64,7 @@
  * <p>May be called from any worker thread.</p>
  *
  * @param replicator the replicator issuing the event.
- * @param error information about the error that occurred.
+ * @param info information about the error that occurred.
  */
 - (void)replicatorDidError:(CDTReplicator*)replicator info:(CDTReplicationErrorInfo*)info;
 
