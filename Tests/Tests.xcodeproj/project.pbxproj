@@ -21,8 +21,6 @@
 		27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27CCEDD8187AD719006F3C66 /* DatastoreCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3218534E050027A404 /* DatastoreCrud.m */; };
 		27CCEDD9187AD719006F3C66 /* SetUpDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3418534E050027A404 /* SetUpDatastore.m */; };
-		83A179A34EAC4BE9A42ED148 /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
-		8E390525B3B446238D536B8D /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BBD8D50209E84CD981F3FA7A /* libPods-osx.a */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
 		9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -100,7 +98,6 @@
 				27389E10185345FD0027A404 /* SenTestingKit.framework in Frameworks */,
 				27389E14185345FD0027A404 /* UIKit.framework in Frameworks */,
 				27389E12185345FD0027A404 /* Foundation.framework in Frameworks */,
-				83A179A34EAC4BE9A42ED148 /* libPods-ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -110,7 +107,6 @@
 			files = (
 				9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */,
 				27CCEDC7187AD64F006F3C66 /* SenTestingKit.framework in Frameworks */,
-				8E390525B3B446238D536B8D /* libPods-osx.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

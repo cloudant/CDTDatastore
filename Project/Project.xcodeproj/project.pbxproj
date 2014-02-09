@@ -22,7 +22,6 @@
 		27C1CDF0184E2D9C000604EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27C1CDEE184E2D9C000604EF /* InfoPlist.strings */; };
 		27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CDF1184E2D9C000604EF /* ProjectTests.m */; };
 		27E16BDE187D6FBA00F8A3B2 /* CDTReplicateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */; };
-		27FD647D187D684A0095AFC4 /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 27FD647C187D684A0095AFC4 /* libPods-ios.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,7 +65,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27FD647D187D684A0095AFC4 /* libPods-ios.a in Frameworks */,
 				27C1CDC9184E2D9C000604EF /* CoreGraphics.framework in Frameworks */,
 				27C1CDCB184E2D9C000604EF /* UIKit.framework in Frameworks */,
 				27C1CDC7184E2D9C000604EF /* Foundation.framework in Frameworks */,
