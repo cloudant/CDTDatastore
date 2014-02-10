@@ -23,6 +23,8 @@
 		27CCEDD8187AD719006F3C66 /* DatastoreCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3218534E050027A404 /* DatastoreCrud.m */; };
 		27CCEDD9187AD719006F3C66 /* SetUpDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3418534E050027A404 /* SetUpDatastore.m */; };
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
+		8E3377D518ABF36E003E3D93 /* IndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */; };
+		8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
 		9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -72,6 +74,7 @@
 		27CCEDD0187AD64F006F3C66 /* Tests OSX-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests OSX-Prefix.pch"; sourceTree = "<group>"; };
 		2996853CB13542679108F845 /* Pods-osx.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.xcconfig"; path = "Pods/Pods-osx.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerTests.m; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
 		9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartWriterTests.m; sourceTree = "<group>"; };
@@ -172,6 +175,7 @@
 				27389E3018534E050027A404 /* DatastoreActions.m */,
 				27389E3218534E050027A404 /* DatastoreCrud.m */,
 				27389E3418534E050027A404 /* SetUpDatastore.m */,
+				8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */,
 				27389E16185345FD0027A404 /* Supporting Files */,
 			);
 			path = Tests;
@@ -365,6 +369,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E3377D518ABF36E003E3D93 /* IndexManagerTests.m in Sources */,
 				9F0D2408188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D23FF188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
@@ -389,6 +394,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D2400188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,

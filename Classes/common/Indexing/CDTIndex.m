@@ -3,7 +3,15 @@
 //
 //
 //  Created by Thomas Blench on 27/01/2014.
+//  Copyright (c) 2014 Cloudant. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 //
 
 #import "CDTIndex.h"
@@ -27,7 +35,7 @@
 
 @implementation CDTIndexHelperBase
 
--(CDTIndexHelper*)initWithType:(CDTIndexType)type
++(CDTIndexHelper*)indexHelperForType:(CDTIndexType)type;
 {
     // TODO smarter way of dispatching depending on the type
     switch(type)
@@ -66,11 +74,6 @@
             tableName];
 }
 
--(NSString*)typeName
-{
-    return @"INTEGER";
-}
-
 -(NSObject*)convertIndexValue:(NSObject*)object;
 {
     if ([object isKindOfClass: [NSString class]]) {
@@ -105,11 +108,6 @@
             tableName,
             tableName,
             tableName];
-}
-
--(NSString*)typeName
-{
-    return @"STRING";
 }
 
 -(NSObject*)convertIndexValue:(NSObject*)object;

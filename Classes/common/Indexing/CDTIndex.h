@@ -3,29 +3,50 @@
 //
 //
 //  Created by Thomas Blench on 27/01/2014.
+//  Copyright (c) 2014 Cloudant. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 //
 
 #import <Foundation/Foundation.h>
 
 /**
- * <p>
  * The datatype used for an index.
- * </p>
- * <p>
- * CDTIndexTypeInteger supports any NSNumber type.
- * Additionally NSStrings are supported, if they can be successfully converted to an NSNumber.
- * Strings which fail conversion are returned as nil and are not indexed.
- * </p>
- * <p>
- * CDTIndexTypeString supports only NSStrings.
- * No conversion is performed.
- * </p>
+ *
+ * See each enum value for conversion details.
  */
 typedef NS_ENUM(NSInteger, CDTIndexType) {
+    /**
+     * Integer index type.
+     * Supports any NSNumber type.
+     * Additionally NSStrings are supported, if they can be successfully converted to an NSNumber.
+     * Strings which fail conversion are returned as nil and are not indexed.
+     * 
+     */
     CDTIndexTypeInteger,
+    /**
+     * String index type.
+     * Supports only NSStrings.
+     * No conversion is performed.
+     */
     CDTIndexTypeString
 };
+
+// fwd defs for typedef which follows
+@class CDTIndexHelperBase;
+@protocol CDTIndexHelperDelegate;
+
+/**
+ * Typedef for convenience - all helper classes should extend this type as they will need to
+ * implement the CDTIndexHelperBase interface and conform to the CDTIndexHelperDelegate protocol
+ */
+typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
 
 @interface CDTIndex : NSObject
 
@@ -40,24 +61,20 @@ typedef NS_ENUM(NSInteger, CDTIndexType) {
 @end
 
 /**
- * <p>
- * Protocol adopted by classes to help indexers deal with issues arising from use of different data types.
- * </p>
- * <p>
- * In order to extend the types which indexes support, it will be necessary to create new classes conforming to this protocol.
- * Additionally, -(CDTIndexHelper*)initWithType:(CDTIndexType)type will need to be extended to support the new helper class.
- * </p>
+ * Protocol adopted by classes to help indexers deal with issues arising from use of different data
+ * types.
+ *
+ * In order to extend the types which indexes support, it will be necessary to create new classes
+ * conforming to this protocol.  Additionally, [CDTIndexHelperBase indexHelperForType:] will need to
+ * have its implementation augmented to support the new helper class.
  */
 @protocol CDTIndexHelperDelegate
 
 /**
- * <p>
- * Converts the given NSOjbect to a value suitable for inserting
- * into the index.
- * </p>
- * <p>Each class conforming to the CDTIndexHelperDelegate converts values to index into a uniform
- * data type before the value is inserted into the index.
- * </p>
+ * Converts the given NSOjbect to a value suitable for inserting into the index.
+ *
+ * Each class conforming to the CDTIndexHelperDelegate converts values to index into a uniform data
+ * type before the value is inserted into the index.
  */
 -(NSObject*)convertIndexValue:(NSObject*)object;
 
@@ -67,47 +84,38 @@ typedef NS_ENUM(NSInteger, CDTIndexType) {
 -(NSString*)createSQLTemplateWithPrefix:(NSString*)tablePrefix
                               indexName:(NSString*)indexName;
 
-/**
- * Returns the SQL type name for this type.
- */
--(NSString*)typeName;
-
 @end
 
 /**
- * <p>
- * Interface implemented by classes to help indexers deal with issues arising from use of different data types.
- * </p>
- * <p>
- * It will not generally be necessary to override -(id)initWithType:(CDTIndexType)type;
- * </p>
+ * Interface implemented by classes to help indexers deal with issues arising from use of different
+ * data types.
  */
  @interface CDTIndexHelperBase : NSObject
 
--(id)initWithType:(CDTIndexType)type;
+/**
+ * Return the correct CDTIndexHelper subclass (CDTIntegerIndexHelper, CDTStringIndexHelper, etc)
+ * based on the type.
+ *
+ * In order to extend the types which indexes support, it will be necessary to augment the
+ * implementation of this method.
+ *
+ * @param type the data type of the index
+ *
+ * @return the appropriate helper subclass, or nil if no subclass could be found.
+ */
++(CDTIndexHelper*)indexHelperForType:(CDTIndexType)type;
 
 @end
 
 /**
- * <p>
- * Typedef for convenience - all helper classes should extend this type as they will need to implement the CDTIndexHelperBase interface and conform to the CDTIndexHelperDelegate protocol
- * </p>
- */
-typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
-
-/**
- * <p>
  * Default helper for integer types
- * </p>
  */
 @interface CDTIntegerIndexHelper : CDTIndexHelper;
 
 @end
 
 /**
- * <p>
  * Default helper for string types
- * </p>
  */
 @interface CDTStringIndexHelper : CDTIndexHelper;
 

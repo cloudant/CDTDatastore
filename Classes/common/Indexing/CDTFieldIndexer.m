@@ -3,7 +3,15 @@
 //  
 //
 //  Created by Thomas Blench on 06/02/2014.
+//  Copyright (c) 2014 Cloudant. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 //
 
 #import "CDTFieldIndexer.h"
@@ -22,46 +30,24 @@
     if (self) {
         _fieldName = fieldName;
         _type = type;
-        // we'll need a helper to do conversions
-        _helper = [[CDTIndexHelper alloc] initWithType:type];
         
     }
     return self;
 }
 
--(NSArray*)indexWithIndexName:(NSString*)indexName
-                     revision:(CDTDocumentRevision*)revision
+-(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
+                   indexName:(NSString*)indexName
 {
     NSObject *value = [[[[revision td_rev] body] properties] valueForKey:_fieldName];
     
-    // convert value(s) to appropriate type and pack into array:
-    
-    // if type string: pack into array of 1
-    // else it's an array
-    
-    // now iterate thru array and attempt to convert all values (convert for int, for string it's a noop)
-    // if any conversions failed, they don't go into output array
-    
-    // return array now has converted value
-    
-    NSArray *inArray;
-    NSMutableArray *outArray = [[NSMutableArray alloc] init];
-    
-    // TODO - other types?
+    // only index strings, numbers, or arrays
     if ([value isKindOfClass: [NSString class]] || [value isKindOfClass: [NSNumber class]]) {
-        inArray = @[value];
+        return @[value];
     } else if ([value isKindOfClass: [NSArray class]]) {
-        inArray = (NSArray*)value;
+        return (NSArray*)value;
     }
     
-    for (NSString *rawValue in inArray) {
-        NSObject *convertedValue = [_helper convertIndexValue:rawValue];
-        if (convertedValue != nil) {
-            [outArray addObject:convertedValue];
-        }
-    }
-    
-    return outArray;
+    return nil;
 }
 
 @end

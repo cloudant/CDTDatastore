@@ -21,7 +21,7 @@
 
 - (void)testCreateIndexManager
 {
-    NSError *err;
+    NSError *err = nil;
 
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     STAssertNotNil(im, @"indexManager is nil");
@@ -29,7 +29,7 @@
 
 - (void)testAddFieldIndex
 {
-    NSError *err;
+    NSError *err = nil;
 
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
 
@@ -40,7 +40,7 @@
 
 - (void)testAddInvalidFieldIndex
 {
-    NSError *err;
+    NSError *err = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     
@@ -52,16 +52,16 @@
 
 - (void)testAddSameFieldIndexTwice
 {
-    NSError *err;
+    NSError *err = nil;
 
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
 
-    NSError *error1;
+    NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
     
-    NSError *error2;
+    NSError *error2 = nil;
     BOOL ok2 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
     STAssertFalse(ok2, @"ensureIndexedWithIndexName did not return false");
     STAssertNotNil(error2, @"error is nil");
@@ -69,7 +69,7 @@
 
 - (void)testDeleteNonexistantIndex
 {
-    NSError *err;
+    NSError *err = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     
@@ -80,7 +80,7 @@
 
 - (void)testIndexSomeDocuments
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
 
@@ -91,7 +91,7 @@
         [self.datastore createDocumentWithBody:body error:&error];
     }
     
-    NSError *error1;
+    NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
@@ -99,7 +99,7 @@
 
 - (void)testIndexSomeDocumentsWithUpdate
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -110,7 +110,7 @@
         [self.datastore createDocumentWithBody:body error:&error];
     }
     
-    NSError *error1;
+    NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
@@ -136,7 +136,7 @@
 
 - (void)testIndexSingleCriteria
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -163,7 +163,7 @@
 
 - (void)testIndexMultipleCriteria
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -190,7 +190,7 @@
 
 - (void)testIndexQueryPerformance
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -236,7 +236,7 @@
 
 - (void)testResultEnumerator
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -247,7 +247,7 @@
         [self.datastore createDocumentWithBody:body error:&error];
     }
     
-    NSError *error1;
+    NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
@@ -259,12 +259,11 @@
     STAssertEquals(count, nDocs, @"counts not equal");
 }
 
-
 - (void)testCreateAndDeleteIndex
 {
-    NSError *error;
-    NSError *error1;
-    NSError *error2;
+    NSError *error = nil;
+    NSError *error1 = nil;
+    NSError *error2 = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -277,13 +276,13 @@
 
 - (void)test2IndexManagers
 {
-    NSError *error;
+    NSError *error = nil;
 
     // check that we re-use the existing schema, tables, etc
     {
         CDTIndexManager *im1 = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
         
-        NSError *error1;
+        NSError *error1 = nil;
         BOOL ok1 = [im1 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
         STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
         STAssertNil(error1, @"error is not nil");
@@ -292,7 +291,7 @@
     {
         CDTIndexManager *im2 = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
         
-        NSError *error2;
+        NSError *error2 = nil;
         BOOL ok2 = [im2 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
         STAssertTrue(ok2, @"ensureIndexedWithIndexName did not return true");
         STAssertNil(error2, @"error is not nil");
@@ -301,7 +300,7 @@
 
 - (void)testCustomIndexers
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -322,7 +321,7 @@
     
     CDTTestIndexer1 *indexer = [[CDTTestIndexer1 alloc] init];
     
-    [im ensureIndexedWithIndexName:@"animal" type:CDTIndexTypeInteger indexFunction:indexer error:&error];
+    [im ensureIndexedWithIndexName:@"animal" type:CDTIndexTypeString indexer:indexer error:&error];
     
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"animal":@"du"} error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"animal":@"d"} error:&error];
@@ -337,7 +336,7 @@
 
 - (void)testNumericIndexers
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -376,7 +375,7 @@
 
 - (void)testUniqueValues
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -416,7 +415,7 @@
 
 - (void)testComplexQuery
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -441,7 +440,7 @@
 
 - (void)testOrderQuery1
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -452,7 +451,7 @@
     [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"max": @(100000000)}}
-                                          options:@{@"sort_by": @"area", @"descending": @(YES)}
+                                          options:@{kCDTQueryOptionSortBy: @"area", kCDTQueryOptionDescending: @(YES)}
                                             error:&error];
     int lastVal = 100000000;
     
@@ -468,7 +467,7 @@
 
 - (void)testOrderQuery2
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -479,7 +478,7 @@
     [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"min": @(10000000)}}
-                                          options:@{@"sort_by": @"name", @"descending": @(YES)}
+                                          options:@{kCDTQueryOptionSortBy: @"name", kCDTQueryOptionDescending: @(YES)}
                                             error:&error];
     NSString *lastName = @"Zzzzzzzzistan"; // probably the last country in the alphabet
     
@@ -496,7 +495,7 @@
 
 - (void)testOffsetLimitQuery
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -509,28 +508,28 @@
     NSDictionary *query = @{@"area": @{@"min": @(200), @"max": @(2381740)}};
     
     CDTQueryResult *res1 = [im queryWithDictionary:query
-                                           options:@{@"limit": @(10)}
+                                           options:@{kCDTQueryOptionLimit: @(10)}
                                              error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(190), @"limit": @(10)}
+                                           options:@{kCDTQueryOptionOffset: @(190), kCDTQueryOptionLimit: @(10)}
                                              error:&error];
     CDTQueryResult *res3 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(193), @"limit": @(1)}
+                                           options:@{kCDTQueryOptionOffset: @(193), kCDTQueryOptionLimit: @(1)}
                                              error:&error];
     CDTQueryResult *res4 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(194), @"limit": @(10)}
+                                           options:@{kCDTQueryOptionOffset: @(194), kCDTQueryOptionLimit: @(10)}
                                              error:&error];
     CDTQueryResult *res5 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(200), @"limit": @(100)}
+                                           options:@{kCDTQueryOptionOffset: @(200), kCDTQueryOptionLimit: @(100)}
                                              error:&error];
     CDTQueryResult *res6 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(10)}
+                                           options:@{kCDTQueryOptionOffset: @(10)}
                                              error:&error];
     CDTQueryResult *res7 = [im queryWithDictionary:query
-                                           options:@{@"offset": @(-1)}
+                                           options:@{kCDTQueryOptionOffset: @(-1)}
                                              error:&error];
     CDTQueryResult *res8 = [im queryWithDictionary:query
-                                           options:@{@"limit": @(-1)}
+                                           options:@{kCDTQueryOptionLimit: @(-1)}
                                              error:&error];
     
     unsigned long count1=[[res1 documentIds] count];
@@ -554,7 +553,7 @@
 
 - (void)testQueryError1
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -569,7 +568,7 @@
 
 - (void)testQueryError2
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
@@ -584,14 +583,14 @@
 
 - (void)testQueryError3
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
-                                          options:@{@"sort_by": @"index2"}
+                                          options:@{kCDTQueryOptionSortBy: @"index2"}
                                             error:&error];
     
     STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
@@ -600,24 +599,72 @@
 
 - (void)testQueryError4
 {
-    NSError *error;
+    NSError *error = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
     
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
-                                          options:@{@"sort_by": @"abc123^&*^&%^^*^&(; drop table customer"}
+                                          options:@{kCDTQueryOptionSortBy: @"abc123^&*^&%^^*^&(; drop table customer"}
                                             error:&error];
     
     STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
     STAssertNil(res, @"Result was not nil");
 }
 
+- (void)testIndexerTypes
+{
+    NSError *error = nil;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"string": @"Ipsem lorem",
+                                                                                         @"number": @1,
+                                                                                         @"list": @[@"a",@"b",@"c"],
+                                                                                         @"dictionary": @{@"key":@"val"}}]
+                                     error:&error];
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"2"}]
+                                     error:&error];
+
+    [im ensureIndexedWithIndexName:@"string" fieldName:@"string" type:CDTIndexTypeString error:&error];
+    [im ensureIndexedWithIndexName:@"number" fieldName:@"number" type:CDTIndexTypeInteger error:&error];
+    [im ensureIndexedWithIndexName:@"list" fieldName:@"list" type:CDTIndexTypeString error:&error];
+    [im ensureIndexedWithIndexName:@"dictionary" fieldName:@"dictionary" type:CDTIndexTypeString error:&error];
+    [im ensureIndexedWithIndexName:@"stringAsInt" fieldName:@"string" type:CDTIndexTypeInteger error:&error];
+    
+    // standard string query
+    CDTQueryResult *res1 = [im queryWithDictionary:@{@"string": @"Ipsem lorem"}
+                                            error:&error];
+    STAssertNil(error, @"Error was not nil");
+    STAssertEquals([[res1 documentIds] count], 1UL, @"Didn't get expected number of results");
+
+    // test that "2" converts to string
+    CDTQueryResult *res2 = [im queryWithDictionary:@{@"number": @[@1,@2]}
+                                             error:&error];
+    STAssertNil(error, @"Error was not nil");
+    STAssertEquals([[res2 documentIds] count], 2UL, @"Didn't get expected number of results");
+
+    // test that array indexed correctly
+    CDTQueryResult *res3 = [im queryWithDictionary:@{@"list": @[@"a",@"b",@"d"]}
+                                             error:&error];
+    STAssertNil(error, @"Error was not nil");
+    STAssertEquals([[res3 documentIds] count], 2UL, @"Didn't get expected number of results");
+
+    // nothing should be indexed for a dictionary
+    NSArray *res4 = [im uniqueValuesForIndex:@"dictionary" error:&error];
+    STAssertNil(error, @"Error was not nil");
+    STAssertEquals([res4 count], 0UL, @"Didn't get expected number of results");
+
+    // nothing should be indexed since we can't convert string to int
+    NSArray *res5 = [im uniqueValuesForIndex:@"stringAsInt" error:&error];
+    STAssertNil(error, @"Error was not nil");
+    STAssertEquals([res5 count], 0UL, @"Didn't get expected number of results");
+}
 
 - (void)initLotsOfData
 {
-    NSError *error;
+    NSError *error = nil;
 
     [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Afghanistan", @"area": @(647500), @"elec_consumption": @(652200000),  @"population": @(29928987)}] error:&error];
     [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Albania",     @"area": @(28748),  @"elec_consumption": @(6760000000), @"population": @(3563112)}] error:&error];
@@ -849,7 +896,7 @@
 - (void)setUp
 {
     [super setUp];
-    NSError *error;
+    NSError *error = nil;
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
     STAssertNotNil(self.datastore, @"datastore is nil");
 }
@@ -868,18 +915,8 @@
 
 @implementation CDTTestIndexer1
 
--(id)initWithFieldName:(NSString*)fieldName
-                  type:(CDTIndexType)type
-{
-    self = [super init];
-    if (self) {
-        
-    }
-    return self;
-}
-
--(NSArray*)indexWithIndexName:(NSString*)indexName
-                     revision:(CDTDocumentRevision*)revision;
+-(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
+                   indexName:(NSString*)indexName
 
 {
     NSString *value = [[[[revision td_rev] body] properties] valueForKey:indexName];
