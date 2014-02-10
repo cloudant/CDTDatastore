@@ -25,13 +25,25 @@
 
 @interface ReplicationAcceptance ()
 
+/** This database is used as the primary remote database. Some tests create further
+ databases, but all use this one.
+ */
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
 
 @end
 
 @implementation ReplicationAcceptance
 
+/**
+ This is the standard number of documents those tests requiring a number
+ of documents to replicate use. 10k takes 50 minutes, 100k much longer,
+ as all these documents are read from both local and remote databases
+ during the check phase.
+ */
 static NSUInteger n_docs = 100000;
+/**
+ Rev tree size for "large rev tree" tests.
+ */
 static NSUInteger largeRevTreeSize = 1500;
 
 #pragma mark - setUp and tearDown
@@ -100,6 +112,9 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
 }
 
+/**
+ Create a new replicator, and wait for replication from the remote database to complete.
+ */
 -(void) pullFromRemote {
     CDTReplicator *replicator =
     [self.replicatorFactory onewaySourceURI:self.primaryRemoteDatabaseURL
@@ -114,6 +129,9 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 }
 
+/**
+ Create a new replicator, and wait for replication from the local database to complete.
+ */
 -(void) pushToRemote {
     CDTReplicator *replicator =
     [self.replicatorFactory onewaySourceDatastore:self.datastore
@@ -131,6 +149,10 @@ static NSUInteger largeRevTreeSize = 1500;
 
 #pragma mark - Tests
 
+/**
+ Load up a local database with n_docs with a single rev, then push it to 
+ the configured remote database.
+ */
 -(void)testPushLotsOfOneRevDocuments
 {
     // Create docs in local store
@@ -148,6 +170,10 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
+/**
+ Load up a remote database with n_docs with a single rev, then pull it to
+ the local datastore.
+ */
 -(void) testPullLotsOfOneRevDocuments {
 
 //    NSError *error;
@@ -166,6 +192,9 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
+/**
+ Push a document with largeRevTreeSize revisions (>1000).
+ */
 -(void) testPushLargeRevTree {
 
     // Create the initial rev
@@ -199,6 +228,9 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
+/**
+ Pull a document with largeRevTreeSize revisions (>1000).
+ */
 -(void) testPullLargeRevTree {
     NSError *error;
 
@@ -221,7 +253,11 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
-
+/**
+ Create n_docs remote documents and pull them into the local datastore. Then
+ modify all document with ten revisions. Finally push the changes back and check
+ the local and remote databases still match.
+ */
 -(void) testPullModifySeveralRevsPush
 {
     NSError *error;
@@ -271,6 +307,11 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+/**
+ Create n_docs remote documents and pull them into the local datastore. Then
+ delete all the documents in the local database. Finally push the changes back and check
+ the local and remote databases still match.
+ */
 -(void) testPullDeleteAllPush
 {
     NSError *error;
@@ -304,6 +345,16 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
+/**
+ Fire up two threads:
+ 
+ 1. Push revisions to the remote database so long as there are still changes
+    in the local database.
+ 2. Create n_docs single-rev docs in the local datastore.
+ 
+ This tests that the replicator can keep up with a database that's adding docs
+ underneath it.
+ */
 -(void) test_pushDocsAsWritingThem
 {
     TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
@@ -339,6 +390,17 @@ static NSUInteger largeRevTreeSize = 1500;
     [monitor signal];
 }
 
+/**
+ Create n_docs in the remote database.
+
+ Fire up two threads:
+
+ 1. Pull all revisions from the remote database.
+ 2. Create n_docs single-rev docs in the local datastore, with names that DON'T
+    conflict with the ones being pulled.
+
+ This tests that we can add documents concurrently with a replication.
+ */
 -(void) test_pullDocsWhileWritingOthers
 {
     [self createRemoteDocs:n_docs];
@@ -376,6 +438,12 @@ static NSUInteger largeRevTreeSize = 1500;
     [monitor signal];
 }
 
+/**
+ See test_pullDocsWhileWritingOthers.
+
+ Test replicating all the documents to a third database to make sure we replicate
+ both documents added to the local DB via local modifications and replication.
+ */
 -(void) test_pullDocsWhileWritingOthersWriteToThirdDB
 {
     [self createRemoteDocs:n_docs];
@@ -421,6 +489,19 @@ static NSUInteger largeRevTreeSize = 1500;
     [self deleteRemoteDatabase:thirdDatabaseName];
 }
 
+/**
+ Create n_docs in the remote database.
+
+ Fire up two threads:
+
+ 1. Pull all revisions from the remote database.
+ 2. Create documents in the local database with the same name, in reverse order.
+
+ This tests that we can replicate while modifying the same documents locally.
+ The docs are created in reverse order locally so we end up with some docs
+ conflicted by local modifications, some by remote. In the end all docs
+ will be conflicted.
+ */
 -(void) test_pullDocsWhileWritingSame
 {
     [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
@@ -461,6 +542,12 @@ static NSUInteger largeRevTreeSize = 1500;
     [monitor signal];
 }
 
+/**
+ See test_pullDocsWhileWritingSame.
+ 
+ This test makes sure that we can replicate all the docs and conflicts
+ to a third database.
+ */
 -(void) test_pullDocsWhileWritingSameWriteToThirdDB
 {
     [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
