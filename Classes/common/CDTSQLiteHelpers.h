@@ -8,17 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-@interface CDTStringJoiner : NSObject
-
--(id)initWithSeparator:(NSString*)sep;
--(void)add:(NSString*)part;
-
-@property (nonatomic,strong,readonly) NSString *sep;
-@property (nonatomic,strong,readonly) NSMutableString *string;
-@property BOOL first;
-
-@end
-
 @interface CDTSQLiteHelpers : NSObject
 
 +(NSString*)makeUpdatePlaceholders:(NSDictionary*)dict;

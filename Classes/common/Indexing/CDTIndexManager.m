@@ -170,13 +170,13 @@ static const int VERSION = 1;
     BOOL first = TRUE;
     
     NSString *tables;
-    CDTStringJoiner *tablesJoiner = [[CDTStringJoiner alloc] initWithSeparator:@", "];
+    NSMutableArray *tablesJoiner = [[NSMutableArray alloc] init];
     NSString *firstTable;
     NSString *currentTable;
     NSString *valueWhereClause;
-    CDTStringJoiner *valueWhereClauseJoiner = [[CDTStringJoiner alloc] initWithSeparator:@" and "];
+    NSMutableArray *valueWhereClauseJoiner = [[NSMutableArray alloc] init];
     NSString *idWhereClause;
-    CDTStringJoiner *idWhereClauseJoiner = [[CDTStringJoiner alloc] initWithSeparator:@" and "];
+    NSMutableArray *idWhereClauseJoiner = [[NSMutableArray alloc] init];
     NSMutableArray *queryValues = [[NSMutableArray alloc] init];
     
     // iterate through query terms and build SQL
@@ -210,21 +210,21 @@ static const int VERSION = 1;
         }
         
         // keep track of all the tables
-        [tablesJoiner add:currentTable];
+        [tablesJoiner addObject:currentTable];
         
         if ([value isKindOfClass: [NSArray class]]) {
             // key: [value1, value2, ..., valuen] -> where clause of = statements joined by OR
-            CDTStringJoiner *orWhereClauseJoiner = [[CDTStringJoiner alloc] initWithSeparator:@" or "];
+            NSMutableArray *orWhereClauseJoiner = [[NSMutableArray alloc] init];
             for (NSString *theValue in (NSArray*)value) {
                 NSString *orWhereClauseFragment = [NSString stringWithFormat:@"%@.value = ?", currentTable];
-                [orWhereClauseJoiner add:orWhereClauseFragment];
+                [orWhereClauseJoiner addObject:orWhereClauseFragment];
                 // accumulate values in array
                 [queryValues addObject:theValue];
             }
-            valueWhereClauseFragment = [NSString stringWithFormat:@"( %@ )", [orWhereClauseJoiner string]];
+            valueWhereClauseFragment = [NSString stringWithFormat:@"( %@ )", [orWhereClauseJoiner componentsJoinedByString:@" or "]];
         } else if ([value isKindOfClass: [NSDictionary class]]) {
             // key: {min: minVal, max: maxVal} -> where clause of >= and <= statements joined by AND
-            CDTStringJoiner *minMaxWhereClauseJoiner = [[CDTStringJoiner alloc] initWithSeparator:@" and "];
+            NSMutableArray *minMaxWhereClauseJoiner = [[NSMutableArray alloc] init];
             NSObject *minValue = [(NSDictionary*)value objectForKey:@"min"];
             NSObject *maxValue = [(NSDictionary*)value objectForKey:@"max"];
             if (!minValue && !maxValue) {
@@ -232,17 +232,17 @@ static const int VERSION = 1;
             }
             if (minValue) {
                 NSString *minValueFragment = [NSString stringWithFormat:@"%@.value >= ?", currentTable];
-                [minMaxWhereClauseJoiner add:minValueFragment];
+                [minMaxWhereClauseJoiner addObject:minValueFragment];
                 // accumulate values in array
                 [queryValues addObject:minValue];
             }
             if (maxValue) {
                 NSString *maxValueFragment = [NSString stringWithFormat:@"%@.value <= ?", currentTable];
-                [minMaxWhereClauseJoiner add:maxValueFragment];
+                [minMaxWhereClauseJoiner addObject:maxValueFragment];
                 // accumulate values in array
                 [queryValues addObject:maxValue];
             }
-            valueWhereClauseFragment = [NSString stringWithFormat:@"( %@ )", [minMaxWhereClauseJoiner string]];
+            valueWhereClauseFragment = [NSString stringWithFormat:@"( %@ )", [minMaxWhereClauseJoiner componentsJoinedByString:@" and "]];
         } else {
             // key: {value} -> where clause of one = statement
             // NB we are assuming a simple type eg NSString or NSNumber
@@ -252,12 +252,12 @@ static const int VERSION = 1;
         }
         
         // make where clause for values
-        [valueWhereClauseJoiner add:valueWhereClauseFragment];
+        [valueWhereClauseJoiner addObject:valueWhereClauseFragment];
         
         // make where clause for ids
         if (!first) {
             NSString *idWhereClauseFragment = [NSString stringWithFormat:@"%@.docid = %@.docid", firstTable, currentTable];
-            [idWhereClauseJoiner add:idWhereClauseFragment];
+            [idWhereClauseJoiner addObject:idWhereClauseFragment];
         }
         
         first = FALSE;
@@ -302,12 +302,12 @@ static const int VERSION = 1;
         // so that the table gets mentioned in the from clause and is joined on docid correctly
         if (![query valueForKey:sort]) {
             
-            [tablesJoiner add:currentTable];
+            [tablesJoiner addObject:currentTable];
             
             // make where clause for ids
             if (!first) {
                 NSString *idWhereClauseFragment = [NSString stringWithFormat:@"%@.docid = %@.docid", firstTable, currentTable];
-                [idWhereClauseJoiner add:idWhereClauseFragment];
+                [idWhereClauseJoiner addObject:idWhereClauseFragment];
             }
         }
         orderByClause = [NSString stringWithFormat:@"order by %@.value %@", currentTable, descending ? @"desc" : @"asc"];
@@ -315,12 +315,12 @@ static const int VERSION = 1;
 
     // now make the query
     NSString *whereClause;
-    tables = [tablesJoiner string];
-    valueWhereClause = [valueWhereClauseJoiner string];
-    idWhereClause = [idWhereClauseJoiner string];
+    tables = [tablesJoiner componentsJoinedByString:@", "];
+    valueWhereClause = [valueWhereClauseJoiner componentsJoinedByString:@" and "];
+    idWhereClause = [idWhereClauseJoiner componentsJoinedByString:@" and "];
     
     // do we need to join on ids?
-    if ([[idWhereClauseJoiner string] length] > 0) {
+    if ([idWhereClauseJoiner count] > 0) {
         whereClause = [NSString stringWithFormat:@"(%@) and (%@)", valueWhereClause, idWhereClause];
     } else {
         whereClause = valueWhereClause;
