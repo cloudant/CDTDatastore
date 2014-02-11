@@ -29,7 +29,7 @@
                location = "group:CDTReplicatorFactory.m">
             </FileRef>
             <FileRef
-               location = "group:CDTReplicatorListener.h">
+               location = "group:CDTReplicatorDelegate.h">
             </FileRef>
          </Group>
          <FileRef
@@ -411,6 +411,9 @@
          </Group>
       </Group>
    </Group>
+   <FileRef
+      location = "group:Rakefile">
+   </FileRef>
    <FileRef
       location = "group:Tests/Tests.xcodeproj">
    </FileRef>

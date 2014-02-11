@@ -13,6 +13,7 @@
 
 #import "TD_Revision.h"
 #import "TD_Database.h"
+#import "TDReplicator.h"
 
 const NSString *CDTReplicatorLog = @"CDTReplicator";
 
@@ -21,9 +22,13 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 @property (nonatomic,strong) CDTDatastore *replicatorDb;
 @property (nonatomic,strong) CDTDocumentBody *body;
 @property (nonatomic,strong) NSString *replicationDocumentId;
-@property (nonatomic) CDTReplicatorState mState;
 
 - (void) dbChanged: (NSNotification*)n;
+
+// private readwrite properties
+@property (nonatomic, readwrite) CDTReplicatorState state;
+@property (nonatomic, readwrite) NSInteger changesProcessed;
+@property (nonatomic, readwrite) NSInteger changesTotal;
 
 @end
 
@@ -60,7 +65,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     if (self) {
         _replicatorDb = replicatorDb;
         _body = body;
-        _mState = CDTReplicatorStatePending;
+        _state = CDTReplicatorStatePending;
     }
     return self;
 }
@@ -99,7 +104,9 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 -(void)stop
 {
-    self.mState = CDTReplicatorStateStopping;
+    // We change straight to stopped, as we can't introspect
+    // the underlying TDReplicator instance.
+    self.state = CDTReplicatorStateStopped;
 
     if (self.replicationDocumentId == nil) {
         return;   // not started yet
@@ -124,62 +131,117 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     [self.replicatorDb deleteDocumentWithId:current.docId
                                         rev:current.revId
                                       error:&error];
+
+    id<CDTReplicatorDelegate> delegate = self.delegate;
+    if ([delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
+        [delegate replicatorDidChangeState:self];
+    }
+    if ([delegate respondsToSelector:@selector(replicatorDidComplete:)]) {
+        [delegate replicatorDidComplete:self];
+    }
 }
 
-
-/**
+/*
  * Notified that a _replicator database document has been created/updated/deleted.
  * We need to update our state if it's our document.
  */
 - (void) dbChanged: (NSNotification*)n {
     CDTDocumentRevision* rev = (n.userInfo)[@"rev"];
-    LogTo(CDTReplicatorLog, @"CDTReplicator: %@ %@", n.name, rev);
+//    LogTo(CDTReplicatorLog, @"CDTReplicator: %@ %@", n.name, rev);
     [self updatedStateFromRevision:rev];
 }
 
+/*
+ * Called when the replication document in the _replicator database has changed.
+ */
 -(void)updatedStateFromRevision:(CDTDocumentRevision*)rev {
     NSString* docID = rev.docId;
     if (![docID isEqualToString:self.replicationDocumentId])
         return;
 
-    LogTo(CDTReplicatorLog, @"CDTReplicator existing state: %@",
-          [CDTReplicator stringForReplicatorState:self.mState]);
+//    LogTo(CDTReplicatorLog, @"CDTReplicator existing state: %@",
+//          [CDTReplicator stringForReplicatorState:self.state]);
+
+//    NSLog(@"updatedStateFromRevion got: %@", rev.documentAsDictionary);
+
+    NSDictionary *body = [rev documentAsDictionary];
+
+    BOOL progressChanged = NO;
+    NSDictionary *stats = [body objectForKey:@"_replication_stats"];
+    if (nil != stats) {
+        self.changesProcessed = [((NSNumber*)stats[@"changesProcessed"]) integerValue];
+        self.changesTotal = [((NSNumber*)stats[@"changesTotal"]) integerValue];
+        progressChanged = YES;
+    }
+
+    CDTReplicatorState oldState = self.state;
 
     if (rev.deleted) {
         // Should not happen, but we can assume completed
-        self.mState = CDTReplicatorStateComplete;
+        self.state = CDTReplicatorStateComplete;
     } else {
         NSString* state = [rev documentAsDictionary][@"_replication_state"];
 
         if ([state isEqualToString:@"triggered"]) {
-            self.mState = CDTReplicatorStateStarted;
+            self.state = CDTReplicatorStateStarted;
         } else if ([state isEqualToString:@"error"]) {
-            self.mState = CDTReplicatorStateError;
+            self.state = CDTReplicatorStateError;
         } else if ([state isEqualToString:@"completed"]) {
-            self.mState = CDTReplicatorStateComplete;
+            self.state = CDTReplicatorStateComplete;
         } else {
             // probably nil, so pending as the replicator's not yet picked it up
-            self.mState = CDTReplicatorStatePending;
+            self.state = CDTReplicatorStatePending;
         }
     }
-    LogTo(CDTReplicatorLog, @"CDTReplicator new state: %@",
-          [CDTReplicator stringForReplicatorState:self.mState]);
+
+//    LogTo(CDTReplicatorLog, @"CDTReplicator new state: %@",
+//          [CDTReplicator stringForReplicatorState:self.state]);
+
+    // Lots of possible delegate messages at this point
+    id<CDTReplicatorDelegate> delegate = self.delegate;
+
+    if (progressChanged && [delegate respondsToSelector:@selector(replicatorDidChangeProgress:)])
+    {
+        [delegate replicatorDidChangeProgress:self];
+    }
+
+    BOOL stateChanged = (oldState != self.state);
+    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)])
+    {
+        [delegate replicatorDidChangeState:self];
+    }
+
+    // We're completing this time if we're transitioning from an active state into an inactive
+    // non-error state.
+    BOOL completingTransition = (stateChanged && self.state != CDTReplicatorStateError &&
+                                 [self isActiveState:oldState] &&
+                                 ![self isActiveState:self.state]);
+    if (completingTransition && [delegate respondsToSelector:@selector(replicatorDidComplete:)]) {
+        [delegate replicatorDidComplete:self];
+    }
+
+    // We've errored if we're transitioning from an active state into an error state.
+    BOOL erroringTransition = (stateChanged && self.state == CDTReplicatorStateError &&
+                               [self isActiveState:oldState]);
+    if (erroringTransition && [delegate respondsToSelector:@selector(replicatorDidError:info:)]) {
+        [delegate replicatorDidError:self info:nil];
+    }
 }
 
 #pragma mark Status information
 
--(CDTReplicatorState)state
-{
-    if (self.replicationDocumentId == nil) {
-        return CDTReplicatorStatePending;   // not started yet
-    }
-
-    return self.mState;
+-(BOOL)isActive {
+    return [self isActiveState:self.state];
 }
 
--(BOOL)isActive {
-    CDTReplicatorState state = [self mState];
-    return state == CDTReplicatorStatePending || state == CDTReplicatorStateStarted || state == CDTReplicatorStateStopping;
+/*
+ * Returns whether `state` is an active state for the replicator.
+ */
+-(BOOL)isActiveState:(CDTReplicatorState)state
+{
+    return state == CDTReplicatorStatePending ||
+    state == CDTReplicatorStateStarted ||
+    state == CDTReplicatorStateStopping;
 }
 
 @end

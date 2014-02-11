@@ -259,6 +259,12 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
         update[@"_replication_state"] = state;
         update[@"_replication_state_time"] = @(time(NULL));
     }
+
+    update[@"_replication_stats"] = @{
+                                     @"changesProcessed": @(repl.changesProcessed),
+                                     @"changesTotal": @(repl.changesTotal)
+                                     };
+
     [self updateDoc: rev withProperties: update];
 }
 

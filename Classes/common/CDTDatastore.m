@@ -194,14 +194,14 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 
--(NSArray*) getAllDocumentsOffset:(NSInteger)offset
-                            limit:(NSInteger)limit
+-(NSArray*) getAllDocumentsOffset:(NSUInteger)offset
+                            limit:(NSUInteger)limit
                        descending:(BOOL)descending
 {
     struct TDQueryOptions query = {
-        .limit = limit,
+        .limit = (unsigned)limit,
         .inclusiveEnd = YES,
-        .skip = offset,
+        .skip = (unsigned)offset,
         .descending = descending,
         .includeDocs = YES
     };
