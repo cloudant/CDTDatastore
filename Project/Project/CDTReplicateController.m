@@ -82,7 +82,7 @@
     NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
     [self log:@"%@ state: %@ (%d)", label, state, replicator.state];
 
-    [replicator setListener:self];
+    [replicator setDelegate:self];
     [replicator start];
 
     state = [CDTReplicator stringForReplicatorState:replicator.state];
@@ -106,9 +106,9 @@
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if (replicator.state == CDTReplicatorStateComplete || replicator.state == CDTReplicatorStateStopped) {
-                [weakSelf complete:replicator];
+                [weakSelf replicatorDidComplete:replicator];
             } else if (replicator.state == CDTReplicatorStateError) {
-                [weakSelf error:replicator info:nil];
+                [weakSelf replicatorDidError:replicator info:nil];
             }
         });
     });
@@ -116,11 +116,11 @@
 
 #pragma mark CDTReplicatorListener delegate
 
--(void)complete:(CDTReplicator *)replicator {
+-(void)replicatorDidComplete:(CDTReplicator *)replicator {
     [self log:@"complete"];
 }
 
--(void)error:(CDTReplicator *)replicator info:(CDTReplicationErrorInfo *)info {
+-(void)replicatorDidError:(CDTReplicator *)replicator info:(CDTReplicationErrorInfo *)info {
     [self log:@"error: %@", info];
 }
 

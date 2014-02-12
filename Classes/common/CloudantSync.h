@@ -15,5 +15,5 @@
 
 #import "CDTReplicator.h"
 #import "CDTReplicatorFactory.h"
-#import "CDTReplicatorListener.h"
+#import "CDTReplicatorDelegate.h"
 #import "CDTReplicationErrorInfo.h"
