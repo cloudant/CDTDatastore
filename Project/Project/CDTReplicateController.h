@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CloudantSync.h>
 
-@interface CDTReplicateController : UIViewController<CDTReplicatorListener>
+@interface CDTReplicateController : UIViewController<CDTReplicatorDelegate>
 
 @property (nonatomic,strong) IBOutlet UITextView *logView;
 
