@@ -11,7 +11,6 @@
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
 
-
 /** NSNotification posted when a document is updated.
  UserInfo keys: 
   - @"rev": the new CDTDocumentRevision, 
@@ -27,6 +26,8 @@ extern NSString* const CDTDatastoreChangeNotification;
  */
 @interface CDTDatastore : NSObject
 
+@property (nonatomic,strong,readonly) TD_Database *database;
+
 +(NSString*)versionString;
 
 -(id)initWithDatabase:(TD_Database*)database;
@@ -40,6 +41,11 @@ extern NSString* const CDTDatastoreChangeNotification;
  * The name of the datastore.
  */
 @property (readonly) NSString *name;
+
+/**
+ * The name of the datastore.
+ */
+@property (readonly) NSString *extensionsDir;
 
 /**
  * Create a new document with the given document id and JSON body
@@ -130,8 +136,6 @@ extern NSString* const CDTDatastoreChangeNotification;
                                          body:(CDTDocumentBody*)body
                                         error:(NSError * __autoreleasing *)error;
 
-
-
 /**
  * Delete the specified document.
  *
@@ -143,4 +147,7 @@ extern NSString* const CDTDatastoreChangeNotification;
                          rev:(NSString*)rev
                        error:(NSError * __autoreleasing *)error;
 
+-(NSString*) extensionDataFolder:(NSString*)extensionName;
+
 @end
+
