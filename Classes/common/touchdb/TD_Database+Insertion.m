@@ -14,6 +14,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TD_Database+Insertion.h"
 #import "TD_Database+Attachments.h"
@@ -289,6 +291,11 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     if (!revToInsert || (previousRevID && !docIdToInsert) || (deleted && !docIdToInsert)
              || (docIdToInsert && ![TD_Database isValidDocumentID: docIdToInsert])) {
         *outStatus = kTDStatusBadID;
+        return nil;
+    }
+    
+    if(revToInsert.body == nil  && !deleted){
+        *outStatus = kTDStatusBadJSON;
         return nil;
     }
 

@@ -12,6 +12,8 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDJSON.h"
 
@@ -67,6 +69,10 @@
         return [data objectFromJSONDataWithParseOptions: 0 error: error];
 }
 
++ (BOOL) isValidJSONObject:(id)obj
+{
+    return [self dataWithJSONObject:obj options:0 error:NULL] != nil;
+}
 
 #endif // USE_NSJSON
 

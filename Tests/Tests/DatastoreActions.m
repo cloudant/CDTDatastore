@@ -20,6 +20,11 @@
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
 
+#import "FMDatabaseAdditions.h"
+#import "TDJSON.h"
+#import "FMResultSet.h"
+#import "FMDatabaseQueue.h"
+
 @interface DatastoreActions : CloudantSyncTests
 
 @end
@@ -37,8 +42,7 @@
 
 - (NSString*)createTemporaryFileAndReturnPath
 {
-    NSString *tempFileTemplate =
-    [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.tempfile.XXXXXX"];
+    NSString *tempFileTemplate = [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.tempfile.XXXXXX"];
     const char *tempFileTemplateCString = [tempFileTemplate fileSystemRepresentation];
     char *tempFileNameCString =  (char *)malloc(strlen(tempFileTemplateCString) + 1);
     strcpy(tempFileNameCString, tempFileTemplateCString);
@@ -90,5 +94,31 @@
     
 }
 
+-(void)testForSQLTables
+{
+    NSError *error;
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"test" error:&error];
+    
+    [datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
+    //creates the tables in the sqlite db. otherwise, the database would be empty.
+    
+    NSString *dbPath = [self pathForDBName:datastore.name];
+    
+    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
+    
+    NSSet *tables = [self sqlTables];
+    for ( id table in tables ){
+        if(![table isKindOfClass:[NSString class]]){
+            STFail(@"not an NSString: %@", table);
+            continue;
+        }
+        [queue inDatabase:^(FMDatabase *db) {
+            STAssertTrue([db tableExists:table], @"%@ table doesn't exist", table);
+        }];
+    }
+    //should we bother with testing the schema of these tables? 
+    
+}
 
 @end
