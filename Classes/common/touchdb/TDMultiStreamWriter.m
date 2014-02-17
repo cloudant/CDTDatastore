@@ -160,7 +160,7 @@
     if ([input isKindOfClass: [NSData class]])
         return [NSInputStream inputStreamWithData: input];
     else if ([input isKindOfClass: [NSURL class]] && [input isFileURL])
-        return [NSInputStream inputStreamWithFileAtPath: [input path]];
+        return [NSInputStream inputStreamWithFileAtPath: [(NSURL*)input path]];
     else if ([input isKindOfClass: [NSInputStream class]])
         return input;
     else
