@@ -134,19 +134,23 @@ for(CDTDocumentRevision *revision in result) {
 There is a variant of the query method used above which takes an extra `options` dictionary:
 `queryWithDictionary:options:error`. These options affect the results which the query returns.
 
-The options can include `"sort_by"`, which orders the results according to the value of the
-index:
+`kCDTQueryOptionSortBy` is used to order the results according to the value of the index given:
 
 ```objective-c
-CDTQueryResult *result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}},
-                                                   options:{@"sort_by": @"age"}
-                                                     error:nil];
+result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}},
+                                   options:@{kCDTQueryOptionSortBy: @"age",
+                                             kCDTQueryOptionDescending: true}
+                                     error:nil];
 ```
+
+As in the example above, this can be combined with the key `kCDTQueryOptionAscending` or
+`kCDTQueryOptionDescending` and the value `true` to sort ascending or descending. If neither option
+is used, then the default is ascending.
 
 The ordering is determined by the underlying SQL type of the index. 
 
-`"offset"` and `"limit"` can be used to page through results, which can be useful when presenting
-information in a GUI. In this example we present 10 results at a time:
+`kCDTQueryOptionOffset` and `kCDTQueryOptionLimit` can be used to page through results, which can be
+useful when presenting information in a GUI. In this example we present 10 results at a time:
 
 ```objective-c
 CDTQueryResult *result;
@@ -154,15 +158,16 @@ int i=0;
 int pageSize=10;
 do {
     result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}}
-                                       options:@{@"offset": @(i), @"limit": @(pageSize)}
+                                       options:@{@kCDTQueryOptionOffset: @(i),
+                                                 @kCDTQueryOptionLimit: @(pageSize)}
                                          error:nil];
     i+=pageSize;
     // display results
 } while ([result documentIds] > 0);
 ```
 
-Note that the current implementation of `"offset"` and `"limit"` does not use a cursor, so the
-results are likely to be incorrect if the data changes during paging.
+Note that the current implementation does not use a cursor, so the results are likely to be
+incorrect if the data changes during paging.
 
 ### Unique Values
 
