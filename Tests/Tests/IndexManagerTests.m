@@ -188,7 +188,7 @@
 }
 
 
-- (void)testIndexQueryPerformance
+- (void)ignored_testIndexQueryPerformance
 {
     NSError *error = nil;
     
