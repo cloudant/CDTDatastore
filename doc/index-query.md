@@ -129,6 +129,53 @@ for(CDTDocumentRevision *revision in result) {
 }
 ```
 
+### Query options
+
+There is a variant of the query method used above which takes an extra `options` dictionary:
+`queryWithDictionary:options:error`. These options affect the results which the query returns.
+
+The options can include `"sort_by"`, which orders the results according to the value of the
+index:
+
+```objective-c
+CDTQueryResult *result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}},
+                                                   options:{@"sort_by": @"age"}
+                                                     error:nil];
+```
+
+The ordering is determined by the underlying SQL type of the index. 
+
+`"offset"` and `"limit"` can be used to page through results, which can be useful when presenting
+information in a GUI. In this example we present 10 results at a time:
+
+```objective-c
+CDTQueryResult *result;
+int i=0;
+int pageSize=10;
+do {
+    result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}}
+                                       options:@{@"offset": @(i), @"limit": @(pageSize)}
+                                         error:nil];
+    i+=pageSize;
+    // display results
+} while ([result documentIds] > 0);
+```
+
+Note that the current implementation of `"offset"` and `"limit"` does not use a cursor, so the
+results are likely to be incorrect if the data changes during paging.
+
+### Unique Values
+
+Another useful feature for displaying results in a GUI is the `uniqueValuesForIndex` method.
+Suppose each document represents a blog article and we want to display an index showing each
+all of the categories for the articles:
+
+```objective-c
+CDTQueryResult *result = [indexManager uniqueValuesForIndex:@"category"
+                                                      error:nil];
+```
+
+
 ### Indexers
 
 So far, we have described the `CDTFieldIndexer` for indexing top-level fields.
