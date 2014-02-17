@@ -29,7 +29,38 @@ extern NSString* const CDTDatastoreChangeNotification;
 @class TD_Database;
 
 /**
- * A datastore containing heterogeneous JSON documents.
+ * The CDTDatastore is the core interaction point for create, delete and update
+ * operations (CRUD) for within Cloudant Sync.
+ *
+ * The Datastore can be viewed as a pool of heterogeneous JSON documents. One
+ * datastore can hold many different types of document, unlike tables within a
+ * relational model. The datastore provides hooks, which allow for various querying models
+ * to be built on top of its simpler key-value model.
+ *
+ * Each document consists of a set of revisions, hence most methods within
+ * this class operating on CDTDocumentRevision objects, which carry both a
+ * document ID and a revision ID. This forms the basis of the MVCC data model,
+ * used to ensure safe peer-to-peer replication is possible.
+ *
+ * Each document is formed of a tree of revisions. Replication can create
+ * branches in this tree when changes have been made in two or more places to
+ * the same document in-between replications. MVCC exposes these branches as
+ * conflicted documents. These conflicts should be resolved by user-code, by
+ * marking all but one of the leaf nodes of the branches as "deleted", using
+ * the [CDTDatastore deleteDocumentWithId:rev:error:] method. When the
+ * datastore is next replicated with a remote datastore, this fix will be
+ * propagated, thereby resolving the conflicted document across the set of
+ * peers.
+ *
+ * **WARNING:** conflict resolution is coming in the next
+ * release, where we'll be adding methods to:
+ *
+ * - Get the IDs of all conflicted documents within the datastore.</li>
+ * - Get a list of all current revisions for a given document, so they
+ *     can be merged to resolve the conflict.</li>
+ *
+ * @see CDTDocumentRevision
+ *
  */
 @interface CDTDatastore : NSObject
 
@@ -55,10 +86,12 @@ extern NSString* const CDTDatastoreChangeNotification;
 @property (readonly) NSString *extensionsDir;
 
 /**
- * Create a new document with the given document id and JSON body
+ * Add a new document with the given ID and body.
  *
- * @param documentId id for the document
- * @param body      JSON body for the document
+ * @param docId id for the document
+ * @param body  JSON body for the document
+ * @param error will point to an NSError object in case of error.
+ *
  * @return revision of the newly created document
  */
 -(CDTDocumentRevision *) createDocumentWithId:(NSString*)docId
@@ -67,9 +100,13 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * Create a new document with the given body, and id is generated implicitly for the document.
+ * Add a new document with an auto-generated ID.
+ *
+ * The generated ID can be found from the returned CDTDocumentRevision.
  *
  * @param body JSON body for the document
+ * @param error will point to an NSError object in case of error.
+ *
  * @return revision of the newly created document
  */
 -(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
@@ -77,7 +114,11 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * @param documentId id of the specified document
+ * Returns a document's current winning revision.
+ *
+ * @param docId id of the specified document
+ * @param error will point to an NSError object in case of error.
+ *
  * @return current revision as CDTDocumentRevision of given document
  */
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
@@ -85,8 +126,16 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * @param documentId id of the specified document
- * @param revisionId id of the specified revision
+ * Return a specific revision of a document.
+ *
+ * This method gets the revision of a document with a given ID. As the
+ * datastore prunes the content of old revisions to conserve space, this
+ * revision may contain the metadata but not content of the revision.
+ *
+ * @param docId id of the specified document
+ * @param rev id of the specified revision
+ * @param error will point to an NSError object in case of error.
+ *
  * @return specified CDTDocumentRevision of the document for given 
  *     document id or nil if it doesn't exist
  */
@@ -96,17 +145,21 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * Pagination read of all documents. Logically, it lists all the documents
- * in descending order if descending option is true, otherwise in 
- * ascending order. Then start from offset (included) position, and 
- * return up to maxItem items.
+ * Enumerate the current winning revisions for all documents in the
+ * datastore.
  *
- * Only the current revision of each document is returned.
+ * Logically, this method takes all the documents in either ascending
+ * or descending order, skips all documents up to `offset` then
+ * returns up to `limit` document revisions, stopping either
+ * at `limit` or when the list of document is exhausted.
+ *
+ * Note that if the datastore changes between calls using offset/limit,
+ * documents may be missed out.
  *
  * @param offset    start position
- * @param maxResults Maximum number of documents to return
+ * @param limit maximum number of documents to return
  * @param descending ordered descending if true, otherwise ascendingly
- * @return list of CSDatastoreObjects
+ * @return NSArray containing CDTDocumentRevision objects
  */
 -(NSArray*) getAllDocumentsOffset:(NSUInteger)offset
                             limit:(NSUInteger)limit
@@ -114,29 +167,27 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * Return a list of the documents for the given list of documentIds, 
- * only current revision of each document returned
+ * Return the winning revisions for a set of document IDs.
  *
- * @param documentIds list of document id
- * @param descending  if true, the list is in descending order
- * @return list of the documents
+ * @param docIds list of document id
+ *
+ * @return NSArray containing CDTDocumentRevision objects
  */
 -(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
 
 
 /**
- * Stores a new (or initial) revision of a document.
- * <p/>
- * The previous revision id must be supplied when necessary and the 
- * call will fail if it doesn't match.
+ * Updates a document that exists in the datastore with a new revision.
  *
- * @param prevRevisionId id of the revision to replace , or null if this 
- *         is a new document.
- * @param allowConflict  if false, an ConflictException is thrown out 
-           if the insertion would create a conflict,
- *         i.e. if the previous revision already has a child.
+ * The `prevRev` parameter must contain the revision ID of the current
+ * winning revision, otherwise a conflict error will be returned.
+ *
+ * @param docId ID of document
+ * @param prevRev revision ID of revision to replace
  * @param body          document body of the new revision
- * @return new DBObject with the documentId, revisionId
+ * @param error will point to an NSError object in case of error.
+ *
+ * @return CDTDocumentRevsion of the updated document, or `nil` if there was an error.
  */
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                    prevRev:(NSString*)prevRev
@@ -144,16 +195,28 @@ extern NSString* const CDTDatastoreChangeNotification;
                                         error:(NSError * __autoreleasing *)error;
 
 /**
- * Delete the specified document.
+ * Delete a document.
  *
- * @param documentId documentId of the document to be deleted
- * @param revisionId revision id if of the document to be deleted
- * Returns NO if the document couldn't be deleted.
+ * Any non-deleted leaf revision of a document may be deleted using this method,
+ * to allow for conflicts to be cleaned up.
+ *
+ * @param docId documentId of the document to be deleted
+ * @param rev revision ID of a leaf revision of the document
+ * @param error will point to an NSError object in case of error.
+ *
+ * @return NO if the document couldn't be deleted.
  */
 -(BOOL) deleteDocumentWithId:(NSString*)docId
                          rev:(NSString*)rev
                        error:(NSError * __autoreleasing *)error;
 
+/**
+ * Return a directory for an extension to store its data for this CDTDatastore.
+ *
+ * @param extensionName name of the extension
+ *
+ * @return the directory for specified extensionName
+ */
 -(NSString*) extensionDataFolder:(NSString*)extensionName;
 
 @end

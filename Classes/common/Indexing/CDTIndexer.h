@@ -20,11 +20,27 @@
 @class CDTDocumentRevision;
 
 /**
- * Protocol adopted by classes which index fields.
- *
- * See CDTFieldIndexer for a concrete implementation.
- */
+ Protocol adopted by classes which supply values to index for a given document.
+ 
+ Implementing this protocol allows developers to control when
+ values are indexed for each document that is indexed by a
+ particular named index. The class should be supplied as an
+ argument to [CDTIndexManager ensureIndexedWithIndexName:type:indexer:error:].
+ 
+ For each document added or updated to a datastore, the -valuesForRevision:indexName:
+ will be called. It returns an array of values, which this document is indexed
+ against. Later, the index can be queried for these values, and documents found
+ which were indexed against those values.
+ 
+ An example index might be returning an array of the items from a document's
+ `firstName`, `middleNames`, `lastName` and `nickname` fields when creating
+ an all-encompassing `name` index.
 
+ See CDTFieldIndexer for a concrete implementation of an indexer that
+ returns the value of a single document field.
+
+ @see CDTFieldIndexer
+ */
 @protocol CDTIndexer
 
 /**
@@ -38,10 +54,10 @@
  * @param revision the document revision to be indexed.
  * @param indexName name of the index the values are destined for.
  *
- * @return an array of 1 or more values to be inserted/updated,
+ * @return an array of one or more values to be inserted/updated,
  *         or nil if this revision should not be indexed.
  *         The types of the objects in the array should match
- *         the index's type appropriately.
+ *         the index's type passed to [CDTIndexManager ensureIndexedWithIndexName:type:indexer:error:].
  */
 -(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
                    indexName:(NSString*)indexName;

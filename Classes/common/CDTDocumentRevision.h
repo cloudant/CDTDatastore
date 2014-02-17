@@ -23,9 +23,12 @@
  */
 @interface CDTDocumentRevision : NSObject
 
+/** Document ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *docId;
+/** Revision ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *revId;
 
+/** `YES` if this document revision is deleted. */
 @property (nonatomic,readonly) BOOL deleted;
 
 @property (nonatomic,strong,readonly) NSDictionary *attachments;
@@ -40,7 +43,22 @@
 -(id)initWithTDRevision:(TD_Revision*)rev;
 
 
+/** 
+ Return document content as an NSData object.
+ 
+ This is often the format an object mapper will require.
+
+ @param error will point to an NSError object in case of error.
+ 
+ @return document content as an NSData object.
+ */
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error;
+
+/**
+ Return document content as an NSDictionary object.
+
+ @return document content as an NSDictionary object.
+ */
 -(NSDictionary*)documentAsDictionary;
 
 @end

@@ -25,7 +25,12 @@
  */
 @interface CDTDocumentBody : NSObject
 
--(id)initWithDictionary:(NSDictionary*)dict;
+/**
+ Create a new CDTDocumentBody with a dictionary.
+ 
+ @param dict the document's body
+ */
+-(instancetype)initWithDictionary:(NSDictionary*)dict;
 
 @property (nonatomic,strong,readonly) TD_Body *td_body;
 
