@@ -33,7 +33,6 @@ Pod::Spec.new do |s|
 
   s.source_files = 'Classes/**/*.{h,m}'
   s.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
-  s.resources = 'Assets'
 
   s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
 
