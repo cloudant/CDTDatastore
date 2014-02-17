@@ -1,10 +1,17 @@
 //
 //  CDTReplicator.h
-//  
+//
 //
 //  Created by Michael Rhodes on 10/12/2013.
+//  Copyright (c) 2013 Cloudant. All rights reserved.
 //
-//
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 
 #import <Foundation/Foundation.h>
 
@@ -15,7 +22,7 @@
 
 /**
  * Describes the state of a CDTReplicator at a given moment.
- 
+
  @see CDTReplicator
  */
 typedef NS_ENUM(NSInteger, CDTReplicatorState) {
@@ -48,11 +55,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 /**
  A CDTReplicator instance represents a replication job.
- 
+
  In CouchDB terms, it wraps a document in the `_replicator` database.
- 
+
  Use the CDTReplicatorFactory to create instances of this class.
- 
+
  @see CDTReplicatorFactory
  */
 @interface CDTReplicator : NSObject
@@ -65,7 +72,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 /**
  The current replication state.
- 
+
  @see CDTReplicatorState
  */
 @property (nonatomic, readonly) CDTReplicatorState state;
@@ -78,7 +85,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 /** Total number of changes read so far from the source's `_changes`
  feed.
- 
+
  Note that this will increase as the replication continues and
  further reads of the `_changes` feed happen.
  */
@@ -104,7 +111,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 /**
  Returns a string representation of a CDTReplicatorState value.
- 
+
  @param state state to return string representation
  */
 +(NSString*)stringForReplicatorState:(CDTReplicatorState)state;
