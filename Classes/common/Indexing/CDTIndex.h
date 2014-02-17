@@ -42,7 +42,7 @@ typedef NS_ENUM(NSInteger, CDTIndexType) {
 @class CDTIndexHelperBase;
 @protocol CDTIndexHelperDelegate;
 
-/**
+/*
  * Typedef for convenience - all helper classes should extend this type as they will need to
  * implement the CDTIndexHelperBase interface and conform to the CDTIndexHelperDelegate protocol
  */
@@ -60,7 +60,7 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
 
 @end
 
-/**
+/*
  * Protocol adopted by classes to help indexers deal with issues arising from use of different data
  * types.
  *
@@ -70,29 +70,34 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
  */
 @protocol CDTIndexHelperDelegate
 
-/**
+/*
  * Converts the given NSOjbect to a value suitable for inserting into the index.
  *
  * Each class conforming to the CDTIndexHelperDelegate converts values to index into a uniform data
  * type before the value is inserted into the index.
+ *
+ * @param object object to convert
  */
 -(NSObject*)convertIndexValue:(NSObject*)object;
 
-/**
+/*
  * Returns the SQL string for generating the index table in the database.
+ *
+ * @param tablePrefix prefix to use for table names in SQL
+ * @param indexName the name of the index to create SQL for
  */
 -(NSString*)createSQLTemplateWithPrefix:(NSString*)tablePrefix
                               indexName:(NSString*)indexName;
 
 @end
 
-/**
+/*
  * Interface implemented by classes to help indexers deal with issues arising from use of different
  * data types.
  */
  @interface CDTIndexHelperBase : NSObject
 
-/**
+/*
  * Return the correct CDTIndexHelper subclass (CDTIntegerIndexHelper, CDTStringIndexHelper, etc)
  * based on the type.
  *
@@ -107,14 +112,14 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
 
 @end
 
-/**
+/*
  * Default helper for integer types
  */
 @interface CDTIntegerIndexHelper : CDTIndexHelper;
 
 @end
 
-/**
+/*
  * Default helper for string types
  */
 @interface CDTStringIndexHelper : CDTIndexHelper;

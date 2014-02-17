@@ -36,9 +36,6 @@ it add the following line to your Podfile:
 pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore'
 ```
 
-Once set up, read the [Getting Started][gs] guide for an introduction
-to the API.
-
 [gs]: https://github.com/cloudant/CDTDatastore/wiki/Getting-Started
 
 ## Example project
@@ -124,7 +121,7 @@ CDTReplicatorFactory *replicatorFactory =
 
 NSString *s = @"https://apikey:apipassword@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
-CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
+CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
 
 // Replicate from the local to remote database
 CDTReplicator *replicator =

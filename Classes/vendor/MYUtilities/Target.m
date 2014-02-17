@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 2/11/08.
 //  Copyright 2008 Jens Alfke. All rights reserved.
 //
+//  Modified by Michael Rhodes, Cloudant Inc., 2014-02-17 to fix build warnings.
+//
 
 #import "Target.h"
 #import "Logging.h"
@@ -64,7 +66,7 @@
             first = NO;
         else
             [desc appendString: @", "];
-        [desc appendFormat: @"-[%@ %s]", [inv.target class], inv.selector];
+        [desc appendFormat: @"-[%@ %@]", [inv.target class], NSStringFromSelector(inv.selector)];
     }
     [desc appendString: @"}"];
     return desc;

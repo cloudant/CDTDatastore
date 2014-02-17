@@ -20,6 +20,7 @@
 #import "TDCollateJSON.h"
 #import "TDCanonicalJSON.h"
 #import "TDMisc.h"
+#import "TDJSON.h"
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"

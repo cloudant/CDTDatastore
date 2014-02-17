@@ -1,4 +1,0 @@
-Documentation set was installed to Xcode!
-
-Path: /Users/mike/Library/Developer/Shared/Documentation/DocSets/com.cloudant.cdtdatastore.CDTDatastore.docset
-Time: 2014-02-07 13:46:11 +0000

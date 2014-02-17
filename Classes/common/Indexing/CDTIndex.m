@@ -35,7 +35,7 @@
 
 @implementation CDTIndexHelperBase
 
-+(CDTIndexHelper*)indexHelperForType:(CDTIndexType)type;
++(CDTIndexHelperBase*)indexHelperForType:(CDTIndexType)type;
 {
     // TODO smarter way of dispatching depending on the type
     switch(type)

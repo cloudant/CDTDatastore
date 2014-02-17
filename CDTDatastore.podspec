@@ -33,9 +33,8 @@ Pod::Spec.new do |s|
 
   s.source_files = 'Classes/**/*.{h,m}'
   s.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
-  s.resources = 'Assets'
 
-  s.prefix_header_contents = '#import "TDJSON.h"', '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+  s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
 
   s.ios.exclude_files = 'Classes/osx'
   s.osx.exclude_files = 'Classes/ios'
@@ -47,6 +46,7 @@ Pod::Spec.new do |s|
   s.library = 'sqlite3', 'z'
 
   s.subspec 'no-arc' do |sp|
+    s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
     sp.source_files = 'Classes/vendor/MYUtilities/*.{h,m}'
     sp.requires_arc = false
     sp.ios.exclude_files = 'Classes/vendor/MYUtilities/MYURLHandler.{h,m}'

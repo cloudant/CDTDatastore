@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import "TD_Body.h"
+#import "TDJSON.h"
 
 
 @implementation TD_Body

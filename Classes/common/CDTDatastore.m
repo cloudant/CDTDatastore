@@ -63,7 +63,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 #pragma mark Observer methods
 
-/**
+/*
  * Notified that a document has been created/modified/deleted in the
  * database we're wrapping. Wrap it up into a notification containing
  * CDT* classes and re-notify.
@@ -226,7 +226,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return [self allDocsQuery:docIds options:&query];
 }
 
-/** docIds can be null for getting all documents */
+/* docIds can be null for getting all documents */
 -(NSArray*)allDocsQuery:(NSArray*)docIds options:(TDQueryOptions*)queryOptions
 {
     if (![self ensureDatabaseOpen]) {

@@ -21,6 +21,7 @@
 #import "TDMisc.h"
 #import "CollectionUtils.h"
 #import "MYStreamUtils.h"
+#import "TDJSON.h"
 
 
 @implementation TDMultipartDocumentReader

@@ -21,26 +21,33 @@ extern NSString* const CDTDatastoreErrorDomain;
 @class TD_DatabaseManager;
 
 /**
- * A CDTDatastoreManager manages a group of CDTDatastores. It also manages
- * the behind the scenes threading details to ensure the underlying SQLite
- * database is accessed safely.
+ A CDTDatastoreManager manages a group of CDTDatastores. It also manages
+ the behind the scenes threading details to ensure the underlying SQLite
+ database is accessed safely.
+ 
+ @see CDTDatastore
  */
 @interface CDTDatastoreManager : NSObject
 
 @property (nonatomic,strong,readonly) TD_DatabaseManager *manager;
 
 /**
- * Initialises the datastore manager with a directory where the files
- * for datastores are persisted to disk.
- *
- * @param directoryPath  directory for files. This must exist.
- * @param outError  any errors will be delivered through this parameter.
+ Initialises the datastore manager with a directory where the files
+ for datastores are persisted to disk.
+
+ @param directoryPath  directory for files. This must exist.
+ @param outError will point to an NSError object in case of error.
  */
 -(id)initWithDirectory:(NSString*)directoryPath
                  error:(NSError**)outError;
 
 /**
- * Returns a datastore for the given name.
+ Returns a datastore for the given name.
+ 
+ @param name datastore name
+ @param error will point to an NSError object in case of error.
+
+ @see CDTDatastore
  */
 -(CDTDatastore *)datastoreNamed:(NSString*)name
                           error:(NSError * __autoreleasing *)error;

@@ -58,7 +58,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
  In CouchDB terms, it wraps a document in the `_replicator` database.
 
- Use the CDTReplicatorFactory to create instances of this class.
+ Use CDTReplicatorFactory to create instances of this class.
 
  @see CDTReplicatorFactory
  */
@@ -125,7 +125,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 
 /**---------------------------------------------------------------------------------------
- * @name Starting and stopping
+ * @name Controlling replication
  *  --------------------------------------------------------------------------------------
  */
 
