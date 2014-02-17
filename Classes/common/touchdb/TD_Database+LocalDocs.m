@@ -19,6 +19,7 @@
 #import "TD_Revision.h"
 #import "TD_Body.h"
 #import "TDInternal.h"
+#import "TDJSON.h"
 
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"

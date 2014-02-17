@@ -27,6 +27,7 @@
 #import "Logging.h"
 #import "Test.h"
 #import "MYURLUtils.h"
+#import "TDJSON.h"
 
 #import "CDTDatastore.h"
 

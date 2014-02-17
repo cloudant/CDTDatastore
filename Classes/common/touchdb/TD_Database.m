@@ -25,6 +25,7 @@
 #import "TDCollateJSON.h"
 #import "TDBlobStore.h"
 #import "TDMisc.h"
+#import "TDJSON.h"
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"

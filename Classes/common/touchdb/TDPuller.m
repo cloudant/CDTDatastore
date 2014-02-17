@@ -27,6 +27,7 @@
 #import "TDInternal.h"
 #import "TDMisc.h"
 #import "ExceptionUtils.h"
+#import "TDJSON.h"
 
 
 // Maximum number of revisions to fetch simultaneously. (CFNetwork will only send about 5
