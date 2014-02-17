@@ -184,7 +184,7 @@
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom",@"surname":@"Blench"} error:&error];
-    STAssertEquals([[res documentIds] count], 1UL, @"Query should return 1 document");
+    STAssertEquals([[res documentIds] count], (NSUInteger)1, @"Query should return 1 document");
 }
 
 
@@ -637,29 +637,29 @@
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"string": @"Ipsem lorem"}
                                             error:&error];
     STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res1 documentIds] count], 1UL, @"Didn't get expected number of results");
+    STAssertEquals([[res1 documentIds] count], (NSUInteger)1, @"Didn't get expected number of results");
 
     // test that "2" converts to string
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"number": @[@1,@2]}
                                              error:&error];
     STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res2 documentIds] count], 2UL, @"Didn't get expected number of results");
+    STAssertEquals([[res2 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
 
     // test that array indexed correctly
     CDTQueryResult *res3 = [im queryWithDictionary:@{@"list": @[@"a",@"b",@"d"]}
                                              error:&error];
     STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res3 documentIds] count], 2UL, @"Didn't get expected number of results");
+    STAssertEquals([[res3 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
 
     // nothing should be indexed for a dictionary
     NSArray *res4 = [im uniqueValuesForIndex:@"dictionary" error:&error];
     STAssertNil(error, @"Error was not nil");
-    STAssertEquals([res4 count], 0UL, @"Didn't get expected number of results");
+    STAssertEquals([res4 count], (NSUInteger)0, @"Didn't get expected number of results");
 
     // nothing should be indexed since we can't convert string to int
     NSArray *res5 = [im uniqueValuesForIndex:@"stringAsInt" error:&error];
     STAssertNil(error, @"Error was not nil");
-    STAssertEquals([res5 count], 0UL, @"Didn't get expected number of results");
+    STAssertEquals([res5 count], (NSUInteger)0, @"Didn't get expected number of results");
 }
 
 - (void)initLotsOfData

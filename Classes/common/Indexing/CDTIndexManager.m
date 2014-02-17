@@ -653,9 +653,8 @@ static const int VERSION = 1;
             NSDictionary *v = @{@"name": indexName,
                                 @"last_sequence": [NSNumber numberWithInt:0],
                                 @"type": @(type)};
-            NSString *strInsert = @"insert into %@ values (%@);";
-            NSString *sqlInsert = [NSString stringWithFormat:strInsert, kCDTIndexMetadataTableName,
-                                   [CDTSQLiteHelpers makeInsertPlaceholders:v]];
+            NSString *strInsert = @"insert into %@ values (:name, :type, :last_sequence);";
+            NSString *sqlInsert = [NSString stringWithFormat:strInsert, kCDTIndexMetadataTableName];                                   
 
             success = success && [db executeUpdate:sqlInsert withParameterDictionary:v];
         } else {
@@ -686,7 +685,7 @@ static const int VERSION = 1;
 {
     NSString* SCHEMA_INDEX = @"CREATE TABLE _t_cloudant_sync_indexes_metadata ( "
     @"        name TEXT NOT NULL, "
-    @"        type TEXT NOT NULL, "
+    @"        type INTEGER NOT NULL, "
     @"        last_sequence INTEGER NOT NULL);";
 
     __block BOOL success = YES;
