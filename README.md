@@ -121,7 +121,7 @@ CDTReplicatorFactory *replicatorFactory =
 
 NSString *s = @"https://apikey:apipassword@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
-CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
+CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
 
 // Replicate from the local to remote database
 CDTReplicator *replicator =
