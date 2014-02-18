@@ -1,6 +1,9 @@
 
 language: objective-c
 
+before_install:
+  - export LANG=en_US.UTF-8
+
 install:
   - gem install cocoapods xcpretty
   - cd Tests
@@ -8,4 +11,4 @@ install:
   - cd ..
 
 script:
-  - xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' test
+  - rake travis

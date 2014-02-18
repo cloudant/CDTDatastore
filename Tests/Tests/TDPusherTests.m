@@ -37,6 +37,8 @@ extern int findCommonAncestor(TD_Revision* rev, NSArray* possibleRevIDs);
     STAssertEquals(findCommonAncestor(rev, @[@"3-noway", @"1-nope"]), 0, @"Did not find zero common ancestors in incorrect rev dictionary in %s", __PRETTY_FUNCTION__);
     STAssertEquals(findCommonAncestor(rev, @[@"3-noway", @"1-first"]), 1, @"Did not find common ancestor 1-first in rev dictionary in %s", __PRETTY_FUNCTION__);
     STAssertEquals(findCommonAncestor(rev, @[@"3-noway", @"2-second", @"1-first"]), 2, @"Did not find common ancestor 2-second in rev dictionary in %s", __PRETTY_FUNCTION__);
+
+//    STFail(@"test failing");
 }
 
 
