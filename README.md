@@ -32,8 +32,7 @@ CDTDatastore is available through [CocoaPods](http://cocoapods.org), to install
 it add the following line to your Podfile:
 
 ```ruby
-# At the moment, the pod spec isn't in Cocoapods main repo
-pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore'
+pod "CDTDatastore"
 ```
 
 [gs]: https://github.com/cloudant/CDTDatastore/wiki/Getting-Started
