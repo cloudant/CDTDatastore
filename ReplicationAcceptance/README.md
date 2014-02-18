@@ -28,9 +28,9 @@ need to open to workspace in Xcode at least once. Do that now.
 Now you can run, using xcpretty if you want:
 
 ```
-xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests_OSX -destination "platform=OS X" test
+xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests -destination "platform=OS X" test
 
-xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests_iOS -destination "platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)" test
+xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests -destination "platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)" test
 ```
 
 Unfortunately you need an iPhone app to run this on the device, so no device testing yet.

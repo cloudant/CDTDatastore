@@ -22,7 +22,9 @@
 		27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */; };
 		27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */; };
 		27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
-		27BE3CF0189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
+		27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
+		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
+		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -63,6 +65,7 @@
 				27A7E68A18997412007FAF1C /* SenTestingKit.framework in Frameworks */,
 				27A7E68C18997412007FAF1C /* UIKit.framework in Frameworks */,
 				27A7E68B18997412007FAF1C /* Foundation.framework in Frameworks */,
+				4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +74,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27A7E69E1899741C007FAF1C /* SenTestingKit.framework in Frameworks */,
+				8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -181,9 +185,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27A7E69618997412007FAF1C /* Build configuration list for PBXNativeTarget "RA_Tests_iOS" */;
 			buildPhases = (
+				5517C6B16DE048EF85C5A4A1 /* Check Pods Manifest.lock */,
 				27A7E68518997412007FAF1C /* Sources */,
 				27A7E68618997412007FAF1C /* Frameworks */,
 				27A7E68718997412007FAF1C /* Resources */,
+				DA7978ED7F6244DC8D4D91B8 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -198,9 +204,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27A7E6AA1899741C007FAF1C /* Build configuration list for PBXNativeTarget "RA_Tests_OSX" */;
 			buildPhases = (
+				86D70F8BECFE48389B7B243B /* Check Pods Manifest.lock */,
 				27A7E6991899741C007FAF1C /* Sources */,
 				27A7E69A1899741C007FAF1C /* Frameworks */,
 				27A7E69B1899741C007FAF1C /* Resources */,
+				BB7BC6BD2CC743AAAAC21269 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -263,6 +271,69 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		5517C6B16DE048EF85C5A4A1 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		86D70F8BECFE48389B7B243B /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		BB7BC6BD2CC743AAAAC21269 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-osx-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DA7978ED7F6244DC8D4D91B8 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-ios-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		27A7E68518997412007FAF1C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -279,7 +350,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27BE3CF0189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
+				27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */,
 				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
