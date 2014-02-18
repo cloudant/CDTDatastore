@@ -148,9 +148,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * All documents are read into memory before being returned.
  *
- * Only the current revision of each document is returned.
+ * Only the current winning revision of each document is returned.
  *
- * @return NSArray of CSDatastoreObjects
+ * @return NSArray of CDTDocumentRevisions
  */
 -(NSArray*) getAllDocuments;
 
