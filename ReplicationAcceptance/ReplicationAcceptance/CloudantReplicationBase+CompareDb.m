@@ -116,55 +116,53 @@
 
     NSArray *allLocalDocs = [local getAllDocuments];
     [allLocalDocs enumerateObjectsWithOptions:NSEnumerationConcurrent
-                                   usingBlock:^(id ob, NSUInteger idx, BOOL* stop) {
+                                   usingBlock:^(id ob, NSUInteger idx, BOOL* stop)
+    {
+        CDTDocumentRevision *document = (CDTDocumentRevision*)ob;
 
-                                       CDTDocumentRevision *document = (CDTDocumentRevision*)ob;
+        // This returns all the `current` revisions for a given document.
+        NSArray *allRevisions = [local conflictsForDocument:document];
 
-                                       // This returns all the `current` revisions for a given document.
-                                       NSArray *allRevisions = [local conflictsForDocument:document];
+        // Make sure the history for each conflict is correct
+        for (CDTDocumentRevision *currentRevision in allRevisions) {
 
-                                       // Make sure the history for each conflict is correct
-                                       for (CDTDocumentRevision *currentRevision in allRevisions) {
+            // Local revs for this doc
+            NSMutableArray *localRevIdsAcc = [NSMutableArray array];
+            NSArray *localOpenRevs = [local getRevisionHistory:currentRevision];
 
-                                           // Local revs for this doc
-                                           NSMutableArray *localRevIdsAcc = [NSMutableArray array];
-                                           NSArray *localOpenRevs = [local getRevisionHistory:currentRevision];
+            for (CDTDocumentRevision *revision in localOpenRevs) {
+                [localRevIdsAcc addObject:revision.revId];
+            }
+            NSArray *localRevIds = [localRevIdsAcc sortedArrayUsingSelector:@selector(localizedStandardCompare:)];
 
-                                           for (CDTDocumentRevision *revision in localOpenRevs) {
-                                               [localRevIdsAcc addObject:revision.revId];
-                                           }
-                                           NSArray *localRevIds = [localRevIdsAcc sortedArrayUsingSelector:@selector(localizedStandardCompare:)];
+            // Remote revs for this doc
+            NSMutableArray *remoteRevIdsAccumulator = [NSMutableArray array];
+            NSDictionary* headers = @{@"accept": @"application/json"};
+            NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:currentRevision.docId];
+            NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
+                [request setUrl:[docUrl absoluteString]];
+                [request setHeaders:headers];
+                [request setParameters:@{@"revs_info": @"true", @"rev": currentRevision.revId}];
+            }] asJson].body.object;
+            for (NSDictionary* revInfo in json[@"_revs_info"]) {
+                [remoteRevIdsAccumulator addObject:revInfo[@"rev"]];
+            }
+            NSArray *remoteRevIds = [remoteRevIdsAccumulator sortedArrayUsingSelector:@selector(localizedStandardCompare:)];
 
-                                           // Remote revs for this doc
-                                           NSMutableArray *remoteRevIdsAccumulator = [NSMutableArray array];
-                                           NSDictionary* headers = @{@"accept": @"application/json"};
-                                           NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:currentRevision.docId];
-                                           NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
-                                               [request setUrl:[docUrl absoluteString]];
-                                               [request setHeaders:headers];
-                                               [request setParameters:@{@"revs_info": @"true", @"rev": currentRevision.revId}];
-                                           }] asJson].body.object;
-                                           for (NSDictionary* revInfo in json[@"_revs_info"]) {
-                                               [remoteRevIdsAccumulator addObject:revInfo[@"rev"]];
-                                           }
-                                           NSArray *remoteRevIds = [remoteRevIdsAccumulator sortedArrayUsingSelector:@selector(localizedStandardCompare:)];
-                                           
-                                           // CouchDB trims revision histories, so we should do that with the local array
-                                           // CouchDB will obviously return the most recent revIds, which will be at the
-                                           // end of the localRevIds array, so we take the end of that array.
-                                           NSRange range;
-                                           range.location = localRevIds.count - remoteRevIds.count;
-                                           range.length = remoteRevIds.count;
-                                           localRevIds = [localRevIds subarrayWithRange:range];
-                                           
-                                           if (![localRevIds isEqualToArray:remoteRevIds]) {
-                                               STFail(@"Local and remote rev histories don't match");
-                                               return;
-                                           }
-                                           
-                                       }
+            // CouchDB trims revision histories, so we should do that with the local array
+            // CouchDB will obviously return the most recent revIds, which will be at the
+            // end of the localRevIds array, so we take the end of that array.
+            NSRange range;
+            range.location = localRevIds.count - remoteRevIds.count;
+            range.length = remoteRevIds.count;
+            localRevIds = [localRevIds subarrayWithRange:range];
 
-                                   }];
+            if (![localRevIds isEqualToArray:remoteRevIds]) {
+                STFail(@"Local and remote rev histories don't match");
+                return;
+            }
+        }
+    }];
     return YES;
 }
 
