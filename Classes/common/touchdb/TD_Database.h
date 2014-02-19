@@ -142,6 +142,8 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 
 /** Returns all the known revisions (or all current/conflicting revisions) of a document. */
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
+                                     onlyCurrent: (BOOL)onlyCurrent;
+- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                      onlyCurrent: (BOOL)onlyCurrent
                                         database: (FMDatabase*)db;
 

@@ -812,6 +812,21 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     return revs;
 }
 
+
+- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
+                                     onlyCurrent: (BOOL)onlyCurrent
+{
+    __block TD_RevisionList *result;
+    __weak TD_Database *weakSelf = self;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        TD_Database *strongSelf = weakSelf;
+        result = [strongSelf getAllRevisionsOfDocumentID:docID
+                                             onlyCurrent:onlyCurrent
+                                                database:db];
+    }];
+    return result;
+}
+
 /** Only call from within a queued transaction **/
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                      onlyCurrent: (BOOL)onlyCurrent
@@ -1260,7 +1275,7 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
             update_seq = self.lastSequence;     // TODO: needs to be atomic with the following SELECT
 
         // Now run the database query:
-        FMResultSet* r = [db executeQuery: sql withArgumentsInArray: args];
+        FMResultSet *r = [db executeQuery: sql withArgumentsInArray: args];
         if (!r)
             return;
 

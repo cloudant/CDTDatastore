@@ -19,10 +19,10 @@
 @class CDTDocumentBody;
 
 /** NSNotification posted when a document is updated.
- UserInfo keys: 
-  - @"rev": the new CDTDocumentRevision, 
+ UserInfo keys:
+  - @"rev": the new CDTDocumentRevision,
   - @"source": NSURL of remote db pulled from,
-  - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev). 
+  - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev).
  */
 extern NSString* const CDTDatastoreChangeNotification;
 
@@ -136,12 +136,31 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param rev id of the specified revision
  * @param error will point to an NSError object in case of error.
  *
- * @return specified CDTDocumentRevision of the document for given 
+ * @return specified CDTDocumentRevision of the document for given
  *     document id or nil if it doesn't exist
  */
 -(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
                                        rev:(NSString*)rev
                                      error:(NSError * __autoreleasing *)error;
+
+/**
+ * Unpaginated read of all documents.
+ *
+ * All documents are read into memory before being returned.
+ *
+ * Only the current winning revision of each document is returned.
+ *
+ * @return NSArray of CDTDocumentRevisions
+ */
+-(NSArray*) getAllDocuments;
+
+
+/**
+ * Get all the current revisions for a document.
+ *
+ * If there are >1 revisions in the array, there are conflicts.
+ */
+-(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision;
 
 
 /**
@@ -174,6 +193,18 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @return NSArray containing CDTDocumentRevision objects
  */
 -(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
+
+
+/**
+ * Returns the history of revisions for the passed revision.
+ *
+ * This is each revision on the branch that `revision` is on,
+ * from `revision` to the root of the tree.
+ *
+ * Older revisions will not contain the document data as it will have
+ * been compacted away.
+ */
+-(NSArray*) getRevisionHistory:(CDTDocumentRevision*)revision;
 
 
 /**
