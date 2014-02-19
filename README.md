@@ -26,6 +26,11 @@ This library is for iOS, an [Android version][android] is also available.
 
 [android]: https://github.com/cloudant/sync-android
 
+If you have questions, please join our [mailing list][mlist] and drop us a 
+line.
+
+[mlist]: https://groups.google.com/forum/#!forum/cloudant-sync
+
 ## Using in your project
 
 CDTDatastore is available through [CocoaPods](http://cocoapods.org), to install
