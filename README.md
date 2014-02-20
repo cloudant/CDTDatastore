@@ -2,6 +2,7 @@
 
 [![Version](http://cocoapod-badges.herokuapp.com/v/CDTDatastore/badge.png)](http://cocoadocs.org/docsets/CDTDatastore)
 [![Platform](http://cocoapod-badges.herokuapp.com/p/CDTDatastore/badge.png)](http://cocoadocs.org/docsets/CDTDatastore)
+[![Build Status](https://travis-ci.org/cloudant/CDTDatastore.png?branch=master)](https://travis-ci.org/cloudant/CDTDatastore)
 
 **Applications use Cloudant Sync to store, index and query local JSON data on a
 device and to synchronise data between many devices. Synchronisation is under
