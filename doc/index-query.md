@@ -131,12 +131,11 @@ for(CDTDocumentRevision *revision in result) {
 
 The queries currently supported are:
 
-* `{@index: @{@"max": value}}`: index <= value
-* `{@index: value}`: index == value
-* `{@index: @{@"min": value}}`: index >= value
-* `{@index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
-
-Additionally min and max can be combined to form a range.
+* `{index: @{@"max": value}}`: index <= value
+* `{index: value}`: index == value
+* `{index: @{@"min": value}}`: index >= value
+* `{index: @{@"min": value1, @"max": value2}}`: value1 <= index <= value2
+* `{index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
 
 ### Query options
 
