@@ -129,6 +129,15 @@ for(CDTDocumentRevision *revision in result) {
 }
 ```
 
+The queries currently supported are:
+
+* `{@index: @{@"max": value}}`: index <= value
+* `{@index: value}`: index == value
+* `{@index: @{@"min": value}}`: index >= value
+* `{@index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
+
+Additionally min and max can be combined to form a range.
+
 ### Query options
 
 There is a variant of the query method used above which takes an extra `options` dictionary:
