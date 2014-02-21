@@ -69,7 +69,7 @@ static NSCharacterSet* kIllegalNameChars;
                  options: (const TD_DatabaseManagerOptions*)options
                    error: (NSError**)outError
 {
-    if (outError) *outError = nil;
+
     self = [super init];
     if (self) {
         _dir = [dirPath copy];
