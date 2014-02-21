@@ -17,6 +17,7 @@
 
 #import "TD_Body.h"
 #import "TD_Revision.h"
+#import "TDJSON.h"
 
 @implementation CDTDocumentBody
 
@@ -33,7 +34,12 @@
 {
     self = [super init];
     if (self) {
+        
+        if(![TDJSON isValidJSONObject: dict])
+            return nil;
+        
         _td_body = [[TD_Body alloc] initWithProperties:dict];
+
     }
     return self;
 }

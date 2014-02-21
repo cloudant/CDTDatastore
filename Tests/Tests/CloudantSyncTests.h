@@ -17,11 +17,14 @@
 
 @class CDTDatastoreManager;
 
+#define kDBExtension @"touchdb"  //in TD_DatabaseManager.m. Move it into .h?
+
 @interface CloudantSyncTests : SenTestCase
 
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
+@property (nonatomic, readonly) NSSet *sqlTables;
 
 - (NSString*)createTemporaryDirectoryAndReturnPath;
-
+- (NSString *)pathForDBName:(NSString *)name;
 @end
