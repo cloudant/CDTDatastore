@@ -683,9 +683,15 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         result = [strongSelf garbageCollectAttachments:db];
 
         Log(@"Flushing SQLite WAL...");
-        if (![db executeUpdate: @"PRAGMA wal_checkpoint(RESTART)"]) {
-            result = kTDStatusDBError;
-            return;
+        FMResultSet *rset = [db executeQuery: @"PRAGMA wal_checkpoint(RESTART)"];
+        @try {
+            if (!rset || db.hadError) {
+                result = kTDStatusDBError;
+                return;
+            }
+        }
+        @finally {
+            [rset close];
         }
 
         Log(@"Vacuuming SQLite database...");
