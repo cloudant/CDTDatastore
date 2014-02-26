@@ -64,6 +64,7 @@
     STAssertNil(error, @"CDTDatastoreManager had error");
     STAssertNotNil(localFactory, @"Factory is nil");
     
+    error = nil;
     NSString *dbName = @"temptogettables";
     CDTDatastore *datastore = [localFactory datastoreNamed:dbName error:&error];
     
