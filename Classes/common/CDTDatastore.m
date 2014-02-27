@@ -47,7 +47,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (self) {
         _database = database;
         NSString *dir = [[database path] stringByDeletingLastPathComponent];
-        _extensionsDir = [dir stringByAppendingPathComponent: @"extensions"];
+        NSString *name = [database name];
+        _extensionsDir = [dir stringByAppendingPathComponent: [NSString stringWithFormat:@"%@_extensions", name]];
 
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(TDdbChanged:)
