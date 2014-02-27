@@ -29,24 +29,15 @@
 
 @implementation CDTReplicateController
 
-+(NSString*)username
-{
-//    return @"dgenumeactseirabsedclown";  // ios-todo-sample
-    return @"therstontsiveneavedgetil";  // android-eap-todo-sample
-}
-
-+(NSString*)password
-{
-//    return @"dxuUWlvMgNTGiTqWgCpGb0yW";  // ios-todo-sample
-    return @"VIGuatsOpN2dK6LvaC6cRMrm";
-}
-
 -(NSURL*)replicatorURL {
-    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodes.cloudant.com/%@",
-                     [CDTReplicateController username],
-                     [CDTReplicateController password],
-//                     @"ios-todo-sample"];
-                     @"android-eap-todo-sample"];
+    // Shared database for demo purposes -- anyone can put stuff here...
+    NSString *username = @"iessidesseepromanownessi";
+    NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
+    NSString *db_name = @"shared_todo_sample";
+    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
+                     username,
+                     password,
+                     db_name];
     [self log:url];
     return [NSURL URLWithString:url];
 }
