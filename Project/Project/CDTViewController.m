@@ -41,6 +41,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self reloadTasks];
+    [self.tableView reloadData];
 }
 
 - (void)didReceiveMemoryWarning
