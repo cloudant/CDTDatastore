@@ -111,24 +111,27 @@
             [weakSelf log:@"%@ state: %@ (%d)", label, state, replicator.state];
         });
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (replicator.state == CDTReplicatorStateComplete || replicator.state == CDTReplicatorStateStopped) {
-                [weakSelf replicatorDidComplete:replicator];
-            } else if (replicator.state == CDTReplicatorStateError) {
-                [weakSelf replicatorDidError:replicator info:nil];
-            }
-        });
+        // Both replicatorDidComplete and replicatorDidError dispatch to the main thread
+        if (replicator.state == CDTReplicatorStateComplete || replicator.state == CDTReplicatorStateStopped) {
+            [weakSelf replicatorDidComplete:replicator];
+        } else if (replicator.state == CDTReplicatorStateError) {
+            [weakSelf replicatorDidError:replicator info:nil];
+        }
     });
 }
 
 #pragma mark CDTReplicatorListener delegate
 
 -(void)replicatorDidComplete:(CDTReplicator *)replicator {
-    [self log:@"complete"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self log:@"complete"];
+    });
 }
 
 -(void)replicatorDidError:(CDTReplicator *)replicator info:(CDTReplicationErrorInfo *)info {
-    [self log:@"error: %@", info];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self log:@"error: %@", info];
+    });
 }
 
 @end
