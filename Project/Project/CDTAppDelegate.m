@@ -108,7 +108,7 @@
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
 
-    __block CDTAppDelegate *weakSelf = self;
+    __weak CDTAppDelegate *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [weakSelf.replicatorFactory start];
     });

@@ -86,7 +86,7 @@
     state = [CDTReplicator stringForReplicatorState:replicator.state];
     [self log:@"%@ state: %@ (%d)", label, state, replicator.state];
 
-    __block CDTReplicateController *weakSelf = self;
+    __weak CDTReplicateController *weakSelf = self;
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         while ([replicator isActive]) {
