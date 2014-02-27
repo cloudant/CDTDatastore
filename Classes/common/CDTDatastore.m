@@ -35,6 +35,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @implementation CDTDatastore
 
+@synthesize database = _database;
+
 +(NSString*)versionString
 {
     return @"0.1.0";
@@ -60,6 +62,15 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 -(void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver: self];
+}
+
+#pragma mark Properties
+
+-(TD_Database *)database {
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
+    return _database;
 }
 
 #pragma mark Observer methods
@@ -402,7 +413,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 -(BOOL)ensureDatabaseOpen
 {
-    return [self.database open];
+    return [_database open];
 }
 
 
