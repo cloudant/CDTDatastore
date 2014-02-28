@@ -303,10 +303,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         NSString *docId = row[@"id"];
         NSString *revId = row[@"value"][@"rev"];
 
+        // deleted field only present in deleted documents, but to be safe we use
+        // the fact that (BOOL)[nil -boolValue] is falsey
+        BOOL deleted = (BOOL)[row[@"value"][@"deleted"] boolValue];
+
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:revId
-                                                           deleted:NO];
+                                                           deleted:deleted];
+
+        // Deleted documents won't have a `doc` field
+        if (!deleted) {
         revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+        }
 
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
         [result addObject:ob];

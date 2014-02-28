@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## 0.0.5 (Unreleased)
+
+- FIX The rare queries that return deleted documents no longer
+  crash an application.
+
 ## 0.0.4 (2014-02-27)
 
 - FIX Make sure all accesses to CDTDatastore's internal TD_Database
