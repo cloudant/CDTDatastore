@@ -1101,6 +1101,43 @@
 
 #pragma mark - DELETE tests
 
+- (void)testDeletedItem404
+{
+    NSError *error = nil;
+
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(752614)}]
+                                                                error:&error];
+
+    [self.datastore deleteDocumentWithId:rev.docId
+                                     rev:rev.revId
+                                   error:&error];
+
+    CDTDocumentRevision *tmp = [self.datastore getDocumentWithId:rev.docId
+                                                           error:&error];
+
+    STAssertNil(tmp, @"deleted doc returned");
+    STAssertEquals((NSInteger)404, [error code], @"Wrong error code for deleted item.");
+}
+
+- (void)testDeletedFlagOnDocumentRevision
+{
+    NSError *error = nil;
+
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(752614)}]
+                                                                error:&error];
+
+    rev = [self.datastore deleteDocumentWithId:rev.docId
+                                           rev:rev.revId
+                                         error:&error];
+
+    CDTDocumentRevision *tmp = [self.datastore getDocumentWithId:rev.docId
+                                        rev:rev.revId
+                                      error:&error];
+
+    STAssertNotNil(tmp, @"Deleted doc not returned when queried with rev ID");
+    STAssertTrue(tmp.deleted, @"Deleted document was not flagged deleted");
+}
+
 -(void)testDeleteDocument
 {
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which

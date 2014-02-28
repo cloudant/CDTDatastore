@@ -237,9 +237,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return NO if the document couldn't be deleted.
  */
--(BOOL) deleteDocumentWithId:(NSString*)docId
-                         rev:(NSString*)rev
-                       error:(NSError * __autoreleasing *)error;
+-(CDTDocumentRevision*) deleteDocumentWithId:(NSString*)docId
+                                         rev:(NSString*)rev
+                                       error:(NSError * __autoreleasing *)error;
 
 /**
  * Return a directory for an extension to store its data for this CDTDatastore.

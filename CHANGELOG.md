@@ -4,6 +4,7 @@
 
 - FIX The rare queries that return deleted documents no longer
   crash an application.
+- CHANGE Deleting a document now returns the new revision.
 
 ## 0.0.4 (2014-02-27)
 
