@@ -560,19 +560,22 @@ static const int VERSION = 1;
         for(TD_Revision *rev in changes) {
             NSString *docID = [rev docID];
         
-            // delete
+            // Delete
             NSDictionary *dictDelete = @{@"docid": docID};
             [db executeUpdate:sqlDelete withParameterDictionary:dictDelete];
-            // insert
-            NSArray *valuesInsert = [f valuesForRevision:[[CDTDocumentRevision alloc]
-                                                          initWithTDRevision:rev]
-                                               indexName:[index indexName]];
-            for (NSObject *rawValue in valuesInsert) {
-                NSObject *convertedValue = [helper convertIndexValue:rawValue];
-                if (convertedValue) {
-                    NSDictionary *dictInsert = @{@"docid": docID,
-                                                 @"value": convertedValue};
-                    success = success && [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
+
+            // Insert new values if the rev isn't deleted
+            if (!rev.deleted) {
+                NSArray *valuesInsert = [f valuesForRevision:[[CDTDocumentRevision alloc]
+                                                              initWithTDRevision:rev]
+                                                   indexName:[index indexName]];
+                for (NSObject *rawValue in valuesInsert) {
+                    NSObject *convertedValue = [helper convertIndexValue:rawValue];
+                    if (convertedValue) {
+                        NSDictionary *dictInsert = @{@"docid": docID,
+                                                     @"value": convertedValue};
+                        success = success && [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
+                    }
                 }
             }
             if (!success) {
