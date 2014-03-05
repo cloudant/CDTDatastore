@@ -1474,8 +1474,10 @@
         if(arc4random_uniform(100) < 30) {  //delete ~30% of the docs
             error = nil;
             CDTDocumentRevision *ob = [dbObjects objectAtIndex:i];
-            BOOL deleted = [self.datastore deleteDocumentWithId:ob.docId rev:ob.revId error:&error];
-            STAssertTrue(deleted, @"Error deleting document: %@", error);
+            CDTDocumentRevision *deleted = [self.datastore deleteDocumentWithId:ob.docId
+                                                                            rev:ob.revId
+                                                                          error:&error];
+            STAssertNotNil(deleted, @"Error deleting document: %@", error);
             [deletedDbObjects addObject:ob];
             [deletedDbDicts addObject:ob.documentAsDictionary];
         }
