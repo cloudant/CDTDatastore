@@ -304,7 +304,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         NSString *revId = row[@"value"][@"rev"];
 
         // deleted field only present in deleted documents, but to be safe we use
-        // the fact that (BOOL)[nil -boolValue] is falsey
+        // the fact that (BOOL)[nil -boolValue] is false
         BOOL deleted = (BOOL)[row[@"value"][@"deleted"] boolValue];
 
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId

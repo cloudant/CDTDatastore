@@ -669,6 +669,7 @@
 
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
 
+    // A matching result
     CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(752614)}]
                                                                 error:&error];
 
