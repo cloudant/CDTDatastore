@@ -303,10 +303,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         NSString *docId = row[@"id"];
         NSString *revId = row[@"value"][@"rev"];
 
+        // deleted field only present in deleted documents, but to be safe we use
+        // the fact that (BOOL)[nil -boolValue] is false
+        BOOL deleted = (BOOL)[row[@"value"][@"deleted"] boolValue];
+
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:revId
-                                                           deleted:NO];
-        revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+                                                           deleted:deleted];
+
+        // Deleted documents won't have a `doc` field
+        if (!deleted) {
+            revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+        }
 
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
         [result addObject:ob];
@@ -379,9 +387,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 
--(BOOL) deleteDocumentWithId:(NSString*)docId
-                         rev:(NSString*)rev
-                       error:(NSError * __autoreleasing *)error
+-(CDTDocumentRevision*) deleteDocumentWithId:(NSString*)docId
+                                         rev:(NSString*)rev
+                                       error:(NSError * __autoreleasing *)error
 {
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
@@ -392,16 +400,16 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                          revID:nil
                                                        deleted:YES];
     TDStatus status;
-    [self.database putRevision:revision
-                prevRevisionID:rev
-                 allowConflict:NO
-                        status:&status];
+    TD_Revision *new = [self.database putRevision:revision
+                                   prevRevisionID:rev
+                                    allowConflict:NO
+                                           status:&status];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
-        return NO;
+        return nil;
     }
 
-    return YES;
+    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 
 -(NSString*) extensionDataFolder:(NSString*)extensionName

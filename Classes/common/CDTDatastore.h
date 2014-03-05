@@ -235,11 +235,11 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param rev revision ID of a leaf revision of the document
  * @param error will point to an NSError object in case of error.
  *
- * @return NO if the document couldn't be deleted.
+ * @return CDTDocumentRevsion of the deleted document, or `nil` if there was an error.
  */
--(BOOL) deleteDocumentWithId:(NSString*)docId
-                         rev:(NSString*)rev
-                       error:(NSError * __autoreleasing *)error;
+-(CDTDocumentRevision*) deleteDocumentWithId:(NSString*)docId
+                                         rev:(NSString*)rev
+                                       error:(NSError * __autoreleasing *)error;
 
 /**
  * Return a directory for an extension to store its data for this CDTDatastore.

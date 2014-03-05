@@ -67,6 +67,7 @@
 		27389E3018534E050027A404 /* DatastoreActions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreActions.m; sourceTree = "<group>"; };
 		27389E3218534E050027A404 /* DatastoreCrud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreCrud.m; sourceTree = "<group>"; };
 		27389E3418534E050027A404 /* SetUpDatastore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetUpDatastore.m; sourceTree = "<group>"; };
+		27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IndexManagerTests.h; sourceTree = "<group>"; };
 		27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CCEDCA187AD64F006F3C66 /* Tests OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests OSX-Info.plist"; sourceTree = "<group>"; };
 		27CCEDCC187AD64F006F3C66 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -175,6 +176,7 @@
 				27389E3018534E050027A404 /* DatastoreActions.m */,
 				27389E3218534E050027A404 /* DatastoreCrud.m */,
 				27389E3418534E050027A404 /* SetUpDatastore.m */,
+				27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */,
 				8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */,
 				27389E16185345FD0027A404 /* Supporting Files */,
 			);

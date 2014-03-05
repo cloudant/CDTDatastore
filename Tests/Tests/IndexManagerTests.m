@@ -662,6 +662,65 @@
     STAssertEquals([res5 count], (NSUInteger)0, @"Didn't get expected number of results");
 }
 
+- (void)testQueryingForDeletedItem
+{
+    NSError *error = nil;
+    int count;
+
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+
+    // A matching result
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(752614)}]
+                                                                error:&error];
+
+    // A second matching result
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(12345)}]
+                                                                error:&error];
+
+    // A non-matching result
+    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zimbabwe", @"area": @(390580)}]
+                                     error:&error];
+
+    [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
+
+    error = nil;
+    [im updateAllIndexes:&error];
+
+    for (CDTDocumentRevision *rev in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
+        // do nothing
+    }
+
+    // As of 0.0.4, querying for a deleted item crashed during the forin loop
+    [self.datastore deleteDocumentWithId:rev.docId
+                                     rev:rev.revId
+                                   error:&error];
+
+    // Before updating the indexes, we should have two results, with one being deleted
+    count = 0;
+    for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
+        // Check the deleted document is flagged correctly
+        // TODO: move into a separate test?
+        if ([result.docId isEqualToString:rev.docId]) {
+            STAssertTrue(result.deleted, @"Deleted document was not flagged deleted");
+        } else {
+            STAssertFalse(rev.deleted, @"Query returned deleted document");
+        }
+        count++;
+    }
+    STAssertEquals(count, 2, @"Query returned the wrong number of results");
+
+    error = nil;
+    [im updateAllIndexes:&error];
+    
+    count = 0;
+    for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
+        // Check we don't get a deleted document
+        STAssertFalse(result.deleted, @"Query returned deleted document");
+        count++;
+    }
+    STAssertEquals(count, 1, @"Query returned the wrong number of results");
+}
+
 - (void)initLotsOfData
 {
     NSError *error = nil;

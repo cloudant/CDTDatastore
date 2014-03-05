@@ -5,7 +5,7 @@ before_install:
   - export LANG=en_US.UTF-8
 
 install:
-  - gem install cocoapods xcpretty
+  - gem install cocoapods xcpretty --no-document
   - cd Tests
   - pod install
   - cd ..
