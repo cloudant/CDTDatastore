@@ -1339,11 +1339,11 @@
     
     error = nil;
     NSString *docId = ob.docId;
-    Boolean deleted = [self.datastore deleteDocumentWithId:docId
+    CDTDocumentRevision *deleted = [self.datastore deleteDocumentWithId:docId
                                                        rev:ob.revId
                                                      error:&error];
-    STAssertNil(error, @"Error deleting document");
-    STAssertTrue(deleted, @"Object wasn't deleted successfully");
+    STAssertNil(error, @"Error deleting document: %@", error);
+    STAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
@@ -1358,10 +1358,10 @@
     deleted = [self.datastore deleteDocumentWithId:docId
                                                rev:ob.revId  //old revision, can't get deleted revision
                                              error:&error];
+    STAssertNil(deleted, @"CDTRevsision was not nil on Error deleting document: %@", error);
     STAssertNotNil(error, @"No Error trying to delete already deleted document");
     //CouchDB/Cloudant returns 409, But CloudantSync returns a 404.
     //STAssertTrue(error.code == 409, @"Found %@", error);
-    STAssertFalse(deleted, @"Object wasn't deleted successfully");
     
     // Check we can get old revision
     error = nil;
@@ -1469,11 +1469,11 @@
     
     //delete doc.
     error = nil;
-    Boolean deleted = [self.datastore deleteDocumentWithId:docId
+    CDTDocumentRevision *deleted = [self.datastore deleteDocumentWithId:docId
                                                        rev:ob2.revId
                                                      error:&error];
-    STAssertNil(error, @"Error deleting document");
-    STAssertTrue(deleted, @"Object wasn't deleted successfully");
+    STAssertNil(error, @"Error deleting document: %@", error);
+    STAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
@@ -1603,11 +1603,11 @@
     
     //delete doc. rev 3-
     error = nil;
-    Boolean deleted = [self.datastore deleteDocumentWithId:docId
+    CDTDocumentRevision *deleted = [self.datastore deleteDocumentWithId:docId
                                                        rev:ob2.revId
                                                      error:&error];
-    STAssertNil(error, @"Error deleting document");
-    STAssertTrue(deleted, @"Object wasn't deleted successfully");
+    STAssertNil(error, @"Error deleting document: %@", error);
+    STAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
@@ -1780,12 +1780,13 @@
     STAssertNil(aRev, @"CDTDocumentRevision should be nil after getting document that doesn't exist");
     
     error = nil;
-    Boolean deleted = [self.datastore deleteDocumentWithId:docId
+    CDTDocumentRevision *deleted = [self.datastore deleteDocumentWithId:docId
                                                        rev:revId
                                                      error:&error];
     STAssertNotNil(error, @"No Error deleting document that doesn't exist");
     STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertFalse(deleted, @"Object was deleted successfully? It didn't exist!");
+    STAssertNil(deleted, @"CDTDocumentRevision* was not nil. Deletion successful?: %@", error);
+    
     
     [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
     
