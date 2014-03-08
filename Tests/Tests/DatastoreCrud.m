@@ -30,6 +30,8 @@
 
 #import "TD_Body.h"
 #import "CollectionUtils.h"
+#import "TD_Database+Insertion.h"
+#import "TDStatus.h"
 
 @interface DatastoreCrud : CloudantSyncTests
 
@@ -75,7 +77,14 @@
             NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumnIndex: i]
                                                        options: TDJSONReadingMutableContainers
                                                          error: NULL];
-            resultString = [NSString stringWithFormat:@"%@", jsonDoc];
+
+            if(jsonDoc)
+                resultString = [NSString stringWithFormat:@"%@", jsonDoc];
+            else
+                resultString = [NSString stringWithFormat:
+                                @"Unable to get JSON. object type: %@. description: %@",
+                                [[result objectForColumnIndex:i] class], [result dataForColumnIndex:i]];
+                
             
         }
         
@@ -170,6 +179,22 @@
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:myDoc];
     STAssertNil(body, @"Able to instantiate CDTDocument Body with non-serializable NSDictionary");
     return body;
+}
+
+-(NSArray*)generateDocuments:(int)count
+{
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
+    for (int i = 0; i < count; i++) {
+        NSDictionary *dict = @{[NSString stringWithFormat:@"hello-%i", i]: @"world"};
+        CDTDocumentBody *documentBody = [[CDTDocumentBody alloc] initWithDictionary:dict];
+        [result addObject:documentBody];
+    }
+    return result;
+}
+
+-(NSInteger)getRevPrefix:(NSString *)revString
+{
+    return [[revString componentsSeparatedByString:@"-"][0] integerValue];
 }
 
 #pragma mark - CREATE tests
@@ -299,6 +324,7 @@
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
+    error = nil;
     body = [[CDTDocumentBody alloc] initWithDictionary:@{key: value}];
     ob = [self.datastore createDocumentWithId:testDocId
                                          body:body
@@ -330,6 +356,7 @@
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     STAssertEqualObjects(@"document_id_for_test", ob.docId, @"Document ID was not as set in test");
     
+    error = nil;
     NSString *docId = ob.docId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId error:&error];
     
@@ -353,6 +380,7 @@
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
+    error = nil;
     NSString *docId = ob.docId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId error:&error];
     
@@ -372,6 +400,7 @@
     CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
     STAssertNil(error, @"Error creating document");
     
+    error = nil;
     NSString *docId = ob.docId;
     NSString *revId = ob.revId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId rev:revId error:&error];
@@ -391,6 +420,7 @@
     NSMutableArray *docIds = [NSMutableArray arrayWithCapacity:20];
     
     for (int i = 0; i < 200; i++) {
+        error = nil;
         CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @"world", @"index": [NSNumber numberWithInt:i]}];
         CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
         STAssertNil(error, @"Error creating document");
@@ -419,6 +449,169 @@
     }
 }
 
+-(void)testGetNonExistingDocument
+{
+    NSError *error;
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @"world"}];
+    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
+    STAssertNil(error, @"Error creating document");
+    
+    error = nil;
+    NSString *docId = @"i_do_not_exist";
+    NSString *revId = ob.revId;
+    CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId rev:revId error:&error];
+    STAssertNotNil(error, @"Error should not be nil.");
+    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    STAssertNil(retrieved, @"retrieved object was nil");
+    
+}
+
+
+
+-(void)testGetCompactedDocumentRev
+{
+    [self.datastore documentCount];
+    NSString *dbPath = [self pathForDBName:self.datastore.name];
+    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
+    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
+    NSDictionary *initialRowCounts = [self getAllTablesRowCountWithQueue:queue];
+    
+    NSArray *ids = @[@"compactrevtest_doc_1", @"compactrevtest_doc_2",
+                     @"compactrevtest_doc_3", @"compactrevtest_doc_4"];
+    NSError *error;
+    //dictionary to store last json document and number of updates for each doc id
+    NSMutableDictionary *lastDocForId = [[NSMutableDictionary alloc] init];
+
+    for(id anid in ids){
+        lastDocForId[anid] = [NSMutableDictionary dictionaryWithDictionary:@{@"numUpdates":[NSNumber numberWithUnsignedInt:0], @"json":@{}, @"lastrev":@""}];
+    }
+    
+    int totalUpdates = 2014;
+    CDTDocumentRevision *cdt_rev;
+    for (int i = 0; i < totalUpdates; i++) {
+        //generate docutment body for a random doc id.
+        NSString* randomId = [ids objectAtIndex:arc4random_uniform((u_int32_t)ids.count)];
+        NSDictionary *dict = @{@"hello":[NSString stringWithFormat:@"world-%i", i]};
+        CDTDocumentBody *documentBody = [[CDTDocumentBody alloc] initWithDictionary:dict ];
+
+        error = nil;
+        if([lastDocForId[randomId][@"numUpdates"] intValue] == 0) {
+            cdt_rev = [self.datastore createDocumentWithId:randomId
+                                                      body:documentBody
+                                                     error:&error];
+            STAssertNil(error, @"Error creating document. %@", error);
+            STAssertNotNil(cdt_rev, @"CDTDocumentRevision was nil");
+        }
+        else{
+            cdt_rev = [self.datastore getDocumentWithId:randomId
+                                                  error:&error];
+            STAssertNil(error, @"Error getting document");
+            STAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
+            error = nil;
+            cdt_rev = [self.datastore updateDocumentWithId:randomId
+                                                   prevRev:cdt_rev.revId
+                                                      body:documentBody
+                                                     error:&error];
+            STAssertNil(error, @"Error updating document");
+            STAssertNotNil(cdt_rev, @"updated CDTDocumentRevision was nil");
+        }
+        
+        //update our dictionary that is recording the last "event" for each doc id
+        unsigned int currentCount = [lastDocForId[randomId][@"numUpdates"] unsignedIntValue];
+        lastDocForId[randomId][@"numUpdates"]  = [NSNumber numberWithUnsignedInt:currentCount + 1];
+        lastDocForId[randomId][@"lastrev"] =  cdt_rev.revId;
+        lastDocForId[randomId][@"json"] = dict;
+        
+        STAssertEquals([lastDocForId[randomId][@"numUpdates"] integerValue],
+                       [self getRevPrefix:cdt_rev.revId],
+                       @"rev prefix value does not equal expected number of updates");
+    }
+    
+    NSDictionary *modifiedCounts = @{@"docs":@4, @"revs":[NSNumber numberWithInt:totalUpdates]};
+    [self checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts withQueue:queue];
+    
+    //now compact and check that all old revs obtained via CDTDatastore contain empty JSON.
+    //note: I have to #import "TD_Database+Insertion.h" in order to compact.
+    TDStatus statusResults = [self.datastore.database compact];
+    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
+    
+    //number of table rows shouldn't have changed by compaction as all tombstones should be present
+    [self checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts withQueue:queue];
+    
+    //check that the most recent revision for each document matches expectation
+    for(NSString* aDocId in ids){
+        error = nil;
+        NSDictionary* lastRecordedJsonDoc = lastDocForId[aDocId][@"json"];
+        NSString *lastRev = lastDocForId[aDocId][@"lastrev"];
+        NSInteger numUpdates = [lastDocForId[aDocId][@"numUpdates"] integerValue];
+        if(numUpdates > 0){
+            cdt_rev = [self.datastore getDocumentWithId:aDocId error:&error];
+            STAssertNil(error, @"Error getting document");
+            STAssertNotNil(cdt_rev, @"retrieved object was nil");
+            STAssertEqualObjects(lastRev, cdt_rev.revId, @"Object retrieved from database has wrong revid");
+            STAssertEqualObjects(cdt_rev.documentAsDictionary, lastRecordedJsonDoc, @"Object from database has wrong data");
+            STAssertEquals(numUpdates, [self getRevPrefix:cdt_rev.revId], @"rev prefix value does not equal expected number of updates");
+        }
+    }
+    
+    //check the database has empty JSON and correct revision tree
+    for(id aDocId in ids){
+        [queue inDatabase:^(FMDatabase *db){
+            //I changed doc_id to 'docnum' because I otherwise get confused.
+            FMResultSet *result = [db executeQuery:@"select sequence, revs.doc_id as docnum, docs.docid as docid, revid, json, parent, deleted from revs, docs where revs.doc_id = docs.doc_id and docs.docid = (?) order by sequence", aDocId];
+            
+            NSInteger revPrefix = 0;
+            int docNum = -1;
+            bool foundJSON = NO;
+            
+            while([result next]){
+                //NSLog(@"row: %@", [result resultDictionary]);
+                STAssertEqualObjects([result stringForColumn:@"docid"], aDocId,
+                                     @"Document ID mismatch: %@", [result stringForColumn:@"docid"]);
+                
+                NSString *revid = [result stringForColumn:@"revid"];
+                STAssertTrue([self getRevPrefix:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
+                revPrefix = [self getRevPrefix:revid];
+                
+                STAssertFalse([result boolForColumn:@"deleted"], @"deleted? %@", [result stringForColumn:@"deleted"]);
+                
+                //this should be the first row in the result
+                if(docNum == -1){
+                    docNum = [result intForColumn:@"docnum"]; //make sure docNum is always the same
+                    STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"parent: %@", [result objectForColumnName:@"parent"]);
+                }
+                else{
+                    STAssertTrue([result intForColumn:@"docnum"] == docNum, @"%@", [result stringForColumn:@"docnum"]);
+                    STAssertTrue([result intForColumn:@"docnum"] <= ids.count, @"%@", [result stringForColumn:@"docnum"]);
+                }
+                
+                //only the last rev should have valid JSON data
+                //otherwise FMDB returns an empty NSData object.
+                if([revid isEqualToString:lastDocForId[aDocId][@"lastrev"]]){
+                    NSError *error;
+                    NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
+                                                               options: TDJSONReadingMutableContainers
+                                                                 error: &error];
+                    STAssertTrue([jsonDoc isEqualToDictionary:lastDocForId[aDocId][@"json"]], @"Found: %@", jsonDoc);
+                    if(jsonDoc)
+                        foundJSON = YES;
+                }
+                else{
+                    //This was slightly unexpected. When TD_Database deletes, the JSON becomes an empty NSData
+                    //object. But when compacting, it sets it to null. See TD_Database+Insertion compact.
+                    STAssertEqualObjects([result objectForColumnName:@"json"], [NSNull null],
+                                         @"Expected revs.json to be empty NSData. Found %@", [result objectForColumnName:@"json"]);
+                }
+                
+            }
+            
+            STAssertTrue(foundJSON, @"didn't find json");
+            [result close];
+        }];
+    }
+    
+}
+
 #pragma mark READ ALL tests
 
 -(void)test_getAllDocumentsOffsetLimitDescending
@@ -429,6 +622,7 @@
     NSMutableArray *dbObjects = [NSMutableArray arrayWithCapacity:objectCount];
     for (int i = 0; i < objectCount; i++) {
         // Results will be ordered by docId, so give an orderable ID.
+        error = nil;
         NSString *docId = [NSString stringWithFormat:@"hello-%010d", i];
         CDTDocumentRevision *ob = [self.datastore createDocumentWithId:docId body:bodies[i] error:&error];
         STAssertNil(error, @"Error creating document");
@@ -439,17 +633,6 @@
     // Test count and offsets for descending and ascending
     [self getAllDocuments_testCountAndOffset:objectCount expectedDbObjects:dbObjects descending:NO];
     //[self getAllDocuments_testCountAndOffset:objectCount expectedDbObjects:reversedObjects descending:YES];
-}
-
--(NSArray*)generateDocuments:(int)count
-{
-    NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
-    for (int i = 0; i < count; i++) {
-        NSDictionary *dict = @{[NSString stringWithFormat:@"hello-%i", i]: @"world"};
-        CDTDocumentBody *documentBody = [[CDTDocumentBody alloc] initWithDictionary:dict];
-        [result addObject:documentBody];
-    }
-    return result;
 }
 
 -(void)assertIdAndRevisionAndShallowContentExpected:(CDTDocumentRevision *)expected actual:(CDTDocumentRevision *)actual
@@ -609,7 +792,7 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     NSString *badRev = @"2-abcdef1234567890abcdef9876543210";
-
+    error = nil;
     NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
 
     CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
@@ -626,7 +809,7 @@
     [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
     
     badRev = [ob.revId stringByAppendingString:@"a"];
-    
+    error = nil;
     body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
     ob2 = [self.datastore updateDocumentWithId:ob.docId
                                        prevRev:badRev
@@ -640,9 +823,9 @@
     //expect the database to be unmodified
     [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
 
-    
     //now update the document with the proper ID
     //then try to update the document again with the rev 1-x.
+    error = nil;
     body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
     ob2 = [self.datastore updateDocumentWithId:ob.docId
                                        prevRev:ob.revId
@@ -659,7 +842,7 @@
     
     NSString *key3 = @"howdy";
     NSString *value3 = @"adam";
-    
+    error = nil;
     CDTDocumentBody *body3 = [[CDTDocumentBody alloc] initWithDictionary:@{key3:value3}];
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentWithId:ob.docId
                                                             prevRev:ob.revId  //this is the bad revision
@@ -693,7 +876,7 @@
 
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    
+    error = nil;
     body = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:@"idonotexist"
                                                             prevRev:ob.revId
@@ -732,7 +915,7 @@
     NSString *docId = ob.docId;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    
+    error = nil;
     CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:docId
                                                             prevRev:ob.revId
@@ -744,7 +927,7 @@
     // Check new revision
     const NSUInteger expected_count = 1;
     CDTDocumentRevision *retrieved;
-    
+    error = nil;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
     STAssertNil(error, @"Error getting document");
     STAssertNotNil(retrieved, @"retrieved object was nil");
@@ -754,6 +937,7 @@
     STAssertEqualObjects(retrieved.documentAsDictionary[key2], value2, @"Object from database has wrong data");
     
     // Check we can get old revision
+    error = nil;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob.revId error:&error];
     STAssertNil(error, @"Error getting document using old rev");
     STAssertNotNil(retrieved, @"retrieved object was nil");
@@ -798,10 +982,11 @@
         STAssertFalse([result boolForColumn:@"current"], @"document current should be NO");
         STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
         
+        NSError *error;
         NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                    options: TDJSONReadingMutableContainers
-                                                     error: NULL];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key1: value1}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@", jsonDoc, @{key1: value1});
+                                                     error: &error];
+        STAssertTrue([jsonDoc isEqualToDictionary:@{key1: value1}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@. Error %@", jsonDoc, @{key1: value1}, error);
 
         //next row
         STAssertTrue([result next], @"Didn't find the second row in the revs table");
@@ -814,12 +999,12 @@
         STAssertTrue([result boolForColumn:@"current"], @"document current should be YES");
         STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
         
+        error = nil;
         jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                    options: TDJSONReadingMutableContainers
-                                                     error: NULL];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@", jsonDoc, @{key2: value2});
+                                                     error: &error];
+        STAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@. Error %@", jsonDoc, @{key2: value2}, error);
 
-        
         STAssertFalse([result next], @"There are too many rows in revs");
         STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id not nil");
         STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid not nil");
@@ -846,7 +1031,7 @@
     NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
     
     NSString *docId = ob.docId;
-    
+    error = nil;
     CDTDocumentBody *body2 = [self createNilDocument];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:docId
                                                             prevRev:ob.revId
@@ -858,12 +1043,6 @@
     
     NSDictionary *modifiedCount = nil;
     [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
-}
-
-
--(NSInteger)getRevPrefix:(NSString *)revString
-{
-    return [[revString componentsSeparatedByString:@"-"][0] integerValue];
 }
 
 -(void)testMultipleUpdates
@@ -888,7 +1067,7 @@
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     for(int i = 0; i < numOfUpdates; i++){
-
+        error = nil;
         ob = [self.datastore updateDocumentWithId:ob.docId
                                      prevRev:ob.revId
                                         body:bodies[i+1]
@@ -935,12 +1114,13 @@
             NSInteger revNumber = [self getRevPrefix:[result stringForColumn:@"revid"]];
             STAssertEquals([[NSNumber numberWithInt:counter] integerValue], revNumber, @"expected rev integer to be %d. Found %d. counter %d. From rev %@", counter, revNumber, counter, [result stringForColumn:@"revid"] );
             
+            NSError *error;
             NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                        options: TDJSONReadingMutableContainers
-                                                         error: NULL];
+                                                         error: &error];
             STAssertTrue([jsonDoc isEqualToDictionary:expectedDict],
-                         @"JSON document from revs.json not equal to expected. Found %@. Expected %@",
-                         jsonDoc, expectedDict);
+                         @"JSON document from revs.json not equal to expected. Found %@. Expected %@. Error %@",
+                         jsonDoc, expectedDict, error);
             
         }
         
@@ -1157,6 +1337,7 @@
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
+    error = nil;
     NSString *docId = ob.docId;
     Boolean deleted = [self.datastore deleteDocumentWithId:docId
                                                        rev:ob.revId
@@ -1165,15 +1346,25 @@
     STAssertTrue(deleted, @"Object wasn't deleted successfully");
     
     // Check new revision isn't found
+    error = nil;
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
     STAssertNotNil(error, @"No Error getting deleted document");
     STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
     STAssertNil(retrieved, @"retrieved object was not nil");
     
+    //Now try deleting it again.
     error = nil;
+    deleted = [self.datastore deleteDocumentWithId:docId
+                                               rev:ob.revId  //old revision, can't get deleted revision
+                                             error:&error];
+    STAssertNotNil(error, @"No Error trying to delete already deleted document");
+    //CouchDB/Cloudant returns 409, But CloudantSync returns a 404.
+    //STAssertTrue(error.code == 409, @"Found %@", error);
+    STAssertFalse(deleted, @"Object wasn't deleted successfully");
     
     // Check we can get old revision
+    error = nil;
     const NSUInteger expected_count = 1;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob.revId error:&error];
     STAssertNil(error, @"Error getting document");
@@ -1369,11 +1560,12 @@
         
         //TD_Database+Insertion inserts an empty NSData object instead of NSNull
         STAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
+        
         error = nil;
         jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                      options: TDJSONReadingMutableContainers
-                                       error: NULL];
-        STAssertNil(jsonDoc, @"Expected revs.json to be nil: %@",jsonDoc);
+                                       error: &error];
+        STAssertNil(jsonDoc, @"Expected json dictionary to be nil: %@. Error %@",jsonDoc, error);
         
         //should be done
         STAssertFalse([result next], @"There are too many rows in revs");
@@ -1391,6 +1583,7 @@
     //create document rev 1-
     NSError *error;
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @"world"}];
+
     CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
@@ -1598,4 +1791,32 @@
     
 }
 
+#pragma mark - Other Tests
+
+-(void)testCompactSingleDoc
+{
+    NSError *error;
+    NSString *key1 = @"hello";
+    NSString *value1 = @"world";
+    
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key1:value1}];
+    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
+    STAssertNil(error, @"Error creating document");
+    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    
+    NSString *key2 = @"hi";
+    NSString *value2 = @"mike";
+    error = nil;
+    CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
+    CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:ob.docId
+                                                            prevRev:ob.revId
+                                                               body:body2
+                                                              error:&error];
+    STAssertNil(error, @"Error updating document");
+    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    
+    TDStatus statusResults = [self.datastore.database compact];
+    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
+    
+}
 @end
