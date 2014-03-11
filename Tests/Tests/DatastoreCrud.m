@@ -32,11 +32,12 @@
 #import "CollectionUtils.h"
 #import "TD_Database+Insertion.h"
 #import "TDStatus.h"
+#import "DBQueryUtils.h"
 
 @interface DatastoreCrud : CloudantSyncTests
 
 @property (nonatomic,strong) CDTDatastore *datastore;
-
+@property (nonatomic,strong) DBQueryUtils *dbutil;
 @end
 
 
@@ -48,6 +49,7 @@
 
     NSError *error;
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
+    self.dbutil =[[DBQueryUtils alloc] initWithDbPath:[self pathForDBName:self.datastore.name]];
     
     STAssertNotNil(self.datastore, @"datastore is nil");
 }
@@ -57,115 +59,13 @@
     // Tear-down code here.
     
     self.datastore = nil;
+    self.dbutil = nil;
     
     [super tearDown];
 }
 
-
-
 #pragma mark - helper methods
 
--(void)printFMResult:(FMResultSet *)result ignorecolumns:(NSSet *)ignored
-{
-    for(int i = 0; i < [result columnCount]; i++){
-        NSString *resultString = [result stringForColumnIndex:i];
-        NSString *columnName =[result columnNameForIndex:i];
-        if([ignored member:columnName])
-            continue;
-        
-        if([columnName isEqualToString:@"json"]){
-            NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumnIndex: i]
-                                                       options: TDJSONReadingMutableContainers
-                                                         error: NULL];
-
-            if(jsonDoc)
-                resultString = [NSString stringWithFormat:@"%@", jsonDoc];
-            else
-                resultString = [NSString stringWithFormat:
-                                @"Unable to get JSON. object type: %@. description: %@",
-                                [[result objectForColumnIndex:i] class], [result dataForColumnIndex:i]];
-                
-            
-        }
-        
-        NSLog(@"%@ : %@",[result columnNameForIndex:i], resultString);
-    }
-}
-
--(void)printAllRows:(FMDatabaseQueue *)queue forTable:(NSString *)table
-{
-    NSString *sql = [NSString stringWithFormat:@"select * from %@", table];
-    [self printResults:queue forQuery:sql];
-}
-
--(void)printResults:(FMDatabaseQueue *)queue forQuery:(NSString *)sql
-{
-    __weak DatastoreCrud  *weakSelf = self;
-    [queue inDatabase:^(FMDatabase *db) {
-        DatastoreCrud *strongSelf = weakSelf;
-        FMResultSet *result = [db executeQuery:sql];
-        
-        NSLog(@"results for query: %@", sql);
-        
-        while([result next])
-            [strongSelf printFMResult:result ignorecolumns:nil];
-        
-        
-        [result close];
-    }];
-    
-}
-
--(int)rowCountForTable:(NSString *)table inDatabase:(FMDatabaseQueue *)queue
-{
-    __block int count = 0;
-    [queue inDatabase:^(FMDatabase *db) {
-        NSString *sql = [NSString stringWithFormat:@"select count(*) as counts from %@", table];
-        FMResultSet *result = [db executeQuery:sql];
-        [result next];
-        count =  [result intForColumn:@"counts"];
-        [result close];
-    }];
-    
-    return count;
-    
-}
-
-
--(NSMutableDictionary *)getAllTablesRowCountWithQueue:(FMDatabaseQueue *)queue
-{
-    NSSet *tables = [self sqlTables];
-    NSMutableDictionary *rowCount = [[NSMutableDictionary alloc] init];
-    for(NSString *table in tables){
-        [rowCount setValue:[NSNumber numberWithInt:[self rowCountForTable:table inDatabase:queue]] forKey:table];
-    }
-    return rowCount;
-}
-
-/*
- Both dictionaries should contain keys that are the names of tables and values that are NSNumbers.
- The values of initialRowCount are the "initial" number of rows in each table.
- The values of modifiedRows should be the expected number of news rows found in each table.
-*/
--(void)checkTableRowCount:(NSDictionary *)initialRowCount modifiedBy:(NSDictionary *)modifiedRowCount withQueue:(FMDatabaseQueue *)queue
-{
-    
-    for(NSString* table in initialRowCount){
-        
-        NSLog(@"testing for modification to %@", table);
-        NSInteger initCount = [initialRowCount[table] integerValue];
-        NSInteger expectCount = initCount;
-        
-        if([modifiedRowCount[table] respondsToSelector:@selector(integerValue)])
-            expectCount += [modifiedRowCount[table] integerValue];  //we expect there to be one new row in the modifiedTables
-        
-        NSInteger foundCount = [self rowCountForTable:table inDatabase:queue];
-        STAssertTrue( foundCount == expectCount,
-                     @"For table %@: row count mismatch. initial number of rows %d expected %d found %d.",
-                     table, initCount, expectCount, foundCount);
-        
-    }
-}
 
 -(CDTDocumentBody *)createNilDocument
 {
@@ -210,12 +110,7 @@
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     //creates the tables in the sqlite db. otherwise, the database would be empty.
 
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key: value}];
     CDTDocumentRevision *ob = [self.datastore createDocumentWithId:testDocId
@@ -226,14 +121,14 @@
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @1};
     
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     
     
     //now test the content of docs/revs
 
     NSString *sql = @"select * from docs";
     __block int doc_id;
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:sql];
         [result next];
         NSLog(@"testing content of docs table");
@@ -252,7 +147,7 @@
     
     
     sql = @"select * from revs";
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:sql];
         [result next];
         
@@ -292,12 +187,8 @@
     STAssertNil(body, @"CDTDocumentBody was not nil");
 
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
-    //creates the tables in the sqlite db. otherwise, the database would be empty.
     
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentWithId:testDocId
                                                               body:body
@@ -306,7 +197,7 @@
     STAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
     STAssertNil(ob, @"CDTDocumentRevision object was not nil");
     
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
 }
 
@@ -470,11 +361,8 @@
 
 -(void)testGetCompactedDocumentRev
 {
-    [self.datastore documentCount];
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSDictionary *initialRowCounts = [self getAllTablesRowCountWithQueue:queue];
+    [self.datastore documentCount]; //necessary to ensure the database is populated
+    NSDictionary *initialRowCounts = [self.dbutil getAllTablesRowCount];
     
     NSArray *ids = @[@"compactrevtest_doc_1", @"compactrevtest_doc_2",
                      @"compactrevtest_doc_3", @"compactrevtest_doc_4"];
@@ -528,7 +416,7 @@
     }
     
     NSDictionary *modifiedCounts = @{@"docs":@4, @"revs":[NSNumber numberWithInt:totalUpdates]};
-    [self checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts];
     
     //now compact and check that all old revs obtained via CDTDatastore contain empty JSON.
     //note: I have to #import "TD_Database+Insertion.h" in order to compact.
@@ -536,7 +424,7 @@
     STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
     
     //number of table rows shouldn't have changed by compaction as all tombstones should be present
-    [self checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts];
     
     //check that the most recent revision for each document matches expectation
     for(NSString* aDocId in ids){
@@ -556,7 +444,7 @@
     
     //check the database has empty JSON and correct revision tree
     for(id aDocId in ids){
-        [queue inDatabase:^(FMDatabase *db){
+        [self.dbutil.queue inDatabase:^(FMDatabase *db){
             //I changed doc_id to 'docnum' because I otherwise get confused.
             FMResultSet *result = [db executeQuery:@"select sequence, revs.doc_id as docnum, docs.docid as docid, revid, json, parent, deleted from revs, docs where revs.doc_id = docs.doc_id and docs.docid = (?) order by sequence", aDocId];
             
@@ -774,12 +662,6 @@
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     //creates the tables in the sqlite db. otherwise, the database would be empty.
     
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    
-    
     NSError *error;
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
@@ -793,7 +675,7 @@
     NSString *value2 = @"mike";
     NSString *badRev = @"2-abcdef1234567890abcdef9876543210";
     error = nil;
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
 
     CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:ob.docId
@@ -806,7 +688,7 @@
     error = nil;
     
     //expect the database to be unmodified
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
     
     badRev = [ob.revId stringByAppendingString:@"a"];
     error = nil;
@@ -821,7 +703,7 @@
     error = nil;
     
     //expect the database to be unmodified
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
     //now update the document with the proper ID
     //then try to update the document again with the rev 1-x.
@@ -836,9 +718,9 @@
     STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     NSDictionary *modifiedCount = @{@"revs": @1};  //expect just one additional entry in revs
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     
-    initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSString *key3 = @"howdy";
     NSString *value3 = @"adam";
@@ -853,7 +735,7 @@
     STAssertNil(ob3, @"CDTDocumentRevision object was not nil after update with bad rev");
     
     //expect the database to be unmodified
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
     
 }
@@ -869,10 +751,7 @@
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
 
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
@@ -888,7 +767,7 @@
     STAssertNil(ob2, @"CDTDocumentRevision object was not nil after update with bad rev");
     
     //expect the database to be unmodified
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
     
 }
 
@@ -896,11 +775,7 @@
 {
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     //creates the tables in the sqlite db. otherwise, the database would be empty.
-    
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSError *error;
     NSString *key1 = @"hello";
@@ -950,10 +825,10 @@
     //now test the content of docs/revs tables explicitely.
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     
     __block int doc_id_inDocsTable;
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
         NSLog(@"testing content of docs table");
@@ -969,7 +844,7 @@
     }];
     
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from revs"];
         [result next];
         
@@ -1024,11 +899,8 @@
     CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
-    
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSString *docId = ob.docId;
     error = nil;
@@ -1042,7 +914,7 @@
     STAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil CDTDocumentBody");
     
     NSDictionary *modifiedCount = nil;
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
 }
 
 -(void)testMultipleUpdates
@@ -1055,7 +927,7 @@
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
     STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
     
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
 
     NSError *error;
     int numOfUpdates = 1001;
@@ -1078,7 +950,7 @@
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": [[NSNumber alloc] initWithInt:numOfUpdates + 1]};
     NSLog(@"checking table counts");
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     NSLog(@"done checking table counts");
     
     NSLog(@"Checking revs and docs tables");
@@ -1208,7 +1080,7 @@
 //    //now test the content of docs/revs tables explicitely.
 //    
 //    NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
-//    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+//    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
 //    
 //    [self printAllRows:queue forTable:@"docs"];
 //    [self printAllRows:queue forTable:@"revs"];
@@ -1322,14 +1194,8 @@
 {
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     //creates the tables in the sqlite db. otherwise, the database would be empty.
-    
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
 
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSError *error;
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @"world"}];
@@ -1377,12 +1243,12 @@
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
     NSLog(@"checking table counts");
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     NSLog(@"done checking table count");
     
     //explicit check of docs/revs tables
     __block int doc_id_inDocsTable;
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
         NSLog(@"testing content of docs table");
@@ -1393,7 +1259,7 @@
     }];
     
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from revs"];
         [result next];
         
@@ -1442,10 +1308,8 @@
 {
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     //creates the tables in the sqlite db. otherwise, the database would be empty.
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     //create document
     NSError *error;
@@ -1497,12 +1361,12 @@
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @3};
     NSLog(@"checking table counts");
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     NSLog(@"done checking table count");
     
     //explicit check of docs/revs tables
     __block int doc_id_inDocsTable;
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
         NSLog(@"testing content of docs table");
@@ -1513,7 +1377,7 @@
     }];
     
     
-    [queue inDatabase:^(FMDatabase *db) {
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from revs"];
         [result next];
         
@@ -1748,11 +1612,8 @@
 
 -(void)testDeleteNonExistingDoc
 {
-    [self.datastore documentCount];
-    NSString *dbPath = [self pathForDBName:self.datastore.name];
-    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    [self.datastore documentCount]; //ensure db population
+    NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSError *error;
     int objectCount = 100;
@@ -1768,8 +1629,8 @@
     }
     
     NSDictionary *modifiedCount = @{@"docs": [NSNumber numberWithInt:objectCount], @"revs": [NSNumber numberWithInt:objectCount]};
-    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount withQueue:queue];
-    initialRowCount = [self getAllTablesRowCountWithQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
+    initialRowCount = [self.dbutil getAllTablesRowCount];
     
     error = nil;
     NSString *docId = @"idonotexist";
@@ -1788,7 +1649,7 @@
     STAssertNil(deleted, @"CDTDocumentRevision* was not nil. Deletion successful?: %@", error);
     
     
-    [self checkTableRowCount:initialRowCount modifiedBy:nil withQueue:queue];
+    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
     
 }
 

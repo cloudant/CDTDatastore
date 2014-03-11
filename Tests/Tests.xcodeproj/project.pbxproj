@@ -52,6 +52,8 @@
 		9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D24161893161000D3D04E /* TDReachabilityTests.m */; };
 		9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */; };
 		9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */; };
+		9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
+		9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,6 +92,8 @@
 		9F0D24131892E9B800D3D04E /* TDPusherTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDPusherTests.m; sourceTree = "<group>"; };
 		9F0D24161893161000D3D04E /* TDReachabilityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDReachabilityTests.m; sourceTree = "<group>"; };
 		9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDSequenceMapTests.m; sourceTree = "<group>"; };
+		9F95D60E18CF6A580006D349 /* DBQueryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBQueryUtils.h; sourceTree = "<group>"; };
+		9F95D60F18CF6A580006D349 /* DBQueryUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryUtils.m; sourceTree = "<group>"; };
 		B8C5CE07530A44358897106E /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -158,6 +162,8 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				9F95D60E18CF6A580006D349 /* DBQueryUtils.h */,
+				9F95D60F18CF6A580006D349 /* DBQueryUtils.m */,
 				9F0D2407188E378700D3D04E /* TDCanonicalJSONTests.m */,
 				9F0D24131892E9B800D3D04E /* TDPusherTests.m */,
 				9F0D24161893161000D3D04E /* TDReachabilityTests.m */,
@@ -386,6 +392,7 @@
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				27389E3818534E050027A404 /* SetUpDatastore.m in Sources */,
 				9F0D24171893161000D3D04E /* TDReachabilityTests.m in Sources */,
+				9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				27389E3718534E050027A404 /* DatastoreCrud.m in Sources */,
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
@@ -411,6 +418,7 @@
 				9F0D240C188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				27CCEDD9187AD719006F3C66 /* SetUpDatastore.m in Sources */,
 				9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */,
+				9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */,
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,

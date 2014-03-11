@@ -16,14 +16,10 @@
 #import <SenTestingKit/SenTestingKit.h>
 
 #import "CloudantSyncTests.h"
-
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
-
 #import "FMDatabaseAdditions.h"
 #import "TDJSON.h"
-#import "FMResultSet.h"
-#import "FMDatabaseQueue.h"
 
 @interface DatastoreActions : CloudantSyncTests
 
