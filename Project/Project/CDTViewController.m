@@ -58,7 +58,9 @@
 
 #pragma mark Data managment
 
-
+/**
+ Add a new todo for the item with the given `description`.
+ */
 - (void)addTodoItem:(NSString*)description {
     CDTTodo *todo = [[CDTTodo alloc] initWithDescription:description
                                                completed:NO];
@@ -72,6 +74,9 @@
     }
 }
 
+/**
+ Delete a todo item from the database.
+ */
 - (void)deleteTodoItem:(CDTDocumentRevision*)revision {
     
     NSError *error;
@@ -84,6 +89,9 @@
     }
 }
 
+/**
+ Toggle the completed state for a todo in the database.
+ */
 - (BOOL)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
 
     CDTTodo *todo = [CDTTodo fromDict:[revision documentAsDictionary]];
@@ -105,6 +113,11 @@
     return todo.completed;
 }
 
+
+/**
+ Load either active or completed todos based on the showOnlyCompleted property of
+ the view controller.
+ */
 - (void)reloadTasks
 {
     CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
@@ -126,13 +139,15 @@
     }
 
     self.taskRevisions = [NSArray arrayWithArray:tasks];
-
-//    self.taskRevisions = [self.datastore getAllDocuments];
 }
 
 
 #pragma mark Properties
 
+/**
+ The datastore is stored on the app delegate, this property is
+ just shorthand for that.
+ */
 - (CDTDatastore *)datastore {
     CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
     return delegate.datastore;
@@ -144,6 +159,9 @@
 
 #pragma mark Handlers
 
+/**
+ Adds a task using the text entered by the user.
+ */
 - (void)addTodoButtonTap:(NSObject *)sender {
     NSString *description = self.addTodoTextField.text;
     if (description.length == 0) { return; }  // don't create empty tasks
@@ -154,6 +172,10 @@
     self.addTodoTextField.text = @"";
 }
 
+/**
+ Handler for clicking the sync button. Starts a sync using the
+ CDTTodoReplicator class.
+ */
 -(IBAction)replicateTapped:(id)sender {
     NSLog(@"Replicate");
 
@@ -166,12 +188,20 @@
     });
 }
 
+/**
+ Handler for a change in the segmented view controller. Swaps between showing
+ completed and active todos.
+ */
 -(void)toggleCompletedShown:(id)sender {
     [self refreshTodoList];
 }
 
 #pragma mark UITableView delegate methods
 
+/**
+ For todo items, selecting the cell toggles it's complete status.
+ We also animate the transition between lists.
+ */
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"Selected row at [%i, %i]", indexPath.section, indexPath.row);
     if (indexPath.section == 1) {
@@ -194,6 +224,9 @@
     }
 }
 
+/**
+ Only todo items can be deleted, so only items from section 1.
+ */
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.section == 1) {
@@ -203,6 +236,9 @@
     }
 }
 
+/**
+ Todo items can be deleted using the swipe-to-delete gesture.
+ */
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         CDTDocumentRevision *revision = [self.taskRevisions objectAtIndex:indexPath.row];
@@ -215,6 +251,10 @@
 
 #pragma mark UITableView data source methods
 
+/**
+ Section 0 contains the Add and Toggle View cells, so 2 cells there.
+ Section 1 contains all the tasks visible in this view.
+ */
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
         return 2;
@@ -228,10 +268,17 @@
     }
 }
 
+/**
+ First section for view controls, second section for todos.
+ */
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 2;
 }
 
+
+/**
+ Load appropriate cell prototype based on section and row.
+ */
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
         if (indexPath.row == 0) {
