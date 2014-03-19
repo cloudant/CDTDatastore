@@ -55,8 +55,8 @@
 #pragma mark Data managment
 
 
-- (void)addTodoItem:(NSString*)item {
-    CDTTodo *todo = [[CDTTodo alloc] initWithDescription:item
+- (void)addTodoItem:(NSString*)description {
+    CDTTodo *todo = [[CDTTodo alloc] initWithDescription:description
                                                completed:NO];
     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:[todo toDict]];
     
@@ -113,10 +113,10 @@
 #pragma mark Handlers
 
 - (void)addTodoButtonTap:(NSObject *)sender {
-    NSString *text = self.addTodoTextField.text;
-    if (text.length == 0) { return; }  // don't create empty tasks
-    NSLog(@"Adding task: %@", text);
-    [self addTodoItem:text];
+    NSString *description = self.addTodoTextField.text;
+    if (description.length == 0) { return; }  // don't create empty tasks
+    NSLog(@"Adding task: %@", description);
+    [self addTodoItem:description];
     [self reloadTasks];
     [self.tableView reloadData];
     self.addTodoTextField.text = @"";
