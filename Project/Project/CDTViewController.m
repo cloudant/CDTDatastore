@@ -16,6 +16,8 @@
 #import "CDTViewController.h"
 
 #import "CDTAppDelegate.h"
+#import "CDTTodoReplicator.h"
+#import "CDTTodo.h"
 
 #import <CloudantSync.h>
 
@@ -54,12 +56,9 @@
 
 
 - (void)addTodoItem:(NSString*)item {
-    NSDictionary *doc = @{
-                          @"description": item,
-                          @"completed": @NO,
-                          @"type": @"com.cloudant.sync.example.task"
-                        };
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
+    CDTTodo *todo = [[CDTTodo alloc] initWithDescription:item
+                                               completed:NO];
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:[todo toDict]];
     
     NSError *error;
     [self.datastore createDocumentWithBody:body error:&error];
@@ -82,15 +81,16 @@
 }
 
 - (void)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
-    NSMutableDictionary *body = [revision documentAsDictionary].mutableCopy;
-    NSLog(@"Toggling completed status for %@", body[@"description"]);
-    NSNumber *current = body[@"completed"];
-    body[@"completed"] = [NSNumber numberWithBool:![current boolValue]];
+
+    CDTTodo *todo = [CDTTodo fromDict:[revision documentAsDictionary]];
+    todo.completed = !todo.completed;
+
+    NSLog(@"Toggling completed status for %@", todo.description);
     
     NSError *error;
     [self.datastore updateDocumentWithId:revision.docId
                                  prevRev:revision.revId
-                                    body:[[CDTDocumentBody alloc] initWithDictionary:body]
+                                    body:[[CDTDocumentBody alloc] initWithDictionary:[todo toDict]]
                                    error:&error];
     
     if (error != nil) {
@@ -99,8 +99,7 @@
 }
 
 - (void)reloadTasks {
-    int count = self.datastore.documentCount;
-    self.taskRevisions = [self.datastore getAllDocumentsOffset:0 limit:count descending:NO];
+    self.taskRevisions = [self.datastore getAllDocuments];
 }
 
 
@@ -121,6 +120,18 @@
     [self reloadTasks];
     [self.tableView reloadData];
     self.addTodoTextField.text = @"";
+}
+
+-(IBAction)replicateTapped:(id)sender {
+    NSLog(@"Replicate");
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [[[CDTTodoReplicator alloc] init] sync];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self reloadTasks];
+            [self.tableView reloadData];
+        });
+    });
 }
 
 #pragma mark UITableView delegate methods
@@ -188,9 +199,9 @@
         CDTDocumentRevision *task = [self.taskRevisions objectAtIndex:indexPath.row];
         
         NSDictionary *body = [task documentAsDictionary];
-        cell.textLabel.text = (NSString*)[body objectForKey:@"description"];
-        NSNumber *completed = (NSNumber*)[body objectForKey:@"completed"];
-        if ([completed boolValue]) {
+        CDTTodo *todo = [CDTTodo fromDict:body];
+        cell.textLabel.text = todo.description;
+        if (todo.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
         } else {
             cell.accessoryType = UITableViewCellAccessoryNone;

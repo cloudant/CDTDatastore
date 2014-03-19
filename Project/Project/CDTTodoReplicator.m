@@ -1,9 +1,9 @@
 //
-//  CDTReplicateController.m
+//  CDTTodoReplicator.m
 //  Project
 //
-//  Created by Michael Rhodes on 08/01/2014.
-//  Copyright (c) 2013 Cloudant. All rights reserved.
+//  Created by Michael Rhodes on 19/03/2014.
+//  Copyright (c) 2014 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -12,14 +12,14 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
 
-#import <CloudantSync.h>
-
-#import "CDTReplicateController.h"
+#import "CDTTodoReplicator.h"
 
 #import "CDTAppDelegate.h"
 
-@interface CDTReplicateController ()
+
+@interface CDTTodoReplicator ()
 
 -(void)log:(NSString*)format, ...;
 -(NSURL*)replicatorURL;
@@ -27,32 +27,37 @@
 
 @end
 
-@implementation CDTReplicateController
+@implementation CDTTodoReplicator
+
 
 -(NSURL*)replicatorURL {
     // Shared database for demo purposes -- anyone can put stuff here...
     NSString *username = @"iessidesseepromanownessi";
     NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
     NSString *db_name = @"shared_todo_sample";
+
+    NSString *cleanURL = [NSString stringWithFormat:@"https://%@:*****@mikerhodescloudant.cloudant.com/%@",
+                          username,
+                          db_name];
+    [self log:cleanURL];
+    
     NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
                      username,
                      password,
                      db_name];
-    [self log:url];
     return [NSURL URLWithString:url];
 }
 
--(void)log:(NSString*)format, ... {
-    va_list args;
-    va_start(args, format);
-    NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-    va_end(args);
-
-    self.logView.text = [NSString stringWithFormat:@"%@\n%@", message, self.logView.text];
+-(void)sync
+{
+    [self pullReplication];
+    [self pushReplication];
 }
 
--(IBAction)pullButtonTap:(id)sender {
-    [self log:@"pullButtonTap"];
+
+-(void)pullReplication
+{
+    [self log:@"Starting pull replication"];
 
     NSURL *url = [self replicatorURL];
 
@@ -63,8 +68,9 @@
     [self startAndFollowReplicator:replicator label:@"pull"];
 }
 
--(IBAction)pushButtonTap:(id)sender {
-    [self log:@"pushButtonTap"];
+-(void)pushReplication
+{
+    [self log:@"Starting push replication"];
 
     NSURL *url = [self replicatorURL];
 
@@ -86,23 +92,19 @@
     state = [CDTReplicator stringForReplicatorState:replicator.state];
     [self log:@"%@ state: %@ (%d)", label, state, replicator.state];
 
-    __weak CDTReplicateController *weakSelf = self;
+    __weak CDTTodoReplicator *weakSelf = self;
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         while ([replicator isActive]) {
             [NSThread sleepForTimeInterval:2.0f];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
-                [weakSelf log:@"%@ state: %@ (%d)", label, state, replicator.state];
-            });
-        }
 
-        dispatch_async(dispatch_get_main_queue(), ^{
             NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
             [weakSelf log:@"%@ state: %@ (%d)", label, state, replicator.state];
-        });
+        }
 
-        // Both replicatorDidComplete and replicatorDidError dispatch to the main thread
+        NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
+        [weakSelf log:@"%@ state: %@ (%d)", label, state, replicator.state];
+
         if (replicator.state == CDTReplicatorStateComplete || replicator.state == CDTReplicatorStateStopped) {
             [weakSelf replicatorDidComplete:replicator];
         } else if (replicator.state == CDTReplicatorStateError) {
@@ -111,18 +113,25 @@
     });
 }
 
+-(void)log:(NSString*)format, ... {
+    va_list args;
+    va_start(args, format);
+    NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+
+    NSLog(@"%@", message);
+
+//    self.logView.text = [NSString stringWithFormat:@"%@\n%@", message, self.logView.text];
+}
+
 #pragma mark CDTReplicatorListener delegate
 
 -(void)replicatorDidComplete:(CDTReplicator *)replicator {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self log:@"complete"];
-    });
+    [self log:@"complete"];
 }
 
 -(void)replicatorDidError:(CDTReplicator *)replicator info:(CDTReplicationErrorInfo *)info {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self log:@"error: %@", info];
-    });
+    [self log:@"error: %@", info];
 }
 
 @end
