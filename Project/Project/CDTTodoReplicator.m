@@ -48,6 +48,14 @@
     return [NSURL URLWithString:url];
 }
 
+/**
+ Sync by running first a pull then a push replication. This
+ method runs synchronously.
+ 
+ I chose this order arbitrarily -- I haven't yet worked
+ out whether it's more efficient to run one or the other
+ first.
+ */
 -(void)sync
 {
     [self pullReplication];
@@ -81,6 +89,14 @@
     [self startAndFollowReplicator:replicator label:@"push"];
 }
 
+/**
+ Starts a replication and waits for it to complete using polling.
+ 
+ Also adds this class as a listener to demo that functionality. In real
+ apps, you'd probably use the replicatorDidComplete: and replicatorDidError:
+ callbacks to do something useful, updating the UI or showing an error for
+ example.
+ */
 -(void)startAndFollowReplicator:(CDTReplicator*)replicator label:(NSString*)label {
 
     NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
@@ -120,8 +136,6 @@
     va_end(args);
 
     NSLog(@"%@", message);
-
-//    self.logView.text = [NSString stringWithFormat:@"%@\n%@", message, self.logView.text];
 }
 
 #pragma mark CDTReplicatorListener delegate
