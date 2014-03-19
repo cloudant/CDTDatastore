@@ -25,6 +25,9 @@
 
 @property (readonly) CDTDatastore *datastore;
 @property (nonatomic,strong) NSArray *taskRevisions;
+@property (nonatomic,readonly) BOOL showOnlyCompleted;
+
+@property (nonatomic,weak) UISegmentedControl *showCompletedSegmentedControl;
 
 - (void)addTodoItem:(NSString*)item;
 - (void)deleteTodoItem:(CDTDocumentRevision*)revision;
@@ -42,6 +45,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+
     [self reloadTasks];
     [self.tableView reloadData];
 }
@@ -98,8 +102,29 @@
     }
 }
 
-- (void)reloadTasks {
-    self.taskRevisions = [self.datastore getAllDocuments];
+- (void)reloadTasks
+{
+    CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
+    CDTIndexManager *m = delegate.indexManager;
+
+    // Query for completed items based on whether we're showing only completed
+    // items or active ones
+    NSError *error;
+    CDTQueryResult *result = [m queryWithDictionary:@{@"completed": @(self.showOnlyCompleted)}
+                                              error:&error];
+    if (error) {
+        NSLog(@"Error querying for tasks: %@", error);
+        exit(1);
+    }
+
+    NSMutableArray *tasks = [NSMutableArray array];
+    for (CDTDocumentRevision *revision in result) {
+        [tasks addObject:revision];
+    }
+
+    self.taskRevisions = [NSArray arrayWithArray:tasks];
+
+//    self.taskRevisions = [self.datastore getAllDocuments];
 }
 
 
@@ -108,6 +133,10 @@
 - (CDTDatastore *)datastore {
     CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
     return delegate.datastore;
+}
+
+-(BOOL)showOnlyCompleted {
+    return self.showCompletedSegmentedControl.selectedSegmentIndex != 0;
 }
 
 #pragma mark Handlers
@@ -132,6 +161,11 @@
             [self.tableView reloadData];
         });
     });
+}
+
+-(void)toggleCompletedShown:(id)sender {
+    [self reloadTasks];
+    [self.tableView reloadData];
 }
 
 #pragma mark UITableView delegate methods
@@ -172,9 +206,9 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     if (section == 0) {
-        return 1;
+        return 2;
     } else {
-        int count = [self datastore].documentCount;
+        int count = self.taskRevisions.count;
         if (count < 0) { // error
             return 0;
         } else {
@@ -189,10 +223,22 @@
 
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        // Add cell
-        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"AddCell"];
-        self.addTodoTextField = (UITextField*)[cell viewWithTag:100];
-        return cell;
+        if (indexPath.row == 0) {
+            // Add cell
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"AddCell"];
+            self.addTodoTextField = (UITextField*)[cell viewWithTag:100];
+            return cell;
+        } else  {
+            // Add cell
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"CompletedToggleCell"];
+
+            self.showCompletedSegmentedControl = (UISegmentedControl*)[cell viewWithTag:101];
+            [self.showCompletedSegmentedControl addTarget:self
+                                                   action:@selector(toggleCompletedShown:)
+                                         forControlEvents:UIControlEventValueChanged];
+            
+            return cell;
+        }
     } else {
         // Item cell
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TodoCell"];
