@@ -48,7 +48,6 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
     CDTIndexErrorIndexDoesNotExist = 4
 };
 
-@class CDTQuery;
 @class CDTDatastore;
 @protocol CDTIndexer;
 
