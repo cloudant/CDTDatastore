@@ -84,7 +84,7 @@
     }
 }
 
-- (void)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
+- (BOOL)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
 
     CDTTodo *todo = [CDTTodo fromDict:[revision documentAsDictionary]];
     todo.completed = !todo.completed;
@@ -99,7 +99,10 @@
     
     if (error != nil) {
         NSLog(@"Error updating item: %@", error);
+        return !todo.completed;  // we didn't manage to save the new revision
     }
+
+    return todo.completed;
 }
 
 - (void)reloadTasks
@@ -164,8 +167,7 @@
 }
 
 -(void)toggleCompletedShown:(id)sender {
-    [self reloadTasks];
-    [self.tableView reloadData];
+    [self refreshTodoList];
 }
 
 #pragma mark UITableView delegate methods
@@ -177,9 +179,18 @@
         // and save a new revision, passing the current revision
         // ID and rev.
         CDTDocumentRevision *revision = [self.taskRevisions objectAtIndex:indexPath.row];
-        [self toggleTodoCompletedForRevision:revision];
+        BOOL nowComplete = [self toggleTodoCompletedForRevision:revision];
         [self reloadTasks];
-        [self.tableView reloadData];
+
+        // As we're using a segmented control, animate the change
+        // so the item appears to be moving into the other list.
+        UITableViewRowAnimation direction;
+        if (nowComplete) {
+            direction = UITableViewRowAnimationRight;
+        } else {
+            direction = UITableViewRowAnimationLeft;
+        }
+        [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:direction];
     }
 }
 
@@ -254,6 +265,67 @@
         }
         return cell;
     }
+}
+
+
+#pragma mark UI animations
+
+/**
+ For fun, some simple animations between the two lists of todos.
+ */
+-(void)refreshTodoList
+{
+    [self.tableView beginUpdates];
+
+    NSInteger oldCount = self.taskRevisions.count;
+    [self reloadTasks];
+    NSInteger newCount = self.taskRevisions.count;
+
+    UITableViewRowAnimation directionIn, directionOut;
+    if (self.showOnlyCompleted) {
+        directionIn = UITableViewRowAnimationLeft;
+        directionOut = UITableViewRowAnimationRight;
+    } else {
+        directionIn = UITableViewRowAnimationRight;
+        directionOut = UITableViewRowAnimationLeft;
+    }
+
+    NSMutableArray *ips = [NSMutableArray array];
+
+    if (oldCount > newCount) {
+        for (int i = 0; i < newCount; i++) {
+            [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
+        }
+        [self.tableView reloadRowsAtIndexPaths:ips withRowAnimation:directionIn];
+        [ips removeAllObjects];
+
+        for (int i = newCount; i < oldCount; i++) {
+            [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
+        }
+        [self.tableView deleteRowsAtIndexPaths:ips withRowAnimation:directionIn];
+    }
+
+    if (newCount > oldCount) {
+        for (int i = 0; i < oldCount; i++) {
+            [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
+        }
+        [self.tableView reloadRowsAtIndexPaths:ips withRowAnimation:directionIn];
+        [ips removeAllObjects];
+
+        for (int i = oldCount; i < newCount; i++) {
+            [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
+        }
+        [self.tableView insertRowsAtIndexPaths:ips withRowAnimation:directionOut];
+    }
+
+    if (newCount == oldCount) {
+        for (int i = 0; i < oldCount; i++) {
+            [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
+        }
+        [self.tableView reloadRowsAtIndexPaths:ips withRowAnimation:directionIn];
+    }
+    
+    [self.tableView endUpdates];
 }
 
 
