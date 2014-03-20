@@ -193,6 +193,36 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
+ As per testPullLotsOfOneRevDocuments but ensuring indexes are updated.
+ NB this currently about twice as slow as without indexing.
+ */
+-(void) testPullLotsOfOneRevDocumentsIndexed {
+    
+    NSError *error;
+    
+    // set up indexing
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    [im ensureIndexedWithIndexName:@"hello" fieldName:@"hello" error:&error];
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    [self createRemoteDocs:n_docs];
+    
+    [self pullFromRemote];
+    
+    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"hello":@"world"} error:&error];
+    STAssertEquals([[res documentIds] count], n_docs, @"Index does not return correct count");
+}
+
+
+/**
  Push a document with largeRevTreeSize revisions (>1000).
  */
 -(void) testPushLargeRevTree {

@@ -122,8 +122,6 @@
         [self.datastore createDocumentWithBody:body error:&error];
     }
     
-    [im updateAllIndexes:&error];
-
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"index1":@"bill"} error:&error];
     
@@ -684,8 +682,6 @@
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
 
     error = nil;
-    [im updateAllIndexes:&error];
-
     for (CDTDocumentRevision *rev in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
         // do nothing
     }
@@ -694,23 +690,6 @@
     [self.datastore deleteDocumentWithId:rev.docId
                                      rev:rev.revId
                                    error:&error];
-
-    // Before updating the indexes, we should have two results, with one being deleted
-    count = 0;
-    for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
-        // Check the deleted document is flagged correctly
-        // TODO: move into a separate test?
-        if ([result.docId isEqualToString:rev.docId]) {
-            STAssertTrue(result.deleted, @"Deleted document was not flagged deleted");
-        } else {
-            STAssertFalse(rev.deleted, @"Query returned deleted document");
-        }
-        count++;
-    }
-    STAssertEquals(count, 2, @"Query returned the wrong number of results");
-
-    error = nil;
-    [im updateAllIndexes:&error];
     
     count = 0;
     for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
@@ -719,6 +698,39 @@
         count++;
     }
     STAssertEquals(count, 1, @"Query returned the wrong number of results");
+}
+
+- (void)testIndexManagerConcurrentUpdated
+{
+    int nThreads = 5;
+    NSMutableArray *threads = [[NSMutableArray alloc] init];
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:nil];
+    [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
+    
+    while(nThreads-- > 0) {
+        NSThread *thr = [[NSThread alloc] initWithTarget:self selector:@selector(makeSomeDocuments:) object:[NSNumber numberWithInt:nThreads]];
+        [threads addObject:thr];
+        [thr start];
+    }
+    for (NSThread *thr in threads) {
+        while([thr isExecuting]) {
+            usleep(500*1000);
+        }
+    }
+    STAssertEquals([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], 500UL, @"Query returned the wrong number of results");
+}
+
+- (void)makeSomeDocuments:(NSNumber*)thread {
+    NSLog(@"makedocs %d", [thread intValue]);
+    int i = 100;
+    while (i-- > 0) {
+        [self.datastore createDocumentWithBody:
+         [[CDTDocumentBody alloc] initWithDictionary:
+          @{@"name": @"made in thread",
+            @"myDocumentId":[NSString stringWithFormat:@"%d-%d", [thread intValue], i]}
+          ] error:nil];
+    }
 }
 
 - (void)initLotsOfData
