@@ -31,7 +31,8 @@ typedef enum {
 /** Given a newly-added revision, adds the necessary attachment rows to the database and stores inline attachments into the blob store. */
 - (TDStatus) processAttachments: (NSDictionary*)attachments
                     forRevision: (TD_Revision*)rev
-             withParentSequence: (SequenceNumber)parentSequence;
+             withParentSequence: (SequenceNumber)parentSequence
+                     inDatabase: (FMDatabase*)db;
 
 /** Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. */
 - (NSDictionary*) getAttachmentDictForSequence: (SequenceNumber)sequence

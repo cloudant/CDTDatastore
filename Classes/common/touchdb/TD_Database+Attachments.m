@@ -531,6 +531,7 @@
 - (TDStatus) processAttachments: (NSDictionary*)attachments
                     forRevision: (TD_Revision*)rev
              withParentSequence: (SequenceNumber)parentSequence
+                     inDatabase: (FMDatabase*)db
 {
     Assert(rev);
     
@@ -557,7 +558,9 @@
                 return kTDStatusBadAttachment;
 
             // Finally insert the attachment:
-            status = [self insertAttachment: attachment forSequence: newSequence];
+            status = [self insertAttachment: attachment
+                                forSequence: newSequence
+                                 inDatabase: db];
         } else {
             // It's just a stub, so copy the previous revision's attachment entry:
             //? Should I enforce that the type and digest (if any) match?

@@ -22,6 +22,8 @@
 		27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */; };
 		27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */ = {isa = PBXBuildFile; fileRef = 27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */; };
 		27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
+		27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DFEEB618DB4A0D0052D487 /* Attachments.m */; };
+		27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DFEEB618DB4A0D0052D487 /* Attachments.m */; };
 		27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
 		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
@@ -51,6 +53,7 @@
 		27A7E6B31899785B007FAF1C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 		27BE3CED189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CloudantReplicationBase+CompareDb.h"; sourceTree = "<group>"; };
 		27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CloudantReplicationBase+CompareDb.m"; sourceTree = "<group>"; };
+		27DFEEB618DB4A0D0052D487 /* Attachments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Attachments.m; sourceTree = "<group>"; };
 		97F72706FFD44D88B6E5E667 /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3EA8C0BBBD34854B2975F77 /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
@@ -121,6 +124,7 @@
 			children = (
 				277992BA18A2503C00BAB6ED /* ReplicationAcceptance.h */,
 				27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */,
+				27DFEEB618DB4A0D0052D487 /* Attachments.m */,
 				27A7E67A189973EE007FAF1C /* Supporting Files */,
 				27A7E6AD189975B2007FAF1C /* CloudantReplicationBase.h */,
 				27A7E6AE189975B2007FAF1C /* CloudantReplicationBase.m */,
@@ -343,6 +347,7 @@
 				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
 				27A7E6AF189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
+				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -354,6 +359,7 @@
 				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
+				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

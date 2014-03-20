@@ -471,8 +471,9 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
             // Store any attachments:
             status = [strongSelf processAttachments: attachments
-                                  forRevision: rev
-                           withParentSequence: parentSequence];
+                                        forRevision: rev
+                                 withParentSequence: parentSequence
+                                         inDatabase: db];
             if (TDStatusIsError(status)) {
                 *outStatus = status;
                 return;
@@ -625,7 +626,8 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                         if (attachments)
                             status = [strongSelf processAttachments: attachments
                                                         forRevision: rev
-                                                 withParentSequence: localParentSequence];
+                                                 withParentSequence: localParentSequence
+                                                         inDatabase: db];
                         if (TDStatusIsError(status)) {
                             result = status;
                             return;
