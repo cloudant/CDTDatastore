@@ -1,12 +1,13 @@
 # CDTDatastore CHANGELOG
 
-## 0.0.5 (Unreleased)
+## 0.0.5 (2014-03-20)
 
+- CHANGE Deleting a document now returns the new revision.
 - FIX The rare queries that return deleted documents no longer
   crash an application.
 - FIX Replicating a database with documents containing attachments
   no longer causes a crash. (No API for accessing attachments yet).
-- CHANGE Deleting a document now returns the new revision.
+- FIX Executing a -compact works (update for newer FMDB API).
 
 ## 0.0.4 (2014-02-27)
 
