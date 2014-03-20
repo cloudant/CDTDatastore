@@ -446,6 +446,9 @@
       location = "group:Rakefile">
    </FileRef>
    <FileRef
+      location = "group:CHANGELOG.md">
+   </FileRef>
+   <FileRef
       location = "group:Tests/Tests.xcodeproj">
    </FileRef>
    <FileRef
