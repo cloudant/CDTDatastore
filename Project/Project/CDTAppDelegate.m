@@ -15,6 +15,8 @@
 
 #import "CDTAppDelegate.h"
 
+#import "CDTCompletedIndexer.h"
+
 #import <CloudantSync.h>
 
 @interface CDTAppDelegate()
@@ -28,6 +30,29 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.datastore = [self create_datastore];
+
+    // Create the indexManager and add an index on the "completed" field with a
+    // custom indexer (so we can index the BOOL value).
+    NSError *error;
+    self.indexManager = [[CDTIndexManager alloc] initWithDatastore:self.datastore
+                                                             error:&error];
+    if (!self.indexManager) {
+        NSLog(@"Error creating indexManager: %@", error);
+        exit(1);
+    }
+
+    error = nil;
+    CDTCompletedIndexer *fi = [[CDTCompletedIndexer alloc] init];
+    return [self.indexManager ensureIndexedWithIndexName:@"completed"
+                                                    type:CDTIndexTypeInteger
+                                                 indexer:fi
+                                                   error:&error];
+    if (error) {
+        NSLog(@"Error creating indexManager: %@", error);
+        exit(1);
+    }
+
+
     
     return YES;
 }

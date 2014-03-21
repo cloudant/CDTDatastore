@@ -74,11 +74,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-LogCDTReplicatorLog YES"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-LogSync YES"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-LogSyncVerbose YES"

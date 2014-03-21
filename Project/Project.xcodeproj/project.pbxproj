@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2796596F18D9DE1900A6C32F /* CDTCompletedIndexer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */; };
+		2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
+		2799959718D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
+		2799959B18D9D7910042301D /* CDTTodo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959A18D9D7910042301D /* CDTTodo.m */; };
+		2799959C18D9D7910042301D /* CDTTodo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959A18D9D7910042301D /* CDTTodo.m */; };
 		27C1CDC7184E2D9C000604EF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDC6184E2D9C000604EF /* Foundation.framework */; };
 		27C1CDC9184E2D9C000604EF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDC8184E2D9C000604EF /* CoreGraphics.framework */; };
 		27C1CDCB184E2D9C000604EF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDCA184E2D9C000604EF /* UIKit.framework */; };
@@ -21,7 +26,6 @@
 		27C1CDE8184E2D9C000604EF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDCA184E2D9C000604EF /* UIKit.framework */; };
 		27C1CDF0184E2D9C000604EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27C1CDEE184E2D9C000604EF /* InfoPlist.strings */; };
 		27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CDF1184E2D9C000604EF /* ProjectTests.m */; };
-		27E16BDE187D6FBA00F8A3B2 /* CDTReplicateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */; };
 		9F954F9F18AB5B5A00368057 /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F954F9E18AB5B5A00368057 /* libPods-ios.a */; };
 /* End PBXBuildFile section */
 
@@ -36,6 +40,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2796596D18D9DE1900A6C32F /* CDTCompletedIndexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTCompletedIndexer.h; sourceTree = "<group>"; };
+		2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTCompletedIndexer.m; sourceTree = "<group>"; };
+		2799959418D9D19D0042301D /* CDTTodoReplicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodoReplicator.h; sourceTree = "<group>"; };
+		2799959518D9D19D0042301D /* CDTTodoReplicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTTodoReplicator.m; sourceTree = "<group>"; };
+		2799959918D9D7910042301D /* CDTTodo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodo.h; sourceTree = "<group>"; };
+		2799959A18D9D7910042301D /* CDTTodo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTTodo.m; sourceTree = "<group>"; };
 		27C1CDC3184E2D9C000604EF /* Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Project.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27C1CDC6184E2D9C000604EF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		27C1CDC8184E2D9C000604EF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -55,10 +65,8 @@
 		27C1CDED184E2D9C000604EF /* ProjectTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ProjectTests-Info.plist"; sourceTree = "<group>"; };
 		27C1CDEF184E2D9C000604EF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27C1CDF1184E2D9C000604EF /* ProjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProjectTests.m; sourceTree = "<group>"; };
-		27E16BDC187D6FBA00F8A3B2 /* CDTReplicateController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTReplicateController.h; sourceTree = "<group>"; };
-		27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplicateController.m; sourceTree = "<group>"; };
 		4D0E3AC9C50B4EBE8CF4AF2B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
-		9F954F9E18AB5B5A00368057 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = file; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
+		9F954F9E18AB5B5A00368057 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
 		C4042E7D26A74D4D86B965BA /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,6 +95,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2799959818D9D7790042301D /* model */ = {
+			isa = PBXGroup;
+			children = (
+				2799959918D9D7910042301D /* CDTTodo.h */,
+				2799959A18D9D7910042301D /* CDTTodo.m */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
 		27C1CDBA184E2D9C000604EF = {
 			isa = PBXGroup;
 			children = (
@@ -123,15 +140,18 @@
 		27C1CDCC184E2D9C000604EF /* Project */ = {
 			isa = PBXGroup;
 			children = (
+				2799959818D9D7790042301D /* model */,
 				27C1CDD5184E2D9C000604EF /* CDTAppDelegate.h */,
 				27C1CDD6184E2D9C000604EF /* CDTAppDelegate.m */,
 				27C1CDD8184E2D9C000604EF /* Main.storyboard */,
 				27C1CDDB184E2D9C000604EF /* CDTViewController.h */,
 				27C1CDDC184E2D9C000604EF /* CDTViewController.m */,
-				27E16BDC187D6FBA00F8A3B2 /* CDTReplicateController.h */,
-				27E16BDD187D6FBA00F8A3B2 /* CDTReplicateController.m */,
+				2799959418D9D19D0042301D /* CDTTodoReplicator.h */,
+				2799959518D9D19D0042301D /* CDTTodoReplicator.m */,
 				27C1CDDE184E2D9C000604EF /* Images.xcassets */,
 				27C1CDCD184E2D9C000604EF /* Supporting Files */,
+				2796596D18D9DE1900A6C32F /* CDTCompletedIndexer.h */,
+				2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */,
 			);
 			path = Project;
 			sourceTree = "<group>";
@@ -298,10 +318,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2799959B18D9D7910042301D /* CDTTodo.m in Sources */,
+				2796596F18D9DE1900A6C32F /* CDTCompletedIndexer.m in Sources */,
 				27C1CDD7184E2D9C000604EF /* CDTAppDelegate.m in Sources */,
+				2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */,
 				27C1CDD3184E2D9C000604EF /* main.m in Sources */,
 				27C1CDDD184E2D9C000604EF /* CDTViewController.m in Sources */,
-				27E16BDE187D6FBA00F8A3B2 /* CDTReplicateController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,6 +331,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2799959C18D9D7910042301D /* CDTTodo.m in Sources */,
+				2799959718D9D19D0042301D /* CDTTodoReplicator.m in Sources */,
 				27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

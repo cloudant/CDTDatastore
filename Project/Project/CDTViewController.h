@@ -20,4 +20,7 @@
 @property (nonatomic, strong) IBOutlet UITextField *addTodoTextField;
 -(IBAction)addTodoButtonTap:(id)sender;
 
+
+-(IBAction)replicateTapped:(id)sender;
+
 @end
