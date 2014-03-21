@@ -1,5 +1,11 @@
 # CDTDatastore CHANGELOG
 
+## 0.0.6 (Unreleased)
+
+- CHANGE Indexes now stay up to date as the datastore is modifed.
+- MISC Add example of how to use indexing and query to the
+  sample application.
+
 ## 0.0.5 (2014-03-20)
 
 - CHANGE Deleting a document now returns the new revision.
