@@ -939,15 +939,21 @@
     CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:bodies[0] error:&error];
     STAssertNil(error, @"Error creating document");
     STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    STAssertNotNil(ob.docId, @"doc id is nil");
+    STAssertNotNil(ob.revId, @"rev id is nil");
+    NSString *docId = ob.docId;
     
     for(int i = 0; i < numOfUpdates; i++){
         error = nil;
-        ob = [self.datastore updateDocumentWithId:ob.docId
+        ob = [self.datastore updateDocumentWithId:docId
                                      prevRev:ob.revId
                                         body:bodies[i+1]
                                        error:&error];
         STAssertNil(error, @"Error creating document. Update Number %d", i);
         STAssertNotNil(ob, @"CDTDocumentRevision object was nil. Update Number %d", i);
+        
+        STAssertNotNil(ob.docId, @"doc id is nil");
+        STAssertNotNil(ob.revId, @"rev id is nil");
     }
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": [[NSNumber alloc] initWithInt:numOfUpdates + 1]};

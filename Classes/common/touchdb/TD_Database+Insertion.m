@@ -304,7 +304,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
              withWinningRev: (TD_Revision**)winningRev
 
 {
-    
+
     LogTo(TD_Database, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev, previousRevID, allowConflict);
     Assert(outStatus);
     
@@ -535,7 +535,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         if (!success) {
             *rollback = !success;
         }
-        
+
     }];
     
     if (TDStatusIsError(*outStatus))
