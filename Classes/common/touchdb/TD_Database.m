@@ -467,7 +467,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
             Warn(@"Exception raised during -inTransaction: %@", x);
             status = kTDStatusException;
         } @finally {
-            *rollback = !TDStatusIsError(status);
+            *rollback = TDStatusIsError(status);
         }
     }];
     return status;
