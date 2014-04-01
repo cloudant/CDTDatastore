@@ -337,20 +337,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return result;
 }
 
--(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision
-{
-    TD_RevisionList* revs = [self.database getAllRevisionsOfDocumentID:revision.docId
-                                                           onlyCurrent:YES];
-    NSMutableArray *results = [NSMutableArray array];
-    for (TD_Revision *td_rev in revs.allRevisions) {
-        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
-        if (!ob.deleted) {
-            [results addObject:ob];
-        }
-    }
-    return results;
-}
-
 
 -(NSArray*) getRevisionHistory:(CDTDocumentRevision*)revision
 {

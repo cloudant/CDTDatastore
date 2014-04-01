@@ -23,6 +23,7 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
+#import "TD_Revision.h"
 
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
@@ -93,10 +94,6 @@
     return result;
 }
 
--(NSInteger)getRevPrefix:(NSString *)revString
-{
-    return [[revString componentsSeparatedByString:@"-"][0] integerValue];
-}
 
 #pragma mark - CREATE tests
 
@@ -245,6 +242,42 @@
     const NSUInteger expected_count = 1;
     STAssertEquals(ob.documentAsDictionary.count, expected_count, @"Object from database has != 1 key");
     STAssertEqualObjects(ob.documentAsDictionary[@"hello"], @"world", @"Object from database has wrong data");
+}
+
+-(void)testCannotCreateConflict
+{
+    NSError *error;
+    NSString *key1 = @"hello";
+    NSString *value1 = @"world";
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key1:value1}];
+    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
+    STAssertNil(error, @"Error creating document");
+    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    
+    error = nil;
+    NSString *docId = ob.docId;
+    NSString *key2 = @"hi";
+    NSString *value2 = @"mike";
+    CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:@{key2:value2}];
+    CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:docId
+                                                            prevRev:ob.revId
+                                                               body:body2
+                                                              error:&error];
+    STAssertNil(error, @"Error updating document");
+    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    
+    //now create a conflict
+    error = nil;
+    NSString *key3 = @"hi";
+    NSString *value3 = @"adam";
+    CDTDocumentBody *body3 = [[CDTDocumentBody alloc] initWithDictionary:@{key3:value3}];
+    CDTDocumentRevision *ob3 = [self.datastore updateDocumentWithId:docId
+                                                            prevRev:ob.revId
+                                                               body:body3
+                                                              error:&error];
+    STAssertTrue(error.code == 409, @"Incorrect error code: %@", error);
+    STAssertNil(ob3, @"CDTDocumentRevision object was not nil");
+    
 }
 
 #pragma mark - READ tests
@@ -397,8 +430,7 @@
         lastDocForId[randomId][@"lastrev"] =  cdt_rev.revId;
         lastDocForId[randomId][@"json"] = dict;
         
-        STAssertEquals([lastDocForId[randomId][@"numUpdates"] integerValue],
-                       [self getRevPrefix:cdt_rev.revId],
+        STAssertTrue([lastDocForId[randomId][@"numUpdates"] unsignedIntegerValue] == [TD_Revision generationFromRevID:cdt_rev.revId],
                        @"rev prefix value does not equal expected number of updates");
     }
     
@@ -408,7 +440,8 @@
     //now compact and check that all old revs obtained via CDTDatastore contain empty JSON.
     //note: I have to #import "TD_Database+Insertion.h" in order to compact.
     TDStatus statusResults = [self.datastore.database compact];
-    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
+    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200,
+                 @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
     
     //number of table rows shouldn't have changed by compaction as all tombstones should be present
     [self.dbutil checkTableRowCount:initialRowCounts modifiedBy:modifiedCounts];
@@ -418,14 +451,14 @@
         error = nil;
         NSDictionary* lastRecordedJsonDoc = lastDocForId[aDocId][@"json"];
         NSString *lastRev = lastDocForId[aDocId][@"lastrev"];
-        NSInteger numUpdates = [lastDocForId[aDocId][@"numUpdates"] integerValue];
+        NSUInteger numUpdates = [lastDocForId[aDocId][@"numUpdates"] unsignedIntegerValue];
         if(numUpdates > 0){
             cdt_rev = [self.datastore getDocumentWithId:aDocId error:&error];
             STAssertNil(error, @"Error getting document");
             STAssertNotNil(cdt_rev, @"retrieved object was nil");
             STAssertEqualObjects(lastRev, cdt_rev.revId, @"Object retrieved from database has wrong revid");
             STAssertEqualObjects(cdt_rev.documentAsDictionary, lastRecordedJsonDoc, @"Object from database has wrong data");
-            STAssertEquals(numUpdates, [self getRevPrefix:cdt_rev.revId], @"rev prefix value does not equal expected number of updates");
+            STAssertTrue(numUpdates == [TD_Revision generationFromRevID:cdt_rev.revId], @"rev prefix value does not equal expected number of updates");
         }
     }
     
@@ -445,8 +478,8 @@
                                      @"Document ID mismatch: %@", [result stringForColumn:@"docid"]);
                 
                 NSString *revid = [result stringForColumn:@"revid"];
-                STAssertTrue([self getRevPrefix:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
-                revPrefix = [self getRevPrefix:revid];
+                STAssertTrue([TD_Revision generationFromRevID:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
+                revPrefix = [TD_Revision generationFromRevID:revid];
                 
                 STAssertFalse([result boolForColumn:@"deleted"], @"deleted? %@", [result stringForColumn:@"deleted"]);
                 
@@ -966,7 +999,7 @@
                                                error:nil];
             
             BOOL expectedCurrent = (counter == numOfUpdates +1);
-            
+
             // This is the only zero based item we're checking
             // so counter starts at 1 and we minus one
             NSDictionary *expectedDict = [[bodies[counter-1] td_body] properties];
@@ -1261,7 +1294,7 @@
         
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([self getRevPrefix:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
+        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
         STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
         STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
@@ -1274,7 +1307,7 @@
         STAssertTrue([result next], @"Didn't find the second row in the revs table");
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([self getRevPrefix:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
+        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
         STAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         STAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
         STAssertTrue([result intForColumn:@"parent"] == 1, @"Found %@", [result intForColumn:@"parent"]);
@@ -1379,7 +1412,7 @@
         //initial doc
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([self getRevPrefix:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
+        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
         STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
         STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
@@ -1394,7 +1427,7 @@
         STAssertTrue([result next], @"Didn't find the second row in the revs table");
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([self getRevPrefix:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
+        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
         STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
         STAssertTrue([result intForColumn:@"parent"] == 1, @"Found %d", [result intForColumn:@"parent"]);
@@ -1410,7 +1443,7 @@
         STAssertTrue([result next], @"Didn't find the third row in the revs table");
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 3, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([self getRevPrefix:[result stringForColumn:@"revid"]] == 3, @"rev: %@", [result stringForColumn:@"revid"] );
+        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 3, @"rev: %@", [result stringForColumn:@"revid"] );
         STAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         STAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
         STAssertTrue([result intForColumn:@"parent"] == 2, @"Found %d", [result intForColumn:@"parent"]);

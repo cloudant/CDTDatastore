@@ -86,6 +86,12 @@
             location = "group:CDTDatastore.m">
          </FileRef>
          <FileRef
+            location = "group:CDTDatastore+Conflicts.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Conflicts.m">
+         </FileRef>
+         <FileRef
             location = "group:CDTConflictResolver.h">
          </FileRef>
          <FileRef
@@ -173,6 +179,12 @@
             </FileRef>
             <FileRef
                location = "group:TD_Database+Replication.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Conflicts.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Conflicts.m">
             </FileRef>
             <FileRef
                location = "group:TD_Database.h">

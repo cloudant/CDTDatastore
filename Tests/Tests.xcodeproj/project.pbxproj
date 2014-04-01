@@ -62,6 +62,8 @@
 		9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */; };
 		9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
 		9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
+		9FAAB00118DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */; };
+		9FAAB00218DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -107,6 +109,7 @@
 		9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDSequenceMapTests.m; sourceTree = "<group>"; };
 		9F95D60E18CF6A580006D349 /* DBQueryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBQueryUtils.h; sourceTree = "<group>"; };
 		9F95D60F18CF6A580006D349 /* DBQueryUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryUtils.m; sourceTree = "<group>"; };
+		9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		B8C5CE07530A44358897106E /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -197,6 +200,7 @@
 				27389E2E18534E050027A404 /* CloudantSyncTests.m */,
 				27389E3018534E050027A404 /* DatastoreActions.m */,
 				27389E3218534E050027A404 /* DatastoreCrud.m */,
+				9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */,
 				27389E3418534E050027A404 /* SetUpDatastore.m */,
 				27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */,
 				8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */,
@@ -431,6 +435,7 @@
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27D96E3818E1D93F00DEA006 /* AttachmentCRUD.m in Sources */,
 				27389E3618534E050027A404 /* DatastoreActions.m in Sources */,
+				9FAAB00118DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */,
 				27389E3518534E050027A404 /* CloudantSyncTests.m in Sources */,
 				9F0D24111890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */,
@@ -459,6 +464,7 @@
 				9F0D23F8188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27D96E3918E1D93F00DEA006 /* AttachmentCRUD.m in Sources */,
 				27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */,
+				9FAAB00218DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */,
 				27CCEDD8187AD719006F3C66 /* DatastoreCrud.m in Sources */,
 				9F0D24121890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */,
