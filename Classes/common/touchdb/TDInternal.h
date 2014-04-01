@@ -38,6 +38,7 @@
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                       numericID: (SInt64)docNumericID
                                      onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted
                                         database: (FMDatabase*)database;
 
 /** Must be called from within a queue -inDatabase: or -inTransaction: **/

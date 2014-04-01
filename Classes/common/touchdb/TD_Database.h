@@ -123,6 +123,13 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 - (TD_Revision*) getDocumentWithID: (NSString*)docID
                        revisionID: (NSString*)revID;
 
+/** Only call from within a queued transaction **/
+- (TD_Revision*) getDocumentWithID: (NSString*)docID
+                        revisionID: (NSString*)revID
+                           options: (TDContentOptions)options
+                            status: (TDStatus*)outStatus
+                          database: (FMDatabase*)db;
+
 - (BOOL) existsDocumentWithID: (NSString*)docID
                    revisionID: (NSString*)revID
                      database: (FMDatabase*)db;
@@ -142,11 +149,27 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 /** Returns the revision history as a _revisions dictionary, as returned by the REST API's ?revs=true option. */
 - (NSDictionary*) getRevisionHistoryDict: (TD_Revision*)rev inDatabase:(FMDatabase*)db;
 
-/** Returns all the known revisions (or all current/conflicting revisions) of a document. */
-- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
-                                     onlyCurrent: (BOOL)onlyCurrent;
+/** 
+ Returns all the known revisions (or all current/conflicting revisions) of a document.
+ Each database document (i.e. each row in the revs table) contains a 'current' and 'deleted' element.
+ A row/documuent that has current = 1 is a leaf node in the revision tree for that document.
+ And 'deleted', of course, indicates a deleted revision.
+ 
+ For example, this method may be used to get all active conflicting revisions for a document by
+ calling this method with onlyCurrent=YES and excludeDeleted=YES.
+ 
+ Calling this method with onlyCurrent=NO and excludeDelete=NO will return the entire 
+ set of revisions.
+ */
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                      onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted;
+/**
+ Sams as the method above, but is to be used within an ongoing database transaction. 
+ */
+- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
+                                     onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted
                                         database: (FMDatabase*)db;
 
 /** Returns IDs of local revisions of the same document, that have a lower generation number.

@@ -552,7 +552,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     }
 
     if (options & kTDIncludeConflicts) {
-        TD_RevisionList* revs = [self getAllRevisionsOfDocumentID: docID onlyCurrent: YES database:db];
+        TD_RevisionList* revs = [self getAllRevisionsOfDocumentID: docID onlyCurrent: YES excludeDeleted:YES database:db];
         if (revs.count > 1) {
             conflicts = [revs.allRevisions my_map: ^(id aRev) {
                 return ($equal(aRev, rev) || [(TD_Revision*)aRev deleted]) ? nil : [aRev revID];
@@ -786,22 +786,33 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
 #pragma mark - HISTORY:
 
 
-/** Only call from within a queued transaction **/
+/** Only call from within a queued transaction 
+ This method was created seperately with the numericID specified in
+ order to be used within TD_Database+Insertion -forceInsert:revisionHistory:source
+ **/
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                        numericID: (SInt64)docNumericID
                                      onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted
                                         database: (FMDatabase*)db
 {
-    NSString* sql;
-    if (onlyCurrent)
-        sql = @"SELECT sequence, revid, deleted FROM revs "
-               "WHERE doc_id=? AND current ORDER BY sequence DESC";
-    else
-        sql = @"SELECT sequence, revid, deleted FROM revs "
-               "WHERE doc_id=? ORDER BY sequence DESC";
+    NSString* sql = @"SELECT sequence, revid, deleted FROM revs WHERE doc_id=? ";
+    
+    if (onlyCurrent) {
+        sql = [sql stringByAppendingString:@"AND current = 1 "];
+    }
+    
+    if (excludeDeleted) {
+        sql = [sql stringByAppendingString:@"AND deleted = 0 "];
+    }
+    
+    sql = [sql stringByAppendingString:@"ORDER BY sequence DESC"];
+    
     FMResultSet* r = [db executeQuery: sql, @(docNumericID)];
-    if (!r)
+    if (!r) {
         return nil;
+    }
+    
     TD_RevisionList* revs = [[TD_RevisionList alloc] init];
     while ([r next]) {
         TD_Revision* rev = [[TD_Revision alloc] initWithDocID: docID
@@ -817,6 +828,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
 
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                      onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted
 {
     __block TD_RevisionList *result;
     __weak TD_Database *weakSelf = self;
@@ -824,6 +836,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
         TD_Database *strongSelf = weakSelf;
         result = [strongSelf getAllRevisionsOfDocumentID:docID
                                              onlyCurrent:onlyCurrent
+                                          excludeDeleted:excludeDeleted
                                                 database:db];
     }];
     return result;
@@ -832,18 +845,23 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
 /** Only call from within a queued transaction **/
 - (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
                                      onlyCurrent: (BOOL)onlyCurrent
+                                  excludeDeleted: (BOOL)excludeDeleted
                                         database: (FMDatabase*)db
 {
     SInt64 docNumericID = [self getDocNumericID: docID database:db];
-    if (docNumericID < 0)
+    if (docNumericID < 0) {
         return nil;
-    else if (docNumericID == 0)
+    }
+    else if (docNumericID == 0) {
         return [[TD_RevisionList alloc] init];  // no such document
-    else
+    }
+    else {
         return [self getAllRevisionsOfDocumentID: docID
                                        numericID: docNumericID
                                      onlyCurrent: onlyCurrent
+                                  excludeDeleted:excludeDeleted
                                         database:db];
+    }
 }
 
 

@@ -17,9 +17,11 @@
 #import <Foundation/Foundation.h>
 
 #import "CloudantSyncTests.h"
+#import "DatastoreConflictResolvers.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore+Conflicts.h"
+#import "CDTDatastore+Internal.h"
 #import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
 #import "CDTConflictResolver.h"
@@ -40,46 +42,6 @@
 @property (nonatomic,strong) DBQueryUtils *dbutil;
 @end
 
-
-//@interface MyBiggestRevResolver  : NSObject<CDTConflictResolver>
-//@end
-//@implementation MyBiggestRevResolver
-//
-//-(NSInteger)getRevPrefix:(NSString *)revString
-//{
-//    return [[revString componentsSeparatedByString:@"-"][0] integerValue];
-//}
-//
-//-(CDTDocumentRevision *)resolve:(NSString*)docId
-//                      conflicts:(NSArray*)conflicts
-//{
-//    NSInteger biggestRev = 0;
-//    NSInteger biggestRevIndex = 0;
-//    for(int i = 0; i < conflicts.count; i++){
-//        
-//        CDTDocumentRevision *aRev = conflicts[i];
-//        //pick the biggest rev number.
-//        if([self getRevPrefix:aRev.revId] > biggestRev)
-//            biggestRevIndex = i;
-//    }
-//    
-//    return conflicts[biggestRevIndex];
-//}
-//@end
-//
-//@interface CDTAnnihilator  : NSObject<CDTConflictResolver>
-//@end
-//@implementation CDTAnnihilator
-//
-//-(CDTDocumentRevision *)resolve:(NSString*)docId
-//                      conflicts:(NSArray*)conflicts
-//{
-//    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-//                                                         revID:nil
-//                                                       deleted:YES];
-//    return [[CDTDocumentRevision alloc] initWithTDRevision:revision];
-//}
-//@end
 
 @implementation DatastoreConflicts
 
@@ -103,17 +65,22 @@
     [super tearDown];
 }
 
+/**
+ creates a new document with the following document tree
+
+    ----- 2-c (seq 5, deleted = 1)
+  /
+ 1-a (seq 1) --- 2-a (seq 2) --- 3-a (seq 3)
+  \
+    ---- 2-b (seq 4)
+ 
+ There are only two conflicting revisions, 3-a and 2-b,
+ because 2-c is deleted.
+*/
 -(void) addConflictingDocumentWithId:(NSString *)anId
                          toDatastore:(CDTDatastore*)datastore
 {
-    //creates the following document tree
-    //
-    //    ----- 2-c (seq 5, deleted = 1)
-    //  /
-    // 1-a (seq 1) --- 2-a (seq 2) --- 3-a (seq 3)
-    //   \
-    //     ---- 2-b (seq 4)
-
+    
     STAssertNotNil(anId, @"ID string is nil");
     
     NSError *error;
@@ -137,7 +104,7 @@
                             prevRev:rev2a.revId
                                body:body
                               error:&error];
-    
+
     error = nil;
     TD_Body *tdbody = [[TD_Body alloc] initWithProperties:@{@"foo2.b":@"bar2.b"}];
     TD_Database *tdstore = datastore.database;
@@ -164,7 +131,7 @@
                                             revID:nil
                                           deleted:YES];
     revision.body = tdbody;
-    
+
     td_rev = [tdstore putRevision:revision
                    prevRevisionID:rev1.revId
                     allowConflict:YES
@@ -204,8 +171,34 @@
 -(void)testFindAllConflicts
 {
     [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
-    NSArray *revsArray = [self.datastore conflictsForDocumentId:@"doc0"];
-    STAssertTrue(revsArray.count == 3, @"found %lu conflicts", (unsigned long)revsArray.count);
+    
+    __block NSArray *revsArray;
+    [self.datastore.database inTransaction:^TDStatus(FMDatabase *db) {
+        revsArray = [self.datastore activeRevisionsForDocumentId:@"doc0" database:db];
+        return kTDStatusOK;
+    }];
+    
+    for (CDTDocumentRevision *aRev in revsArray) {
+        
+        switch ([TD_Revision generationFromRevID:aRev.revId]) {
+            case 2:
+                STAssertEqualObjects(aRev.documentAsDictionary,
+                                     @{@"foo2.b":@"bar2.b"},
+                                     @"unexpected document: %@", aRev.documentAsDictionary);
+                break;
+                
+            case 3:
+                STAssertEqualObjects(aRev.documentAsDictionary,
+                                     @{@"foo3.a":@"bar3.a"},
+                                     @"unexpected document: %@", aRev.documentAsDictionary);
+                break;
+                
+            default:
+                STFail(@"invalid revision generation: %@", aRev.revId);
+                break;
+        }
+        
+    }
 }
 
 
@@ -271,63 +264,176 @@
                  @"foundSet: %@", foundConflictedDocIds);
 }
 
-//- (void) testResolveConflictWithBiggestRev
-//{
-//    //add a non-conflicting document
-//    NSError *error;
-//    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"conflict":@"no way!"}];
-//    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:body error:&error];
-//    STAssertNil(error, @"Error creating document");
-//    STAssertNotNil(rev, @"CDTDocumentRevision object was nil");
-//    
-//    NSArray *myConflictDocs = @[@"doc0", @"doc1", @"doc3", @"doc4"];
-//    for (NSString *adoc in myConflictDocs)
-//        [self createConflictingDocument:adoc];
-//    
-//    //add another non-conflicting document
-//    error = nil;
-//    body = [[CDTDocumentBody alloc] initWithDictionary:@{@"conflict":@"no way!"}];
-//    CDTDocumentRevision *rev2 = [self.datastore createDocumentWithBody:body error:&error];
-//    STAssertNil(error, @"Error creating document");
-//    STAssertNotNil(rev2, @"CDTDocumentRevision object was nil");
-//
-//    MyBiggestRevResolver *myResolver = [[MyBiggestRevResolver alloc] init];
-//
-//    [self.dbutil printDocsAndRevs];
-//    
-//    [self.datastore enumerateConflictsUsingBlock:^(NSString *documentId, NSUInteger idx, BOOL *stop) {
-//        NSLog(@"%lu. %@", (unsigned long)idx, documentId);
-//        NSError *error;
-//        [self.datastore resolveConflictsForDocument:documentId resolver:myResolver error:&error];
-//        STAssertNil(error, @"Error resolving document. %@", error);
-//        
-//        if(error)
-//            *stop = YES;
-//    }];
-//    
-//    //make sure there are no more conflicting documents
-//    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
-//    STAssertTrue(conflictedDocs.count == 0, @"Found %@ conflicted docs", conflictedDocs.count);
-//    
-//    //make sure that doc0, doc1, doc2 and doc3 all have the proper rev and content
-//    //They should have rev prefixes of 4- and should have content of {foo3.a:bar3.a}
-//    for(NSString *adocid in myConflictDocs){
-//        NSLog(adocid);
-//
-//        error = nil;
-//        rev = [self.datastore getDocumentWithId:adocid error:&error];
-//        STAssertNil(error, @"Error getting document");
-//        STAssertNotNil(rev, @"CDTDocumentRevision object was nil");
-//        STAssertTrue([self getRevPrefix:rev.revId] == 4, @"Unexpected RevId prefix: %@", rev.revId);
-//        STAssertEqualObjects([rev documentAsDictionary], @{@"foo3.a":@"foo3.b"},
-//                             @"Unexpected document: %@", [rev documentAsDictionary]);
-//    }
-//}
+- (void) testResolveConflictWithBiggestRev
+{
+    //add a non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    NSSet *setOfConflictedDocIds = [NSSet setWithArray:@[@"doc0", @"doc1", @"doc2", @"doc3"]];
+    for (NSString *docId in setOfConflictedDocIds) {
+        [self addConflictingDocumentWithId:docId toDatastore:self.datastore];
+    }
+    
+    //add another non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    CDTTestBiggestRevResolver *myResolver = [[CDTTestBiggestRevResolver alloc] init];
+        
+    for (NSString *docId in [self.datastore getConflictedDocumentIds]) {
+        NSError *error;
+        STAssertTrue([self.datastore resolveConflictsForDocument:docId
+                                                        resolver:myResolver
+                                                           error:&error],
+                     @"resolve failure: %@", docId);
+        STAssertNil(error, @"Error resolving document. %@", error);
+    }
+    
+    //make sure there are no more conflicting documents
+    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
+    STAssertTrue(conflictedDocs.count == 0,
+                 @"Found %lu conflicted docs", (unsigned long)conflictedDocs.count);
+    
+    //make sure that doc0, doc1, doc2 and doc3 all have the proper rev and content
+    //They should have rev prefixes of 4- and should have content of {foo3.a:bar3.a}
+    for (NSString *docId in setOfConflictedDocIds) {
+        //NSLog(adocid);
+        
+        NSError *error = nil;
+        CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
+        STAssertNil(error, @"Error getting document");
+        STAssertNotNil(rev, @"CDTDocumentRevision object was nil");
+        STAssertTrue([TD_Revision generationFromRevID:rev.revId] == 4,
+                     @"Unexpected RevId: %@", rev.revId);
+        STAssertTrue([[rev documentAsDictionary] isEqualToDictionary:myResolver.resolvedDocumentAsDictionary],
+                     @"Unexpected document: %@", [rev documentAsDictionary]);
+    }
+}
 
-//- (void) testResolveByDeletingAllConflicts
-//{
-//    
-//}
+- (void) testResolveByAnnihilation
+{
+    //add a non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    NSSet *setOfConflictedDocIds = [NSSet setWithArray:@[@"doc0", @"doc1", @"doc2", @"doc3"]];
+    for (NSString *docId in setOfConflictedDocIds) {
+        [self addConflictingDocumentWithId:docId toDatastore:self.datastore];
+    }
+    
+    //add another non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    CDTTestDeleteConflictedDocResolver *myResolver = [[CDTTestDeleteConflictedDocResolver alloc] init];
+    
+    for (NSString *docId in [self.datastore getConflictedDocumentIds]) {
+        NSError *error;
+        STAssertTrue([self.datastore resolveConflictsForDocument:docId
+                                                        resolver:myResolver
+                                                           error:&error],
+                     @"resolve failure: %@", docId);
+        STAssertNil(error, @"Error resolving document. %@", error);
+    }
+    
+    //make sure there are no more conflicting documents
+    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
+    STAssertTrue(conflictedDocs.count == 0,
+                 @"Found %lu conflicted docs", (unsigned long)conflictedDocs.count);
+    
+    //make sure that doc0, doc1, doc2 and doc3 cannot be retrieved
+    for (NSString *docId in setOfConflictedDocIds) {
+        
+        NSError *error = nil;
+        CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
+        STAssertNotNil(error, @"No Error getting document");
+        STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+        STAssertNil(rev, @"CDTDocumentRevision object was not nil even though it was deleted.");
+        
+    }
+}
+
+- (void) testNoResolution
+{
+    //add a non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    NSSet *setOfConflictedDocIds = [NSSet setWithArray:@[@"doc0", @"doc1", @"doc2", @"doc3"]];
+    for (NSString *docId in setOfConflictedDocIds) {
+        [self addConflictingDocumentWithId:docId toDatastore:self.datastore];
+    }
+    
+    //add another non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    CDTTestDoesNoResolutionResolver *myResolver = [[CDTTestDoesNoResolutionResolver alloc] init];
+    
+    for (NSString *docId in [self.datastore getConflictedDocumentIds]) {
+        NSError *error;
+        STAssertTrue([self.datastore resolveConflictsForDocument:docId
+                                                        resolver:myResolver
+                                                           error:&error],
+                     @"resolve failure: %@", docId);
+        STAssertNil(error, @"Error resolving document. %@", error);
+    }
+    
+    //make sure there are the correct number of conflicting documents
+    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
+    STAssertTrue(conflictedDocs.count == setOfConflictedDocIds.count,
+                 @"Found %lu conflicted docs", (unsigned long)conflictedDocs.count);
+    
+    //make sure that doc0, doc1, doc2 and doc3 are still retrieved
+    for (NSString *docId in setOfConflictedDocIds) {
+        
+        NSError *error = nil;
+        CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
+        STAssertNil(error, @"Error getting document");
+        STAssertNotNil(rev, @"CDTDocumentRevision object was nil.");
+        
+    }
+}
+
+- (void) testResolveSubset
+{
+    //add a non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    NSSet *setOfConflictedDocIds = [NSSet setWithArray:@[@"doc0", @"doc1", @"doc2", @"doc3"]];
+    for (NSString *docId in setOfConflictedDocIds) {
+        [self addConflictingDocumentWithId:docId toDatastore:self.datastore];
+    }
+    
+    //add another non-conflicting document
+    [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
+    
+    NSSet* resolvedDocs = [NSSet setWithArray:@[@"doc0",@"doc1"]];
+    CDTTestParticularDocBiggestResolver *myResolver = [[CDTTestParticularDocBiggestResolver alloc]
+                                                       initWithDocsToResolve:resolvedDocs];
+        
+    for (NSString *docId in [self.datastore getConflictedDocumentIds]) {
+        NSError *error;
+        STAssertTrue([self.datastore resolveConflictsForDocument:docId resolver:myResolver error:&error],
+                     @"resolve failure: %@", docId);
+        STAssertNil(error, @"Error resolving document. %@", error);
+    }
+    
+    //check conflicting documents
+    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
+    STAssertTrue(conflictedDocs.count == 2, @"Found %lu conflicted docs", (unsigned long)conflictedDocs.count);
+    
+    NSSet *stillConflicted = [NSSet setWithArray:@[@"doc2", @"doc3"]];
+    STAssertTrue([stillConflicted isEqualToSet:[NSSet setWithArray:conflictedDocs]],
+                 @"unequal sets. expected: %@, found: %@", stillConflicted, conflictedDocs);
+    
+    for (NSString *docId in resolvedDocs) {
+        
+        NSError *error = nil;
+        CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
+        STAssertNil(error, @"Error getting document");
+        STAssertNotNil(rev, @"CDTDocumentRevision object was nil");
+        STAssertTrue([TD_Revision generationFromRevID:rev.revId] == 4, @"Unexpected RevId: %@", rev.revId);
+        STAssertTrue([[rev documentAsDictionary] isEqualToDictionary: myResolver.resolvedDocumentAsDictionary],
+                     @"Unexpected document: %@", [rev documentAsDictionary]);
+    }
+}
+
 
 
 @end

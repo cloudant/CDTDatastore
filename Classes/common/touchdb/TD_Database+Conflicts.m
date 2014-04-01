@@ -24,7 +24,13 @@
 /** Only call from within a queued transaction **/
 - (NSArray*) getConflictedDocumentIdsWithDatabase:(FMDatabase*)db
 {
-    NSString* sql = @"SELECT docid from (SELECT docs.docid, count(*) as num FROM revs, docs WHERE current AND docs.doc_id = revs.doc_id GROUP BY docs.doc_id) WHERE num > 1";
+    NSString* sql = @"SELECT docs.docid, COUNT(*) "
+                    @"FROM docs,revs "
+                    @"WHERE revs.doc_id = docs.doc_id AND deleted = 0 "
+                    @"AND revs.sequence NOT IN "
+                        @"(SELECT DISTINCT parent FROM revs "
+                        @"WHERE parent NOT NULL) "
+                    @"GROUP BY docs.docid HAVING COUNT(*) > 1";
     FMResultSet* r = [db executeQuery: sql];
     if (!r)
         return nil;

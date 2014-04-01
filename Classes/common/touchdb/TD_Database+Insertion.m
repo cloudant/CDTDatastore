@@ -578,6 +578,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 localRevs = [strongSelf getAllRevisionsOfDocumentID: docID
                                                           numericID: docNumericID
                                                         onlyCurrent: NO
+                                                     excludeDeleted: NO
                                                            database:db];
                 if (!localRevs) {
                     result = kTDStatusDBError;

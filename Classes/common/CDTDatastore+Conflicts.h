@@ -19,43 +19,63 @@
 @interface CDTDatastore (Conflicts)
 
 
-/**
- * Get all the current revisions for a document.
- *
- * If there are >1 revisions in the array, there are conflicts.
- */
--(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision;
-
-/**
- * Get all the current revisions for a document id
- *
- * If there are >1 revisions in the array, there are conflicts.
- */
--(NSArray*) conflictsForDocumentId:(NSString*)docId;
 
 /**
  * Get all document ids in the datastore that have a conflict in its revision tree.
  *
- * Returns an array of NSString* document ids.
+ * @return an array of NSString* document ids.
  */
 -(NSArray*) getConflictedDocumentIds;
 
-/**
- *
- * Resolve conflicts for specified Document using an object
- * that conforms to the CDTConflictResolver protocol
- *
- *
- * @param docId id of Document to resolve conflicts
- * @param resolver the CDTConflictResolver-conforming object
- used to resolve conflicts
- * @param error  NSError** for error reporting
- * @return YES/NO depending on success.
- *
- * @see com.cloudant.sync.datastore.ConflictResolver
+/** 
+ Resolve conflicts for a specific document using an object that conforms to the
+ CDTConflictResolver protocol
+ 
+ This method creates an NSArry of CDTDocumentRevision objects for each of the conflicting
+ revisions in a particular document tree and passes that array to the given
+ [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method 
+ should return the winning revision from the array. The returned CDTDocumentRevision, if not nil, 
+ is appended to the current winning revision and other conflicted revisions are marked as deleted.
+
+ It is envisioned that this method will be used in conjunction with getConflictedDocumentIds.
+ 
+    CDTDatastore *datastore = ...;
+    MyConflictResolver *myResolver = ...;
+ 
+    for (NSString *docId in [datastore getConflictedDocumentIds]) {
+        NSError *error;
+        BOOL didResolve = [datastore resolveConflictsForDocument:docId
+                                                        resolver:myResolver
+                                                           error:&error];
+        //check error, didResolve
+    }
+ 
+ @bug WARNING: Currently (20 May 2014), this does not properly migrate attachments. If a 
+ CDTConflictResolver object selects a winning revision other than the current winning revision, 
+ the attachments for that revision will not propagate. At this time, this ONLY changes the document 
+ bodies. For example, consider the following document tree
+ 
+    1-a  --- 2-a --- 3-a  (-- 4-a)
+      \
+        ---- 2-b
+ 
+ with attachments on revision 2-b and revision 3-a. Assume that your [CDTConflictResolver
+ resolve:conflicts:] method returns the 2-b revision. The winning revision after this resolution
+ process is now 4-a (3-a will be its parent node). The JSON document body will match revision 2-b. 
+ However, [CDTDatastore attachmentsForRev:error:]4-a will return the attachments associated with 
+ revision 3-a and not for 2-b.
+ 
+ This issue will be resolved soon.
+ 
+ @param docId id of Document to resolve conflicts
+ @param resolver the CDTConflictResolver-conforming object used to resolve conflicts
+ @param error error reporting
+ @return YES/NO depending on success.
+ 
+ @see CDTConflictResolver
  */
-//-(BOOL) resolveConflictsForDocument:(NSString*)docId
-//                           resolver:(NSObject<CDTConflictResolver>*)resolver
-//                              error:(NSError * __autoreleasing *)error;
+-(BOOL) resolveConflictsForDocument:(NSString*)docId
+                           resolver:(NSObject<CDTConflictResolver>*)resolver
+                              error:(NSError * __autoreleasing *)error;
 
 @end

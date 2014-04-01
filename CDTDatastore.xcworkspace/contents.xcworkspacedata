@@ -92,6 +92,12 @@
             location = "group:CDTDatastore+Conflicts.m">
          </FileRef>
          <FileRef
+            location = "group:CDTDatastore+Internal.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Internal.m">
+         </FileRef>
+         <FileRef
             location = "group:CDTConflictResolver.h">
          </FileRef>
          <FileRef
@@ -128,22 +134,6 @@
          <Group
             location = "group:touchdb"
             name = "touchdb">
-            <Group
-               location = "group:ChangeTracker"
-               name = "ChangeTracker">
-               <FileRef
-                  location = "group:TDChangeTracker.h">
-               </FileRef>
-               <FileRef
-                  location = "group:TDChangeTracker.m">
-               </FileRef>
-               <FileRef
-                  location = "group:TDSocketChangeTracker.h">
-               </FileRef>
-               <FileRef
-                  location = "group:TDSocketChangeTracker.m">
-               </FileRef>
-            </Group>
             <FileRef
                location = "group:TD_Attachment.h">
             </FileRef>
@@ -156,6 +146,22 @@
             <FileRef
                location = "group:TD_Body.m">
             </FileRef>
+            <Group
+               location = "group:ChangeTracker"
+               name = "ChangeTracker">
+               <FileRef
+                  location = "group:TDChangeTracker.h">
+               </FileRef>
+               <FileRef
+                  location = "group:TDChangeTracker.m">
+               </FileRef>
+               <FileRef
+                  location = "group:TDSocketChangeTracker.m">
+               </FileRef>
+               <FileRef
+                  location = "group:TDSocketChangeTracker.h">
+               </FileRef>
+            </Group>
             <FileRef
                location = "group:TD_Database+Attachments.h">
             </FileRef>
