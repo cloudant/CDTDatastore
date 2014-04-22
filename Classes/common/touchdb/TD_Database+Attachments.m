@@ -89,7 +89,12 @@
 }
 #endif
 
-
+/**
+ Pulls a "follows" attachment from the writer's pending store
+ into the local blob store, or perhaps the attachment is already
+ in the store, in which case we just fill in the attachment's
+ data.
+ */
 - (TDStatus) installAttachment: (TD_Attachment*)attachment
                        forInfo: (NSDictionary*)attachInfo {
     NSString* digest = $castIf(NSString, attachInfo[@"digest"]);
@@ -126,7 +131,11 @@
     return [_attachments storeBlob: blob creatingKey: outKey];
 }
 
-
+/**
+ All this does is insert the row in the attachments table for the
+ attachment. It should be called when the attachment isn't already
+ present for a previous revision.
+ */
 - (TDStatus) insertAttachment: (TD_Attachment*)attachment
                   forSequence: (SequenceNumber)sequence
                    inDatabase: (FMDatabase*)db
@@ -151,7 +160,14 @@
     return kTDStatusCreated;
 }
 
-
+/**
+ For an attachment that hasn't changed between revisions, we need to
+ copy an existing row into one for this sequence to associate the
+ attachment with this new revision/seq.
+ 
+ This method will return kTDStatusNotFound if there isn't an attachment
+ with the same name for the previous rev/seq.
+ */
 - (TDStatus) copyAttachmentNamed: (NSString*)name
                     fromSequence: (SequenceNumber)fromSequence
                       toSequence: (SequenceNumber)toSequence
@@ -187,7 +203,10 @@
     return result;
 }
 
-
+/**
+ Unzips an attachment data if required (may extend with different
+ encoding possiblities in future.
+ */
 - (NSData*) decodeAttachment: (NSData*)attachment encoding: (TDAttachmentEncoding)encoding {
     switch (encoding) {
         case kTDAttachmentEncodingNone:
@@ -201,7 +220,12 @@
 }
 
 
-/** Returns the location of an attachment's file in the blob store. */
+/** 
+ Returns the path to an attachment's file in the blob store. 
+ 
+ The encoding type kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP
+ is set as an out parameter
+ */
 - (NSString*) getAttachmentPathForSequence: (SequenceNumber)sequence
                                      named: (NSString*)filename
                                       type: (NSString**)outType
@@ -248,7 +272,9 @@
 }
 
 
-/** Returns the content and MIME type of an attachment */
+/** 
+ Returns the content and MIME type of an attachment 
+ */
 - (NSData*) getAttachmentForSequence: (SequenceNumber)sequence
                                named: (NSString*)filename
                                 type: (NSString**)outType
@@ -279,7 +305,13 @@
 }
 
 
-/** Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. */
+/** 
+ Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. 
+ 
+ This generates the dict for a seq because a seq is the autoincrement key
+ in the revs table. So it's basically a quick way to get a given rev. It's
+ a foreign key in the attachments table.
+ */
 - (NSDictionary*) getAttachmentDictForSequence: (SequenceNumber)sequence
                                        options: (TDContentOptions)options
                                     inDatabase: (FMDatabase*)db
@@ -287,10 +319,10 @@
     Assert(sequence > 0);
     __block NSMutableDictionary* attachments;
 
-        FMResultSet* r = [db executeQuery:
-                          @"SELECT filename, key, type, encoding, length, encoded_length, revpos "
-                          "FROM attachments WHERE sequence=?",
-                          @(sequence)];
+    FMResultSet* r = [db executeQuery:
+                      @"SELECT filename, key, type, encoding, length, encoded_length, revpos "
+                      "FROM attachments WHERE sequence=?",
+                      @(sequence)];
     if (!r)
         return nil;
     if (![r next]) {
@@ -347,7 +379,10 @@
     return attachments;
 }
 
-
+/**
+ Return the URL for the location of the file in the blob store for an
+ attachments dict.
+ */
 - (NSURL*) fileForAttachmentDict: (NSDictionary*)attachmentDict
 {
     NSString* digest = attachmentDict[@"digest"];
@@ -458,7 +493,16 @@
     return (error == nil);
 }
 
-
+/**
+ Takes a TD_Revision and inserts the attachments contained
+ in the revision into the attachment blob store and creates
+ TD_Attachment objects representing each object.
+  - inline attachments are saved to the store
+  - follow attachments are given a placeholder TD_Attachment
+  - stubs are given a placeholder TD_Attachment
+ 
+ Returns the list of TD_Attachments derived from the revision.
+ */
 - (NSDictionary*) attachmentsFromRevision: (TD_Revision*)rev
                                    status: (TDStatus*)outStatus
 {
@@ -527,7 +571,14 @@
     return status<300 ? attachments : nil;
 }
 
-
+/**
+ Creates and updates rows in the attachments table for the 
+ given list of attachments, generated for the revision using
+ the -attachmentsFromRevision:status: method in this file.
+ 
+ This is called when the rev has been saved to the revs table,
+ as, of course, the seq number must be from the new rev.
+ */
 - (TDStatus) processAttachments: (NSDictionary*)attachments
                     forRevision: (TD_Revision*)rev
              withParentSequence: (SequenceNumber)parentSequence
