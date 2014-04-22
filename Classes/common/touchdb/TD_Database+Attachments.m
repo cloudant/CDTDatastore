@@ -664,7 +664,7 @@
                                                     deleted: NO];
     if (oldRevID) {
         // Load existing revision if this is a replacement:
-        *outStatus = [self loadRevisionBody: oldRev options: 0];
+        *outStatus = [self loadRevisionBody: oldRev options: 0 database:db];
         if (TDStatusIsError(*outStatus)) {
             if (*outStatus == kTDStatusNotFound && [self existsDocumentWithID: docID revisionID: nil database:db])
                 *outStatus = kTDStatusConflict;   // if some other revision exists, it's a conflict
