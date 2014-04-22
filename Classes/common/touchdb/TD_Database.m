@@ -67,6 +67,8 @@ NSString* const TD_DatabaseWillBeDeletedNotification = @"TD_DatabaseWillBeDelete
 
 @implementation TD_Database
 
+@synthesize fmdbQueue = _fmdbQueue;
+
 
 static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     NSFileManager* fmgr = [NSFileManager defaultManager];

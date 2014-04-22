@@ -21,7 +21,6 @@
 
 @interface TD_Database ()
 @property (readwrite, copy) NSString* name;  // make it settable
-@property (readonly) FMDatabaseQueue* fmdbQueue;
 @property (readonly) TDBlobStore* attachmentStore;
 - (BOOL) openFMDB;
 
