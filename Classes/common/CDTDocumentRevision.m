@@ -21,6 +21,10 @@
 
 @interface CDTDocumentRevision ()
 
+@property (nonatomic,strong,readonly) NSDictionary *attachments;
+@property (nonatomic,strong,readonly) TD_RevisionList *revs;
+@property (nonatomic,strong,readonly) NSArray *revsInfo;
+@property (nonatomic,strong,readonly) NSArray *conflicts;
 
 @end
 
@@ -55,6 +59,11 @@
     return self.td_rev.deleted;
 }
 
+-(SequenceNumber)sequence 
+{
+    return self.td_rev.sequence;
+}
+
 
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {
@@ -85,17 +94,15 @@
     _revs = touch_properties[@"_revs"];
     [touch_properties removeObjectForKey:@"_revs"];
 
-    _localSeq = touch_properties[@"_local_seq"];
-    [touch_properties removeObjectForKey:@"_local_seq"];
-
-    _attachments = touch_properties[@"_attachments"];
-    [touch_properties removeObjectForKey:@"_attachments"];
-
     _revsInfo = touch_properties[@"_revs_info"];
     [touch_properties removeObjectForKey:@"_revs_info"];
 
     _conflicts = touch_properties[@"_conflicts"];
     [touch_properties removeObjectForKey:@"_conflicts"];
+    
+    // Unused properties
+    [touch_properties removeObjectForKey:@"_local_seq"];
+    [touch_properties removeObjectForKey:@"_attachments"];
 
     // return a non-mutable dictionary
     return [NSDictionary dictionaryWithDictionary:touch_properties];
