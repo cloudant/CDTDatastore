@@ -52,7 +52,6 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
  */
 -(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev;
 {
-    
     FMDatabaseQueue *db_queue = self.database.fmdbQueue;
     
     NSMutableArray *attachments = [NSMutableArray array];
@@ -177,7 +176,6 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         return rev;
     }
     
-    NSError *error;
     
     // Attachments are downloaded into the blob store first so
     // that we don't have large inconsistent gaps for the new 
@@ -200,19 +198,34 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         }
     }
     
-    // At present, we create a new rev, then update the attachments behind
-    // its back. This is fine as TouchDB dynamically generates the attachments
+    // At present, we create a new rev, then update the attachments table.
+    // This is fine as TouchDB dynamically generates the attachments
     // dictionary from the attachments table on request.
-    // TODO put in a single transaction
-    CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:rev.documentAsDictionary];
-    CDTDocumentRevision *updated = [self updateDocumentWithId:rev.docId
-                                                      prevRev:rev.revId
-                                                         body:updatedBody
-                                                        error:&error];
     
-    // If any updates fail, the updated document revision ends up
-    // with the same attachments as the previous one.
+    __block CDTDocumentRevision *updated;
+    
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        
+        // The whole transaction fails if:
+        //  - updating the document fails
+        //  - adding any attachment to the attachments table fails
+        // In this case, the db is left consistent.
+        
+        NSError *error;
+        
+        NSDictionary *doc = rev.documentAsDictionary;
+        CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:doc];
+        updated = [self updateDocumentWithId:rev.docId
+                                     prevRev:rev.revId
+                                        body:updatedBody
+                                  inDatabase:db
+                                       error:&error];
+        
+        if (updated == nil) {
+            *rollback = YES;
+            return;
+        }
+        
         BOOL success = YES;
         
         for (NSDictionary *attachmentData in downloadedAttachments) {
@@ -336,21 +349,34 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         return rev;
     }
     
-    NSError *error;
-    
-    // At present, we create a new rev, then update the attachments behind
-    // its back. This is fine at TouchDB dynamically generates the attachments
+    // At present, we create a new rev, then update the attachments table.
+    // This is fine as TouchDB dynamically generates the attachments
     // dictionary from the attachments table on request.
-    // TODO put in a single transaction
-    CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:rev.documentAsDictionary];
-    CDTDocumentRevision *updated = [self updateDocumentWithId:rev.docId
-                                                      prevRev:rev.revId
-                                                         body:updatedBody
-                                                        error:&error];
-    
-    __block BOOL success = YES;
+
+    __block CDTDocumentRevision *updated;
     
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        
+        // The whole transaction fails if:
+        //  - updating the document fails
+        //  - adding any attachment to the attachments table fails
+        // In this case, the db is left consistent.
+        
+        NSDictionary *doc = rev.documentAsDictionary;
+        CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:doc];
+        NSError *error;
+        updated = [self updateDocumentWithId:rev.docId
+                                     prevRev:rev.revId
+                                        body:updatedBody
+                                  inDatabase:db
+                                       error:&error];
+        
+        if (updated == nil) {
+            *rollback = YES;
+            return;
+        }
+        
+        BOOL success = YES;
         
         for (NSString *attachmentName in attachmentNames) {
             // Delete attachment that will have been copied over when
