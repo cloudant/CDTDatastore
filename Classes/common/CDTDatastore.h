@@ -17,6 +17,7 @@
 
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
+@class FMDatabase;
 
 /** NSNotification posted when a document is updated.
  UserInfo keys:
@@ -223,6 +224,17 @@ extern NSString* const CDTDatastoreChangeNotification;
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                    prevRev:(NSString*)prevRev
                                          body:(CDTDocumentBody*)body
+                                        error:(NSError * __autoreleasing *)error;
+
+/*
+ Allow for updateDocumentWithId to partake in a transaction. Useful for
+ internal code, particularly attachments. It's public because otherwise
+ the Attachments category couldn't access it.
+ */
+-(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
+                                      prevRev:(NSString*)prevRev
+                                         body:(CDTDocumentBody*)body
+                                   inDatabase:(FMDatabase*)db
                                         error:(NSError * __autoreleasing *)error;
 
 /**

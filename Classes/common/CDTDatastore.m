@@ -386,6 +386,36 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 
+-(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
+                                      prevRev:(NSString*)prevRev
+                                         body:(CDTDocumentBody*)body
+                                   inDatabase:(FMDatabase*)db
+                                        error:(NSError * __autoreleasing *)error
+{
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
+    
+    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
+                                                         revID:nil
+                                                       deleted:NO];
+    revision.body = body.td_body;
+    
+    TDStatus status;
+    TD_Revision *new = [self.database putRevision:revision
+                                   prevRevisionID:prevRev
+                                    allowConflict:NO
+                                           status:&status
+                                         database:db];
+    if (TDStatusIsError(status)) {
+        *error = TDStatusToNSError(status, nil);
+        return nil;
+    }
+    
+    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+}
+
 
 -(CDTDocumentRevision*) deleteDocumentWithId:(NSString*)docId
                                          rev:(NSString*)rev
