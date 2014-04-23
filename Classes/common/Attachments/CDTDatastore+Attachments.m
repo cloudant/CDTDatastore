@@ -187,13 +187,15 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     // for TouchDB clearing up unused attachments (as we don't
     // know at this point whether the files are used by other
     // documents).
+    // We get the sha and file length when we download the attachment
+    // from the input stream in the CDTAttachment object.
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     for (CDTAttachment *attachment in attachments) {
-        NSDictionary *attachmentData = [self streamDataToBlobStore:attachment
-                                                               rev:rev];
+        NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment];
         if (attachmentData != nil) {
             [downloadedAttachments addObject:attachmentData];
-        } else {
+        } else {  // Error downloading the attachment, bail
+            // TODO warn, though a warning should have been issued down the stack
             return nil;
         }
     }
@@ -208,9 +210,18 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
                                                          body:updatedBody
                                                         error:&error];
     
-    for (NSDictionary *attachmentData in downloadedAttachments) {
-        [self addAttachment:attachmentData toRev:updated];
-    }
+    // If any updates fail, the updated document revision ends up
+    // with the same attachments as the previous one.
+    [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        BOOL success = YES;
+        
+        for (NSDictionary *attachmentData in downloadedAttachments) {
+            success = success && [self addAttachment:attachmentData toRev:updated inDatabase:db];
+            if (!success) { break; }
+        }
+        
+        *rollback = !success;
+    }];
     
     return updated;
 }
@@ -220,7 +231,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
  Returns nil if there was a problem, otherwise a dictionary
  with the sha and size of the file.
  */
--(NSDictionary*)streamDataToBlobStore:(CDTAttachment*)attachment rev:(CDTDocumentRevision*)revision
+-(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment 
 {
     TDBlobKey outKey;
     NSInteger outFileLength;
@@ -244,7 +255,9 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     return attachmentData;
 }
 
--(bool) addAttachment:(NSDictionary*)attachmentData toRev:(CDTDocumentRevision*)revision
+-(BOOL) addAttachment:(NSDictionary*)attachmentData 
+                toRev:(CDTDocumentRevision*)revision
+           inDatabase:(FMDatabase*)db
 {
     // do it this way to only go thru inputstream once
     // * write to temp location using copyinputstreamtofile
@@ -273,36 +286,30 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     TDAttachmentEncoding encoding = kTDAttachmentEncodingNone; // from a raw input stream
     unsigned generation = [TD_Revision generationFromRevID:revision.revId];
         
-    [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        
-        // TODO Log failures
-        
-        NSDictionary *params;
-        
-        // delete any existing entry for this file and sequence combo
-        params = @{@"filename": filename, @"sequence": @(sequence)};
-        success = [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] withParameterDictionary:params];
-        
-        if (!success) {
-            *rollback = YES;
-            return;
-        }
-        
-        params = @{@"sequence": @(sequence),
-                   @"filename": filename,
-                   @"key": keyData,  // how TDDatabase+Attachments does it
-                   @"type": type,
-                   @"encoding": @(encoding),
-                   @"length": fileLength,
-                   @"encoded_length": fileLength,  // we don't zip, so same as length, see TDDatabase+Atts
-                   @"revpos": @(generation),
-                   };
-        
-        // insert new record
-        success = [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
-        
-        *rollback = !success;
-    }];
+    // TODO Log failures
+    
+    NSDictionary *params;
+    
+    // delete any existing entry for this file and sequence combo
+    params = @{@"filename": filename, @"sequence": @(sequence)};
+    success = [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] withParameterDictionary:params];
+    
+    if (!success) {
+        return NO;
+    }
+    
+    params = @{@"sequence": @(sequence),
+               @"filename": filename,
+               @"key": keyData,  // how TDDatabase+Attachments does it
+               @"type": type,
+               @"encoding": @(encoding),
+               @"length": fileLength,
+               @"encoded_length": fileLength,  // we don't zip, so same as length, see TDDatabase+Atts
+               @"revpos": @(generation),
+               };
+    
+    // insert new record
+    success = [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
     
     // We don't remove the blob from the store on !success because
     // it could be referenced from another attachment (as files are
