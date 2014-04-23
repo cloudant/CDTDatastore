@@ -179,8 +179,27 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     
     NSError *error;
     
+    // Attachments are downloaded into the blob store first so
+    // that we don't have large inconsistent gaps for the new 
+    // rev where GETs return the new rev, but it's attachments
+    // are still being set up.
+    // We just return nil as we have to rely on the GC/compact
+    // for TouchDB clearing up unused attachments (as we don't
+    // know at this point whether the files are used by other
+    // documents).
+    NSMutableArray *downloadedAttachments = [NSMutableArray array];
+    for (CDTAttachment *attachment in attachments) {
+        NSDictionary *attachmentData = [self streamDataToBlobStore:attachment
+                                                               rev:rev];
+        if (attachmentData != nil) {
+            [downloadedAttachments addObject:attachmentData];
+        } else {
+            return nil;
+        }
+    }
+    
     // At present, we create a new rev, then update the attachments behind
-    // its back. This is fine at TouchDB dynamically generates the attachments
+    // its back. This is fine as TouchDB dynamically generates the attachments
     // dictionary from the attachments table on request.
     // TODO put in a single transaction
     CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:rev.documentAsDictionary];
@@ -189,14 +208,43 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
                                                          body:updatedBody
                                                         error:&error];
     
-    for (CDTAttachment *attachment in attachments) {
-        [self addAttachment:attachment rev:updated];
+    for (NSDictionary *attachmentData in downloadedAttachments) {
+        [self addAttachment:attachmentData toRev:updated];
     }
     
     return updated;
 }
 
--(bool) addAttachment:(CDTAttachment*)attachment rev:(CDTDocumentRevision*)revision
+/**
+ Streams attachment data into a blob in the blob store.
+ Returns nil if there was a problem, otherwise a dictionary
+ with the sha and size of the file.
+ */
+-(NSDictionary*)streamDataToBlobStore:(CDTAttachment*)attachment rev:(CDTDocumentRevision*)revision
+{
+    TDBlobKey outKey;
+    NSInteger outFileLength;
+    NSInputStream *is = [attachment getInputStream];
+    [is open];
+    BOOL success = [self.database.attachmentStore storeBlobFromStream:is
+                                                     creatingKey:&outKey
+                                                      fileLength:&outFileLength];
+    [is close];
+    
+    if (!success) {
+        // TODO Log
+        return nil;
+    }
+    
+    NSData* keyData = [NSData dataWithBytes:&outKey length:sizeof(TDBlobKey)];
+    
+    NSDictionary *attachmentData = @{@"attachment": attachment,
+                                     @"keyData": keyData,
+                                     @"fileLength": @(outFileLength)};
+    return attachmentData;
+}
+
+-(bool) addAttachment:(NSDictionary*)attachmentData toRev:(CDTDocumentRevision*)revision
 {
     // do it this way to only go thru inputstream once
     // * write to temp location using copyinputstreamtofile
@@ -204,24 +252,15 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     // * stick it into database
     // * move file using sha1 as name
     
-    __block BOOL success;
-    
-    //
-    // Download the file from the stream into the blob store
-    //
-    TDBlobKey outKey;
-    NSInteger outFileLength;
-    NSInputStream *is = [attachment getInputStream];
-    [is open];
-    success = [self.database.attachmentStore storeBlobFromStream:is
-                                                     creatingKey:&outKey
-                                                      fileLength:&outFileLength];
-    [is close];
-    
-    if (!success) {
-        // TODO Log
+    if (attachmentData == nil) {
         return NO;
     }
+    
+    NSData *keyData = attachmentData[@"keyData"];
+    NSNumber *fileLength = attachmentData[@"fileLength"];
+    CDTAttachment *attachment = attachmentData[@"attachment"];
+    
+    __block BOOL success;
     
     //
     // Create appropriate rows in the attachments table
@@ -249,15 +288,13 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
             return;
         }
         
-        NSData* keyData = [NSData dataWithBytes:&outKey length: sizeof(TDBlobKey)];
-        
         params = @{@"sequence": @(sequence),
                    @"filename": filename,
                    @"key": keyData,  // how TDDatabase+Attachments does it
                    @"type": type,
                    @"encoding": @(encoding),
-                   @"length": @(outFileLength),
-                   @"encoded_length": @(outFileLength),  // we don't zip, so same as length, see TDDatabase+Atts
+                   @"length": fileLength,
+                   @"encoded_length": fileLength,  // we don't zip, so same as length, see TDDatabase+Atts
                    @"revpos": @(generation),
                    };
         

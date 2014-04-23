@@ -233,7 +233,7 @@
                             ofItemAtPath:finalPath
                                    error:&error];
     if (!attrSuccess) {  // don't fail on this
-        Warn(@"TDBlobStore: Couldn't set file protection on %@: %@", finalPath, error);
+        Warn(@"TDBlobStore: Non-fatal, couldn't set file protection on %@: %@", finalPath, error);
     }
 #endif
     
