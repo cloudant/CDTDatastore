@@ -44,7 +44,7 @@
  existing on the document which are not included in
  `attachments` will remain as attachments on the document.
 
- @return New revision.
+ @return New revision, or nil on error.
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
                                    forRev:(CDTDocumentRevision*)rev;

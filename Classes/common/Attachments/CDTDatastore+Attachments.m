@@ -166,7 +166,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
  existing on the document which are not included in
  `attachments` will remain as attachments on the document.
  
- @return New revision.
+ @return New revision, or nil on error.
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
                                    forRev:(CDTDocumentRevision*)rev
@@ -176,15 +176,16 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         return rev;
     }
     
-    
     // Attachments are downloaded into the blob store first so
-    // that we don't have large inconsistent gaps for the new 
-    // rev where GETs return the new rev, but it's attachments
-    // are still being set up.
-    // We just return nil as we have to rely on the GC/compact
-    // for TouchDB clearing up unused attachments (as we don't
-    // know at this point whether the files are used by other
-    // documents).
+    // we're not sitting in a db transaction when we are downloading
+    // them.
+    // If any attachments fail to download, we return nil to
+    // indicate that we couldn't create a new revision. TouchDB's
+    // -conpact function will tidy up old revs, attachments and
+    // unused attachments for us (and a file could conceivably
+    // be an attachment on more than one document as a given 
+    // data blob is shared across all documents that use it
+    // as an attachment.
     // We get the sha and file length when we download the attachment
     // from the input stream in the CDTAttachment object.
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
@@ -239,7 +240,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     return updated;
 }
 
-/**
+/*
  Streams attachment data into a blob in the blob store.
  Returns nil if there was a problem, otherwise a dictionary
  with the sha and size of the file.
@@ -268,6 +269,11 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     return attachmentData;
 }
 
+/*
+ Add the row in the attachments table for a given attachment.
+ The attachments dict should store the attachments CDTAttachment
+ object, its length and its sha key.
+ */
 -(BOOL) addAttachment:(NSDictionary*)attachmentData 
                 toRev:(CDTDocumentRevision*)revision
            inDatabase:(FMDatabase*)db
@@ -339,7 +345,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
  @param rev rev to update.
  @param names NSArray of NSStrings, each being an attachment name
  to remove
- @return New revision.
+ @return New revision, or nil if we failed to remove attachments.
  */
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
                                   fromRev:(CDTDocumentRevision*)rev
