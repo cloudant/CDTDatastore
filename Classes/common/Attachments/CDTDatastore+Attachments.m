@@ -206,32 +206,26 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     
     __block BOOL success;
     
-    // Pull the file in from the attachment object into a temp dir
-    NSString *path = [self pathForTemporaryFileWithPrefix:attachment.name];
+    //
+    // Download the file from the stream into the blob store
+    //
+    TDBlobKey outKey;
+    NSInteger outFileLength;
     NSInputStream *is = [attachment getInputStream];
     [is open];
-    NSInteger fileLength = [self writeStream:is toPath:path];
+    success = [self.database.attachmentStore storeBlobFromStream:is
+                                                     creatingKey:&outKey
+                                                      fileLength:&outFileLength];
     [is close];
-    
-    success = (fileLength > 0);
-    if (!success) {  // i.e., we couldn't read the stream
-        // TODO Log
-        return NO;
-    }
-    
-    // Move the file from a temp file to the blob store
-    // TODO we could do this more efficiently, without loading the file again
-    NSData  *fileData = [NSData dataWithContentsOfFile:path];
-    TDBlobKey outKey;
-    success = [self.database.attachmentStore storeBlob:fileData creatingKey:&outKey];
-    
-    // TODO delete the file regardless as we don't need to keep it around
-    NSLog(@"path to tmp attachment: %@", path);
     
     if (!success) {
         // TODO Log
         return NO;
     }
+    
+    //
+    // Create appropriate rows in the attachments table
+    //
     
     // Insert rows for the new attachment into the attachments database
     SequenceNumber sequence = revision.sequence;
@@ -262,8 +256,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
                    @"key": keyData,  // how TDDatabase+Attachments does it
                    @"type": type,
                    @"encoding": @(encoding),
-                   @"length": @(fileLength),
-                   @"encoded_length": @(fileLength),  // we don't zip, so same as length, see TDDatabase+Atts
+                   @"length": @(outFileLength),
+                   @"encoded_length": @(outFileLength),  // we don't zip, so same as length, see TDDatabase+Atts
                    @"revpos": @(generation),
                    };
         
@@ -278,59 +272,6 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
     // only stored once per sha1 of file data).
     
     return success;
-}
-
-/**
- Write a stream to a file.
- 
- @param is the input stream to read file content from
- @param outputPath file to write to. It will be overwritten.
- 
- @return the number of bytes read from the input stream
- */
-- (NSInteger) writeStream:(NSInputStream*)is toPath:(NSString*)outputPath {
-    uint8_t buf[4096];
-    int bufSize = 4096;
-    NSInteger len, totalLength = 0;
-    
-    NSOutputStream *oStream = [[NSOutputStream alloc] initToFileAtPath:outputPath append:NO];
-    [oStream open];
-    
-    while ([is hasBytesAvailable]) {
-        if ([oStream hasSpaceAvailable]) {
-            len = [is read:buf maxLength:bufSize];
-            if (len > 0) {
-                [oStream write:buf maxLength:len];
-                totalLength += len;
-            }
-        }
-    }
-    
-    [oStream close];
-    
-    return totalLength;
-}
-
-- (NSString *) pathForTemporaryFileWithPrefix:(NSString *)prefix
-{
-    NSString *  result;
-    CFUUIDRef   uuid;
-    CFStringRef uuidStr;
-    
-    uuid = CFUUIDCreate(NULL);
-    assert(uuid != NULL);
-    
-    uuidStr = CFUUIDCreateString(NULL, uuid);
-    assert(uuidStr != NULL);
-    
-    NSString *filename = [NSString stringWithFormat:@"%@-%@", prefix, uuidStr];
-    result = [NSTemporaryDirectory() stringByAppendingPathComponent:filename];
-    assert(result != nil);
-    
-    CFRelease(uuidStr);
-    CFRelease(uuid);
-    
-    return result;
 }
 
 #pragma mark Deleting attachments

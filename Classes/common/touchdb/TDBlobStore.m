@@ -140,6 +140,106 @@
     return YES;
 }
 
+- (BOOL) storeBlobFromStream: (NSInputStream*)inputStream
+                 creatingKey: (TDBlobKey*)outKey
+                  fileLength: (NSInteger*)outFileLength
+{
+    if ([inputStream streamStatus] != NSStreamStatusOpen) {
+        Warn(@"TDBlobStore: inputStream must be opened before calling storeBlobFromStream:creatingKey:fileLength");
+        return NO;
+    }
+    
+    // Open a temporary file in the store's temporary directory
+    NSString* filename = [TDCreateUUID() stringByAppendingPathExtension: @"blobtmp"];
+    NSString* tmpPath = [[self.tempDir stringByAppendingPathComponent: filename] copy];
+    if (!tmpPath) {
+        return NO;
+    }
+    
+    // write to the temp file, sha-ing as we go
+    uint8_t buf[4096];
+    int bufSize = 4096;
+    NSInteger bytesRead, totalLength = 0;
+    BOOL errorWritingFileFromStream = NO;
+    
+    NSOutputStream *oStream = [[NSOutputStream alloc] initToFileAtPath:tmpPath append:NO];
+    [oStream open];
+    
+    CC_SHA1_CTX ctx;
+    CC_SHA1_Init(&ctx);
+    
+    while ([inputStream hasBytesAvailable]) {
+        if ([oStream hasSpaceAvailable]) {
+            bytesRead = [inputStream read:buf maxLength:bufSize];
+            if (bytesRead > 0) {
+                [oStream write:buf maxLength:bytesRead];
+                CC_SHA1_Update(&ctx, buf, (CC_LONG)bytesRead); // len max is 4096, safe to lose precision
+                totalLength += bytesRead;
+            }
+        } else {
+            // Disk ran out of space
+            Warn(@"TDBlobStore: Couldn't write to %@: no space left on destination device", tmpPath);
+            errorWritingFileFromStream = YES;
+            break;
+        }
+    }
+    
+    CC_SHA1_Final((*outKey).bytes, &ctx);
+    
+    [oStream close];
+    oStream = nil;
+    
+    *outFileLength = totalLength;
+    
+    //
+    // Move the downloaded file to the right place
+    //
+    
+    NSFileManager* fm = [NSFileManager defaultManager];
+    NSError* error;
+    
+    void (^removeTmpFile)(void) = ^{ 
+        NSError* error;
+        if (![fm removeItemAtPath:tmpPath error:&error]) {
+            Warn(@"TDBlobStore: remove temp file at %@: %@", tmpPath, error);
+        } 
+    };
+    
+    if (errorWritingFileFromStream) {
+        removeTmpFile();
+        return NO;
+    }
+    
+    // move to the right place
+    NSString* finalPath = [self pathForKey: *outKey];
+    
+    if ([fm isReadableFileAtPath: finalPath]) {  // we already have this file
+        removeTmpFile();
+        return YES;
+    }
+    
+    BOOL moveSuccess = [fm moveItemAtPath:tmpPath
+                                   toPath:finalPath
+                                    error:&error];
+    if (!moveSuccess) {
+        Warn(@"TDBlobStore: Couldn't move from %@ to %@: %@", tmpPath, finalPath, error);
+        removeTmpFile();
+        return NO;
+    }
+    
+#if TARGET_OS_IPHONE
+    NSDictionary* attrs = @{ NSFileProtectionKey: NSFileProtectionCompleteUnlessOpen };
+    BOOL attrSuccess = [fm setAttributes:attrs
+                            ofItemAtPath:finalPath
+                                   error:&error];
+    if (!attrSuccess) {  // don't fail on this
+        Warn(@"TDBlobStore: Couldn't set file protection on %@: %@", finalPath, error);
+    }
+#endif
+    
+    return YES;
+}
+
 
 - (NSArray*) allKeys {
     NSArray* blob = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: _path
