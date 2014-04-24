@@ -65,9 +65,9 @@
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     NSData *data = [NSData dataWithContentsOfFile:imagePath];
     
-    CDTAttachment *attachment = [CDTAttachment attachmentWithData:data
-                                                             name:attachmentName 
-                                                             type:@"image/jpg"];
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName 
+                                                                          type:@"image/jpg"];
     
     CDTDocumentRevision *rev3 = [self.datastore updateAttachments:@[attachment]
                                                            forRev:rev2];
@@ -91,9 +91,9 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
-    CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
-                                                                name:@"bonsai-boston" 
-                                                                type:@"image/jpg"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:imageData
+                                                                             name:@"bonsai-boston" 
+                                                                             type:@"image/jpg"];
     rev = [self.datastore updateAttachments:@[imgAttachment]
                                      forRev:rev];
     
@@ -125,12 +125,12 @@
     
     // Add the first attachments
     
-    CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
-                                                                name:@"bonsai-boston" 
-                                                                type:@"image/jpg"];
-    CDTAttachment *txtAttachment = [CDTAttachment attachmentWithData:txtData
-                                                                name:@"lorem" 
-                                                                type:@"text/plain"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:imageData
+                                                                             name:@"bonsai-boston" 
+                                                                             type:@"image/jpg"];
+    CDTAttachment *txtAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:txtData
+                                                                             name:@"lorem"  
+                                                                             type:@"text/plain"];
     
     rev = [self.datastore updateAttachments:@[imgAttachment, txtAttachment]
                                      forRev:rev];
@@ -140,9 +140,9 @@
     
     // Add a third attachment
     
-    CDTAttachment *txtAttachment2 = [CDTAttachment attachmentWithData:txtData
-                                                                name:@"lorem2" 
-                                                                type:@"text/plain"];
+    CDTAttachment *txtAttachment2 = [[CDTUnsavedDataAttachment alloc] initWithData:txtData
+                                                                              name:@"lorem2"  
+                                                                              type:@"text/plain"];
     rev = [self.datastore updateAttachments:@[txtAttachment2]
                                      forRev:rev];
     
@@ -185,17 +185,17 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
-    CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
-                                                                name:@"bonsai-boston" 
-                                                                type:@"image/jpg"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:imageData
+                                                                             name:@"bonsai-boston" 
+                                                                             type:@"image/jpg"];
     rev = [self.datastore updateAttachments:@[imgAttachment]
                                      forRev:rev];
     
     NSString *txtPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
     NSData *txtData = [NSData dataWithContentsOfFile:txtPath];
-    CDTAttachment *txtAttachment = [CDTAttachment attachmentWithData:txtData
-                                                                name:@"lorem" 
-                                                                type:@"text/plain"];
+    CDTAttachment *txtAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:txtData
+                                                                             name:@"lorem"  
+                                                                             type:@"text/plain"];
     rev = [self.datastore updateAttachments:@[txtAttachment]
                                      forRev:rev];
     
@@ -236,11 +236,11 @@
     
     NSData *inputMD5 = [self MD5:data];
     
-    CDTAttachment *attachment = [CDTAttachment attachmentWithData:data
-                                                             name:attachmentName 
-                                                             type:@"image/jpg"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                             name:attachmentName 
+                                                                             type:@"image/jpg"];
     
-    CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[attachment]
+    CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[imgAttachment]
                                                            forRev:rev1];
     
     NSArray *attachments = [self.datastore attachmentsForRev:rev2];
@@ -275,11 +275,11 @@
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     data = [NSData dataWithContentsOfFile:imagePath];
     
-    CDTAttachment *attachment = [CDTAttachment attachmentWithData:data
-                                                             name:attachmentName 
-                                                             type:@"image/jpg"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                             name:attachmentName 
+                                                                             type:@"image/jpg"];
     
-    CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[attachment]
+    CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[imgAttachment]
                                                            forRev:rev1];
     
     //
@@ -287,10 +287,9 @@
     //
     NSString *txtPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
     data = [NSData dataWithContentsOfFile:txtPath];
-    
-    CDTAttachment *attachment2 = [CDTAttachment attachmentWithData:data
-                                                             name:attachmentName 
-                                                              type:@"text/plain"];
+    CDTAttachment *attachment2 = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                           name:attachmentName 
+                                                                           type:@"text/plain"];
     
     NSData *inputMD5 = [self MD5:data];
     
@@ -324,9 +323,9 @@
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     data = [NSData dataWithContentsOfFile:imagePath];
     
-    CDTAttachment *attachment = [CDTAttachment attachmentWithData:data
-                                                             name:attachmentName 
-                                                             type:@"image/jpg"];
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName 
+                                                                          type:@"image/jpg"];
     
     CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[attachment]
                                                            forRev:rev1];

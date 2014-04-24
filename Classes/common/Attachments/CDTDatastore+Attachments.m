@@ -151,13 +151,16 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
     
     NSString *filePath = [self.database.attachmentStore pathForKey: *(TDBlobKey*)keyData.bytes];
     
-    CDTSavedAttachment *attachment = [[CDTSavedAttachment alloc] initWithFilePath:filePath];
-    attachment.name = name;
-    attachment.type = [r stringForColumn:@"type"];
-    attachment.size = [r longForColumn:@"length"];
-    attachment.revpos = [r longForColumn:@"revpos"];
-    attachment.sequence = [r longForColumn:@"sequence"];
-    attachment.key = keyData;
+    NSString *type = [r stringForColumn:@"type"];
+    NSInteger size = [r longForColumn:@"length"];
+    NSInteger revpos = [r longForColumn:@"revpos"];
+    CDTSavedAttachment *attachment = [[CDTSavedAttachment alloc] initWithPath:filePath
+                                                                         name:name
+                                                                         type:type
+                                                                         size:size
+                                                                       revpos:revpos
+                                                                     sequence:sequence
+                                                                          key:keyData];
     
     return attachment;
 }

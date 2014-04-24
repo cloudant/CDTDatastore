@@ -18,24 +18,37 @@
 
 /**
  Base class for attachments in the datastore.
+ 
+ This object is an abstract class, in use at least. Attachments
+ that are read from the database will always be CDTSavedAttachment
+ objects, indicating that they've come from the database.
+ Attachments to be added to the database will be objects of type,
+ by naming convention alone, CDTUnsaved<something>Attachment.
+ 
+ The idea is that unsaved attachments can come from various places,
+ and developers using this library can subclass CDTAttachment,
+ implementing the -getInputStream method as needed for their
+ needs. The library provides some unsaved attachment classes
+ for convenience and as examples:
+ 
+   - CDTUnsavedDataAttachment: provides a wrapped around an
+       NSData instance to be added as an attachment.
+ 
+ 
  */
 @interface CDTAttachment : NSObject
 
 // common
-@property (nonatomic,strong) NSString* name;
+@property (nonatomic,strong,readonly) NSString* name;
 
 /** Mimetype string */
-@property (nonatomic,strong) NSString* type;
+@property (nonatomic,strong,readonly) NSString* type;
 
 /* Size in bytes, may be -1 if not known (e.g., HTTP URL for new attachment) */
-@property (nonatomic) NSInteger size;
+@property (nonatomic,readonly) NSInteger size;
 
-// get stream for file, caller must close() when done
+/** Get unopened input stream for this attachment */
 -(NSInputStream*) getInputStream;
-
-+(CDTAttachment*)attachmentWithData:(NSData*)data
-                               name:(NSString*)name
-                               type:(NSString*)type;
 
 @end
 
@@ -47,26 +60,39 @@
  */
 @interface CDTSavedAttachment : CDTAttachment
 
-@property (nonatomic) NSInteger revpos;
-@property (nonatomic) NSInteger sequence;
+@property (nonatomic,readonly) NSInteger revpos;
+@property (nonatomic,readonly) NSInteger sequence;
 
 /** sha of file, used for file path on disk. */
-@property (nonatomic) NSData* key;
+@property (nonatomic,readonly) NSData* key;
 
--initWithFilePath:(NSString*)filePath;
+/** 
+ Private constructor passed the path to the blob in the
+ blob store. 
+ */
+-(instancetype) initWithPath:(NSString*)filePath
+                        name:(NSString*)name
+                        type:(NSString*)type
+                        size:(NSInteger)size
+                      revpos:(NSInteger)revpos
+                    sequence:(NSInteger)sequence
+                         key:(NSData*)keyData;
 
 @end
 
 /**
- An attachment to be inserted into the database.
- 
- These attachments are created by application code, usually
- by class methods on CDTAttachment, and are passed to
- the -setAttachments method on CDTDatastore.
+ An attachment to be inserted into the database, using
+ data from an NSData instance as input data for the attachment.
  */
 @interface CDTUnsavedDataAttachment : CDTAttachment
 
-/** For example, TBD exactly what to use. */
-@property (nonatomic,strong) NSData* data;
+/**
+ Create a new unsaved attachment using an NSData instance
+ as the source of attachment data.
+ */
+-(instancetype)initWithData:(NSData*)data
+                       name:(NSString*)name
+                       type:(NSString*)type;
+
 
 @end

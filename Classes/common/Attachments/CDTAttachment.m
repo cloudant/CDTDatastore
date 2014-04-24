@@ -18,22 +18,23 @@
 
 @implementation CDTAttachment
 
+-(instancetype) initWithName:(NSString*)name
+                        type:(NSString*)type
+                        size:(NSInteger)size
+{
+    self = [super init];
+    if (self) {
+        _name = name;
+        _type = type;
+        _size = size;
+    }
+    return self;
+}
+
 -(NSData *)getInputStream
 {
     // subclasses should override
     return nil;
-}
-
-+(CDTAttachment*)attachmentWithData:(NSData*)data
-                               name:(NSString*)name
-                               type:(NSString*)type
-{
-    CDTUnsavedDataAttachment *att = [[CDTUnsavedDataAttachment alloc] init];
-    att.data = data;
-    att.name = name;
-    att.type = type;
-    att.size = data.length;
-    return att;
 }
 
 @end
@@ -47,11 +48,22 @@
 
 @implementation CDTSavedAttachment
 
--(instancetype) initWithFilePath:(NSString*)filePath
+-(instancetype) initWithPath:(NSString*)filePath
+                        name:(NSString*)name
+                        type:(NSString*)type
+                        size:(NSInteger)size
+                      revpos:(NSInteger)revpos
+                    sequence:(NSInteger)sequence
+                         key:(NSData*)keyData
 {
-    self = [super init];
+    self = [super initWithName:name
+                          type:type
+                          size:size];
     if (self) {
         _filePath = filePath;
+        _revpos = revpos;
+        _sequence = sequence;
+        _key = keyData;
     }
     return self;
 }
@@ -63,7 +75,26 @@
 
 @end
 
+@interface CDTUnsavedDataAttachment () 
+
+@property (nonatomic,strong,readonly) NSData* data;
+
+@end
+
 @implementation CDTUnsavedDataAttachment
+
+-(instancetype) initWithData:(NSData*)data
+                        name:(NSString*)name
+                        type:(NSString*)type
+{
+    self = [super initWithName:name
+                          type:type
+                          size:data.length];
+    if (self) {
+        _data = data;
+    }
+    return self;
+}
 
 -(NSInputStream *)getInputStream
 {
@@ -71,3 +102,4 @@
 }
 
 @end
+
