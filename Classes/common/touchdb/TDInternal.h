@@ -77,10 +77,12 @@
 #endif
 - (BOOL) storeBlob: (NSData*)blob creatingKey: (TDBlobKey*)outKey;
 - (TDStatus) insertAttachment: (TD_Attachment*)attachment
-                  forSequence: (SequenceNumber)sequence;
+                  forSequence: (SequenceNumber)sequence
+                   inDatabase: (FMDatabase*)db;
 - (TDStatus) copyAttachmentNamed: (NSString*)name
                     fromSequence: (SequenceNumber)fromSequence
-                      toSequence: (SequenceNumber)toSequence;
+                      toSequence: (SequenceNumber)toSequence
+                      inDatabase: (FMDatabase*)db;
 - (BOOL) inlineFollowingAttachmentsIn: (TD_Revision*)rev error: (NSError**)outError;
 @end
 

@@ -145,7 +145,7 @@
     NSData* keyData = [NSData dataWithBytes: &attachment->blobKey length: sizeof(TDBlobKey)];
     id encodedLengthObj = attachment->encoding ? @(attachment->encodedLength) : nil;
 
-    __block bool success;
+    bool success;
     success = [db executeUpdate: @"INSERT INTO attachments "
                "(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -171,6 +171,7 @@
 - (TDStatus) copyAttachmentNamed: (NSString*)name
                     fromSequence: (SequenceNumber)fromSequence
                       toSequence: (SequenceNumber)toSequence
+                      inDatabase: (FMDatabase*)db
 {
     Assert(name);
     Assert(toSequence > 0);
@@ -178,27 +179,23 @@
     if (fromSequence <= 0)
         return kTDStatusNotFound;
 
-    __block TDStatus result = kTDStatusOK;
+    TDStatus result = kTDStatusOK;
 
-    [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        if (![db executeUpdate: @"INSERT INTO attachments "
-              "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
-              "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
-              "FROM attachments WHERE sequence=? AND filename=?",
-              @(toSequence), name,
-              @(fromSequence), name]) {
-            result = kTDStatusDBError;
-            return;
-        }
-        if (db.changes == 0) {
-            // Oops. This means a glitch in our attachment-management or pull code,
-            // or else a bug in the upstream server.
-            Warn(@"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld",
-                 name, fromSequence, toSequence);
-            result = kTDStatusNotFound;  // Fail if there is no such attachment on fromSequence
-            return;
-        }
-    }];
+    if (![db executeUpdate: @"INSERT INTO attachments "
+          "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
+          "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
+          "FROM attachments WHERE sequence=? AND filename=?",
+          @(toSequence), name,
+          @(fromSequence), name]) {
+        result = kTDStatusDBError;
+    }
+    if (db.changes == 0) {
+        // Oops. This means a glitch in our attachment-management or pull code,
+        // or else a bug in the upstream server.
+        Warn(@"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld",
+             name, fromSequence, toSequence);
+        result = kTDStatusNotFound;  // Fail if there is no such attachment on fromSequence
+    }
 
     return result;
 }
@@ -617,7 +614,8 @@
             //? Should I enforce that the type and digest (if any) match?
             status = [self copyAttachmentNamed: name
                                   fromSequence: parentSequence
-                                    toSequence: newSequence];
+                                    toSequence: newSequence
+                                    inDatabase:db];
         }
         if (TDStatusIsError(status))
             return status;
