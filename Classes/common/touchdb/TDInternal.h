@@ -83,6 +83,9 @@
                     fromSequence: (SequenceNumber)fromSequence
                       toSequence: (SequenceNumber)toSequence
                       inDatabase: (FMDatabase*)db;
+- (TDStatus) copyAttachmentsFromSequence: (SequenceNumber)fromSequence
+                              toSequence: (SequenceNumber)toSequence
+                              inDatabase: (FMDatabase*)db;
 - (BOOL) inlineFollowingAttachmentsIn: (TD_Revision*)rev error: (NSError**)outError;
 @end
 

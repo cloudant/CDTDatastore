@@ -230,11 +230,16 @@ extern NSString* const CDTDatastoreChangeNotification;
  Allow for updateDocumentWithId to partake in a transaction. Useful for
  internal code, particularly attachments. It's public because otherwise
  the Attachments category couldn't access it.
+ 
+ This method modifies multiple tables, so must be called in a transaction.
+ 
+ @return New revision, or nil if the update failed.
  */
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                       prevRev:(NSString*)prevRev
                                          body:(CDTDocumentBody*)body
-                                   inDatabase:(FMDatabase*)db
+                                inTransaction:(FMDatabase*)db
+                                     rollback:(BOOL*)rollback
                                         error:(NSError * __autoreleasing *)error;
 
 /**

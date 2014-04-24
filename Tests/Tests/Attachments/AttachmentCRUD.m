@@ -79,6 +79,34 @@
     STAssertEqualObjects([attachments[0] name], attachmentName, @"Attachment wasn't in document");    
 }
 
+-(void) testUpdatingDocumentRetainsAttachments
+{
+    NSError *error = nil;
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:body
+                                                                error:&error];
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+    CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
+                                                                name:@"bonsai-boston" 
+                                                                type:@"image/jpg"];
+    rev = [self.datastore updateAttachments:@[imgAttachment]
+                                     forRev:rev];
+    
+    rev = [self.datastore updateDocumentWithId:rev.docId
+                                       prevRev:rev.revId
+                                          body:body
+                                         error:&error];
+    
+    NSArray *attachments = [self.datastore attachmentsForRev:rev];
+    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    STAssertEqualObjects([attachments[0] name], @"bonsai-boston", @"Attachment wasn't in document"); 
+}
+
 -(void) testMultipleAttachments
 {
     NSError *error = nil;
@@ -95,6 +123,8 @@
     NSString *txtPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
     NSData *txtData = [NSData dataWithContentsOfFile:txtPath];
     
+    // Add the first attachments
+    
     CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
                                                                 name:@"bonsai-boston" 
                                                                 type:@"image/jpg"];
@@ -104,8 +134,70 @@
     
     rev = [self.datastore updateAttachments:@[imgAttachment, txtAttachment]
                                      forRev:rev];
+    STAssertEquals((NSUInteger)2, 
+                   [[self.datastore attachmentsForRev:rev] count], 
+                   @"Wrong number of attachments");
     
-    STAssertNotNil(rev, @"Updating with a non-empty attachments array gave nil response");
+    // Add a third attachment
+    
+    CDTAttachment *txtAttachment2 = [CDTAttachment attachmentWithData:txtData
+                                                                name:@"lorem2" 
+                                                                type:@"text/plain"];
+    rev = [self.datastore updateAttachments:@[txtAttachment2]
+                                     forRev:rev];
+    
+    NSArray *attachments = [self.datastore attachmentsForRev:rev];
+    STAssertEquals((NSUInteger)3, [attachments count], @"Wrong number of attachments");
+    
+    // Confirm each attachment has the correct data
+    
+    NSArray *expected = @[@[@"bonsai-boston", imageData], 
+                          @[@"lorem", txtData], 
+                          @[@"lorem2", txtData] 
+                          ];
+    for (NSArray *item in expected) {
+        NSString *name = item[0];
+        NSData *data = item[1];
+        
+        NSData *inputMD5 = [self MD5:data];
+        
+        CDTAttachment *retrievedAttachment = [self.datastore attachmentNamed:name
+                                                                      forRev:rev];
+        
+        NSInputStream *stream = [retrievedAttachment getInputStream];
+        [stream open];
+        NSData *retrievedMD5 = [AmazonMD5Util base64md5FromStream:stream];
+        [stream close];
+        
+        STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+    }
+}
+
+-(void) testAddAttachments
+{
+    NSError *error = nil;
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:body
+                                                                error:&error];
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+    CDTAttachment *imgAttachment = [CDTAttachment attachmentWithData:imageData
+                                                                name:@"bonsai-boston" 
+                                                                type:@"image/jpg"];
+    rev = [self.datastore updateAttachments:@[imgAttachment]
+                                     forRev:rev];
+    
+    NSString *txtPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
+    NSData *txtData = [NSData dataWithContentsOfFile:txtPath];
+    CDTAttachment *txtAttachment = [CDTAttachment attachmentWithData:txtData
+                                                                name:@"lorem" 
+                                                                type:@"text/plain"];
+    rev = [self.datastore updateAttachments:@[txtAttachment]
+                                     forRev:rev];
     
     NSArray *attachments = [self.datastore attachmentsForRev:rev];
     STAssertEquals((NSUInteger)2, [attachments count], @"Wrong number of attachments");

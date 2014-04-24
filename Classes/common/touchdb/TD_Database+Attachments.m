@@ -201,6 +201,31 @@
 }
 
 /**
+ Copy all attachments from the old sequence to the new sequence.
+ */
+- (TDStatus) copyAttachmentsFromSequence: (SequenceNumber)fromSequence
+                              toSequence: (SequenceNumber)toSequence
+                              inDatabase: (FMDatabase*)db
+{
+    Assert(toSequence > 0);
+    Assert(toSequence > fromSequence);
+    if (fromSequence <= 0)
+        return kTDStatusNotFound;
+    
+    TDStatus result = kTDStatusOK;
+    
+    if (![db executeUpdate: @"INSERT INTO attachments "
+          "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
+          "SELECT ?, filename, key, type, encoding, encoded_Length, length, revpos "
+          "FROM attachments WHERE sequence=?",
+          @(toSequence), @(fromSequence)]) {
+        result = kTDStatusDBError;
+    }
+    
+    return result;
+}
+
+/**
  Unzips an attachment data if required (may extend with different
  encoding possiblities in future.
  */

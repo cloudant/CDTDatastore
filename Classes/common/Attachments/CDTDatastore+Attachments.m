@@ -219,7 +219,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         updated = [self updateDocumentWithId:rev.docId
                                      prevRev:rev.revId
                                         body:updatedBody
-                                  inDatabase:db
+                               inTransaction:db
+                                    rollback:rollback
                                        error:&error];
         
         if (updated == nil) {
@@ -374,7 +375,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence,
         updated = [self updateDocumentWithId:rev.docId
                                      prevRev:rev.revId
                                         body:updatedBody
-                                  inDatabase:db
+                               inTransaction:db
+                                    rollback:rollback
                                        error:&error];
         
         if (updated == nil) {
