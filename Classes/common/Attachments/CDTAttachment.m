@@ -103,3 +103,31 @@
 
 @end
 
+@interface CDTUnsavedFileAttachment ()
+
+// Used to allow the input stream to be opened.
+@property (nonatomic,strong,readonly) NSString *filePath;
+
+@end
+
+@implementation CDTUnsavedFileAttachment
+
+-(instancetype) initWithPath:(NSString*)filePath
+                        name:(NSString*)name
+                        type:(NSString*)type
+{
+    self = [super initWithName:name
+                          type:type
+                          size:-1];
+    if (self) {
+        _filePath = filePath;
+    }
+    return self;
+}
+
+-(NSInputStream *)getInputStream
+{
+    return [NSInputStream inputStreamWithFileAtPath:self.filePath];
+}
+
+@end

@@ -94,5 +94,17 @@
                        name:(NSString*)name
                        type:(NSString*)type;
 
+@end
+
+
+/**
+ An attachment to be inserted into the database, using
+ data from a file as input data for the attachment.
+ */
+@interface CDTUnsavedFileAttachment : CDTAttachment
+
+-(instancetype) initWithPath:(NSString*)filePath
+                        name:(NSString*)name
+                        type:(NSString*)type;
 
 @end
