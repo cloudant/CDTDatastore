@@ -21,7 +21,7 @@
 @interface CDTDatastore (Attachments)
 
 /**
- Returns the names of attachments for a document revision.
+ Returns the attachments for a document revision.
 
  @return NSArray of CDTAttachment
  */

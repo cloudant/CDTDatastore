@@ -35,13 +35,20 @@
 
 #pragma mark SQL statements
 
-const NSString *SQL_ATTACHMENTS_SELECT = @"SELECT sequence, filename, key, type, encoding, length, encoded_length revpos FROM attachments WHERE filename = :filename AND sequence = :sequence";
+const NSString *SQL_ATTACHMENTS_SELECT = 
+    @"SELECT sequence, filename, key, type, encoding, length, encoded_length revpos "
+    @"FROM attachments WHERE filename = :filename AND sequence = :sequence";
 
-const NSString *SQL_ATTACHMENTS_SELECT_ALL = @"SELECT sequence, filename, key, type, encoding, length, encoded_length revpos FROM attachments WHERE sequence = :sequence";
+const NSString *SQL_ATTACHMENTS_SELECT_ALL = 
+    @"SELECT sequence, filename, key, type, encoding, length, encoded_length revpos "
+    @"FROM attachments WHERE sequence = :sequence";
 
-const NSString *SQL_DELETE_ATTACHMENT_ROW = @"DELETE FROM attachments WHERE filename = :filename AND sequence = :sequence";
+const NSString *SQL_DELETE_ATTACHMENT_ROW = 
+    @"DELETE FROM attachments WHERE filename = :filename AND sequence = :sequence";
 
-const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments (sequence, filename, key, type, encoding, length, encoded_length, revpos) VALUES (:sequence, :filename, :key, :type, :encoding, :length, :encoded_length, :revpos)";
+const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
+    @"(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
+    @"VALUES (:sequence, :filename, :key, :type, :encoding, :length, :encoded_length, :revpos)";
 
 #pragma mark Getting attachments
 
