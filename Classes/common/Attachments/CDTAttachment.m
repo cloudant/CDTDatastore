@@ -41,7 +41,7 @@
 @interface CDTSavedAttachment ()
 
 // Used to allow the input stream to be opened.
-@property (nonatomic,readonly) NSString *filePath;
+@property (nonatomic,strong,readonly) NSString *filePath;
 
 @end
 
