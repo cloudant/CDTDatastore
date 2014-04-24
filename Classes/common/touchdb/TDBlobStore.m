@@ -145,7 +145,8 @@
                   fileLength: (NSInteger*)outFileLength
 {
     if ([inputStream streamStatus] != NSStreamStatusOpen) {
-        Warn(@"TDBlobStore: inputStream must be opened before calling storeBlobFromStream:creatingKey:fileLength");
+        Warn(@"TDBlobStore: inputStream must be opened before calling"
+             @"storeBlobFromStream:creatingKey:fileLength");
         return NO;
     }
     
@@ -173,7 +174,7 @@
             bytesRead = [inputStream read:buf maxLength:bufSize];
             if (bytesRead > 0) {
                 [oStream write:buf maxLength:bytesRead];
-                CC_SHA1_Update(&ctx, buf, (CC_LONG)bytesRead); // len max is 4096, safe to lose precision
+                CC_SHA1_Update(&ctx, buf, (CC_LONG)bytesRead); // max is 4096, safe to lose precision
                 totalLength += bytesRead;
             }
         } else {

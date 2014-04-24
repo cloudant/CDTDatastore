@@ -409,7 +409,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
             params = @{@"filename": attachmentName, @"sequence": @(updated.sequence)};
             
             // insert new record
-            success = success && [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] withParameterDictionary:params];
+            success = success && [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] 
+                           withParameterDictionary:params];
             
             // break and rollback the transaction on a single failure.
             if (!success) { break; }
