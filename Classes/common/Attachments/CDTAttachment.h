@@ -49,6 +49,11 @@
 /* Size in bytes, may be -1 if not known (e.g., HTTP URL for new attachment) */
 @property (nonatomic,readonly) NSInteger size;
 
+/** Subclasses should call this to initialise instance vars */
+-(instancetype) initWithName:(NSString*)name
+                        type:(NSString*)type
+                        size:(NSInteger)size;
+
 /** Get unopened input stream for this attachment */
 -(NSInputStream*) getInputStream;
 
