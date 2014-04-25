@@ -50,6 +50,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
     @"(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
     @"VALUES (:sequence, :filename, :key, :type, :encoding, :length, :encoded_length, :revpos)";
 
+static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
+
 #pragma mark Getting attachments
 
 /**
@@ -57,7 +59,8 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
 
  @return NSArray of CDTAttachment
  */
--(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev;
+-(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
+                        error:(NSError * __autoreleasing *)error;
 {
     FMDatabaseQueue *db_queue = self.database.fmdbQueue;
     
@@ -101,6 +104,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
  */
 -(CDTAttachment*) attachmentNamed:(NSString*)name
                            forRev:(CDTDocumentRevision*)rev
+                            error:(NSError * __autoreleasing *)error
 {
     // pretty simple stuff:
     // pull the row from the attachments table for this
@@ -180,6 +184,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
                                    forRev:(CDTDocumentRevision*)rev
+                                    error:(NSError * __autoreleasing *)error
 {
     if ([attachments count] <= 0) {
         // nothing to do, return existing rev
@@ -200,11 +205,12 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
     // from the input stream in the CDTAttachment object.
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     for (CDTAttachment *attachment in attachments) {
-        NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment];
+        NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
+                                                                   error:error];
         if (attachmentData != nil) {
             [downloadedAttachments addObject:attachmentData];
         } else {  // Error downloading the attachment, bail
-            // TODO warn, though a warning should have been issued down the stack
+            // Appropriate warning logged in -stream..., also sets error arg.
             return nil;
         }
     }
@@ -222,8 +228,6 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
         //  - adding any attachment to the attachments table fails
         // In this case, the db is left consistent.
         
-        NSError *error;
-        
         NSDictionary *doc = rev.documentAsDictionary;
         CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:doc];
         updated = [self updateDocumentWithId:rev.docId
@@ -231,9 +235,10 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
                                         body:updatedBody
                                inTransaction:db
                                     rollback:rollback
-                                       error:&error];
+                                       error:error];
         
         if (updated == nil) {
+            // error set by -updateDocumentWithId:...
             *rollback = YES;
             return;
         }
@@ -245,7 +250,20 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
             if (!success) { break; }
         }
         
-        *rollback = !success;
+        if (!success) {
+            *rollback = YES;
+            
+            if (error) {
+                NSString *description = NSLocalizedString(@"Problem updating attachments table.", 
+                                                          nil);
+                NSDictionary *userInfo = @{NSLocalizedDescriptionKey: description};
+                *error = [NSError errorWithDomain:CDTAttachmentsErrorDomain
+                                             code:CDTAttachmentErrorSqlError
+                                         userInfo:userInfo];
+            }
+        } else {
+            *rollback = NO;
+        }
     }];
     
     return updated;
@@ -257,18 +275,20 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
  with the sha and size of the file.
  */
 -(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment 
+                                      error:(NSError * __autoreleasing *)error
 {
     TDBlobKey outKey;
     NSInteger outFileLength;
     NSInputStream *is = [attachment getInputStream];
     [is open];
     BOOL success = [self.database.attachmentStore storeBlobFromStream:is
-                                                     creatingKey:&outKey
-                                                      fileLength:&outFileLength];
+                                                          creatingKey:&outKey
+                                                           fileLength:&outFileLength
+                                                                error:error];
     [is close];
     
     if (!success) {
-        // TODO Log
+        // -storeBlobFromStream:... logs for us
         return nil;
     }
     
@@ -360,6 +380,7 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
  */
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
                                   fromRev:(CDTDocumentRevision*)rev
+                                    error:(NSError * __autoreleasing *)error
 {
     if ([attachmentNames count] <= 0) {
         // nothing to do, return existing rev
@@ -381,15 +402,15 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
         
         NSDictionary *doc = rev.documentAsDictionary;
         CDTDocumentBody *updatedBody = [[CDTDocumentBody alloc] initWithDictionary:doc];
-        NSError *error;
         updated = [self updateDocumentWithId:rev.docId
                                      prevRev:rev.revId
                                         body:updatedBody
                                inTransaction:db
                                     rollback:rollback
-                                       error:&error];
+                                       error:error];
         
         if (updated == nil) {
+            // error set by -updateDocumentWithId:...
             *rollback = YES;
             return;
         }
@@ -419,7 +440,20 @@ const NSString *SQL_INSERT_ATTACHMENT_ROW = @"INSERT INTO attachments "
             if (!success) { break; }
         }
         
-        *rollback = !success;
+        if (!success) {
+            *rollback = YES;
+            
+            if (error) {
+                NSString *description = NSLocalizedString(@"Problem updating attachments table.", 
+                                                          nil);
+                NSDictionary *userInfo = @{NSLocalizedDescriptionKey: description};
+                *error = [NSError errorWithDomain:CDTAttachmentsErrorDomain
+                                             code:CDTAttachmentErrorSqlError
+                                         userInfo:userInfo];
+            }
+        } else {
+            *rollback = NO;
+        }
         
     }];
     

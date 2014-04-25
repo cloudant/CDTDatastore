@@ -87,6 +87,10 @@
                         name:(NSString*)name
                         type:(NSString*)type
 {
+    if (data ==nil) {
+        return nil;
+    }
+    
     self = [super initWithName:name
                           type:type
                           size:data.length];
@@ -116,6 +120,11 @@
                         name:(NSString*)name
                         type:(NSString*)type
 {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:filePath]) {
+        return nil;
+    }
+    
     self = [super initWithName:name
                           type:type
                           size:-1];
@@ -127,6 +136,11 @@
 
 -(NSInputStream *)getInputStream
 {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:self.filePath]) {
+        return nil;
+    }
+    
     return [NSInputStream inputStreamWithFileAtPath:self.filePath];
 }
 

@@ -59,7 +59,8 @@ typedef struct TDBlobKey {
  */
 - (BOOL) storeBlobFromStream: (NSInputStream*)stream
                  creatingKey: (TDBlobKey*)outKey
-                  fileLength: (NSInteger*)outFileLength;
+                  fileLength: (NSInteger*)outFileLength
+                       error:(NSError * __autoreleasing *)error;
 
 @property (readonly) NSString* path;
 @property (readonly) NSUInteger count;

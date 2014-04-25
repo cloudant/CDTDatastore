@@ -18,6 +18,8 @@
 #import "TDMisc.h"
 #import <ctype.h>
 
+#import "TDStatus.h"
+
 
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
@@ -143,10 +145,21 @@
 - (BOOL) storeBlobFromStream: (NSInputStream*)inputStream
                  creatingKey: (TDBlobKey*)outKey
                   fileLength: (NSInteger*)outFileLength
+                       error:(NSError * __autoreleasing *)outError
 {
     if ([inputStream streamStatus] != NSStreamStatusOpen) {
         Warn(@"TDBlobStore: inputStream must be opened before calling"
              @"storeBlobFromStream:creatingKey:fileLength");
+        
+        if (outError) {
+            NSString *desc = NSLocalizedString(@"Input stream not open.", 
+                                               nil);
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: desc};
+            *outError = [NSError errorWithDomain:TDHTTPErrorDomain
+                                            code:kTDStatusAttachmentStreamError
+                                        userInfo:userInfo];
+        }
+        
         return NO;
     }
     
@@ -181,6 +194,16 @@
             // Disk ran out of space
             Warn(@"TDBlobStore: Couldn't write to %@: no space left on destination device", tmpPath);
             errorWritingFileFromStream = YES;
+            
+            if (outError) {
+                NSString *desc = NSLocalizedString(@"Not enough space on disk for attachment.", 
+                                                   nil);
+                NSDictionary *userInfo = @{NSLocalizedDescriptionKey: desc};
+                *outError = [NSError errorWithDomain:TDHTTPErrorDomain
+                                                code:kTDStatusAttachmentDiskSpaceError
+                                            userInfo:userInfo];
+            }
+            
             break;
         }
     }
@@ -197,9 +220,9 @@
     //
     
     NSFileManager* fm = [NSFileManager defaultManager];
-    NSError* error;
     
     void (^removeTmpFile)(void) = ^{ 
+        // Non-fatal so we don't return the error
         NSError* error;
         if (![fm removeItemAtPath:tmpPath error:&error]) {
             Warn(@"TDBlobStore: remove temp file at %@: %@", tmpPath, error);
@@ -221,9 +244,9 @@
     
     BOOL moveSuccess = [fm moveItemAtPath:tmpPath
                                    toPath:finalPath
-                                    error:&error];
+                                    error:outError];
     if (!moveSuccess) {
-        Warn(@"TDBlobStore: Couldn't move from %@ to %@: %@", tmpPath, finalPath, error);
+        Warn(@"TDBlobStore: Couldn't move from %@ to %@: %@", tmpPath, finalPath, *outError);
         removeTmpFile();
         return NO;
     }
@@ -232,9 +255,10 @@
     NSDictionary* attrs = @{ NSFileProtectionKey: NSFileProtectionCompleteUnlessOpen };
     BOOL attrSuccess = [fm setAttributes:attrs
                             ofItemAtPath:finalPath
-                                   error:&error];
+                                   error:outError];
     if (!attrSuccess) {  // don't fail on this
-        Warn(@"TDBlobStore: Non-fatal, couldn't set file protection on %@: %@", finalPath, error);
+        Warn(@"TDBlobStore: Non-fatal, couldn't set file protection on %@: %@", 
+             finalPath, *outError);
     }
 #endif
     

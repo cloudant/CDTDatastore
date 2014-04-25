@@ -41,6 +41,9 @@ typedef enum {
     kTDStatusAttachmentError= 592,      // problem with attachment store
     kTDStatusCallbackError  = 593,      // app callback (emit fn, etc.) failed
     kTDStatusException      = 594,      // Exception raised/caught
+    
+    kTDStatusAttachmentStreamError = 701, // Error reading from stream when adding attachment
+    kTDStatusAttachmentDiskSpaceError = 702, // Not enough space on device for attachment
 } TDStatus;
 
 

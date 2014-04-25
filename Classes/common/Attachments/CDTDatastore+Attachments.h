@@ -16,6 +16,29 @@
 
 #import "CDTDatastore.h"
 
+/**
+ * Indexing and query erors.
+ */
+typedef NS_ENUM(NSInteger, CDTAttachmentError) {
+    /**
+     * Index name not valid. Names can only contain letters,
+     * digits and underscores. They must not start with a digit.
+     */
+    CDTAttachmentErrorInvalidAttachmentName = 1,
+    /**
+     * An SQL error occurred.
+     */
+    CDTAttachmentErrorSqlError = 2,
+    /**
+     * No index with this name was found.
+     */
+    CDTAttachmentErrorAttachmentDoesNotExist = 3,
+    /**
+     * Disk space ran out while writing attachment
+     */
+    CDTAttachmentErrorInsufficientSpace = 4
+};
+
 @class CDTAttachment;
 
 @interface CDTDatastore (Attachments)
@@ -25,7 +48,8 @@
 
  @return NSArray of CDTAttachment
  */
--(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev;
+-(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
+                        error:(NSError * __autoreleasing *)error;
 
 /**
  Returns attachment `name` for the revision.
@@ -33,7 +57,8 @@
  @return CDTAttachment or nil no attachment with that name.
  */
 -(CDTAttachment*) attachmentNamed:(NSString*)name
-                           forRev:(CDTDocumentRevision*)rev;
+                           forRev:(CDTDocumentRevision*)rev
+                            error:(NSError * __autoreleasing *)error;
 
 /**
  Set the content of attachments on a document, creating
@@ -47,7 +72,8 @@
  @return New revision, or nil on error.
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
-                                   forRev:(CDTDocumentRevision*)rev;
+                                   forRev:(CDTDocumentRevision*)rev
+                                    error:(NSError * __autoreleasing *)error;
 
 /**
  Remove attachments `names` from a document, creating a new revision.
@@ -58,6 +84,7 @@
  @return New revision.
  */
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
-                                  fromRev:(CDTDocumentRevision*)rev;
+                                  fromRev:(CDTDocumentRevision*)rev
+                                    error:(NSError * __autoreleasing *)error;
 
 @end
