@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "TD_Database.h"
+
 /**
  Base class for attachments in the datastore.
  
@@ -61,7 +63,7 @@
 @interface CDTSavedAttachment : CDTAttachment
 
 @property (nonatomic,readonly) NSInteger revpos;
-@property (nonatomic,readonly) NSInteger sequence;
+@property (nonatomic,readonly) SequenceNumber sequence;
 
 /** sha of file, used for file path on disk. */
 @property (nonatomic,readonly) NSData* key;
@@ -75,7 +77,7 @@
                         type:(NSString*)type
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
-                    sequence:(NSInteger)sequence
+                    sequence:(SequenceNumber)sequence
                          key:(NSData*)keyData;
 
 @end

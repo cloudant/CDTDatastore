@@ -53,7 +53,7 @@
                         type:(NSString*)type
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
-                    sequence:(NSInteger)sequence
+                    sequence:(SequenceNumber)sequence
                          key:(NSData*)keyData
 {
     self = [super initWithName:name
