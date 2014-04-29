@@ -33,7 +33,7 @@ end
 
 desc "Task for travis"
 task :travis do
-#  sh "rake testios"  # xcodebuild fails even if all tests pass
+  sh "rake testios"
   sh "rake testosx"
   sh "pod lib lint"
 end
