@@ -86,6 +86,12 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                 
                 if (attachment != nil) {                
                     [attachments addObject:attachment];
+                } else {
+                    LogTo(CDTDatastore, 
+                          @"Error reading an attachment row for attachments on doc <%@, %@>"
+                          @"Closed connection during read?",
+                          rev.docId,
+                          rev.revId);
                 }
             }
         }
@@ -123,14 +129,31 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         FMResultSet *r = [db executeQuery:[SQL_ATTACHMENTS_SELECT copy] 
                   withParameterDictionary:params];
         
+        int nFound = 0;
         @try {
             // This query should return a single result
             while ([r next]) {
                 attachment = [strongSelf attachmentFromDbRow:r];
+                nFound++;
             }
         }
         @finally {
             [r close];
+        }
+        
+        if (nFound < 1) {
+            LogTo(CDTDatastore, 
+                  @"Couldn't find attachment %@ on doc <%@, %@>",
+                  name,
+                  rev.docId,
+                  rev.revId);
+        }
+        if (nFound > 1) {
+            LogTo(CDTDatastore, 
+                  @">1 attachment for %@ on doc <%@, %@>, indicates corrupted database",
+                  name,
+                  rev.docId,
+                  rev.revId);
         }
     }];
     
@@ -210,7 +233,12 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         if (attachmentData != nil) {
             [downloadedAttachments addObject:attachmentData];
         } else {  // Error downloading the attachment, bail
-            // Appropriate warning logged in -stream..., also sets error arg.
+            // error out variable set by -stream...
+            LogTo(CDTDatastore, 
+                  @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                  attachment.name,
+                  rev.docId,
+                  rev.revId);
             return nil;
         }
     }
@@ -238,7 +266,11 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                                        error:error];
         
         if (updated == nil) {
-            // error set by -updateDocumentWithId:...
+            LogTo(CDTDatastore, 
+                  @"Error updating document ready for updating attachments <%@, %@>, rolling back",
+                  rev.docId,
+                  rev.revId);
+            
             *rollback = YES;
             return;
         }
@@ -247,11 +279,25 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         
         for (NSDictionary *attachmentData in downloadedAttachments) {
             success = success && [self addAttachment:attachmentData toRev:updated inDatabase:db];
-            if (!success) { break; }
+            
+            if (!success) { 
+                CDTAttachment *a = attachmentData[@"attachment"];
+                LogTo(CDTDatastore, 
+                      @"Error adding attachment row to database for %@ for doc <%@, %@>",
+                      a.name,
+                      rev.docId,
+                      rev.revId);
+                break; 
+            }
         }
         
         if (!success) {
             *rollback = YES;
+            
+            LogTo(CDTDatastore, 
+                  @"Error adding attachment rows for doc <%@, %@>, rolling back",
+                  rev.docId,
+                  rev.revId);
             
             if (error) {
                 NSString *description = NSLocalizedString(@"Problem updating attachments table.", 
@@ -329,8 +375,6 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     NSString *type = attachment.type;
     TDAttachmentEncoding encoding = kTDAttachmentEncodingNone; // from a raw input stream
     unsigned generation = [TD_Revision generationFromRevID:revision.revId];
-        
-    // TODO Log failures
     
     NSDictionary *params;
     
@@ -405,6 +449,10 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         
         if (updated == nil) {
             // error set by -updateDocumentWithId:...
+            LogTo(CDTDatastore, 
+                  @"Error updating document ready for removing attachments <%@, %@>, rolling back",
+                  rev.docId,
+                  rev.revId);
             *rollback = YES;
             return;
         }
@@ -419,8 +467,6 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
             // it could be referenced from another attachment (as files are
             // only stored once per sha1 of file data).
             
-            // TODO Log failures
-            
             NSDictionary *params;
             
             // delete any existing entry for this file and sequence combo
@@ -431,13 +477,25 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                            withParameterDictionary:params];
             
             // break and rollback the transaction on a single failure.
-            if (!success) { break; }
+            if (!success) {
+                LogTo(CDTDatastore, 
+                      @"Unable to remove attachment %@ from doc <%@, %@>",
+                      attachmentName,
+                      rev.docId,
+                      rev.revId);
+                break; 
+            }
         }
         
         if (!success) {
             *rollback = YES;
             
             if (error) {
+                LogTo(CDTDatastore, 
+                      @"Error removing attachments from <%@, %@>, rolling back",
+                      rev.docId,
+                      rev.revId);
+                
                 NSString *description = NSLocalizedString(@"Problem updating attachments table.", 
                                                           nil);
                 NSDictionary *userInfo = @{NSLocalizedDescriptionKey: description};

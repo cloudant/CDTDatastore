@@ -70,6 +70,16 @@
 
 -(NSInputStream *)getInputStream
 {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:self.filePath]) {
+        LogTo(CDTAttachment, 
+              @"When creating stream for saved attachment %@, no file at %@, "
+              @"-getInputStream failed.",
+              self.name,
+              self.filePath);
+        return nil;
+    }
+    
     return [NSInputStream inputStreamWithFileAtPath:self.filePath];
 }
 
@@ -88,6 +98,9 @@
                         type:(NSString*)type
 {
     if (data ==nil) {
+        LogTo(CDTAttachment, 
+              @"When creating %@, data was nil, init failed.",
+              name);
         return nil;
     }
     
@@ -122,6 +135,10 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:filePath]) {
+        LogTo(CDTAttachment, 
+              @"When creating %@, no file at %@, init failed.",
+              name,
+              filePath);
         return nil;
     }
     
@@ -138,6 +155,10 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
+        LogTo(CDTAttachment, 
+              @"When creating stream for %@, no file at %@, -getInputStream failed.",
+              self.name,
+              self.filePath);
         return nil;
     }
     
