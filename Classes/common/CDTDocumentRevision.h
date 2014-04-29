@@ -15,7 +15,8 @@
 
 #import <Foundation/Foundation.h>
 
-@class TD_Revision;
+#import "TD_Revision.h"
+
 @class TD_RevisionList;
 
 /**
@@ -31,11 +32,7 @@
 /** `YES` if this document revision is deleted. */
 @property (nonatomic,readonly) BOOL deleted;
 
-@property (nonatomic,strong,readonly) NSDictionary *attachments;
-@property (nonatomic,strong,readonly) NSString *localSeq;
-@property (nonatomic,strong,readonly) TD_RevisionList *revs;
-@property (nonatomic,strong,readonly) NSArray *revsInfo;
-@property (nonatomic,strong,readonly) NSArray *conflicts;
+@property (nonatomic,readonly) SequenceNumber sequence;
 
 @property (nonatomic,strong,readonly) TD_Revision *td_rev;
 

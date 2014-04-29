@@ -9,6 +9,22 @@
          name = "common">
          <Group
             location = "container:"
+            name = "Attachments">
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTDatastore+Attachments.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTDatastore+Attachments.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTAttachment.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTAttachment.m">
+            </FileRef>
+         </Group>
+         <Group
+            location = "container:"
             name = "Indexing">
             <FileRef
                location = "group:Classes/common/Indexing/CDTIndex.h">

@@ -17,8 +17,10 @@
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
+#import "CDTDatastore+Attachments.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDocumentBody.h"
+#import "CDTAttachment.h"
 
 #import "CDTReplicator.h"
 #import "CDTReplicatorFactory.h"

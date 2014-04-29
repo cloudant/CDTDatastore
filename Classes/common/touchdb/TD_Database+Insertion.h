@@ -56,6 +56,16 @@ typedef BOOL (^TD_ValidationBlock) (TD_Revision* newRevision,
 - (TDStatus) purgeRevisions: (NSDictionary*)docsToRevs
                      result: (NSDictionary**)outResult;
 
+/**
+ Public method that should be used when you wish to make multiple putRevisions within a single database transation via TD_Database -inTransaction:
+ */
+- (TD_Revision*) putRevision: (TD_Revision*)revToInsert
+              prevRevisionID: (NSString*)prevRevId
+               allowConflict: (BOOL)allowConflict
+                      status: (TDStatus*)outStatus
+                    database: (FMDatabase *)db;
+
+
 @end
 
 

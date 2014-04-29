@@ -22,6 +22,11 @@
 #import "TD_View.h"
 #import "TD_Body.h"
 #import "TD_Database+Insertion.h"
+#import "TDInternal.h"
+
+#import "FMDatabase.h"
+#import "FMDatabaseAdditions.h"
+#import "FMDatabaseQueue.h"
 
 
 NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotification";
@@ -367,22 +372,76 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
+    
+    __block CDTDocumentRevision *result;
+    
+    [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        result = [self updateDocumentWithId:docId
+                                    prevRev:prevRev
+                                       body:body
+                              inTransaction:db
+                                   rollback:rollback
+                                      error:error];
+    }];
 
+    return result;
+}
+
+-(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
+                                      prevRev:(NSString*)prevRev
+                                         body:(CDTDocumentBody*)body
+                                inTransaction:(FMDatabase*)db
+                                     rollback:(BOOL*)rollback
+                                        error:(NSError * __autoreleasing *)error
+{
+    if (![self ensureDatabaseOpen]) {
+        *error = TDStatusToNSError(kTDStatusException, nil);
+        return nil;
+    }
+    
     TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                          revID:nil
                                                        deleted:NO];
     revision.body = body.td_body;
-
+    
     TDStatus status;
     TD_Revision *new = [self.database putRevision:revision
                                    prevRevisionID:prevRev
                                     allowConflict:NO
-                                           status:&status];
+                                           status:&status
+                                         database:db];
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
+        *rollback = YES;
         return nil;
     }
-
+    
+    // Copy over the existing attachments, as this API's contract
+    // is that updating a document maintains attachments. putRevision:...
+    // only carries over attachments in the _attachments dict of the
+    // body, which we don't fill up as it'd be wasteful.
+    if (prevRev != nil) {  // there is a previous revision to copy from
+        
+        // Three database calls here, but safer to use TouchDB's
+        // functions for now.
+        
+        SInt64 docNumericId = [self.database getDocNumericID:docId
+                                                    database:db];
+        SequenceNumber fromSequence = [self.database getSequenceOfDocument:docNumericId
+                                                                  revision:prevRev
+                                                               onlyCurrent:NO
+                                                                  database:db];
+        TDStatus status = [self.database copyAttachmentsFromSequence:fromSequence
+                                                          toSequence:new.sequence
+                                                          inDatabase:db];
+        
+        if (TDStatusIsError(status)) {
+            *error = TDStatusToNSError(status, nil);
+            *rollback = YES;
+            return nil;
+        }
+    }
+    
     return [[CDTDocumentRevision alloc] initWithTDRevision:new];
 }
 

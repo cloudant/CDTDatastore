@@ -87,6 +87,8 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 /** Should the database file be opened in read-only mode? */
 @property BOOL readOnly;
 
+@property (nonatomic,readonly) FMDatabaseQueue *fmdbQueue;
+
 /** Replaces the database with a copy of another database.
     This is primarily used to install a canned database on first launch of an app, in which case you should first check .exists to avoid replacing the database if it exists already. The canned database would have been copied into your app bundle at build time.
     @param databasePath  Path of the database file that should replace this one.
