@@ -718,7 +718,7 @@
             usleep(500*1000);
         }
     }
-    STAssertEquals([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], 500UL, @"Query returned the wrong number of results");
+    STAssertEquals([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], (NSUInteger)500, @"Query returned the wrong number of results");
 }
 
 - (void)makeSomeDocuments:(NSNumber*)thread {
