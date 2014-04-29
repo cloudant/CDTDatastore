@@ -469,10 +469,8 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
             
             NSDictionary *params;
             
-            // delete any existing entry for this file and sequence combo
+            // delete attachment row for this attachment
             params = @{@"filename": attachmentName, @"sequence": @(updated.sequence)};
-            
-            // insert new record
             success = success && [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] 
                            withParameterDictionary:params];
             
