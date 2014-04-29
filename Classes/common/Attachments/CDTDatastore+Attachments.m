@@ -309,12 +309,6 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                 toRev:(CDTDocumentRevision*)revision
            inDatabase:(FMDatabase*)db
 {
-    // do it this way to only go thru inputstream once
-    // * write to temp location using copyinputstreamtofile
-    // * get sha1
-    // * stick it into database
-    // * move file using sha1 as name
-    
     if (attachmentData == nil) {
         return NO;
     }
