@@ -210,7 +210,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                 options:0
                                                  status:&status];
     if (TDStatusIsError(status)) {
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
