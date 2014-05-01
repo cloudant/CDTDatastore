@@ -62,7 +62,7 @@ static NSUInteger largeRevTreeSize = 1500;
                                     self.remoteDbPrefix,
                                     [CloudantReplicationBase generateRandomString:5]];
     self.primaryRemoteDatabaseURL = [self.remoteRootURL URLByAppendingPathComponent:self.primaryRemoteDatabaseName];
-    [self createRemoteDatabase:self.primaryRemoteDatabaseName];
+    [self createRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
     [self.replicatorFactory start];
@@ -73,7 +73,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // Tear-down code here.
 
     // Delete remote database, stop the replicator.
-    [self deleteRemoteDatabase:self.primaryRemoteDatabaseName];
+    [self deleteRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.datastore = nil;
 
@@ -82,34 +82,6 @@ static NSUInteger largeRevTreeSize = 1500;
     self.replicatorFactory = nil;
 
     [super tearDown];
-}
-
-
-#pragma mark - Replication helpers
-
--(void) createRemoteDatabase:(NSString*)name
-{
-    NSURL *remoteDatabaseURL = [self.remoteRootURL URLByAppendingPathComponent:name];
-
-    NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[remoteDatabaseURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSData data]];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
-}
-
--(void) deleteRemoteDatabase:(NSString*)name
-{
-    NSURL *remoteDatabaseURL = [self.remoteRootURL URLByAppendingPathComponent:name];
-
-    NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
-        [request setUrl:[remoteDatabaseURL absoluteString]];
-        [request setHeaders:headers];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
 }
 
 /**
@@ -496,7 +468,7 @@ static NSUInteger largeRevTreeSize = 1500;
                                    self.remoteDbPrefix,
                                    [CloudantReplicationBase generateRandomString:5]];
 
-    [self createRemoteDatabase:thirdDatabaseName];
+    [self createRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 
     NSURL *thirdDatabase = [self.remoteRootURL URLByAppendingPathComponent:thirdDatabaseName];
 
@@ -516,7 +488,7 @@ static NSUInteger largeRevTreeSize = 1500;
                           withDatabase:thirdDatabase];
     STAssertTrue(same, @"Remote and local databases differ");
 
-    [self deleteRemoteDatabase:thirdDatabaseName];
+    [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 }
 
 /**
@@ -601,7 +573,7 @@ static NSUInteger largeRevTreeSize = 1500;
                                       self.remoteDbPrefix,
                                       [CloudantReplicationBase generateRandomString:5]];
 
-    [self createRemoteDatabase:thirdDatabaseName];
+    [self createRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 
     NSURL *thirdDatabase = [self.remoteRootURL URLByAppendingPathComponent:thirdDatabaseName];
 
@@ -621,7 +593,7 @@ static NSUInteger largeRevTreeSize = 1500;
                           withDatabase:thirdDatabase];
     STAssertTrue(same, @"Remote and local databases differ");
 
-    [self deleteRemoteDatabase:thirdDatabaseName];
+    [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 }
 
 

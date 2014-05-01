@@ -111,73 +111,47 @@
                                       [CloudantReplicationBase generateRandomString:5]];
     NSURL *primaryRemoteDatabaseURL = [self.remoteRootURL URLByAppendingPathComponent:primaryRemoteDatabaseName];
     
-    // should be calling the shared method here
-    NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[primaryRemoteDatabaseURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSData data]];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
+    [self createRemoteDatabase:primaryRemoteDatabaseName
+                   instanceURL:self.remoteRootURL];
     
-    NSString *docId = @"attachment_doc_1";
     
     //
     // Create document
     //
     
+    NSString *docId = @"attachment_doc_1";
     NSString *revId;
     NSDictionary *dict = @{@"hello": @"world"};
     
-    NSURL *docURL = [primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
-    
-    headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
-    response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[docURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSJSONSerialization dataWithJSONObject:dict
-                                                         options:0
-                                                           error:nil]];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
-    revId = [response.body.object objectForKey:@"rev"];
+    revId = [self createRemoteDocumentWithId:docId
+                                        body:dict
+                                 databaseURL:primaryRemoteDatabaseURL];
     
     //
     // Create new rev with attachment
     //
-    headers = @{@"accept": @"application/json",
-                @"content-type": @"text/plain",
-                @"If-Match": revId,
-                @"Content-Length": @"10"};
-    response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        NSURL *attachmentURL = [docURL URLByAppendingPathComponent:@"txtDoc"];
-        [request setUrl:[attachmentURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[@"0123456789" dataUsingEncoding:NSUTF8StringEncoding]];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"rev"] != nil, @"Adding attachment failed");
-    revId = [response.body.object objectForKey:@"rev"];
+    
+    NSData *txtData = [@"0123456789" dataUsingEncoding:NSUTF8StringEncoding];
+    revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                revId:revId
+                                       attachmentName:@"txtDoc"
+                                          contentType:@"text/plain"
+                                                 data:txtData
+                                          databaseURL:primaryRemoteDatabaseURL];
     
     //
     // Issue HTTP COPY w/ Destination header to copy
     //
     NSString *copiedDocId = @"copied-document";
     NSURL *copiedDocURL = [primaryRemoteDatabaseURL URLByAppendingPathComponent:copiedDocId];
-    headers = @{@"accept": @"application/json",
-                @"content-type": @"application/json",
-                @"Destination": copiedDocId};
-    response = [[[UNIHTTPRequestWithBody alloc] initWithSimpleRequest:COPY
-                                                          url:[docURL absoluteString] 
-                                                      headers:headers
-                                                     username:nil 
-                                                     password:nil] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Copy document failed");
-    revId = [response.body.object objectForKey:@"rev"];
+    
+    [self copyRemoteDocumentWithId:docId
+                              toId:copiedDocId
+                       databaseURL:primaryRemoteDatabaseURL];
     
     
     // Should end up with revpos > generation number
-    headers = @{@"accept": @"application/json"};
+    NSDictionary *headers = @{@"accept": @"application/json"};
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[copiedDocURL absoluteString]];
         [request setHeaders:headers];
