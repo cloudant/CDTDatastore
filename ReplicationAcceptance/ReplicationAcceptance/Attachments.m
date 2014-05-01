@@ -33,20 +33,6 @@
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
     STAssertNotNil(self.datastore, @"datastore is nil");
 
-    // This is a database with a read-only API key so we should be
-    // able to use this in automated tests -- for now.
-    // TODO: replace with a test that creates a doc with attachments
-    //       first like the other tests.
-    NSString *cloudant_account = @"mikerhodescloudant";
-    NSString *db_name = @"attachments-test";
-    NSString *username = @"minstrutlyagenintleahtio";
-    NSString *password = @"ABIhugOtrCyfPHxeOFK81rIB";
-    NSString *url = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com",
-                     username, password, cloudant_account];
-
-    self.remoteRootURL = [NSURL URLWithString:url];
-    self.remoteDatabase = [self.remoteRootURL URLByAppendingPathComponent:db_name];
-
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
     [self.replicatorFactory start];
 }
@@ -66,14 +52,55 @@
 
 - (void)testReplicateAttachmentDb
 {
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    // { document ID: number of attachments to create }
+    NSDictionary *docs = @{@"attachments1": @(1),
+                           @"attachments3": @(3),
+                           @"attachments4": @(4)};
+    for (NSString* docId in [docs keyEnumerator]) {
+        
+        NSString *revId = [self createRemoteDocumentWithId:docId
+                                    body:@{@"hello": @"world"}
+                             databaseURL:remoteDbURL];
+        
+        NSInteger nAttachments = [docs[docId] integerValue];
+        for (NSInteger i = 1; i <= nAttachments; i++) {
+            NSString *name = [NSString stringWithFormat:@"txtDoc%li", (long)i];
+            NSData *txtData = [@"0123456789" dataUsingEncoding:NSUTF8StringEncoding];
+            revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                        revId:revId
+                                               attachmentName:name
+                                                  contentType:@"text/plain"
+                                                         data:txtData
+                                                  databaseURL:remoteDbURL];
+        }
+    }
+    
+    //
+    // Replicate and check
+    //
+    
     CDTDocumentRevision *rev;
     NSArray *attachments;
     
     CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:self.remoteDatabase
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
                             targetDatastore:self.datastore];
 
-    NSLog(@"Replicating from %@", [self.remoteDatabase absoluteString]);
+    NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
     [replicator start];
 
     while (replicator.isActive) {
@@ -81,20 +108,27 @@
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
     
-    rev = [self.datastore getDocumentWithId:@"attachment1"
+    rev = [self.datastore getDocumentWithId:@"attachments1"
                                       error:nil];
     attachments = [self.datastore attachmentsForRev:rev error:nil];
     STAssertEquals([attachments count], (NSUInteger)1, @"Should be one attachment");
     
-    rev = [self.datastore getDocumentWithId:@"attachment_3"
+    rev = [self.datastore getDocumentWithId:@"attachments3"
                                       error:nil];
     attachments = [self.datastore attachmentsForRev:rev error:nil];
     STAssertEquals([attachments count], (NSUInteger)3, @"Should be one attachment");
     
-    rev = [self.datastore getDocumentWithId:@"attachment4"
+    rev = [self.datastore getDocumentWithId:@"attachments4"
                                       error:nil];
     attachments = [self.datastore attachmentsForRev:rev error:nil];
     STAssertEquals([attachments count], (NSUInteger)4, @"Should be one attachment");
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
 }
 
 /** 
@@ -106,12 +140,12 @@
 {
     self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     
-    NSString *primaryRemoteDatabaseName = [NSString stringWithFormat:@"%@-test-database-%@",
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                                       self.remoteDbPrefix,
                                       [CloudantReplicationBase generateRandomString:5]];
-    NSURL *primaryRemoteDatabaseURL = [self.remoteRootURL URLByAppendingPathComponent:primaryRemoteDatabaseName];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
     
-    [self createRemoteDatabase:primaryRemoteDatabaseName
+    [self createRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
     
     
@@ -125,7 +159,7 @@
     
     revId = [self createRemoteDocumentWithId:docId
                                         body:dict
-                                 databaseURL:primaryRemoteDatabaseURL];
+                                 databaseURL:remoteDbURL];
     
     //
     // Create new rev with attachment
@@ -137,17 +171,17 @@
                                        attachmentName:@"txtDoc"
                                           contentType:@"text/plain"
                                                  data:txtData
-                                          databaseURL:primaryRemoteDatabaseURL];
+                                          databaseURL:remoteDbURL];
     
     //
     // Issue HTTP COPY w/ Destination header to copy
     //
     NSString *copiedDocId = @"copied-document";
-    NSURL *copiedDocURL = [primaryRemoteDatabaseURL URLByAppendingPathComponent:copiedDocId];
+    NSURL *copiedDocURL = [remoteDbURL URLByAppendingPathComponent:copiedDocId];
     
     [self copyRemoteDocumentWithId:docId
                               toId:copiedDocId
-                       databaseURL:primaryRemoteDatabaseURL];
+                       databaseURL:remoteDbURL];
     
     
     // Should end up with revpos > generation number
@@ -170,7 +204,7 @@
     NSArray *attachments;
     
     CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:primaryRemoteDatabaseURL
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
                             targetDatastore:self.datastore];
     
     NSLog(@"Replicating from %@", [self.remoteDatabase absoluteString]);
@@ -194,6 +228,13 @@
                                       error:nil];
     attachments = [self.datastore attachmentsForRev:rev error:nil];
     STAssertEquals([attachments count], (NSUInteger)1, @"Should be one attachment");
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
 }
 
 @end
