@@ -53,6 +53,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     self = [super init];
     if (self) {
         _database = database;
+        if (![_database open]) {
+            return nil;
+        }
+        
         NSString *dir = [[database path] stringByDeletingLastPathComponent];
         NSString *name = [database name];
         _extensionsDir = [dir stringByAppendingPathComponent: [NSString stringWithFormat:@"%@_extensions", name]];
