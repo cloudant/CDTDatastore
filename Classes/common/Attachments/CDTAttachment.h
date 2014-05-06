@@ -17,6 +17,7 @@
 #import <Foundation/Foundation.h>
 
 #import "TD_Database.h"
+#import "TD_Database+Attachments.h"
 
 /**
  Base class for attachments in the datastore.
@@ -55,7 +56,7 @@
                         size:(NSInteger)size;
 
 /** Get unopened input stream for this attachment */
--(NSInputStream*) getInputStream;
+-(NSData*) dataFromAttachmentContent;
 
 @end
 
@@ -69,6 +70,7 @@
 
 @property (nonatomic,readonly) NSInteger revpos;
 @property (nonatomic,readonly) SequenceNumber sequence;
+@property (nonatomic,readonly) TDAttachmentEncoding encoding;
 
 /** sha of file, used for file path on disk. */
 @property (nonatomic,readonly) NSData* key;
@@ -83,7 +85,8 @@
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
                     sequence:(SequenceNumber)sequence
-                         key:(NSData*)keyData;
+                         key:(NSData*)keyData
+                    encoding:(TDAttachmentEncoding)encoding;
 
 @end
 

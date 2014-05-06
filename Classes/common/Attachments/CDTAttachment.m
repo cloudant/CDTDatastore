@@ -16,6 +16,8 @@
 
 #import "CDTAttachment.h"
 
+#import "GTMNSData+zlib.h"
+
 @implementation CDTAttachment
 
 -(instancetype) initWithName:(NSString*)name
@@ -31,7 +33,7 @@
     return self;
 }
 
--(NSData *)getInputStream
+-(NSData *)dataFromAttachmentContent
 {
     // subclasses should override
     return nil;
@@ -55,6 +57,7 @@
                       revpos:(NSInteger)revpos
                     sequence:(SequenceNumber)sequence
                          key:(NSData*)keyData
+                    encoding:(TDAttachmentEncoding)encoding;
 {
     self = [super initWithName:name
                           type:type
@@ -64,23 +67,38 @@
         _revpos = revpos;
         _sequence = sequence;
         _key = keyData;
+        _encoding = encoding;
     }
     return self;
 }
 
--(NSInputStream *)getInputStream
+- (NSData*)dataFromAttachmentContent
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
         LogTo(CDTAttachment, 
               @"When creating stream for saved attachment %@, no file at %@, "
-              @"-getInputStream failed.",
+              @"-dataFromAttachmentContent failed.",
               self.name,
               self.filePath);
         return nil;
     }
     
-    return [NSInputStream inputStreamWithFileAtPath:self.filePath];
+    if (self.encoding == kTDAttachmentEncodingNone) {
+        return [NSData dataWithContentsOfFile:self.filePath
+                                      options:NSDataReadingMappedIfSafe
+                                        error:nil];
+    } else if (self.encoding == kTDAttachmentEncodingGZIP) {
+        NSData *gzippedData = [NSData dataWithContentsOfFile:self.filePath
+                                                     options:NSDataReadingMappedIfSafe
+                                                       error:nil];
+        NSData *inflatedData = [NSData gtm_dataByInflatingData:gzippedData];
+        return inflatedData;
+    } else {
+        Warn(@"Unknown attachment encoding %i, returning nil", self.encoding);
+        return nil;
+    }
+    
 }
 
 @end
@@ -113,9 +131,9 @@
     return self;
 }
 
--(NSInputStream *)getInputStream
+- (NSData*)dataFromAttachmentContent
 {
-    return [NSInputStream inputStreamWithData:self.data];
+    return self.data;
 }
 
 @end
@@ -151,7 +169,7 @@
     return self;
 }
 
--(NSInputStream *)getInputStream
+- (NSData*)dataFromAttachmentContent
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
@@ -162,7 +180,9 @@
         return nil;
     }
     
-    return [NSInputStream inputStreamWithFileAtPath:self.filePath];
+    return [NSData dataWithContentsOfFile:self.filePath
+                                  options:NSDataReadingMappedIfSafe
+                                    error:nil];
 }
 
 @end

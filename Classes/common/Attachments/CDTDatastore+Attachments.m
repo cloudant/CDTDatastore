@@ -24,6 +24,7 @@
 #import "TD_Database+Attachments.h"
 #import "TDBlobStore.h"
 #import "TDInternal.h"
+#import "TDMisc.h"
 
 #import "CDTDocumentRevision.h"
 #import "CDTDocumentBody.h"
@@ -181,13 +182,15 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     NSString *type = [r stringForColumn:@"type"];
     NSInteger size = [r longForColumn:@"length"];
     NSInteger revpos = [r longForColumn:@"revpos"];
+    TDAttachmentEncoding encoding = [r intForColumn:@"encoding"];
     CDTSavedAttachment *attachment = [[CDTSavedAttachment alloc] initWithPath:filePath
                                                                          name:name
                                                                          type:type
                                                                          size:size
                                                                        revpos:revpos
                                                                      sequence:sequence
-                                                                          key:keyData];
+                                                                          key:keyData
+                                                                     encoding:encoding];
     
     return attachment;
 }
@@ -223,9 +226,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     // unused attachments for us (and a file could conceivably
     // be an attachment on more than one document as a given 
     // data blob is shared across all documents that use it
-    // as an attachment.
-    // We get the sha and file length when we download the attachment
-    // from the input stream in the CDTAttachment object.
+    // as an attachment).
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     for (CDTAttachment *attachment in attachments) {
         NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
@@ -323,18 +324,35 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
 -(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment 
                                       error:(NSError * __autoreleasing *)error
 {
+    NSAssert(attachment != nil, @"Attachment object was nil");
+    
     TDBlobKey outKey;
-    NSInteger outFileLength;
-    NSInputStream *is = [attachment getInputStream];
-    [is open];
-    BOOL success = [self.database.attachmentStore storeBlobFromStream:is
-                                                          creatingKey:&outKey
-                                                           fileLength:&outFileLength
-                                                                error:error];
-    [is close];
+    
+    NSData *attachmentContent = [attachment dataFromAttachmentContent];
+    
+    if (nil == attachmentContent) {
+        Warn(@"CDTDatastore: attachment %@ had no data; failing.", attachment.name);
+        
+        if (error) {
+            NSString *desc = NSLocalizedString(@"Attachment has no data.", 
+                                               nil);
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: desc};
+            *error = [NSError errorWithDomain:TDHTTPErrorDomain
+                                         code:kTDStatusAttachmentStreamError
+                                     userInfo:userInfo];
+        }
+        
+        return nil;
+    }
+    
+    BOOL success = [self.database.attachmentStore storeBlob:attachmentContent
+                                                creatingKey:&outKey
+                                                      error:error];
     
     if (!success) {
-        // -storeBlobFromStream:... logs for us
+        // -storeBlob:creatingKey:error: will have filled in error
+        
+        Warn(@"CDTDatastore: Couldn't save attachment %@: %@", attachment.name, *error);
         return nil;
     }
     
@@ -342,7 +360,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     
     NSDictionary *attachmentData = @{@"attachment": attachment,
                                      @"keyData": keyData,
-                                     @"fileLength": @(outFileLength)};
+                                     @"fileLength": @(attachmentContent.length)};
     return attachmentData;
 }
 
