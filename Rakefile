@@ -38,6 +38,17 @@ task :travis do
   sh "pod lib lint"
 end
 
+desc "Run the replication acceptance tests"
+task :replicationacceptance do
+    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=OS X' test | xcpretty; exit ${PIPESTATUS[0]}")
+    puts "\033[0;31m! OS X unit tests failed" unless $osx_success
+    if $osx_success
+        puts "** All tests executed successfully"
+        else
+        exit(-1)
+    end
+end
+
 desc "Build docs and install to Xcode"
 task :docs do
   system("appledoc --keep-intermediate-files --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -i Classes/vendor -i Classes/common/touchdb Classes/")
