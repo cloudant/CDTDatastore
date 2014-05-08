@@ -230,12 +230,14 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     NSArray *result = [NSArray array];
+    TDContentOptions contentOptions = kTDIncludeLocalSeq;
     struct TDQueryOptions query = {
         .limit = (unsigned int)self.database.documentCount,
         .inclusiveEnd = YES,
         .skip = 0,
         .descending = NO,
-        .includeDocs = YES
+        .includeDocs = YES,
+        .content = contentOptions
     };
 
     // This method must loop to get around the fact that conflicted documents
@@ -257,6 +259,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                                  revID:revId
                                                                deleted:NO];
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+            revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
 
             CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
             [batch addObject:ob];
