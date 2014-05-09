@@ -7,9 +7,9 @@
 //
 
 #import "CloudantReplicationBase.h"
+#import "CloudantReplicationBase+CompareDb.h"
 
 #import <UNIRest.h>
-
 #import <SenTestingKit/SenTestingKit.h>
 #import <CloudantSync.h>
 
@@ -50,7 +50,7 @@
     [super tearDown];
 }
 
-- (void)testReplicateAttachmentDb
+- (void)testReplicateSeveralRemoteDocumentsWithAttachments
 {
     //
     // Set up remote database
@@ -131,8 +131,226 @@
                    instanceURL:self.remoteRootURL];
 }
 
-- (void)testReplicateManyAttachments
+- (void)testReplicateManyLocalAttachments
 {
+    NSUInteger nAttachments = 100;
+    
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    //
+    // Add attachments to a document in the local store
+    //
+    
+    // Contains {attachmentName: attachmentContent} for later checking
+    NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
+    // { document ID: number of attachments to create }
+    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
+    for (NSString* docId in [docs keyEnumerator]) {
+        
+        NSError *error;
+        
+        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
+        CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
+                                                                   body:body
+                                                                  error:&error];
+        STAssertNotNil(rev, @"Unable to create document");
+        
+        NSMutableArray *attachments = [NSMutableArray array];
+        for (NSInteger i = 1; i <= nAttachments; i++) {
+            NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
+            NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+            NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+            CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                                  name:name
+                                                                                  type:@"text/plain"];
+            [attachments addObject:attachment];
+            
+            [originalAttachments setObject:data forKey:name];
+        }
+        
+        rev = [self.datastore updateAttachments:attachments
+                                         forRev:rev
+                                          error:&error];
+        STAssertNotNil(rev, @"Unable to add attachments to document");
+        STAssertEquals(nAttachments, 
+                       [[self.datastore attachmentsForRev:rev
+                                                    error:nil] count],
+                       @"All attachments not found");
+    }
+    
+    // 
+    // Push to remote
+    // 
+    
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceDatastore:self.datastore targetURI:remoteDbURL];
+    
+    NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
+    [replicator start];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    //
+    // Checks
+    //
+    
+    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                 @"Local and remote database comparison failed");
+    
+    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+                                                withDatabase:remoteDbURL],
+                 @"Local and remote database attachment comparison failed");
+                 
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+}
+
+/**
+ Test that deleting attachments locally is replicated to a
+ remote database.
+ */
+- (void)testAddLocalReplicateDeleteLocalReplicate
+{
+    NSUInteger nAttachments = 100;
+    
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    //
+    // Add attachments to a document in the local store
+    //
+    
+    // Contains {attachmentName: attachmentContent} for later checking
+    NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
+    // { document ID: number of attachments to create }
+    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
+    CDTDocumentRevision *rev;
+    for (NSString* docId in [docs keyEnumerator]) {
+        
+        NSError *error;
+        
+        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
+        rev = [self.datastore createDocumentWithId:docId
+                                              body:body
+                                             error:&error];
+        STAssertNotNil(rev, @"Unable to create document");
+        
+        NSMutableArray *attachments = [NSMutableArray array];
+        for (NSInteger i = 1; i <= nAttachments; i++) {
+            NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
+            NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+            NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+            CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                                  name:name
+                                                                                  type:@"text/plain"];
+            [attachments addObject:attachment];
+            
+            [originalAttachments setObject:data forKey:name];
+        }
+        
+        rev = [self.datastore updateAttachments:attachments
+                                         forRev:rev
+                                          error:&error];
+        STAssertNotNil(rev, @"Unable to add attachments to document");
+        STAssertEquals(nAttachments, 
+                       [[self.datastore attachmentsForRev:rev
+                                                    error:nil] count],
+                       @"All attachments not found");
+    }
+    
+    // 
+    // Push to remote
+    // 
+    
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceDatastore:self.datastore
+                                        targetURI:remoteDbURL];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Delete some attachments, then replicate to check the changes
+    // replicate successfully.
+    //
+    
+    NSMutableArray *attachmentNamesToDelete = [NSMutableArray array];
+    for (int i = 1; i < nAttachments; i+=2) {  // every second att
+        NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+        [attachmentNamesToDelete addObject:name];
+    }
+    rev = [self.datastore removeAttachments:attachmentNamesToDelete
+                                    fromRev:rev 
+                                      error:nil];
+    STAssertNotNil(rev, @"Attachments are not deleted.");
+    STAssertEquals([[self.datastore attachmentsForRev:rev
+                                                error:nil] count],
+                   nAttachments/2,
+                   @"Wrong attachment count after deleting");
+    
+    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore 
+                                                     targetURI:remoteDbURL];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Checks
+    //
+    
+    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                 @"Local and remote database comparison failed");
+    
+    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+                                                withDatabase:remoteDbURL],
+                 @"Local and remote database attachment comparison failed");
+    
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+}
+
+- (void)testReplicateManyRemoteAttachments
+{
+    NSUInteger nAttachments = 100;
+    
     //
     // Set up remote database
     //
@@ -151,7 +369,7 @@
     NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
     
     // { document ID: number of attachments to create }
-    NSDictionary *docs = @{@"attachments1": @(10)};
+    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
     for (NSString* docId in [docs keyEnumerator]) {
         
         NSString *revId = [self createRemoteDocumentWithId:docId
@@ -183,10 +401,8 @@
     CDTReplicator *replicator =
     [self.replicatorFactory onewaySourceURI:remoteDbURL
                             targetDatastore:self.datastore];
-    
     NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
     [replicator start];
-    
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
@@ -195,7 +411,7 @@
     rev = [self.datastore getDocumentWithId:@"attachments1"
                                       error:nil];
     attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)10, @"Should be one attachment");
+    STAssertEquals([attachments count], nAttachments, @"Wrong number of attachments");
     
     for (NSString *attachmentName in [originalAttachments keyEnumerator]) {
         NSError *error;
@@ -219,6 +435,273 @@
     
     [self deleteRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
+}
+
+/**
+ Test that updates to an attachment are replicated correctly.
+ */
+- (void)testReplicateRemoteDocumentUpdate
+{
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    // { document ID: number of attachments to create }
+    NSString *docId = @"attachments1";
+    NSString *revId = [self createRemoteDocumentWithId:docId
+                                                  body:@{@"hello": @"world"}
+                                           databaseURL:remoteDbURL];
+    
+    NSString *attachmentName = @"attachment-1";
+    NSString *originalContent = @"originalContent";
+    NSData *txtData = [originalContent dataUsingEncoding:NSUTF8StringEncoding];
+    revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                revId:revId
+                                       attachmentName:attachmentName
+                                          contentType:@"text/plain"
+                                                 data:txtData
+                                          databaseURL:remoteDbURL];
+    
+    //
+    // Replicate
+    //
+    
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
+                            targetDatastore:self.datastore];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Update the local attachment, replicate, check updated remotely
+    //
+    
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
+                                                           error:nil];
+    
+    NSString *updatedContent = @"updatedContent";
+    NSData *data = [updatedContent dataUsingEncoding:NSUTF8StringEncoding];
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"text/plain"];    
+    rev = [self.datastore updateAttachments:@[attachment]
+                                     forRev:rev
+                                      error:nil];
+    STAssertNotNil(rev, @"Unable to add attachments to document");
+    
+    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore
+                                                     targetURI:remoteDbURL];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Checks
+    //
+    
+    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                 @"Local and remote database comparison failed");
+    
+    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+                                                withDatabase:remoteDbURL],
+                 @"Local and remote database attachment comparison failed");
+    
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+}
+
+/**
+ Test that deleting an attachment locally is replicated correctly.
+ */
+- (void)testReplicateRemoteDocumentDeleteLocalCheckReplicated
+{
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    // { document ID: number of attachments to create }
+    NSString *docId = @"attachments1";
+    NSString *revId = [self createRemoteDocumentWithId:docId
+                                                  body:@{@"hello": @"world"}
+                                           databaseURL:remoteDbURL];
+    
+    NSString *attachmentName = @"attachment-1";
+    NSString *originalContent = @"an-attachment";
+    NSData *txtData = [originalContent dataUsingEncoding:NSUTF8StringEncoding];
+    revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                revId:revId
+                                       attachmentName:attachmentName
+                                          contentType:@"text/plain"
+                                                 data:txtData
+                                          databaseURL:remoteDbURL];
+    
+    //
+    // Replicate
+    //
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
+                            targetDatastore:self.datastore];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Delete the local attachment, replicate, check deleted remotely
+    //
+    
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
+                                                           error:nil];
+    rev = [self.datastore removeAttachments:@[attachmentName]
+                                    fromRev:rev
+                                      error:nil];
+    STAssertNotNil(rev, @"Unable to add attachments to document");
+    STAssertEquals([[self.datastore attachmentsForRev:rev
+                                                error:nil] count],
+                   (NSUInteger)0,
+                   @"Wrong attachment count after deleting");
+    
+    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore
+                                                     targetURI:remoteDbURL];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Checks
+    //
+    
+    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                 @"Local and remote database comparison failed");
+    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+                                                withDatabase:remoteDbURL],
+                 @"Local and remote database attachment comparison failed");
+    
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+}
+
+/**
+ Test that deleting an attachment remotely is replicated correctly.
+ */
+- (void)testReplicateRemoteDocumentDeleteRemoteCheckReplicated
+{
+    //
+    // Set up remote database
+    //
+    
+    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    // { document ID: number of attachments to create }
+    NSString *docId = @"attachments1";
+    NSString *revId = [self createRemoteDocumentWithId:docId
+                                                  body:@{@"hello": @"world"}
+                                           databaseURL:remoteDbURL];
+    
+    NSString *attachmentName = @"attachment-1";
+    NSString *originalContent = @"an-attachment";
+    NSData *txtData = [originalContent dataUsingEncoding:NSUTF8StringEncoding];
+    revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                revId:revId
+                                       attachmentName:attachmentName
+                                          contentType:@"text/plain"
+                                                 data:txtData
+                                          databaseURL:remoteDbURL];
+    
+    //
+    // Replicate
+    //
+    
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
+                            targetDatastore:self.datastore];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Delete the remote attachment, replicate, check deleted locally
+    //
+    
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"If-Match": revId};
+    UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
+        NSURL *docURL = [remoteDbURL URLByAppendingPathComponent:docId];
+        NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
+        [request setUrl:[attachmentURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
+    
+    replicator = [self.replicatorFactory onewaySourceURI:remoteDbURL
+                                         targetDatastore:self.datastore];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //
+    // Checks
+    //
+    
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
+                                                           error:nil];
+    STAssertNotNil(rev, @"Unable to get doc");
+    STAssertEquals([[self.datastore attachmentsForRev:rev
+                                                error:nil] count],
+                   (NSUInteger)0,
+                   @"Wrong attachment count after deleting");
+    
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];    
 }
 
 /** 
@@ -283,7 +766,9 @@
     
     // The regression this tests for is triggered by the attachment's revpos being
     // greater than the generation of the revision.
-    STAssertEqualObjects(json[@"_attachments"][@"txtDoc"][@"revpos"], @(2), @"revpos not expected");
+    STAssertEqualObjects(json[@"_attachments"][@"txtDoc"][@"revpos"], 
+                         @(2), 
+                         @"revpos not expected");
     STAssertTrue([json[@"_rev"] hasPrefix:@"1"], @"revpos not expected");
     
     //
