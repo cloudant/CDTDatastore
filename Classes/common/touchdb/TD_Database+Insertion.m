@@ -389,8 +389,10 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             if (docNumericID <= 0) {
                 // Doc ID doesn't exist at all; create it:
                 docNumericID = [self insertDocumentID: docID inDatabase:db];
-                if (docNumericID <= 0)
+                if (docNumericID <= 0) {
+                    *outStatus = kTDStatusDBError;
                     return nil;
+                }
             } else {
                 // Doc ID exists; check whether current winning revision is deleted:
                 if (oldWinnerWasDeletion) {
