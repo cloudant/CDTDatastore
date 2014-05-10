@@ -50,6 +50,56 @@
     [super tearDown];
 }
 
+#pragma mark Test helpers
+
+- (BOOL)isNumberOfAttachmentsForRevision:(CDTDocumentRevision*)rev
+                                 equalTo:(NSUInteger)expected
+{
+    NSArray *attachments = [self.datastore attachmentsForRev:rev
+                                                       error:nil];
+    return [attachments count] == expected;
+}
+
+- (void)pullFrom:(NSURL*)remoteDbURL to:(CDTDatastore*)local
+{
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceURI:remoteDbURL
+                            targetDatastore:local];
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+}
+
+- (void)pushTo:(NSURL*)remoteDbURL from:(CDTDatastore*)local
+{
+    CDTReplicator *replicator =
+    [self.replicatorFactory onewaySourceDatastore:local 
+                                        targetURI:remoteDbURL];
+    [replicator start];    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+}
+
+- (void)deleteAttachmentNamed:(NSString*)attachmentName
+                 fromDocument:(NSString*)docId
+                   ofRevision:(NSString*)revId
+                 fromDatabase:(NSURL*)remoteDbURL
+{
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"If-Match": revId};
+    UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
+        NSURL *docURL = [remoteDbURL URLByAppendingPathComponent:docId];
+        NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
+        [request setUrl:[attachmentURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
+}
+
+#pragma mark Tests
+
 - (void)testReplicateSeveralRemoteDocumentsWithAttachments
 {
     //
@@ -90,38 +140,31 @@
     }
     
     //
-    // Replicate and check
+    // Replicate
+    //
+    
+    [self pullFrom:remoteDbURL to:self.datastore];
+    
+    //
+    // Checks
     //
     
     CDTDocumentRevision *rev;
-    NSArray *attachments;
-    
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-
-    NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
-    [replicator start];
-
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
     
     rev = [self.datastore getDocumentWithId:@"attachments1"
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)1, @"Should be one attachment");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+                 @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:@"attachments3"
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)3, @"Should be one attachment");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)3],
+                 @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:@"attachments4"
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)4, @"Should be one attachment");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)4],
+                 @"Incorrect number of attachments");
     
     //
     // Clean up
@@ -155,55 +198,41 @@
     
     // Contains {attachmentName: attachmentContent} for later checking
     NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
-    // { document ID: number of attachments to create }
-    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
-    for (NSString* docId in [docs keyEnumerator]) {
         
-        NSError *error;
+    NSError *error;
+    
+    NSString *docId = @"document1";
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
+                                                               body:body
+                                                              error:&error];
+    STAssertNotNil(rev, @"Unable to create document");
+    
+    NSMutableArray *attachments = [NSMutableArray array];
+    for (NSInteger i = 1; i <= nAttachments; i++) {
+        NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
+        NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+        CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                              name:name
+                                                                              type:@"text/plain"];
+        [attachments addObject:attachment];
         
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
-        CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
-                                                                   body:body
-                                                                  error:&error];
-        STAssertNotNil(rev, @"Unable to create document");
-        
-        NSMutableArray *attachments = [NSMutableArray array];
-        for (NSInteger i = 1; i <= nAttachments; i++) {
-            NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
-            NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
-            NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
-            CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
-                                                                                  name:name
-                                                                                  type:@"text/plain"];
-            [attachments addObject:attachment];
-            
-            [originalAttachments setObject:data forKey:name];
-        }
-        
-        rev = [self.datastore updateAttachments:attachments
-                                         forRev:rev
-                                          error:&error];
-        STAssertNotNil(rev, @"Unable to add attachments to document");
-        STAssertEquals(nAttachments, 
-                       [[self.datastore attachmentsForRev:rev
-                                                    error:nil] count],
-                       @"All attachments not found");
+        [originalAttachments setObject:data forKey:name];
     }
+    
+    rev = [self.datastore updateAttachments:attachments
+                                     forRev:rev
+                                      error:&error];
+    STAssertNotNil(rev, @"Unable to add attachments to document");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+                 @"Incorrect number of attachments");
     
     // 
     // Push to remote
     // 
     
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore targetURI:remoteDbURL];
-    
-    NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
-    [replicator start];
-    
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
+    [self pushTo:remoteDbURL from:self.datastore];
     
     //
     // Checks
@@ -254,52 +283,42 @@
     // Contains {attachmentName: attachmentContent} for later checking
     NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
     // { document ID: number of attachments to create }
-    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
+    NSString *docId = @"document1";
     CDTDocumentRevision *rev;
-    for (NSString* docId in [docs keyEnumerator]) {
         
-        NSError *error;
+    NSError *error;
+    
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
+    rev = [self.datastore createDocumentWithId:docId
+                                          body:body
+                                         error:&error];
+    STAssertNotNil(rev, @"Unable to create document");
+    
+    NSMutableArray *attachments = [NSMutableArray array];
+    for (NSInteger i = 1; i <= nAttachments; i++) {
+        NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
+        NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+        CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                              name:name
+                                                                              type:@"text/plain"];
+        [attachments addObject:attachment];
         
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"hello": @12}];
-        rev = [self.datastore createDocumentWithId:docId
-                                              body:body
-                                             error:&error];
-        STAssertNotNil(rev, @"Unable to create document");
-        
-        NSMutableArray *attachments = [NSMutableArray array];
-        for (NSInteger i = 1; i <= nAttachments; i++) {
-            NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
-            NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
-            NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
-            CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
-                                                                                  name:name
-                                                                                  type:@"text/plain"];
-            [attachments addObject:attachment];
-            
-            [originalAttachments setObject:data forKey:name];
-        }
-        
-        rev = [self.datastore updateAttachments:attachments
-                                         forRev:rev
-                                          error:&error];
-        STAssertNotNil(rev, @"Unable to add attachments to document");
-        STAssertEquals(nAttachments, 
-                       [[self.datastore attachmentsForRev:rev
-                                                    error:nil] count],
-                       @"All attachments not found");
+        [originalAttachments setObject:data forKey:name];
     }
+    
+    rev = [self.datastore updateAttachments:attachments
+                                     forRev:rev
+                                      error:&error];
+    STAssertNotNil(rev, @"Unable to add attachments to document");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+                 @"Incorrect number of attachments");
     
     // 
     // Push to remote
     // 
     
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                        targetURI:remoteDbURL];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pushTo:remoteDbURL from:self.datastore];
     
     //
     // Delete some attachments, then replicate to check the changes
@@ -315,17 +334,10 @@
                                     fromRev:rev 
                                       error:nil];
     STAssertNotNil(rev, @"Attachments are not deleted.");
-    STAssertEquals([[self.datastore attachmentsForRev:rev
-                                                error:nil] count],
-                   nAttachments/2,
-                   @"Wrong attachment count after deleting");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
+                 @"Incorrect number of attachments");
     
-    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore 
-                                                     targetURI:remoteDbURL];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pushTo:remoteDbURL from:self.datastore];
     
     //
     // Checks
@@ -368,50 +380,45 @@
     // Contains {attachmentName: attachmentContent} for later checking
     NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
     
-    // { document ID: number of attachments to create }
-    NSDictionary *docs = @{@"attachments1": @(nAttachments)};
-    for (NSString* docId in [docs keyEnumerator]) {
+    
+    //
+    // Upload attachments to remote document
+    //
+    
+    NSString *docId = @"document1";
         
-        NSString *revId = [self createRemoteDocumentWithId:docId
-                                                      body:@{@"hello": @"world"}
-                                               databaseURL:remoteDbURL];
-        
-        NSInteger nAttachments = [docs[docId] integerValue];
-        for (NSInteger i = 1; i <= nAttachments; i++) {
-            NSString *name = [NSString stringWithFormat:@"txtDoc%li", (long)i];
-            NSString *content = [NSString stringWithFormat:@"doc%li", (long)i];
-            NSData *txtData = [content dataUsingEncoding:NSUTF8StringEncoding];
-            revId = [self addAttachmentToRemoteDocumentWithId:docId
-                                                        revId:revId
-                                               attachmentName:name
-                                                  contentType:@"text/plain"
-                                                         data:txtData
-                                                  databaseURL:remoteDbURL];
-            originalAttachments[name] = txtData;
-        }
+    NSString *revId = [self createRemoteDocumentWithId:docId
+                                                  body:@{@"hello": @"world"}
+                                           databaseURL:remoteDbURL];
+    
+    for (NSInteger i = 1; i <= nAttachments; i++) {
+        NSString *name = [NSString stringWithFormat:@"txtDoc%li", (long)i];
+        NSString *content = [NSString stringWithFormat:@"doc%li", (long)i];
+        NSData *txtData = [content dataUsingEncoding:NSUTF8StringEncoding];
+        revId = [self addAttachmentToRemoteDocumentWithId:docId
+                                                    revId:revId
+                                           attachmentName:name
+                                              contentType:@"text/plain"
+                                                     data:txtData
+                                              databaseURL:remoteDbURL];
+        originalAttachments[name] = txtData;
     }
     
     //
-    // Replicate and check
+    // Replicate
+    //
+    
+    [self pullFrom:remoteDbURL to:self.datastore];
+    
+    //
+    // Checks
     //
     
     CDTDocumentRevision *rev;
-    NSArray *attachments;
-    
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-    NSLog(@"Replicating from %@", [remoteDbURL absoluteString]);
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
-    
-    rev = [self.datastore getDocumentWithId:@"attachments1"
+    rev = [self.datastore getDocumentWithId:docId
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], nAttachments, @"Wrong number of attachments");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+                 @"Incorrect number of attachments");
     
     for (NSString *attachmentName in [originalAttachments keyEnumerator]) {
         NSError *error;
@@ -419,14 +426,11 @@
                                                     forRev:rev
                                                      error:&error];
         STAssertNotNil(a, @"No attachment named %@", attachmentName);
-        STAssertNil(error, @"error wasn't nil");
         
         NSData *data = [a dataFromAttachmentContent];
         NSData *originalData = originalAttachments[attachmentName];
         
-        STAssertEqualObjects([[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding], 
-                             [[NSString alloc] initWithData:originalData encoding:NSUTF8StringEncoding],
-                             @"attachment content didn't match");
+        STAssertEqualObjects(data, originalData, @"attachment content didn't match");
     }
     
     //
@@ -456,7 +460,6 @@
     [self createRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
     
-    // { document ID: number of attachments to create }
     NSString *docId = @"attachments1";
     NSString *revId = [self createRemoteDocumentWithId:docId
                                                   body:@{@"hello": @"world"}
@@ -476,13 +479,7 @@
     // Replicate
     //
     
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pullFrom:remoteDbURL to:self.datastore];
     
     //
     // Update the local attachment, replicate, check updated remotely
@@ -501,12 +498,7 @@
                                       error:nil];
     STAssertNotNil(rev, @"Unable to add attachments to document");
     
-    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                                     targetURI:remoteDbURL];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pushTo:remoteDbURL from:self.datastore];
     
     //
     // Checks
@@ -547,12 +539,10 @@
     [self createRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
     
-    // { document ID: number of attachments to create }
     NSString *docId = @"attachments1";
     NSString *revId = [self createRemoteDocumentWithId:docId
                                                   body:@{@"hello": @"world"}
                                            databaseURL:remoteDbURL];
-    
     NSString *attachmentName = @"attachment-1";
     NSString *originalContent = @"an-attachment";
     NSData *txtData = [originalContent dataUsingEncoding:NSUTF8StringEncoding];
@@ -566,13 +556,8 @@
     //
     // Replicate
     //
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    
+    [self pullFrom:remoteDbURL to:self.datastore];
     
     //
     // Delete the local attachment, replicate, check deleted remotely
@@ -584,17 +569,11 @@
                                     fromRev:rev
                                       error:nil];
     STAssertNotNil(rev, @"Unable to add attachments to document");
-    STAssertEquals([[self.datastore attachmentsForRev:rev
-                                                error:nil] count],
-                   (NSUInteger)0,
-                   @"Wrong attachment count after deleting");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
+                 @"Incorrect number of attachments");
     
-    replicator = [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                                     targetURI:remoteDbURL];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    
+    [self pushTo:remoteDbURL from:self.datastore];
     
     //
     // Checks
@@ -634,12 +613,10 @@
     [self createRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
     
-    // { document ID: number of attachments to create }
     NSString *docId = @"attachments1";
     NSString *revId = [self createRemoteDocumentWithId:docId
                                                   body:@{@"hello": @"world"}
                                            databaseURL:remoteDbURL];
-    
     NSString *attachmentName = @"attachment-1";
     NSString *originalContent = @"an-attachment";
     NSData *txtData = [originalContent dataUsingEncoding:NSUTF8StringEncoding];
@@ -654,34 +631,18 @@
     // Replicate
     //
     
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pullFrom:remoteDbURL to:self.datastore];
     
     //
     // Delete the remote attachment, replicate, check deleted locally
     //
     
-    NSDictionary* headers = @{@"accept": @"application/json",
-                              @"If-Match": revId};
-    UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
-        NSURL *docURL = [remoteDbURL URLByAppendingPathComponent:docId];
-        NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
-        [request setUrl:[attachmentURL absoluteString]];
-        [request setHeaders:headers];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
+    [self deleteAttachmentNamed:attachmentName
+                   fromDocument:docId
+                     ofRevision:revId
+                   fromDatabase:remoteDbURL];
     
-    replicator = [self.replicatorFactory onewaySourceURI:remoteDbURL
-                                         targetDatastore:self.datastore];
-    [replicator start];
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
+    [self pullFrom:remoteDbURL to:self.datastore];
     
     //
     // Checks
@@ -689,12 +650,8 @@
     
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
                                                            error:nil];
-    STAssertNotNil(rev, @"Unable to get doc");
-    STAssertEquals([[self.datastore attachmentsForRev:rev
-                                                error:nil] count],
-                   (NSUInteger)0,
-                   @"Wrong attachment count after deleting");
-    
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
+                 @"Incorrect number of attachments");
     
     //
     // Clean up
@@ -775,34 +732,23 @@
     // Replicate to local database
     //
     
-    CDTDocumentRevision *rev;
-    NSArray *attachments;
-    
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:remoteDbURL
-                            targetDatastore:self.datastore];
-    
-    NSLog(@"Replicating from %@", [self.remoteDatabase absoluteString]);
-    [replicator start];
-    
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
+    [self pullFrom:remoteDbURL to:self.datastore];
     
     //
     // Check both documents are okay
     //
     
+    CDTDocumentRevision *rev;
+    
     rev = [self.datastore getDocumentWithId:docId
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)1, @"Should be one attachment");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+                 @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:copiedDocId
                                       error:nil];
-    attachments = [self.datastore attachmentsForRev:rev error:nil];
-    STAssertEquals([attachments count], (NSUInteger)1, @"Should be one attachment");
+    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+                 @"Incorrect number of attachments");
     
     //
     // Clean up
