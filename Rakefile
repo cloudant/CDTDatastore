@@ -38,6 +38,11 @@ task :travis do
   sh "pod lib lint"
 end
 
+desc "pod update all included projects"
+task :podupdate do
+  sh "cd Tests ; pod update ; cd ../ReplicationAcceptance ; pod update ; cd .."
+end
+
 desc "Run the replication acceptance tests"
 task :replicationacceptance do
     $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=OS X' test | xcpretty; exit ${PIPESTATUS[0]}")
