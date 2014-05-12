@@ -15,7 +15,7 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 #import <Foundation/Foundation.h>
-#import <DatabaseContentChecker.h>
+#import <MRDatabaseContentChecker.h>
 
 #import "CloudantSyncTests.h"
 
@@ -126,7 +126,7 @@
     
     
     // now test the content of docs/revs
-    DatabaseContentChecker *dc =[[DatabaseContentChecker alloc] init];
+    MRDatabaseContentChecker *dc =[[MRDatabaseContentChecker alloc] init];
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         NSArray *expectedRows = @[
@@ -815,7 +815,7 @@
     [self.dbutil checkTableRowCount:initialRowCount 
                          modifiedBy:modifiedCount];
 
-    DatabaseContentChecker *dc = [[DatabaseContentChecker alloc] init];
+    MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
     NSNumber *expectedDoc_id = @1;
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
@@ -923,7 +923,7 @@
     NSLog(@"done checking table counts");
     
     NSLog(@"Checking revs and docs tables");
-    DatabaseContentChecker *dc =[[DatabaseContentChecker alloc] init];
+    MRDatabaseContentChecker *dc =[[MRDatabaseContentChecker alloc] init];
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         NSError *validationError;
