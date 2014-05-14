@@ -15,6 +15,7 @@
 
 #import <SenTestingKit/SenTestingKit.h>
 #import <Foundation/Foundation.h>
+#import <DatabaseContentChecker.h>
 
 #import "CloudantSyncTests.h"
 
@@ -124,52 +125,38 @@
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
     
     
-    //now test the content of docs/revs
-
-    NSString *sql = @"select * from docs";
-    __block int doc_id;
+    // now test the content of docs/revs
+    DatabaseContentChecker *dc =[[DatabaseContentChecker alloc] init];
+    
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
-        FMResultSet *result = [db executeQuery:sql];
-        [result next];
-        NSLog(@"testing content of docs table");
-        
-        STAssertEqualObjects(testDocId, [result stringForColumn:@"docid"], @"doc id doesn't match. should be %@. found %@", testDocId, [result stringForColumn:@"docid"]);
-        doc_id = [result intForColumn:@"doc_id"];
-        
-        STAssertEqualObjects([result stringForColumn:@"docid"], [ob docId],
-                             @"database docid (%@) doesn't match CDTDocumentRevision.docId (%@)",
-                             [result stringForColumn:@"docid"], [ob docId]);
-
-        STAssertFalse([result next], @"There are too many rows in docs");
-
-        [result close];
+        NSArray *expectedRows = @[
+                                  @[@"docId"],
+                                  @[testDocId]
+                                  ];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"docs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
     }];
     
     
-    sql = @"select * from revs";
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
-        FMResultSet *result = [db executeQuery:sql];
-        [result next];
-        
-        NSLog(@"testing content of revs table");
-        STAssertEquals(doc_id, [result intForColumn:@"doc_id"], @"doc_id in revs (%d) doesn't match doc_id in docs (%d).", doc_id, [result intForColumn:@"doc_id"]);
-        STAssertEquals(1, [result intForColumn:@"sequence"], @"sequence is not 1");
-        STAssertFalse([[result stringForColumn:@"revid"] isEqualToString:@""], @"revid string isEqual to empty string");
-        STAssertTrue([result boolForColumn:@"current"], @"document current should be YES");
-        STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
-        
-        NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                                   options: TDJSONReadingMutableContainers
-                                                     error: NULL];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key: value}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@", jsonDoc, @{key: value});
-        
-        STAssertEqualObjects([ob documentAsDictionary], jsonDoc, @"JSON document from CDTDocumentRevision not to revs.json. Found %@. Expected %@", [ob documentAsDictionary], jsonDoc);
-        
-        STAssertFalse([result next], @"There are too many rows in revs");
-        STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id not nil");
-        STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid not nil");
-        
-        [result close];
+        NSString *revId = @"1-1f7588ca02054efe626a6e440a431861";
+        NSData *json = [TDJSON dataWithJSONObject:@{key: value} 
+                                          options:0 
+                                            error:nil];
+        NSArray *expectedRows = @[
+            @[@"doc_id", @"sequence", @"revid", @"current", @"deleted", @"json"],
+            @[@(1),      @1,          revId,    @YES,       @NO,        json]
+        ];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"revs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
     }];
 }
 
@@ -825,66 +812,48 @@
     //now test the content of docs/revs tables explicitely.
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
-    [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
+    [self.dbutil checkTableRowCount:initialRowCount 
+                         modifiedBy:modifiedCount];
+
+    DatabaseContentChecker *dc = [[DatabaseContentChecker alloc] init];
+    NSNumber *expectedDoc_id = @1;
     
-    __block int doc_id_inDocsTable;
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
-        FMResultSet *result = [db executeQuery:@"select * from docs"];
-        [result next];
-        NSLog(@"testing content of docs table");
         
-        STAssertEqualObjects(docId, [result stringForColumn:@"docid"], @"doc id doesn't match. should be %@. found %@", docId,
-                             [result stringForColumn:@"docid"]);
-        
-        doc_id_inDocsTable = [result intForColumn:@"doc_id"];
-        
-        STAssertFalse([result next], @"There are too many rows in docs");
-        
-        [result close];
+        NSError *validationError;
+        NSArray *expectedRows = @[
+            @[@"doc_id",      @"docid"],
+            @[expectedDoc_id, docId]
+            ];
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"docs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
     }];
     
-    
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
-        FMResultSet *result = [db executeQuery:@"select * from revs"];
-        [result next];
         
-        NSLog(@"testing content of revs table");
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"],
-                       @"doc_id in revs (%d) doesn't match doc_id in docs (%d).", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        NSString *revId1 = @"1-1f7588ca02054efe626a6e440a431861";
+        NSData *json1 = [TDJSON dataWithJSONObject:@{key1: value1} 
+                                          options:0 
+                                             error:nil];
         
-        STAssertEquals(1, [result intForColumn:@"sequence"], @"sequence is not 1");
-        STAssertFalse([[result stringForColumn:@"revid"] isEqualToString:@""], @"revid string isEqual to empty string");
-        STAssertFalse([result boolForColumn:@"current"], @"document current should be NO");
-        STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
-        
-        NSError *error;
-        NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                                   options: TDJSONReadingMutableContainers
-                                                     error: &error];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key1: value1}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@. Error %@", jsonDoc, @{key1: value1}, error);
-
-        //next row
-        STAssertTrue([result next], @"Didn't find the second row in the revs table");
-
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"],
-                       @"doc_id in revs (%d) doesn't match doc_id in docs (%d).", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        
-        STAssertEquals(2, [result intForColumn:@"sequence"], @"sequence is not 1");
-        STAssertFalse([[result stringForColumn:@"revid"] isEqualToString:@""], @"revid string isEqual to empty string");
-        STAssertTrue([result boolForColumn:@"current"], @"document current should be YES");
-        STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
-        
-        error = nil;
-        jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                                   options: TDJSONReadingMutableContainers
-                                                     error: &error];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@. Error %@", jsonDoc, @{key2: value2}, error);
-
-        STAssertFalse([result next], @"There are too many rows in revs");
-        STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id not nil");
-        STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid not nil");
-        
-        [result close];
+        NSString *revId2 = @"2-be2c05cd85b8468ce92b04e001b0e923";
+        NSData *json2 = [TDJSON dataWithJSONObject:@{key2: value2} 
+                                          options:0 
+                                            error:nil];
+        NSArray *expectedRows = @[
+            @[@"doc_id",      @"sequence", @"revid", @"current", @"deleted", @"json"],
+            @[expectedDoc_id, @1,          revId1,   @NO,        @NO,        json1],
+            @[expectedDoc_id, @2,          revId2,   @YES,       @NO,        json2],
+            ];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"revs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
     }];
 
 }
@@ -954,50 +923,74 @@
     NSLog(@"done checking table counts");
     
     NSLog(@"Checking revs and docs tables");
+    DatabaseContentChecker *dc =[[DatabaseContentChecker alloc] init];
+    
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSError *validationError;
+        NSArray *expectedRows = @[
+                                  @[@"docId"],
+                                  @[ob.docId]
+                                  ];
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"docs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+    }];
+    
     [queue inDatabase:^(FMDatabase *db) {
-        FMResultSet  *result = [db executeQuery:@"select * from docs"];
-        [result next];
-        STAssertEqualObjects(ob.docId, [result stringForColumn:@"docid"], @"doc id doesn't match. should be %@. found %@", ob.docId,
-                             [result stringForColumn:@"docid"]);
-        STAssertEquals(1, [result intForColumn:@"doc_id"], @"Expected first row in docs to have doc_id == 1");
-        STAssertFalse([result next], @"There are too many rows in docs");
-        [result close];
-
-        result = [db executeQuery:@"select * from revs, docs where revs.doc_id = docs.doc_id"];
-        int counter = 0;
-        while([result next]){
-            NSDictionary *expectedDict = [[bodies[counter] td_body] properties];
-            
-            counter++;
-            
-            STAssertEquals(counter, [result intForColumn:@"sequence"],
-                           @"Revs bad sequence. Expected %d. Found %d", counter, [result intForColumn:@"sequence"]);
-            STAssertEquals(counter-1, [result intForColumn:@"parent"],
-                           @"Expected revs.parent to be %d. Found%d", counter-1, [result intForColumn:@"parent"]);
-            
-            if(counter == 1)
-                STAssertTrue([result objectForColumnName:@"parent"] == [NSNull null], @"Expected revs.parent to be NULL. Found %@ counter %d", [result objectForColumnName:@"parent"], counter);
-            
-            if(counter == numOfUpdates + 1)
-                STAssertTrue([result boolForColumn:@"current"], @"expected last entry in rows to be current version");
         
-            STAssertFalse([result boolForColumn:@"deleted"], @"did not expect 'deleted' to be true");
+        NSMutableArray *expectedRows = [NSMutableArray array];
+        [expectedRows addObject:@[@"doc_id", 
+                                  @"sequence", 
+                                  @"parent", 
+                                  @"revid", 
+                                  @"current",
+                                  @"deleted",
+                                  @"json"]];
+        
+        for (int counter = 1; counter <= numOfUpdates + 1; counter++) {
             
-            NSInteger revNumber = [self getRevPrefix:[result stringForColumn:@"revid"]];
-            STAssertEquals([[NSNumber numberWithInt:counter] integerValue], revNumber, @"expected rev integer to be %d. Found %d. counter %d. From rev %@", counter, revNumber, counter, [result stringForColumn:@"revid"] );
+            NSInteger expectedSeq = counter;
+            NSObject *expectedParent;
+            if (expectedSeq == 1) {
+                expectedParent = [NSNull null];
+            } else {
+                expectedParent = @(expectedSeq - 1);
+            }
             
-            NSError *error;
-            NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                                       options: TDJSONReadingMutableContainers
-                                                         error: &error];
-            STAssertTrue([jsonDoc isEqualToDictionary:expectedDict],
-                         @"JSON document from revs.json not equal to expected. Found %@. Expected %@. Error %@",
-                         jsonDoc, expectedDict, error);
+            NSString *revId = [NSString stringWithFormat:@"^%i-", counter];
+            NSRegularExpression *revIdRegEx = [NSRegularExpression 
+                                               regularExpressionWithPattern:revId                                                                            
+                                               options:0                                                                                     
+                                               error:nil];
             
+            BOOL expectedCurrent = (counter == numOfUpdates +1);
+            
+            // This is the only zero based item we're checking
+            // so counter starts at 1 and we minus one
+            NSDictionary *expectedDict = [[bodies[counter-1] td_body] properties];
+            NSData *json = [TDJSON dataWithJSONObject:expectedDict 
+                                              options:0 
+                                                error:nil];
+            
+            NSArray *row = @[@(1), 
+                             @(expectedSeq), 
+                             expectedParent, 
+                             revIdRegEx, 
+                             @(expectedCurrent), 
+                             @NO, 
+                             json];
+            [expectedRows addObject:row];
         }
         
-        STAssertEquals(counter, numOfUpdates + 1, @"Expected %d rows in results. Found %d", numOfUpdates + 1, counter);
-        [result close];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"revs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+
     }];
 
 
