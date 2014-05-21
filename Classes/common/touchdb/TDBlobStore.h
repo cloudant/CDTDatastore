@@ -39,28 +39,9 @@ typedef struct TDBlobKey {
 
 - (BOOL) storeBlob: (NSData*)blob
        creatingKey: (TDBlobKey*)outKey;
-
-/**
- Read available bytes from an open stream into a
- file within the blob store.
- 
- It is the caller's responsibility to make sure that the
- stream is opened and closed, and that the stream is at
- the right position to start reading from.
- 
- If return value is NO, values for out parameters are 
- not usable.
- 
- @param stream open stream to read from.
- @param outKey out parameter to receive the key generated
- @param outFileLength out parameter to receive total number of bytes read from the stream
- 
- @return BOOL indicating whether the stream was successfully stored.
- */
-- (BOOL) storeBlobFromStream: (NSInputStream*)stream
-                 creatingKey: (TDBlobKey*)outKey
-                  fileLength: (NSInteger*)outFileLength
-                       error:(NSError * __autoreleasing *)error;
+- (BOOL) storeBlob:(NSData *)blob 
+       creatingKey:(TDBlobKey *)outKey
+             error:(NSError * __autoreleasing *)outError;
 
 @property (readonly) NSString* path;
 @property (readonly) NSUInteger count;

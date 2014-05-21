@@ -53,6 +53,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     self = [super init];
     if (self) {
         _database = database;
+        if (![_database open]) {
+            return nil;
+        }
+        
         NSString *dir = [[database path] stringByDeletingLastPathComponent];
         NSString *name = [database name];
         _extensionsDir = [dir stringByAppendingPathComponent: [NSString stringWithFormat:@"%@_extensions", name]];
@@ -210,7 +214,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                 options:0
                                                  status:&status];
     if (TDStatusIsError(status)) {
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
@@ -224,12 +230,14 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     NSArray *result = [NSArray array];
+    TDContentOptions contentOptions = kTDIncludeLocalSeq;
     struct TDQueryOptions query = {
         .limit = (unsigned int)self.database.documentCount,
         .inclusiveEnd = YES,
         .skip = 0,
         .descending = NO,
-        .includeDocs = YES
+        .includeDocs = YES,
+        .content = contentOptions
     };
 
     // This method must loop to get around the fact that conflicted documents
@@ -251,6 +259,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                                  revID:revId
                                                                deleted:NO];
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
+            revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
 
             CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
             [batch addObject:ob];

@@ -21,4 +21,10 @@
 
 -(BOOL) compareDatastore:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl;
 
+/**
+ Specialised, so we call it out as a separate method.
+ */
+- (BOOL)compareAttachmentsForCurrentRevisions:(CDTDatastore*)local 
+                                 withDatabase:(NSURL*)databaseUrl;
+
 @end

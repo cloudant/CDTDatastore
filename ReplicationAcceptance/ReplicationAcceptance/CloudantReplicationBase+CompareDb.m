@@ -11,6 +11,8 @@
 #import <CloudantSync.h>
 #import <SenTestingKit/SenTestingKit.h>
 #import <UNIRest.h>
+#import <CommonCrypto/CommonDigest.h>
+#import <NSData+Base64.h>
 
 @implementation CloudantReplicationBase (CompareDb)
 
@@ -164,6 +166,89 @@
         }
     }];
     return YES;
+}
+
+- (BOOL)compareAttachmentsForCurrentRevisions:(CDTDatastore*)local 
+                                 withDatabase:(NSURL*)databaseUrl
+{
+    NSArray *allLocalDocs = [local getAllDocuments];
+    [allLocalDocs enumerateObjectsWithOptions:NSEnumerationConcurrent
+                                   usingBlock:^(id ob, NSUInteger idx, BOOL* stop)
+     {
+         CDTDocumentRevision *document = (CDTDocumentRevision*)ob;
+         
+         NSMutableDictionary *localAttachments = [NSMutableDictionary dictionary];
+         for (CDTAttachment *att in [local attachmentsForRev:document error:nil]) {
+             localAttachments[att.name] = att;
+         }
+         
+         // Get the document, including attachments
+         NSDictionary* headers = @{@"accept": @"application/json"};
+         NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:document.docId];
+         NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
+             [request setUrl:[docUrl absoluteString]];
+             [request setHeaders:headers];
+             [request setParameters:@{@"rev": document.revId, @"attachments": @"true"}];
+         }] asJson].body.object;
+         
+         NSDictionary *remoteAttachments = json[@"_attachments"];
+         
+         STAssertEquals(localAttachments.count, 
+                        remoteAttachments.count, 
+                        @"Wrong attachment number");
+         NSArray *remoteAttachmentNames = [remoteAttachments allKeys];
+         for (NSString *name in [localAttachments allKeys]) {
+             STAssertTrue([remoteAttachmentNames containsObject:name], 
+                          @"local had attachment remote didn't");
+         }
+         
+         // Check the content via MD5
+         for (NSString *name in [localAttachments allKeys]) {
+             CDTAttachment *lAttachment = localAttachments[name];
+             NSData *localData = [lAttachment dataFromAttachmentContent];
+             NSString *localValue = [[NSString alloc] initWithData:localData
+                                                          encoding:NSUTF8StringEncoding];
+             
+             // digest is base64 encoded: "md5-U/ZX/YL+2w9lcpr6Fjt87A=="
+             // we need to strip "md5-" prefix and "==" suffix.
+             NSDictionary *rAttachment = remoteAttachments[name];
+             NSData *remoteData = [NSData dataFromBase64String:rAttachment[@"data"]];
+             NSString *remoteValue = [[NSString alloc] initWithData:remoteData
+                                                           encoding:NSUTF8StringEncoding];
+             STAssertEqualObjects(localValue, remoteValue, @"Attachment data didn't match");
+             
+             // This doesn't work right now, the MD5s don't match
+             // even though the data does.
+//             NSData *localMD5 = [self MD5:localData];
+//             STAssertNotNil(localMD5, @"Local MD5 was nil");
+//             NSString *digest = rAttachment[@"digest"];
+//             NSRange r = NSMakeRange(4, [digest length] - 4 - 2);
+//             NSString *remoteMD5Base64 = [digest substringWithRange:r];
+//             NSData *remoteMD5 = [NSData dataFromBase64String:remoteMD5Base64];
+//             STAssertEqualObjects(localMD5, remoteMD5, @"Attachment MD5 didn't match");
+         }
+     }];
+    
+    return YES;
+}
+
+/**
+ Create an MD5 string for an NSData instance
+ */
+- (NSData*)MD5:(NSData*)data
+{
+    if (nil == data) {
+        return nil;
+    }
+    
+    // Create byte array of unsigned chars
+    unsigned char md5Buffer[CC_MD5_DIGEST_LENGTH];
+    
+    // Create 16 byte MD5 hash value, store in buffer
+    CC_MD5(data.bytes, (CC_LONG)data.length, md5Buffer);
+    
+    NSData *md5 = [[NSData alloc] initWithBytes:md5Buffer length:CC_MD5_DIGEST_LENGTH];
+    return md5;
 }
 
 @end
