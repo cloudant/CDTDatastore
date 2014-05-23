@@ -7,7 +7,7 @@ end
 
 target :ios do
     platform :ios, '7.0'
-    link_with 'RA_Tests_iOS'
+    link_with 'RA_Tests_iOS', 'ReplicationAcceptanceAppTests'
     import_pods
 end
 
