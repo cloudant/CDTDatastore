@@ -40,7 +40,7 @@
  as all these documents are read from both local and remote databases
  during the check phase.
  */
-static NSUInteger n_docs = 100000;
+static NSUInteger n_docs = 10000;
 /**
  Rev tree size for "large rev tree" tests.
  */
