@@ -254,15 +254,35 @@
                     
                     // Strip any attachments already known to the target db:
                     if (properties[@"_attachments"]) {
-                        // Look for the latest common ancestor and stub out older attachments:
-                        NSArray* possible = revResults[@"possible_ancestors"];
-                        int minRevPos = findCommonAncestor(rev, possible);
-                        [TD_Database stubOutAttachmentsIn: rev beforeRevPos: minRevPos + 1
-                                       attachmentsFollow: NO];
-                        properties = rev.properties;
-                        // If the rev has huge attachments, send it under separate cover:
-                        if (!_dontSendMultipart && [self uploadMultipartRevision: rev])
-                            return nil;
+                        
+                        if (_sendAllDocumentsWithAttachmentsAsMultipart) {
+                            // We saw an error which indicates we should send all documents
+                            // with attachments using multipart/related AND include all
+                            // attachment data (no stubs)
+                            // A combination of revpos=0 and attachmentsFollow=YES will add
+                            // follows to all attachments, causing uploadMultipartRevision to
+                            // send data inline.
+                            [TD_Database stubOutAttachmentsIn: rev 
+                                                 beforeRevPos: 0
+                                            attachmentsFollow: YES];
+                            properties = rev.properties;
+                            if ([self uploadMultipartRevision: rev]) {
+                                return nil;
+                            }
+                        } else {
+                            // If we're still churning along fine -- which we should be -- stub
+                            // out attachments that we're sure the remote has by finding the
+                            // common ancestor and stubbing out those older than that.
+                            NSArray* possible = revResults[@"possible_ancestors"];
+                            int minRevPos = findCommonAncestor(rev, possible);
+                            [TD_Database stubOutAttachmentsIn: rev beforeRevPos: minRevPos + 1
+                                            attachmentsFollow: NO];
+                            properties = rev.properties;
+                            // If the rev has huge attachments, send it under separate cover:
+                            if (!_dontSendMultipart && [self uploadMultipartRevision: rev])
+                                return nil;
+                        }
+                        
                     }
                 }
                 Assert(properties[@"_id"]);
@@ -283,12 +303,23 @@
 }
 
 
-// Post the revisions to the destination. "new_edits":false means that the server should
-// use the given _rev IDs instead of making up new ones.
+/**
+ Upload documents to the remote using _bulk_docs.
+ 
+ http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API
+ 
+ Using "new_edits":NO means the server will add the revisions verbatim, that is,
+ using the rev ID we send rather than creating new ones.
+ 
+ @param docsToSend Contains document dictionaries in the format _bulk_docs expects
+    them, including conflicting revisions. This is passed as-is into the _bulk_docs
+    call.
+ @param changes Contains the list of TD_Revision objects for the documents we are
+    sending.
+ */
 - (void) uploadBulkDocs: (NSArray*)docsToSend
                 changes: (TD_RevisionList*)changes
 {
-    // http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API
     NSUInteger numDocsToSend = docsToSend.count;
     if (numDocsToSend == 0)
         return;
@@ -301,40 +332,100 @@
                       body: $dict({@"docs", docsToSend},
                                   {@"new_edits", $false})
               onCompletion: ^(NSDictionary* response, NSError *error) {
+                  
+                  TD_RevisionList *revisionsToRetry = [[TD_RevisionList alloc] init];
+                  
                   if (!error) {
                       NSMutableSet* failedIDs = [NSMutableSet set];
-                      // _bulk_docs response is really an array, not a dictionary!
+                      
+                      // _bulk_docs response is really an array, not a dictionary
                       for (NSDictionary* item in $castIf(NSArray, response)) {
+                          
                           TDStatus status = statusFromBulkDocsResponseItem(item);
-                          if (TDStatusIsError(status)) {
-                              // One of the docs failed to save.
-                              Warn(@"%@: _bulk_docs got an error: %@", self, item);
-                              // 403/Forbidden means validation failed; don't treat it as an error
-                              // because I did my job in sending the revision. Other statuses are
-                              // actual replication errors.
-                              if (status != kTDStatusForbidden && status != kTDStatusUnauthorized) {
-                                  NSString* docID = item[@"id"];
+                          
+                          if (!TDStatusIsError(status)) {
+                              continue;
+                          }
+                          
+                          // This item (doc) failed to save correctly
+                          Warn(@"%@: _bulk_docs got an error: %@", self, item);
+                          
+                          NSString *docID;
+                          NSURL *url;
+                          switch (status) {
+                                  
+                                  // 403/Forbidden means validation failed; don't treat it as an error
+                                  // because I did my job in sending the revision. Other statuses are
+                                  // actual replication errors.
+                              case kTDStatusForbidden:
+                              case kTDStatusUnauthorized:
+                                  break;
+                                  
+                                  // 412 is likely to mean that the attachment stubs we sent were
+                                  // rejected by CouchDB. We need to resend the rev with all current
+                                  // attachments using multipart/related. If this fails, we really
+                                  // failed.
+                              case kTDStatusDuplicate:
+                                  // If we get a 412: retry this revision, and upload all documents
+                                  // using multipart/related including all attachment data.
+                                  docID = item[@"id"];
+                                  for (TD_Revision *rev in [changes revsWithDocID:docID]) {
+                                      [revisionsToRetry addRev:rev];
+                                  }
+                                  _sendAllDocumentsWithAttachmentsAsMultipart = YES;
+                                  
+                                  // The rev also failed, so don't remove from pending
                                   [failedIDs addObject: docID];
-                                  NSURL* url = docID ? [_remote URLByAppendingPathComponent: docID]
-                                                     : nil;
+                                  
+                                  break;
+                                  
+                                  // Replication error
+                              default: 
+                                  docID = item[@"id"];
+                                  [failedIDs addObject: docID];
+                                  url = nil;
+                                  if (docID) {
+                                      url = [_remote URLByAppendingPathComponent: docID];
+                                  }
                                   error = TDStatusToNSError(status, url);
-                              }
+                                  break;
+                                  
                           }
                       }
 
-                      // Remove from the pending list all the revs that didn't fail:
+                      // Remove from the pending list all the revs that didn't fail
                       for (TD_Revision* rev in changes.allRevisions) {
-                          if (![failedIDs containsObject: rev.docID])
+                          if (![failedIDs containsObject: rev.docID]) {
                               [self removePending: rev];
+                          }
                       }
-                  }
-                  if (error) {
+                      
+                      LogTo(SyncVerbose, @"%@: Sent %@", self, changes.allRevisions);
+                      
+                  } 
+                  
+                  else if (error && error.code == kTDStatusDuplicate) {
+                      // A 412 for the whole batch means we don't know what caused the
+                      // failure. Therefore retry all, and be sure to send all attachment
+                      // data, as the 412 is caused by mismatched stubs.
+                      for (TD_Revision *rev in changes.allRevisions) {
+                          [revisionsToRetry addRev:rev];
+                      }
+                      _sendAllDocumentsWithAttachmentsAsMultipart = YES;
+                  } 
+                  
+                  else if (error) {
+                      // Another error in the request as a whole; fail replication.
                       self.error = error;
                       [self revisionFailed];
-                  } else {
-                      LogTo(SyncVerbose, @"%@: Sent %@", self, changes.allRevisions);
                   }
-                  self.changesProcessed += numDocsToSend;
+                  
+                  self.changesProcessed += (numDocsToSend - revisionsToRetry.count);
+                  
+                  if (revisionsToRetry.count > 0) {
+                      [self addRevsToInbox:revisionsToRetry];
+                  }
+                  
                   [self asyncTasksFinished: 1];
               }
      ];
