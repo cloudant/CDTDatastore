@@ -35,6 +35,8 @@
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
     [self.replicatorFactory start];
+    
+//    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
 }
 
 - (void)tearDown
@@ -105,8 +107,6 @@
     //
     // Set up remote database
     //
-    
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
@@ -181,8 +181,6 @@
     //
     // Set up remote database
     //
-    
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
@@ -265,8 +263,6 @@
     //
     // Set up remote database
     //
-    
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
@@ -367,8 +363,6 @@
     // Set up remote database
     //
     
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
-    
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
                               [CloudantReplicationBase generateRandomString:5]];
@@ -450,8 +444,6 @@
     // Set up remote database
     //
     
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
-    
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
                               [CloudantReplicationBase generateRandomString:5]];
@@ -529,8 +521,6 @@
     // Set up remote database
     //
     
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
-    
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
                               [CloudantReplicationBase generateRandomString:5]];
@@ -603,8 +593,6 @@
     // Set up remote database
     //
     
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
-    
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                               self.remoteDbPrefix,
                               [CloudantReplicationBase generateRandomString:5]];
@@ -668,7 +656,6 @@
  */
 - (void)testRevposIssueFixed
 {
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     
     NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
                                       self.remoteDbPrefix,
