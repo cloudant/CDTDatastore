@@ -366,8 +366,6 @@
                                   // attachments using multipart/related. If this fails, we really
                                   // failed.
                               case kTDStatusDuplicate:
-                                  // If we get a 412: retry this revision, and upload all documents
-                                  // using multipart/related including all attachment data.
                                   docID = item[@"id"];
                                   for (TD_Revision *rev in [changes revsWithDocID:docID]) {
                                       [revisionsToRetry addRev:rev];
