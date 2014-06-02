@@ -44,9 +44,11 @@ CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
 
 // Create a replicator that replicates changes from the local
 // datastore to the remote database.
-CDTReplicator *replicator =
-[self.replicatorFactory onewaySourceDatastore:datastore
-                                    targetURI:remoteDatabaseURL];
+CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:datastore
+                                                                         target:remoteDatabaseURL];
+NSError *error;
+CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
+//check error
 
 // Start the replication and wait for it to complete
 [replicator start];
@@ -73,9 +75,11 @@ CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
 
 // Create a replicator that replicates changes from the local
 // datastore to the remote database.
-CDTReplicator *replicator =
-[self.replicatorFactory onewaySourceURI:remoteDatabaseURL
-                        targetDatastore:datastore];
+CDTPullReplication *pushReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
+                                                                         target:datastore];
+NSError *error;
+CDTReplicator *replicator = [replicatorFactory oneWay:pullReplication error:&error];
+//check error
 
 // Start the replication and wait for it to complete
 [replicator start];

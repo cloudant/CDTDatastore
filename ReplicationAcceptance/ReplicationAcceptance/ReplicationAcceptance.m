@@ -22,6 +22,8 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
+#import "CDTPullReplication.h"
+#import "CDTPushReplication.h"
 
 @interface ReplicationAcceptance ()
 
@@ -88,9 +90,14 @@ static NSUInteger largeRevTreeSize = 1500;
  Create a new replicator, and wait for replication from the remote database to complete.
  */
 -(void) pullFromRemote {
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceURI:self.primaryRemoteDatabaseURL
-                            targetDatastore:self.datastore];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    STAssertNil(error, @"%@",error);
+    STAssertNotNil(replicator, @"CDTReplicator is nil");
 
     NSLog(@"Replicating from %@", [self.primaryRemoteDatabaseURL absoluteString]);
     [replicator start];
@@ -101,13 +108,40 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 }
 
+-(void) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
+{
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    
+    pull.filter = filterName;
+    pull.filterParams = params;
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    STAssertNil(error, @"%@",error);
+    STAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating from %@", [pull.source absoluteString]);
+    [replicator start];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+}
+
+
 /**
  Create a new replicator, and wait for replication from the local database to complete.
  */
 -(void) pushToRemote {
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                        targetURI:self.primaryRemoteDatabaseURL];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
+    STAssertNil(error, @"%@",error);
+    STAssertNotNil(replicator, @"CDTReplicator is nil");
 
     NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
     [replicator start];
@@ -191,6 +225,54 @@ static NSUInteger largeRevTreeSize = 1500;
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"hello":@"world"} error:&error];
     STAssertEquals([[res documentIds] count], n_docs, @"Index does not return correct count");
+}
+
+-(void) testPullFilteredReplication {
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    //create remote filter
+    NSString *ddoc = [NSString stringWithFormat:@"ddoc-%@",
+                      [CloudantReplicationBase generateRandomString:5]];
+    NSString *filterKey = @"docnum_by_range";
+    NSString *filterName = [ddoc stringByAppendingFormat:@"/%@", filterKey];
+    
+    NSString *filterFunction = @"function(doc, req) {"
+                               @"  if (doc.docnum >= req.query.min && doc.docnum < req.query.max)"
+                               @"    return true;"
+                               @"  else return false;"
+                               @"}";
+    
+    NSDictionary *body = @{@"filters": @{ filterKey:filterFunction}};
+    
+    [self createRemoteDocWithId:[NSString stringWithFormat:@"_design/%@", ddoc] body:body];
+    
+    
+    //replicate over a few individial docs - the filter range is [min, max).
+    [self pullFromRemoteWithFilter:filterName params:@{@"min":@1, @"max":@2}];
+    [self pullFromRemoteWithFilter:filterName params:@{@"min":@3, @"max":@4}];
+    [self pullFromRemoteWithFilter:filterName params:@{@"min":@13, @"max":@14}];
+    [self pullFromRemoteWithFilter:filterName params:@{@"min":@23, @"max":@24}];
+    
+    unsigned int totalReplicated = 4;
+    
+    //check for each doc
+    NSArray *docids = @[[NSString stringWithFormat:@"doc-%i", 1],
+                        [NSString stringWithFormat:@"doc-%i", 3],
+                        [NSString stringWithFormat:@"doc-%i", 13],
+                        [NSString stringWithFormat:@"doc-%i", 23]];
+    
+    NSArray *localDocs = [self.datastore getDocumentsWithIds:docids];
+    STAssertNotNil(localDocs, @"nil");
+    STAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %@",localDocs.count);
+    STAssertTrue(self.datastore.documentCount == totalReplicated,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    
 }
 
 
@@ -472,9 +554,10 @@ static NSUInteger largeRevTreeSize = 1500;
 
     NSURL *thirdDatabase = [self.remoteRootURL URLByAppendingPathComponent:thirdDatabaseName];
 
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                        targetURI:thirdDatabase];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:thirdDatabase];
+    
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:push error:nil];
 
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
     [replicator start];
@@ -577,10 +660,11 @@ static NSUInteger largeRevTreeSize = 1500;
 
     NSURL *thirdDatabase = [self.remoteRootURL URLByAppendingPathComponent:thirdDatabaseName];
 
-    CDTReplicator *replicator =
-    [self.replicatorFactory onewaySourceDatastore:self.datastore
-                                        targetURI:thirdDatabase];
-
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:thirdDatabase];
+    
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:push error:nil];
+    
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
     [replicator start];
 

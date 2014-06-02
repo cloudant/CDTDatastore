@@ -25,6 +25,7 @@
 
 -(void) createRemoteDocs:(NSInteger)count;
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs;
+-(NSString*) createRemoteDocWithId:(NSString *)ddocid body:(NSDictionary*)ddocbody;
 
 -(NSDictionary*) remoteDbMetadata;
 

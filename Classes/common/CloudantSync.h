@@ -23,6 +23,8 @@
 #import "CDTAttachment.h"
 
 #import "CDTReplicator.h"
+#import "CDTPushReplication.h"
+#import "CDTPullReplication.h"
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicatorDelegate.h"
 #import "CDTReplicationErrorInfo.h"

@@ -18,10 +18,16 @@
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 #import "CDTReplicator.h"
+#import "CDTAbstractReplication.h"
+#import "CDTPullReplication.h"
+#import "CDTPushReplication.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDocumentBody.h"
 
 #import "TDReplicatorManager.h"
+
+static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryErrorDomain";
+
 
 @interface CDTReplicatorFactory ()
 
@@ -58,48 +64,75 @@
 
 - (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
                               targetURI:(NSURL*)target {
-    NSError *error;
+    
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:source target:target];
 
-    NSDictionary *replicationDoc = @{
-        @"source": source.name,
-        @"target": [target absoluteString]
-        };
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:replicationDoc];
-
-    CDTDatastoreManager *m = self.manager;
-    CDTDatastore *datastore = [m datastoreNamed:kTDReplicatorDatabaseName error:&error];
-
-    if (datastore == nil) {
-        NSLog(@"Error getting replication db: %@", error);
-    }
-
-    CDTReplicator *replicator = [[CDTReplicator alloc] initWithReplicatorDatastore:datastore
-                                                           replicationDocumentBody:body];
-
-    return replicator;
+    return [self oneWay:push error:nil];
 }
 
 - (CDTReplicator*)onewaySourceURI:(NSURL*)source
                   targetDatastore:(CDTDatastore*)target {
-    NSError *error;
 
-    NSDictionary *replicationDoc = @{
-        @"source": [source absoluteString],
-        @"target": target.name
-    };
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:replicationDoc];
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:target];
+    
+    return [self oneWay:pull error:nil];
+}
 
-    CDTDatastoreManager *m = self.manager;
-    CDTDatastore *datastore = [m datastoreNamed:kTDReplicatorDatabaseName error:&error];
 
-    if (datastore == nil) {
-        NSLog(@"Error getting replication db: %@", error);
+- (CDTReplicator*)oneWay:(CDTAbstractReplication*)replication
+                   error:(NSError * __autoreleasing *)error
+{
+    
+    NSError *localErr;
+    NSDictionary *repdoc = [replication dictionaryForReplicatorDocument:&localErr];
+    if (localErr) {
+        if (error) *error = localErr;
+        return nil;
     }
+    
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:repdoc];
+    if (body == nil) {
+        if (error) {
+            NSDictionary *userInfo =
+            @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
+            *error = [NSError errorWithDomain:CDTReplicatorFactoryErrorDomain
+                                         code:CDTReplicatorFactoryErrorNilDocumentBodyForReplication
+                                     userInfo:userInfo];
+            NSLog(@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTDocumentBody. "
+                  @"%@\n %@.", [replication class], replication);
 
+        }
+        return nil;
+
+    }
+    
+    NSError *localError = nil;
+    CDTDatastoreManager *m = self.manager;
+    CDTDatastore *datastore = [m datastoreNamed:kTDReplicatorDatabaseName error:&localError];
+    if (localError != nil) {
+        if (error) *error = localError;
+        return nil;
+    }
+    
     CDTReplicator *replicator = [[CDTReplicator alloc] initWithReplicatorDatastore:datastore
                                                            replicationDocumentBody:body];
-
+    
+    if (replicator == nil) {
+        if (error) {
+            NSDictionary *userInfo =
+            @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
+            *error = [NSError errorWithDomain:CDTReplicatorFactoryErrorDomain
+                                         code:CDTReplicatorFactoryErrorNilReplicatorObject
+                                     userInfo:userInfo];
+            NSLog(@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
+                  @"%@\n %@", [replication class], replication);
+        }
+        return nil;
+    }
+    
     return replicator;
+
 }
+
 
 @end

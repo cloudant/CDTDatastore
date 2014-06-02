@@ -10,15 +10,14 @@
 *.perspectivev3
 !default.perspectivev3
 xcuserdata
+*.xccheckout
 profile
 *.moved-aside
 DerivedData
 .idea/
 *.hmap
-CDTDatastore.xcworkspace/xcshareddata/CDTDatastore.xccheckout
+build
 
 #CocoaPods
 Pods
-build
-contents.xcworkspacedata
 Podfile.lock
