@@ -454,7 +454,7 @@
 
 
 // Replaces attachment data whose revpos is < minRevPos with stubs.
-// If attachmentsFollow==YES, replaces data with "follows" key.
+// If attachmentsFollow==YES, replaces data for remaining attachments with "follows" key.
 + (void) stubOutAttachmentsIn: (TD_Revision*)rev
                  beforeRevPos: (int)minRevPos
             attachmentsFollow: (BOOL)attachmentsFollow

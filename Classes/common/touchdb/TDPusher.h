@@ -21,6 +21,12 @@
     BOOL _dontSendMultipart;
     NSMutableIndexSet* _pendingSequences;
     SequenceNumber _maxPendingSequence;
+    
+    /** YES if all further documents with attachments should:
+       * Be sent via multipart/related
+       * Have all attachment data sent (not just stubs)
+     */
+    BOOL _sendAllDocumentsWithAttachmentsAsMultipart;
 }
 
 @property BOOL createTarget;

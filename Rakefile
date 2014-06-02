@@ -54,6 +54,17 @@ task :replicationacceptance do
     end
 end
 
+desc "Run the replication acceptance tests"
+task :testdevice do
+    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'ReplicationAcceptanceApp' -destination 'platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)' test | xcpretty; exit ${PIPESTATUS[0]}")
+    puts "\033[0;31m! OS X unit tests failed" unless $osx_success
+    if $osx_success
+        puts "** All tests executed successfully"
+        else
+        exit(-1)
+    end
+end
+
 desc "Build docs and install to Xcode"
 task :docs do
   system("appledoc --keep-intermediate-files --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -i Classes/vendor -i Classes/common/touchdb Classes/")

@@ -78,6 +78,9 @@ typedef SInt64 SequenceNumber;
 
 - (TD_Revision*) revWithDocID: (NSString*)docID revID: (NSString*)revID;
 
+/** Retrive all TD_Revisions with a given doc ID within the list */
+- (NSArray*)revsWithDocID:(NSString*)docID;
+
 - (NSEnumerator*) objectEnumerator;
 
 @property (readonly) NSArray* allRevisions;

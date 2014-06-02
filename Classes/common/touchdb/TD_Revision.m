@@ -205,6 +205,23 @@
     return nil;
 }
 
+/**
+ Returns the TD_Revision objects with the given docID contained in this list
+ */
+- (NSArray*)revsWithDocID:(NSString*)docID 
+{
+    if (!docID) return nil;
+    
+    NSMutableArray *results;
+    for (TD_Revision* rev in _revs) {
+        if ($equal(rev.docID, docID)) {
+            if (!results) { results = [NSMutableArray array]; }
+            [results addObject:rev];
+        }
+    }
+    return results;
+}
+
 - (NSEnumerator*) objectEnumerator {
     return _revs.objectEnumerator;
 }
