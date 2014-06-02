@@ -18,6 +18,21 @@
 @class CDTDatastore;
 @class CDTReplicator;
 @class CDTDatastoreManager;
+@class CDTAbstractReplication;
+
+/**
+* Replication errors.
+*/
+typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
+    /**
+     * CDTReplicator was not fully constucted
+     */
+    CDTReplicatorFactoryErrorNilReplicatorObject = 1,
+    /**
+       Error creating a new CDTDocumentBody
+     */
+    CDTReplicatorFactoryErrorNilDocumentBodyForReplication  = 2
+};
 
 /**
  Factory for CDTReplicator objects.
@@ -68,6 +83,27 @@
  *  --------------------------------------------------------------------------------------
  */
 
+/**
+ * Create a CDTReplicator object set up to replicate changes from the
+ * local datastore to a remote database.
+ *
+ * CDTPullReplication and CDTPushReplication (subclasses of CDTAbstractReplication)
+ * provide configuration parameters for the construction of the CDTReplicator.
+ *
+ * @param replication a CDTPullReplication or CDTPushReplication
+ * @param error report error information
+ *
+ * @return a CDTReplicator instance which can be used to start and
+ *  stop the replication itself.
+ */
+- (CDTReplicator*)oneWay:(CDTAbstractReplication*)replication
+                   error:(NSError * __autoreleasing *)error;
+
+
+/**
+ The following methods will soon be deprecated. 
+ @see CDTReplicatorFactor -oneWay:(CDTAbstractReplication*).
+*/
 /**
  * Create a CDTReplicator object set up to replicate changes from the
  * local datastore to a remote database.

@@ -129,10 +129,12 @@ NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
 CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
 
 // Replicate from the local to remote database
-CDTReplicator *replicator =
-[replicatorFactory onewaySourceDatastore:datastore
-                               targetURI:remoteDatabaseURL];
+CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:datastore
+                                                                         target:remoteDatabaseURL];
+NSError *error;
+CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
 
+//check error
 
 // Fire-and-forget (there are easy ways to monitor the state too)
 [replicator start];

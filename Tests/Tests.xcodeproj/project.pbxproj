@@ -66,6 +66,8 @@
 		9FAAB00218DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */; };
 		9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
 		9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
+		9FA839CB18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
+		9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +116,7 @@
 		9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatastoreConflictResolvers.h; sourceTree = "<group>"; };
 		9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflictResolvers.m; sourceTree = "<group>"; };
+		9FA839CA18FC474F0054512E /* CDTReplicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplicationTests.m; sourceTree = "<group>"; };
 		B8C5CE07530A44358897106E /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -208,6 +211,7 @@
 				9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */,
 				9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */,
 				27389E3418534E050027A404 /* SetUpDatastore.m */,
+				9FA839CA18FC474F0054512E /* CDTReplicationTests.m */,
 				27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */,
 				8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */,
 				27389E16185345FD0027A404 /* Supporting Files */,
@@ -433,6 +437,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FA839CB18FC474F0054512E /* CDTReplicationTests.m in Sources */,
 				8E3377D518ABF36E003E3D93 /* IndexManagerTests.m in Sources */,
 				9F0D2408188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
@@ -463,6 +468,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */,
 				8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,

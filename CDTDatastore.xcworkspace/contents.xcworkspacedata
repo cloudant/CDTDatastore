@@ -58,6 +58,24 @@
             location = "group:CDTReplicator"
             name = "CDTReplicator">
             <FileRef
+               location = "group:CDTAbstractReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTAbstractReplication.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPullReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPullReplication.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPushReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPushReplication.m">
+            </FileRef>
+            <FileRef
                location = "group:CDTReplicationErrorInfo.h">
             </FileRef>
             <FileRef

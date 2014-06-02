@@ -7,7 +7,7 @@
 //
 
 #import "ReplicationAcceptance+CRUD.h"
-
+#import "CloudantReplicationBase.h"
 #import <CloudantSync.h>
 #import <UNIRest.h>
 
@@ -64,7 +64,7 @@
 
         error = nil;
 
-        NSDictionary *dict = @{@"hello": @"world"};
+        NSDictionary *dict = @{@"hello": @"world", @"docnum":@(i)};
         CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
         if (rev == nil) {  // we need to update an existing rev
             rev = [self.datastore createDocumentWithId:docId
@@ -128,7 +128,7 @@
     NSMutableArray *docs = [NSMutableArray array];
     for (long i = 1; i < count+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%li", i];
-        NSDictionary *dict = @{@"_id": docId, @"hello": @"world"};
+        NSDictionary *dict = @{@"_id": docId, @"hello": @"world", @"docnum":[NSNumber numberWithLong:i]};
         [docs addObject:dict];
     }
 
@@ -152,21 +152,12 @@
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs
 {
     NSString *revId;
+    NSDictionary* headers;
+    UNIHTTPJsonResponse* response;
     NSDictionary *dict = @{@"hello": @"world"};
-
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
-
-    NSDictionary* headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[docURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSJSONSerialization dataWithJSONObject:dict
-                                                         options:0
-                                                           error:nil]];
-    }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
-    revId = [response.body.object objectForKey:@"rev"];
+    
+    revId = [self createRemoteDocWithId:docId body:dict];
 
     // Create revisions of document in remote store
     for (long i = 0; i < n_revs-1; i++) {
@@ -186,6 +177,24 @@
     NSString *revPrefix = [NSString stringWithFormat:@"%li", (long)n_revs];
     STAssertTrue([revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", revId);
 }
+
+-(NSString*) createRemoteDocWithId:(NSString *)docId body:(NSDictionary*)body
+{
+    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
+    
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+        [request setBody:[NSJSONSerialization dataWithJSONObject:body
+                                                         options:0
+                                                           error:nil]];
+    }] asJson];
+    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
+    return [response.body.object objectForKey:@"rev"];
+}
+
 
 -(NSDictionary*) remoteDbMetadata
 {
