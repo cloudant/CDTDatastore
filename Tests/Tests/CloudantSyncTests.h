@@ -27,4 +27,5 @@
 
 - (NSString*)createTemporaryDirectoryAndReturnPath;
 - (NSString *)pathForDBName:(NSString *)name;
+
 @end

@@ -157,14 +157,6 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 
 /**
- * Get all the current revisions for a document.
- *
- * If there are >1 revisions in the array, there are conflicts.
- */
--(NSArray*) conflictsForDocument:(CDTDocumentRevision*)revision;
-
-
-/**
  * Enumerate the current winning revisions for all documents in the
  * datastore.
  *

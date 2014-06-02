@@ -304,7 +304,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
              withWinningRev: (TD_Revision**)winningRev
 
 {
-    
+
     LogTo(TD_Database, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev, previousRevID, allowConflict);
     Assert(outStatus);
     
@@ -389,8 +389,10 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             if (docNumericID <= 0) {
                 // Doc ID doesn't exist at all; create it:
                 docNumericID = [self insertDocumentID: docID inDatabase:db];
-                if (docNumericID <= 0)
+                if (docNumericID <= 0) {
+                    *outStatus = kTDStatusDBError;
                     return nil;
+                }
             } else {
                 // Doc ID exists; check whether current winning revision is deleted:
                 if (oldWinnerWasDeletion) {
@@ -535,7 +537,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         if (!success) {
             *rollback = !success;
         }
-        
+
     }];
     
     if (TDStatusIsError(*outStatus))
@@ -578,6 +580,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 localRevs = [strongSelf getAllRevisionsOfDocumentID: docID
                                                           numericID: docNumericID
                                                         onlyCurrent: NO
+                                                     excludeDeleted: NO
                                                            database:db];
                 if (!localRevs) {
                     result = kTDStatusDBError;
