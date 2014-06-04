@@ -30,22 +30,23 @@
 
 /**
  * The implementation of this method should examine the conflicted revisions and return
- * a winning CDTDocumentRevision. 
+ * a winning CDTDocumentRevision from the conflicts array. You may not create a new 
+ * CDTDocumentRevision.
  *
  * This method will be called by [CDTDatastore resolveConflictsForDocument:resolver:error:]
  * if there are conflicts found for the document ID.
  *
  * When called by [CDTDatastore resolveConflictsForDocument:resolver:error:],
- * the returned CDTDocumentRevision, barring any errors, will be added to the document 
- * tree as the child of the current winner, and all the other conflicting revisions in the 
- * tree will be deleted.
+ * the returned CDTDocumentRevision is declared the winner and all other conflicting
+ * revisions in the tree will be deleted. This all happens within a single database transaction
+ * in order to ensure atomicity.
  *
  * The output of this method should be deterministic. That is, for the given docId and
- * conflict set, the same revision should be returned for all calls.
+ * conflict set, the same CDTDocumentRevision should be returned for all calls.
  *
  * Additionally, this method should not modify other documents or attempt to query the database
  * (via calls to CDTDatastore methods). Doing so will create a blocking transaction to 
- * the database, the code will never excute and this method will hang indefinitely.
+ * the database; the code will never excute and this method will hang indefinitely.
  *
  * Finally, if `nil` is returned by this method, nothing will be changed in the database and the
  * document will remain conflicted.
@@ -56,9 +57,6 @@
  * object. Additionally, due to this restriction, documents may not yet be deleted with this 
  * conflict resolution mechanism. The future CDTMutableDocumentRevision will provide a flexible 
  * way of merging conflicts.
- *
- * @bug WARNING: Currently (20 May 2014), this does not properly migrate attachments for resolutions 
- * that choose revisions that are not the current winning revision. See CDTDatastore for details.
  *
  * @param docId id of the document with conflicts
  * @param conflicts array of conflicted CDTDocumentRevision, including the current winner
