@@ -97,6 +97,7 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
 -(id)initWithDatastore:(CDTDatastore*)datastore
                  error:(NSError * __autoreleasing *)error;
 
+- (BOOL)shutdown;
 
 /**---------------------------------------------------------------------------------------
  * @name Registering indexes at app startup

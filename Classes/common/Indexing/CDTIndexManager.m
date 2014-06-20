@@ -117,6 +117,17 @@ static const int VERSION = 1;
     return self;
 }
 
+-(void)dealloc {
+    [self shutdown];
+}
+
+- (BOOL)shutdown
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [_database close];  // the indexes database
+    return YES;
+}
+
 -(BOOL)ensureIndexedWithIndexName:(NSString*)indexName
                             fieldName:(NSString*)fieldName
                                 error:(NSError * __autoreleasing *)error
@@ -172,7 +183,7 @@ static const int VERSION = 1;
 -(BOOL)updateAllIndexes:(NSError * __autoreleasing *)error
 {
     BOOL ok = TRUE;
-    NSDictionary *indexes = [self getAllIndexes];
+    NSDictionary *indexes = [self getAllRegisteredIndexes];
     for (CDTIndex *index in [indexes allValues]) {
         [self updateIndex:index error:error];
     }
@@ -467,28 +478,42 @@ static const int VERSION = 1;
     }
 }
 
--(NSDictionary*)getAllIndexes
+/**
+ Return indexes which have been registered this session.
+ 
+ That is, for which we have an entry in the index name -> function mapping
+ which means we can update the index successfully.
+ */
+-(NSDictionary*)getAllRegisteredIndexes
 {
+    NSArray *registeredIndexes = [_indexFunctionMap allKeys];
+    
     NSString *SQL_SELECT_INDEX_BY_NAME =
-        [NSString stringWithFormat:@"SELECT name, type, last_sequence FROM %@;",
-         kCDTIndexMetadataTableName];
+    [NSString stringWithFormat:@"SELECT name, type, last_sequence FROM %@;",
+     kCDTIndexMetadataTableName];
     
     NSMutableDictionary *indexes = [[NSMutableDictionary alloc] init];
     
     __block NSString *indexName;
     __block CDTIndexType type;
     __block long lastSequence;
-  
+    
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
         FMResultSet *results = [db executeQuery:SQL_SELECT_INDEX_BY_NAME];
         [results next];
         while ([results hasAnotherRow]) {
             indexName = [results stringForColumnIndex:0];
-            type = [results longForColumnIndex:1];
-            lastSequence = [results longForColumnIndex:2];
-            CDTIndex *index = [[CDTIndex alloc] initWithIndexName:indexName
-                                                     lastSequence:lastSequence fieldType:type];
-            [indexes setObject:index forKey:indexName];
+            
+            // If index isn't registered with ensureIndexed yet, then skip it.
+            if ([registeredIndexes containsObject:indexName]) { 
+                type = [results longForColumnIndex:1];
+                lastSequence = [results longForColumnIndex:2];
+                CDTIndex *index = [[CDTIndex alloc] initWithIndexName:indexName
+                                                         lastSequence:lastSequence 
+                                                            fieldType:type];
+                [indexes setObject:index forKey:indexName];
+            }
+            
             [results next];
         }
         [results close];
