@@ -53,14 +53,16 @@ NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
     if (db) {
         return [[CDTDatastore alloc] initWithDatabase:db];
     } else {
-        NSDictionary *userInfo = @{
-          NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't create database.", nil),
-          NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid name?", nil),
-          NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Invalid name?", nil)
-        };
-        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain
-                                     code:400
-                                 userInfo:userInfo];
+        if (error) {
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't create database.", nil),
+                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid name?", nil),
+                                       NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Invalid name?", nil)
+                                       };
+            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain
+                                         code:400
+                                     userInfo:userInfo];
+        }
         return nil;
     }
 }
