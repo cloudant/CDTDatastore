@@ -82,7 +82,7 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  @param names NSArray of NSStrings, each being an attachment name
  to remove
  @return New revision.
- */
+ */ 
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
                                   fromRev:(CDTDocumentRevision*)rev
                                     error:(NSError * __autoreleasing *)error;

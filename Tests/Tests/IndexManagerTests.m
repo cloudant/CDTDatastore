@@ -19,6 +19,8 @@
 
 @implementation IndexManagerTests
 
+#pragma mark Tests
+
 - (void)testCreateIndexManager
 {
     NSError *err = nil;
@@ -720,6 +722,75 @@
     }
     STAssertEquals([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], (NSUInteger)500, @"Query returned the wrong number of results");
 }
+
+
+/** Here we want to make sure that ensureIndexed picks up documents added in a new session
+ for an index that was defined in a previous session, when ensureIndexed is called.
+ */
+- (void)testNewIndexManagerPicksUpDocumentsAddedBeforeEnsureIndexedDuringQuery
+{
+    int resultCount = 0;
+    NSObject *_;
+    CDTDatastore *datastore;
+    
+    NSString *factoryPath = [self createTemporaryDirectoryAndReturnPath];
+    CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:nil];
+    
+    NSString *name = [@"test_newIndexManagerPicksUpDocumentsAddedBeforeEnsureIndexedDuringQuery" lowercaseString];
+    datastore = [factory datastoreNamed:name error:nil];
+    
+    // Create and index a single document
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
+    [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
+    
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"mike"}];
+    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
+    
+    resultCount = 0;
+    CDTQueryResult *result = [im queryWithDictionary:@{@"name": @"mike"}
+                                               error:nil];
+    for (_ in result) { resultCount++; }
+    STAssertEquals(resultCount, 1, @"Query didn't find the document");
+    
+    // Tear down the original datastore objects
+    [im shutdown];
+    
+    // Fire up a new indexManager without the objects
+    CDTIndexManager *im2 = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
+    
+    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
+    
+    [im2 ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
+    
+    body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"fred"}];
+    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
+    
+    resultCount = 0;
+    result = [im2 queryWithDictionary:@{@"name": @"mike"}
+                                error:nil];
+    for (_ in result) { resultCount++; }
+    STAssertEquals(resultCount, 2, @"Query didn't find the document");
+    
+    resultCount = 0;
+    result = [im2 queryWithDictionary:@{@"name": @"fred"}
+                                error:nil];
+    for (_ in result) { resultCount++; }
+    STAssertEquals(resultCount, 1, @"Query didn't find the document");
+    
+    // Still broken even if we updateAllIndexes
+    [im2 updateAllIndexes:nil];
+    
+    resultCount = 0;
+    result = [im2 queryWithDictionary:@{@"name": @"mike"}
+                                error:nil];
+    for (_ in result) { resultCount++; }
+    STAssertEquals(resultCount, 2, @"Query didn't find the document");
+    
+    
+    [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:nil];
+}
+
+#pragma mark Supporting methods
 
 - (void)makeSomeDocuments:(NSNumber*)thread {
     NSLog(@"makedocs %d", [thread intValue]);
