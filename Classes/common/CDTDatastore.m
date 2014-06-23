@@ -378,6 +378,15 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                    rollback:rollback
                                       error:error];
     }];
+    
+    if (result) {
+        
+        NSDictionary* userInfo = $dict({@"rev", result},
+                                       {@"winner", result});
+        [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
+                                                            object:self
+                                                          userInfo:userInfo];
+    }
 
     return result;
 }

@@ -18,6 +18,8 @@
 		27389E3818534E050027A404 /* SetUpDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3418534E050027A404 /* SetUpDatastore.m */; };
 		27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
 		27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
+		27ACD1EE193DDDF000658EC2 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 27ACD1ED193DDDF000658EC2 /* CDTDatastoreEvents.m */; };
+		27ACD1EF193DDDF000658EC2 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 27ACD1ED193DDDF000658EC2 /* CDTDatastoreEvents.m */; };
 		27CCEDC7187AD64F006F3C66 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E0F185345FD0027A404 /* SenTestingKit.framework */; };
 		27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CCEDCB187AD64F006F3C66 /* InfoPlist.strings */; };
 		27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E2E18534E050027A404 /* CloudantSyncTests.m */; };
@@ -62,12 +64,12 @@
 		9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */; };
 		9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
 		9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
+		9FA839CB18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
+		9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
 		9FAAB00118DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */; };
 		9FAAB00218DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */; };
 		9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
 		9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
-		9FA839CB18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
-		9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FA839CA18FC474F0054512E /* CDTReplicationTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +86,7 @@
 		27389E3218534E050027A404 /* DatastoreCrud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreCrud.m; sourceTree = "<group>"; };
 		27389E3418534E050027A404 /* SetUpDatastore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetUpDatastore.m; sourceTree = "<group>"; };
 		27651C6319001B54006FEF7F /* bonsai-boston.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "bonsai-boston.jpg"; path = "Assets/bonsai-boston.jpg"; sourceTree = "<group>"; };
+		27ACD1ED193DDDF000658EC2 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IndexManagerTests.h; sourceTree = "<group>"; };
 		27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CCEDCA187AD64F006F3C66 /* Tests OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests OSX-Info.plist"; sourceTree = "<group>"; };
@@ -113,10 +116,10 @@
 		9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDSequenceMapTests.m; sourceTree = "<group>"; };
 		9F95D60E18CF6A580006D349 /* DBQueryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBQueryUtils.h; sourceTree = "<group>"; };
 		9F95D60F18CF6A580006D349 /* DBQueryUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryUtils.m; sourceTree = "<group>"; };
+		9FA839CA18FC474F0054512E /* CDTReplicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplicationTests.m; sourceTree = "<group>"; };
 		9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatastoreConflictResolvers.h; sourceTree = "<group>"; };
 		9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflictResolvers.m; sourceTree = "<group>"; };
-		9FA839CA18FC474F0054512E /* CDTReplicationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplicationTests.m; sourceTree = "<group>"; };
 		B8C5CE07530A44358897106E /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -186,6 +189,7 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				27ACD1EC193DDDCC00658EC2 /* Events */,
 				27F43D4618E99C31003E8422 /* osx-aws-toolkit */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
 				9F95D60E18CF6A580006D349 /* DBQueryUtils.h */,
@@ -227,6 +231,14 @@
 				27389E1D185345FD0027A404 /* Tests-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		27ACD1EC193DDDCC00658EC2 /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				27ACD1ED193DDDF000658EC2 /* CDTDatastoreEvents.m */,
+			);
+			name = Events;
 			sourceTree = "<group>";
 		};
 		27CCEDC8187AD64F006F3C66 /* Tests OSX */ = {
@@ -460,6 +472,7 @@
 				9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				27389E3718534E050027A404 /* DatastoreCrud.m in Sources */,
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				27ACD1EE193DDDF000658EC2 /* CDTDatastoreEvents.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -491,6 +504,7 @@
 				9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */,
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				27ACD1EF193DDDF000658EC2 /* CDTDatastoreEvents.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
