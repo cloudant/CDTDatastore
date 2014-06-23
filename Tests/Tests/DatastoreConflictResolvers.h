@@ -26,7 +26,7 @@
  this class chooses the biggest revision generation
  */
 @interface CDTTestBiggestRevResolver  : NSObject<CDTConflictResolver>
--(NSDictionary *) resolvedDocumentAsDictionary;  //made public for tests
+@property (strong, readonly) NSDictionary* resolvedDocumentAsDictionary;
 @end
 
 
@@ -56,3 +56,31 @@
 */
 @interface CDTTestDoesNoResolutionResolver  : NSObject<CDTConflictResolver>
 @end
+
+/**
+ this class chooses the smallest revision generation
+ */
+@interface CDTTestSmallestRevResolver  : NSObject<CDTConflictResolver>
+@property (strong, readonly) NSDictionary* resolvedDocumentAsDictionary;
+@end
+
+/**
+ this class creates a new CDTDocumentRevision object with the JSON body supplied
+ by resolveDocumentAsDictionary and returns that as the winning revision
+ */
+@interface CDTTestNewRevisionResolver  : NSObject<CDTConflictResolver>
+@property (strong, nonatomic) NSDictionary* resolvedDocumentAsDictionary;
+@end
+
+
+/**
+ This class chooses revisions based upon the content of the JSON body of the revision. For
+ each revision, it calls CDTDocumentRevision -documentAsDictionary and compares it to
+ the NSDictionary object supplied with the init below.
+ */
+@interface CDTTestSpecificJSONDocumentResolver  : NSObject<CDTConflictResolver>
+@property (nonatomic, strong) NSDictionary* documentBody;
+-(instancetype) initWithDictionary:(NSDictionary *)documentBody;
+@end
+
+

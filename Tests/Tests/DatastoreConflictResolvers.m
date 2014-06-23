@@ -19,31 +19,26 @@
 #import "CDTDocumentRevision.h"
 
 #pragma mark CDTTestBiggestRevResolver
-@implementation CDTTestBiggestRevResolver
+@interface CDTTestBiggestRevResolver()
+@property (strong, readwrite) NSDictionary* resolvedDocumentAsDictionary;
+@end
 
--(NSDictionary *)resolvedDocumentAsDictionary
-{
-    return @{@"fooResolved":@"barResolved"};
-}
+@implementation CDTTestBiggestRevResolver
 
 -(CDTDocumentRevision *)resolve:(NSString*)docId
                       conflicts:(NSArray*)conflicts
 {
     NSInteger biggestRev = 0;
-    NSString* biggestRevId;
-    for(CDTDocumentRevision *aRev in conflicts){
-        if([TD_Revision generationFromRevID:aRev.revId] > biggestRev)
-            biggestRevId = aRev.revId;
+    CDTDocumentRevision  *winningRev = nil;
+    for (CDTDocumentRevision *aRev in conflicts) {
+        if([TD_Revision generationFromRevID:aRev.revId] > biggestRev) {
+            biggestRev = [TD_Revision generationFromRevID:aRev.revId];
+            winningRev = aRev;
+        }
     }
     
-    TD_Body *tdbody = [[TD_Body alloc] initWithProperties:self.resolvedDocumentAsDictionary];
-    TD_Revision *tdrev = [[TD_Revision alloc] initWithDocID:docId
-                                                      revID:nil //doesn't matter, new CDTDocmentRevision* is appended to current winner
-                                                    deleted:NO];
-    tdrev.body = tdbody;
-    CDTDocumentRevision *theReturn = [[CDTDocumentRevision alloc] initWithTDRevision:tdrev];
-    
-    return theReturn;
+    self.resolvedDocumentAsDictionary = [winningRev documentAsDictionary];
+    return winningRev;
 }
 @end
 
@@ -93,4 +88,79 @@
     return nil;
 }
 @end
+
+
+#pragma mark CDTTestSmallestRevResolver
+@interface CDTTestSmallestRevResolver()
+@property (strong, readwrite) NSDictionary* resolvedDocumentAsDictionary;
+@end
+
+@implementation CDTTestSmallestRevResolver
+
+-(CDTDocumentRevision *)resolve:(NSString*)docId
+                      conflicts:(NSArray*)conflicts
+{
+    
+    NSInteger smallestRev = -1;
+    CDTDocumentRevision  *winningRev = nil;
+    for (CDTDocumentRevision *aRev in conflicts) {
+        if([TD_Revision generationFromRevID:aRev.revId] < smallestRev || smallestRev == -1) {
+            smallestRev = [TD_Revision generationFromRevID:aRev.revId];
+            winningRev = aRev;
+        }
+    }
+    
+    self.resolvedDocumentAsDictionary = [winningRev documentAsDictionary];
+    return winningRev;
+    
+}
+@end
+
+#pragma mark CDTTestNewRevisionResolver
+
+@implementation CDTTestNewRevisionResolver
+
+-(CDTDocumentRevision *)resolve:(NSString*)docId
+                      conflicts:(NSArray*)conflicts
+{
+    CDTDocumentRevision *old = conflicts[0];
+    
+    TD_Body *tdbody = [[TD_Body alloc] initWithProperties:self.resolvedDocumentAsDictionary?:@{}];
+    TD_Revision *tdrev = [[TD_Revision alloc] initWithDocID:docId
+                                                      revID:old.revId
+                                                    deleted:NO];
+    tdrev.body = tdbody;
+    CDTDocumentRevision *theReturn = [[CDTDocumentRevision alloc] initWithTDRevision:tdrev];
+    
+    return theReturn;
+    
+}
+@end
+
+#pragma mark CDTTestSpecificJSONDocumentResolver
+@implementation CDTTestSpecificJSONDocumentResolver
+
+-(instancetype) initWithDictionary:(NSDictionary *)documentBody
+{
+    self = [super init];
+    if (self) {
+        _documentBody = documentBody;
+    }
+    return self;
+}
+
+-(CDTDocumentRevision *)resolve:(NSString*)docId
+                      conflicts:(NSArray*)conflicts
+{
+    for(CDTDocumentRevision *aRev in conflicts){
+        if ([[aRev documentAsDictionary] isEqualToDictionary:self.documentBody]) {
+            return aRev;
+        }
+    }
+    
+    return nil;
+}
+
+@end
+
 

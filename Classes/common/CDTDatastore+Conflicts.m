@@ -46,13 +46,11 @@
     
     __block NSError *localError;
     __weak CDTDatastore  *weakSelf = self;
-    
+
     TDStatus retStatus = [self.database inTransaction:^TDStatus(FMDatabase *db) {
     
         CDTDatastore *strongSelf = weakSelf;
         localError = nil;
-        TD_Revision *toPutRevision = nil;
-        TDStatus status;
     
         NSArray *revsArray = [strongSelf activeRevisionsForDocumentId:docId database:db];
         
@@ -67,89 +65,63 @@
         }
         
         //
-        //get current winning revision
-        //
-        TD_Revision *currentWinningTDRev = [strongSelf.database getDocumentWithID:docId
-                                                                       revisionID:nil
-                                                                          options:0
-                                                                           status:&status
-                                                                         database:db];
-        if (TDStatusIsError(status)) {
-            localError = TDStatusToNSError(status, nil);
-            return status;
+        //ensure resolvedRev was in the revsArray
+        //we check pointers instead of docid/revid of the returned resolvedRev
+        //to protect against the scenario where a developer tries to circumvent
+        //the API and return a modified document revision.
+        NSUInteger resolvedRevIndex = [revsArray indexOfObjectPassingTest:
+                                       ^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+            return obj == resolvedRev;
+        }];
+        
+        if (resolvedRevIndex == NSNotFound) {
+            localError = TDStatusToNSErrorWithInfo(kTDStatusCallbackError, nil, nil);
+            
+            Warn(@"CDTDatastore+Conflicts -resolveConflictsForDocument: The CDTDocumentRevision "
+                 @"returned by CDTConflictResolver -resolve:conflicts was "
+                 @"not found in conflicts array. "
+                 @"Error code %ud, Document id: %@", kTDStatusCallbackError, docId);
+            
+            return kTDStatusCallbackError;
         }
         
         //
-        //create a new TD_Revision to insert into the database
+        //set all remaining conflicted revisions to deleted
         //
-        // if the resolved revision is deleted, we need to use the TD*
-        // methods to update this revision. If it is not deleted, use
-        // the CDTDatastore -updateDocumentWithId since it propery handles attachments
-        //
-        if (resolvedRev.deleted) {
-            toPutRevision = [[TD_Revision alloc] initWithDocID:docId
-                                                         revID:nil
-                                                       deleted:resolvedRev.deleted];
+        for (CDTDocumentRevision *theRev in revsArray) {
             
+            if (theRev == resolvedRev) {
+                continue;
+            }
+            
+            TD_Revision * toPutRevision = [[TD_Revision alloc] initWithDocID:docId
+                                                         revID:nil
+                                                       deleted:YES];
+            
+            TDStatus status;
             [strongSelf.database putRevision:toPutRevision
-                              prevRevisionID:currentWinningTDRev.revID
+                              prevRevisionID:theRev.revId
                                allowConflict:NO
                                       status:&status
                                     database:db];
             
             if (TDStatusIsError(status)) {
                 localError = TDStatusToNSError(status, nil);
+                Warn(@"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
+                     @" to delete non-winning revision (%@) for document %@",
+                     theRev.revId, docId);
                 return status;
             }
             
         }
-        else {
-            CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:resolvedRev.td_rev.properties];
-            BOOL rollback = NO;
-            [self updateDocumentWithId:docId
-                               prevRev:currentWinningTDRev.revID
-                                  body:body
-                         inTransaction:db
-                              rollback:&rollback
-                                 error:&localError];
-            
-            //at this point, localError.code will not be exactly the same as the TDStatus
-            if (localError) {
-                return localError.code;
-            }
-        }
         
-        
-        //
-        //set all remaining conflicted revisions to deleted
-        //
-        for(CDTDocumentRevision *aRev in revsArray){
-            if (![aRev.revId isEqualToString:currentWinningTDRev.revID] && ![aRev deleted]) {
-                
-                toPutRevision = [[TD_Revision alloc] initWithDocID:docId
-                                                             revID:nil
-                                                           deleted:YES];
-
-                [strongSelf.database putRevision:toPutRevision
-                                  prevRevisionID:aRev.revId
-                                   allowConflict:NO
-                                          status:&status
-                                        database:db];
-                
-                if (TDStatusIsError(status)) {
-                    localError = TDStatusToNSError(status, nil);
-                    return status;
-                }
-                
-            }
-        }
-        
-        //we are done.
         return kTDStatusOK;
+    
+        
     }];
     
     *error = localError;
-    return retStatus == kTDStatusOK ? YES : NO;
+    return retStatus == kTDStatusOK;
 }
 
 @end
