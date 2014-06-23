@@ -507,6 +507,14 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError) {
     return result;
 }
 
+- (SequenceNumber)lastSequence {
+    __block SequenceNumber result = 0;
+    [_fmdbQueue inDatabase:^(FMDatabase *db) {
+        result = [self lastSequenceInDatabase:db];
+    }];
+    return result;
+}
+
 /** Always call from within FMDatabaseQueue block */
 - (SequenceNumber) lastSequenceInDatabase:(FMDatabase*)db {
     return [db longLongForQuery: @"SELECT MAX(sequence) FROM revs"];
