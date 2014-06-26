@@ -9,6 +9,7 @@
 #import "CloudantReplicationBase+CompareDb.h"
 
 #import <CloudantSync.h>
+#import <CDTDatastore+Internal.h>
 #import <SenTestingKit/SenTestingKit.h>
 #import <UNIRest.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -123,7 +124,7 @@
         CDTDocumentRevision *document = (CDTDocumentRevision*)ob;
 
         // This returns all the `current` revisions for a given document.
-        NSArray *allRevisions = [local conflictsForDocument:document];
+        NSArray *allRevisions = [local activeRevisionsForDocumentId:document.docId];
 
         // Make sure the history for each conflict is correct
         for (CDTDocumentRevision *currentRevision in allRevisions) {
