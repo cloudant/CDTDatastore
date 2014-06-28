@@ -598,9 +598,10 @@
     CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
                                                                           name:attachmentName
                                                                           type:@"text/plain"];    
+    NSError *error = nil;
     rev = [self.datastore updateAttachments:@[attachment]
                                      forRev:rev
-                                      error:nil];
+                                      error:&error];
     STAssertNotNil(rev, @"Unable to add attachments to document");
     
     [self pushTo:remoteDbURL from:self.datastore];

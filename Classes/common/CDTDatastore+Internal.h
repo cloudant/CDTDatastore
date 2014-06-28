@@ -48,5 +48,9 @@
  */
 -(NSArray*) activeRevisionsForDocumentId:(NSString*)docId database:(FMDatabase *)db;
 
+/**
+ This method is the same as above, but opens a separate database transaction
+ */
+-(NSArray*) activeRevisionsForDocumentId:(NSString *)docId;
 
 @end

@@ -44,5 +44,15 @@
     return results;
 }
 
+-(NSArray*) activeRevisionsForDocumentId:(NSString *)docId
+{
+    __block NSArray *revs = nil;
+    [self.database inTransaction:^TDStatus(FMDatabase *db) {
+        revs = [self activeRevisionsForDocumentId:docId database:db];
+        return kTDStatusOK;
+    }];
+    
+    return revs;
+}
 
 @end
