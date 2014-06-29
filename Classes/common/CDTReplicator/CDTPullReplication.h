@@ -26,7 +26,8 @@
     CDTDatastoreManager *manager = [...];
     CDTDatastore *datastore = [...];
     CDTReplicatorFactory *replicatorFactory = [...];
- 
+    [replicatorFactory start];
+
     NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
  
     CDTPullReplication* pull = [CDTPullReplication replicationWithSource:remote
@@ -78,7 +79,7 @@
 @property (nonatomic, strong, readonly) NSURL *source;
 
 /**
- @name Using filtered replication
+ @name Filtered pull replication
  */
 
 /** The name of the filter to be used on the remote source.
@@ -112,8 +113,17 @@
             return false;
     }
  
+ Documents in this database have the following key-value structure
+    {
+        '_id':'foo',
+        '_rev': '1-x',
+        'user': {
+                    'age' : 34
+                }
+        ...
+    }
  
- To replicate from the remote database to the local 
+ Modifying the example above, in order to replicate from the remote database to the local
  datastore using this filter, specify:
  
     pull.filter = @"users/by_age_range";
@@ -135,12 +145,7 @@
  */
 @property (nonatomic, strong) NSString *filter;
 
-/** Specify filter function parameters using an NSDictionary
- 
- For example, one may specify filter parameters like:
- 
-     CDTPullReplication* pull = [[CDTPullReplication alloc] init];
-     pull.filterParams = @{@"min":@23, @"max":@43};
+/** The filter function query parameters
  
  @see -filter
  */

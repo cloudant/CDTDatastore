@@ -107,8 +107,8 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
     }
     
     NSError *localError = nil;
-    CDTDatastoreManager *m = self.manager;
-    CDTDatastore *datastore = [m datastoreNamed:kTDReplicatorDatabaseName error:&localError];
+    CDTDatastore *datastore = [self.manager datastoreNamed:kTDReplicatorDatabaseName
+                                                     error:&localError];
     if (localError != nil) {
         if (error) *error = localError;
         return nil;
@@ -128,6 +128,20 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
                   @"%@\n %@", [replication class], replication);
         }
         return nil;
+    }
+    
+    //insert the filter into a TD_FilterBlock and
+    //define it in the TD_Database with the approriate name
+    if([replication isKindOfClass:[CDTPushReplication class]]) {
+        CDTPushReplication *pushRep = (CDTPushReplication *)replication;
+        if(pushRep.filter){
+            
+            TD_FilterBlock tdfilter = ^(TD_Revision *rev, NSDictionary* params){
+                return pushRep.filter([[CDTDocumentRevision alloc] initWithTDRevision:rev], params);
+            };
+            
+            [pushRep.source.database defineFilter:repdoc[@"filter"] asBlock:tdfilter];
+        }
     }
     
     return replicator;

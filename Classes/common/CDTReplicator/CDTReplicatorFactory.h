@@ -37,19 +37,34 @@ typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
 /**
  Factory for CDTReplicator objects.
 
- The _source_ or _target_ NSURL parameters used in the
- methods below must include:
-
-     protocol://[username:password@]host[:port]/database_name
-
- _protocol_, _host_ and _database_name_ are required.
- If no _port_ is provided, the default for _protocol_ is used.
- Using a _database_name_ containing a `/` is not supported.
- */
+ Use CDTReplicatorFactory to create CDTReplicator objects based on the parameters set in a 
+ CDTPushReplication or CDTPullReplication object. The CDTPush/PullReplication objects
+ configure the replication, while the CDTReplicator starts the process.
+ 
+ Note that you must call [CDTReplicatorFactory -start] before [CDTReplicator -start].
+ 
+ Example usage:
+ 
+    CDTDatastoreManager *manager = [...];
+    CDTDatastore *datastore = [...];
+    NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
+ 
+    CDTReplicatorFactory *replicatorFactory = [CDTReplicatorFactory initWithDatastoreManager:manager];
+    [replicatorFactory start];
+ 
+    CDTPullReplication* pull = [CDTPullReplication replicationWithSource:remote target:datastore];
+ 
+    NSError *error;
+    CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
+ 
+    //check for error
+    [rep start];
+ 
+*/
 @interface CDTReplicatorFactory : NSObject
 
 /**---------------------------------------------------------------------------------------
- * @name Getting a replicator factory set up
+ * @name Setup and control
  *  --------------------------------------------------------------------------------------
  */
 
@@ -101,9 +116,9 @@ typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
 
 
 /**
- The following methods will soon be deprecated. 
- @see CDTReplicatorFactor -oneWay:(CDTAbstractReplication*).
-*/
+ @name Deprecated
+ */
+
 /**
  * Create a CDTReplicator object set up to replicate changes from the
  * local datastore to a remote database.
@@ -113,6 +128,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
  *
  * @return a CDTReplicator instance which can be used to start and
  *  stop the replication itself.
+ * @warning This will soon be deprecated. Use -oneWay:error:.
  */
 - (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
                               targetURI:(NSURL*)target;
@@ -126,6 +142,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
  *
  * @return a CDTReplicator instance which can be used to start and
  *  stop the replication itself.
+ * @warning This will soon be deprecated. Use -oneWay:error:.
  */
 - (CDTReplicator*)onewaySourceURI:(NSURL*)source
                   targetDatastore:(CDTDatastore*)target;

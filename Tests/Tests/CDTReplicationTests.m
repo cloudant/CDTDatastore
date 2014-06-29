@@ -17,6 +17,14 @@
 #import "CDTPushReplication.h"
 #import "CloudantSyncTests.h"
 #import "CDTDatastoreManager.h"
+#import "CDTDatastore.h"
+#import "CDTReplicatorFactory.h"
+#import "CDTReplicator.h"
+#import "TDReplicatorManager.h"
+#import "CDTDocumentRevision.h"
+#import "CDTDocumentBody.h"
+#import "TD_Body.h"
+#import "TD_Revision.h"
 
 @interface CDTReplicationTests : CloudantSyncTests
 
@@ -65,6 +73,55 @@
     STAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);
     STAssertEqualObjects(pushDict, expectedDictionary, @"push dictionary: %@", pushDict);
 }
+
+
+-(void)testCreatePushReplicationWithFilter
+{
+    NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
+    NSError *error;
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
+                                                                  target:[NSURL URLWithString:remoteUrl]];
+    
+    CDTFilterBlock aFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *params) {
+        return YES;
+    };
+    
+    push.filter = aFilter;
+    push.filterParams = @{@"param1":@"foo"};
+    
+    
+    CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
+                                               initWithDatastoreManager:self.factory];
+    [replicatorFactory start];
+    
+    error = nil;
+    CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
+    STAssertNotNil(replicator, @"%@", push);
+    STAssertNil(error, @"%@", error);
+
+    NSDictionary *pushDoc = [push dictionaryForReplicatorDocument:nil];
+    STAssertNotNil(pushDoc[@"_id"], @"Should have a _id set during init. \n%@", pushDoc);
+    STAssertEqualObjects([@"filter_" stringByAppendingString:pushDoc[@"_id"]],
+                         pushDoc[@"filter"], @"\n%@", pushDoc);
+    STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
+    
+    STAssertNotNil([tmp.database filterNamed:pushDoc[@"filter"]],
+                   @"no filter called %@", pushDoc[@"filter"]);
+    
+    [replicator start];  //this should put the doc on the DB.
+
+    CDTDatastore *replicatorDB = [self.factory datastoreNamed:kTDReplicatorDatabaseName error:&error];
+    error = nil;
+    CDTDocumentRevision *pushRev = [replicatorDB getDocumentWithId:pushDoc[@"_id"] error:&error];
+    STAssertNotNil(pushRev, @"nil doc: %@", pushDoc[@"_id"]);
+    STAssertNil(error, @"%@", error);
+    
+    [replicator stop];
+    [replicatorFactory stop];
+}
+
+
 
 
 -(CDTAbstractReplication *)buildReplicationObject:(Class)aClass remoteUrl:(NSURL *)url

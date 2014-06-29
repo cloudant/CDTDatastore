@@ -184,6 +184,24 @@
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
 }
+-(void)testCreateDocumentWithIdInBody
+{
+    NSError *error;
+    NSString *key = @"hello";
+    NSString *value = @"world";
+    NSString *testDocId = @"document_id_for_testCreateDocumentWithIdInBody";
+    
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key: value,
+                                                                          @"_id":testDocId}];
+    STAssertNotNil(body, @"CDTDocumentBody object was nil");
+
+    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body
+                                                             error:&error];
+    STAssertNil(error, @"Error creating document");
+    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+   
+    STAssertEqualObjects(ob.docId, testDocId, @"Invalid docId found in revision: %@", ob.documentAsDictionary);
+}
 
 -(void)testCannotCreateNewDocWithoutUniqueID
 {
