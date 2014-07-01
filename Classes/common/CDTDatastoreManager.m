@@ -20,6 +20,7 @@
 #import "TD_Database.h"
 
 NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
+NSString* const CDTExtensionsDirName = @"_extensions";
 
 @interface CDTDatastoreManager ()
 
@@ -67,4 +68,41 @@ NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
     }
 }
 
+-(BOOL)deleteDatastoreNamed:(NSString*)name
+                      error:(NSError * __autoreleasing *)error
+{
+    TD_Database *db = [self.manager databaseNamed:name];
+
+    if (!db) {
+        NSDictionary *userInfo = @{
+                                   NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't delete database.", nil),
+                                   NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid name?", nil),
+                                   NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Invalid name?", nil)
+                                   };
+        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain
+                                     code:404
+                                 userInfo:userInfo];
+        return NO;
+    }
+    
+    // first delete the SQLite database and any attachments
+    if (![db deleteDatabase:error]) {
+        return NO;
+    }
+    
+    // delete any cloudant extensions
+    NSString *path = [[db path] stringByDeletingLastPathComponent];
+    path = [path stringByAppendingPathComponent:[[db name] stringByAppendingString:CDTExtensionsDirName]];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    BOOL isDirectory;
+    BOOL extenstionsExists = [fm fileExistsAtPath:path isDirectory:&isDirectory];
+    if (extenstionsExists && isDirectory) {
+        return [fm removeItemAtPath:path error:error];
+    } else {
+        // maybe there weren't any extensions
+        return YES;
+    }
+}
+
 @end
+
