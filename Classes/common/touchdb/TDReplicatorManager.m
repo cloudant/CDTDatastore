@@ -128,7 +128,7 @@ NSString* const kTDReplicatorDatabaseName = @"_replicator";
 
         // Now run:
         while (!_stopRunLoop && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                                         beforeDate: [NSDate distantFuture]])
+                                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
 
         LogTo(Sync, @"TDReplicatorManager thread exiting");
