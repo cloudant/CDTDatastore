@@ -24,6 +24,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
+#import "TDReplicatorManager.h"
 
 @interface ReplicationAcceptance ()
 
@@ -90,22 +91,7 @@ static NSUInteger largeRevTreeSize = 1500;
  Create a new replicator, and wait for replication from the remote database to complete.
  */
 -(void) pullFromRemote {
-    
-    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
-                                                                  target:self.datastore];
-
-    NSError *error;
-    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
-    STAssertNil(error, @"%@",error);
-    STAssertNotNil(replicator, @"CDTReplicator is nil");
-
-    NSLog(@"Replicating from %@", [self.primaryRemoteDatabaseURL absoluteString]);
-    [replicator start];
-
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
+    [self pullFromRemoteWithFilter:nil params:nil];
 }
 
 -(void) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
@@ -135,21 +121,32 @@ static NSUInteger largeRevTreeSize = 1500;
  Create a new replicator, and wait for replication from the local database to complete.
  */
 -(void) pushToRemote {
+    [self pushToRemoteWithFilter:nil params:nil];
+}
+
+/**
+ Create a new replicator, and wait for replication from the local database to complete.
+ */
+-(void) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
+    
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
                                                                   target:self.primaryRemoteDatabaseURL];
+    push.filter = filter;
+    push.filterParams = params;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
     STAssertNil(error, @"%@",error);
     STAssertNotNil(replicator, @"CDTReplicator is nil");
-
+    
     NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
     [replicator start];
-
+   
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
+
 }
 
 
@@ -272,6 +269,52 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %@",localDocs.count);
     STAssertTrue(self.datastore.documentCount == totalReplicated,
                  @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    
+}
+
+-(void) testPushFilteredReplicationAllowOne {
+    
+    // Create docs in local store
+    [self createLocalDocs:10];
+    
+    CDTFilterBlock myFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *param){
+        return [[rev documentAsDictionary][@"docnum"] isEqual:param[@"pickme"]];
+    };
+    
+    [self pushToRemoteWithFilter:myFilter params:@{@"pickme":@3}];
+    
+    [self assertRemoteDatabaseHasDocCount:1
+                              deletedDocs:0];
+
+    //make sure the remote database has the appropriate document
+    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:@"doc-3"];
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    NSDictionary *jsonResponse = response.body.object;
+    STAssertTrue([jsonResponse[@"_id"] isEqual:@"doc-3"], @"%@", jsonResponse);
+    STAssertTrue([jsonResponse[@"docnum"] isEqual:@3], @"%@", jsonResponse);
+    
+}
+
+-(void) testPushFilteredReplicationAllowSome {
+    
+    // Create docs in local store
+    [self createLocalDocs:10];
+    
+    CDTFilterBlock myFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *param){
+        NSInteger docNum = [[rev documentAsDictionary][@"docnum"] integerValue];
+        NSInteger threshold = [param[@"threshold"] integerValue];
+        return docNum > threshold;
+    };
+    
+    [self pushToRemoteWithFilter:myFilter params:@{@"threshold":@3}];
+    
+    [self assertRemoteDatabaseHasDocCount:7
+                              deletedDocs:0];
     
 }
 

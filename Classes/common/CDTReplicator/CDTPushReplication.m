@@ -15,7 +15,11 @@
 
 #import "CDTPushReplication.h"
 #import "CDTDatastore.h"
+#import "TDMisc.h"
 
+@interface CDTPushReplication()
+@property (nonatomic, strong) NSString *docId;
+@end
 
 @implementation CDTPushReplication
 
@@ -31,6 +35,7 @@
     if(self = [super init]) {
         _source = source;
         _target = target;
+        _docId = TDCreateUUID();
     }
     return self;
 }
@@ -63,6 +68,11 @@
         return nil;
     }
 
+    if (self.filter) {
+        [doc setObject:self.docId forKey:@"_id"];
+        [doc setObject:[@"filter_" stringByAppendingString:self.docId] forKey:@"filter"];
+        [doc setObject:self.filterParams ? : @{} forKey:@"query_params"];
+    }
     return doc;
 }
 
