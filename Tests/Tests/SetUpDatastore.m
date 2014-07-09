@@ -19,6 +19,12 @@
 
 #import "CDTDatastoreManager.h"
 
+#import "CDTIndexManager.h"
+
+#import "CDTDatastore.h"
+
+#import "TD_Database.h"
+
 @interface SetUpDatastore : CloudantSyncTests
 
 @end
@@ -69,6 +75,54 @@
     CDTDatastore *datastore = [self.factory datastoreNamed:@"_test" error:&error];
     STAssertNil(datastore, @"datastore is not nil");
     STAssertNotNil(error, @"error is nil");
+}
+
+/**
+ * Check we can't create a datastore with suffix _extensions
+ */
+- (void)testSetupDatastoreExtensionsSuffix
+{
+    NSError *error;
+    
+    NSString *dbName = @"test_extensions";
+    
+    // setup datastore and indexmanager
+    CDTDatastore *datastore = [self.factory datastoreNamed:dbName error:&error];
+    STAssertNil(datastore, @"datastore is not nil");
+}
+
+/**
+ * This test makes sure we cleanly delete all database files
+ */
+- (void)testSetupAndDeleteDatastore
+{
+    NSError *error;
+    
+    NSString *dbName = @"test";
+    NSString *dbNameFull = [dbName stringByAppendingString:@".touchdb"];
+    NSString *dbNameExtensions = [dbName stringByAppendingString:@"_extensions"];
+    NSString *dbNameAttachments = [dbName stringByAppendingString:@" attachments"];
+
+    // setup datastore and indexmanager
+    CDTDatastore *datastore = [self.factory datastoreNamed:dbName error:&error];
+    __unused CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:&error];
+
+    // for checking files
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *dir = [[[datastore database] path] stringByDeletingLastPathComponent];
+    
+    // check various files/dirs exist
+    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file does not exist");
+    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir does not exist");
+    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir does not exist");
+    
+    // delete datastore
+    STAssertTrue([self.factory deleteDatastoreNamed:dbName error:&error], @"deleteDatastoreNamed did not return true");
+
+    // check various files/dirs have been deleted
+    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file was not deleted");
+    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir was not deleted");
+    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir was not deleted");
 }
 
 @end

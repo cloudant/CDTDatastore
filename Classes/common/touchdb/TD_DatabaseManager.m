@@ -109,7 +109,8 @@ static NSCharacterSet* kIllegalNameChars;
 
 + (BOOL) isValidDatabaseName: (NSString*)name {
     if (name.length > 0 && [name rangeOfCharacterFromSet: kIllegalNameChars].length == 0
-                        && islower([name characterAtIndex: 0]))
+                        && islower([name characterAtIndex: 0])
+                        && ![name hasSuffix:@"_extensions"])
         return YES;
     return $equal(name, kTDReplicatorDatabaseName);
 }
