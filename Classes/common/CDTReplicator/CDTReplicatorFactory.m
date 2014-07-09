@@ -60,6 +60,10 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
     [self.replicatorManager stop];
 }
 
+- (void) dealloc {
+    [self stop];
+}
+
 #pragma mark CDTReplicatorFactory interface methods
 
 - (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
