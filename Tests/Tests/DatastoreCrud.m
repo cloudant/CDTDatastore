@@ -184,7 +184,7 @@
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
 }
--(void)testCreateDocumentWithIdInBody
+-(void)testCreateDocumentWithIdInBodyFails
 {
     NSError *error;
     NSString *key = @"hello";
@@ -197,10 +197,8 @@
 
     CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body
                                                              error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
-   
-    STAssertEqualObjects(ob.docId, testDocId, @"Invalid docId found in revision: %@", ob.documentAsDictionary);
+    STAssertNotNil(error, @"Error creating document");
+    STAssertNil(ob, @"CDTDocumentRevision object was nil");
 }
 
 -(void)testCannotCreateNewDocWithoutUniqueID
@@ -1053,7 +1051,7 @@
 
 }
 
-//
+
 // The following testUpdateDelete was to check the behavior when a "_deleted":true
 // key-value pair was added to the JSON document. It is expected that when
 // updateDocumentWithId is called, the document would be deleted from the DB.
@@ -1067,138 +1065,78 @@
 //
 // This behavior should be different. Either we support _delete:true, or we return
 // nil and report an NSError.
-//
-//-(void)testUpdateDelete
-//{
-//    [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
-//    //creates the tables in the sqlite db. otherwise, the database would be empty.
-//    
-//    NSString *dbPath = [self pathForDBName:self.datastore.name];
-//    
-//    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-//    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
-//    
-//    NSMutableDictionary *initialRowCount = [self getAllTablesRowCountWithQueue:queue];
-//    
-//    NSError *error;
-//    NSString *key1 = @"hello";
-//    NSString *value1 = @"world";
-//    
-//    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key1:value1}];
-//    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:&error];
-//    STAssertNil(error, @"Error creating document");
-//    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
-//    
-//    
-//    NSString *docId = ob.docId;
-//    NSString *delkey = @"_deleted";
-//    NSNumber *delvalue= [NSNumber numberWithBool:YES];
-//    NSString *key2 = @"hi";
-//    NSString *value2 = @"adam";
-//    //id value2 = $true;
-//    NSDictionary *body2dict =@{key1:value1, key2:value2, delkey:delvalue};
-//    
-//    CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:body2dict];
-//    STAssertNotNil(body2, @"CDTDocumentBody with _deleted:true was nil. Dict: %@", body2dict);
-//    CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:docId
-//                                                            prevRev:ob.revId
-//                                                               body:body2
-//                                                              error:&error];
-//
-//    STAssertNil(error, @"Error deleting document with update");
-//    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
-//    
-//    // Check new revision
-//    const NSUInteger expected_count = 1;
-//    CDTDocumentRevision *retrieved;
-//    retrieved = [self.datastore getDocumentWithId:docId error:&error];
-//    STAssertNotNil(error, @"No Error getting deleted document");
-//    STAssertNil(retrieved, @"retrieved object was not nil");
-//    
-//    error = nil;
-//    
-//    // Check we can get old revision
-//    retrieved = [self.datastore getDocumentWithId:docId rev:ob.revId error:&error];
-//    STAssertNil(error, @"Error getting document using old rev");
-//    STAssertNotNil(retrieved, @"retrieved object was nil");
-//    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-//    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-//    STAssertEquals(retrieved.documentAsDictionary.count, expected_count, @"Object from database has != 1 key");
-//    STAssertEqualObjects(retrieved.documentAsDictionary[key1], value1, @"Object from database has wrong data");
-//    
-//    
-//    //now test the content of docs/revs tables explicitely.
-//    
-//    NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
-//    [self checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
-//    
-//    [self printAllRows:queue forTable:@"docs"];
-//    [self printAllRows:queue forTable:@"revs"];
-//    
-////    NSString *sql = @"select * from docs";
-////    __block int doc_id_inDocsTable;
-////    [queue inDatabase:^(FMDatabase *db) {
-////        FMResultSet *result = [db executeQuery:sql];
-////        [result next];
-////        NSLog(@"testing content of docs table");
-////        
-////        STAssertEqualObjects(docId, [result stringForColumn:@"docid"], @"doc id doesn't match. should be %@. found %@", docId,
-////                             [result stringForColumn:@"docid"]);
-////        
-////        doc_id_inDocsTable = [result intForColumn:@"doc_id"];
-////        
-////        STAssertFalse([result next], @"There are too many rows in docs");
-////        
-////        [result close];
-////    }];
-////    
-////    
-////    sql = @"select * from revs";
-////    [queue inDatabase:^(FMDatabase *db) {
-////        FMResultSet *result = [db executeQuery:sql];
-////        [result next];
-////        
-////        NSLog(@"testing content of revs table");
-////        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"],
-////                       @"doc_id in revs (%d) doesn't match doc_id in docs (%d).", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-////        
-////        STAssertEquals(1, [result intForColumn:@"sequence"], @"sequence is not 1");
-////        STAssertFalse([[result stringForColumn:@"revid"] isEqualToString:@""], @"revid string isEqual to empty string");
-////        STAssertFalse([result boolForColumn:@"current"], @"document current should be NO");
-////        STAssertTrue([result boolForColumn:@"deleted"], @"document deleted should be NO");
-////        
-////        NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-////                                                   options: TDJSONReadingMutableContainers
-////                                                     error: NULL];
-////        STAssertTrue([jsonDoc isEqualToDictionary:@{key1: value1}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@", jsonDoc, @{key1: value1});
-////        
-////        //next row
-////        STAssertTrue([result next], @"Didn't find the second row in the revs table");
-////        
-////        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"],
-////                       @"doc_id in revs (%d) doesn't match doc_id in docs (%d).", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-////        
-////        STAssertEquals(2, [result intForColumn:@"sequence"], @"sequence is not 1");
-////        STAssertFalse([[result stringForColumn:@"revid"] isEqualToString:@""], @"revid string isEqual to empty string");
-////        STAssertTrue([result boolForColumn:@"current"], @"document current should be YES");
-////        STAssertFalse([result boolForColumn:@"deleted"], @"document deleted should be NO");
-////        
-////        jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-////                                     options: TDJSONReadingMutableContainers
-////                                       error: NULL];
-////        STAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}], @"JSON document from revs.json not equal to original key-value pair. Found %@. Expected %@", jsonDoc, @{key2: value2});
-////        
-////        
-////        STAssertFalse([result next], @"There are too many rows in revs");
-////        STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id not nil");
-////        STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid not nil");
-////        
-////        [result close];
-////    }];
-//    
-//
-//    
-//}
+
+-(void)testUpdatingWithUnderscoreDeleteFieldDoesNotDelete
+{
+    // Create the first revision
+    NSString *key1 = @"hello";
+    NSString *value1 = @"world";
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{key1:value1}];
+    CDTDocumentRevision *ob = [self.datastore createDocumentWithBody:body error:nil];
+    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    
+    // Attempt to update with a _deleted key in the body
+    NSString *docId = ob.docId;
+    NSString *delkey = @"_deleted";
+    NSNumber *delvalue= [NSNumber numberWithBool:YES];
+    NSString *key2 = @"hi";
+    NSString *value2 = @"adam";
+    NSError *error;
+    NSDictionary *body2dict =@{key1:value1, key2:value2, delkey:delvalue};
+    CDTDocumentBody *body2 = [[CDTDocumentBody alloc] initWithDictionary:body2dict];
+    STAssertNotNil(body2, @"CDTDocumentBody with _deleted:true was nil. Dict: %@", body2dict);
+    CDTDocumentRevision *ob2 = [self.datastore updateDocumentWithId:docId
+                                                            prevRev:ob.revId
+                                                               body:body2
+                                                              error:&error];
+    STAssertNil(ob2, @"CDTDocumentRevision object was not nil");
+    STAssertNotNil(error, @"Error wasn't set");
+    STAssertEquals(error.code, (NSInteger)400, @"Wrong error code");
+    STAssertEquals([error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey], 
+                   @"Bodies may not contain _ prefixed fields. Use CDTDocumentRevision properties.", 
+                   @"Incorrect error message");
+    
+    error = nil;
+    
+    
+    //now test the content of docs/revs tables explicitely.
+    MRDatabaseContentChecker *dc =[[MRDatabaseContentChecker alloc] init];
+    
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        
+        NSError *validationError;
+        NSArray *expectedRows = @[
+                                  @[@"doc_id", @"docid"],
+                                  @[@1,        docId]
+                                  ];
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"docs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+    }];
+    
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        
+        NSString *revId = @"1-1f7588ca02054efe626a6e440a431861";
+        NSData *json = [TDJSON dataWithJSONObject:@{key1: value1} 
+                                          options:0 
+                                            error:nil];
+        NSArray *expectedRows = @[
+                                  @[@"doc_id", @"sequence", @"revid", @"current", @"deleted", @"json"],
+                                  @[@(1),      @1,          revId,    @YES,        @NO,        json],
+                                  ];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"revs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+    }];
+    
+
+    
+}
 
 
 #pragma mark - DELETE tests

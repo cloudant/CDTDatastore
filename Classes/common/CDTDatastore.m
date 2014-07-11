@@ -23,6 +23,7 @@
 #import "TD_Body.h"
 #import "TD_Database+Insertion.h"
 #import "TDInternal.h"
+#import "TDMisc.h"
 
 #import "FMDatabase.h"
 #import "FMDatabaseAdditions.h"
@@ -143,6 +144,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                          body:(CDTDocumentBody*)body
                                         error:(NSError * __autoreleasing *)error
 {
+    if (![self validateBody:body error:error]) {
+        return nil;
+    }
+    
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
@@ -171,6 +176,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 -(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
                                           error:(NSError * __autoreleasing *)error
 {
+    if (![self validateBody:body error:error]) {
+        return nil;
+    }
 
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
@@ -358,6 +366,38 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 
+
+-(BOOL) validateBody:(CDTDocumentBody*)body
+               error:(NSError * __autoreleasing *)error
+{
+    
+    // Check user hasn't provided _fields, which should be provided
+    // as metadata in the CDTDocumentRevision object rather than
+    // via _fields in the body dictionary.
+    NSDictionary *bodyDict = body.td_body.asObject;
+    for (NSString *key in [bodyDict keyEnumerator]) {
+        if ([key hasPrefix:@"_"]) {
+            if (error) {
+                NSInteger code = 400;
+                NSString *reason = @"Bodies may not contain _ prefixed fields. "
+                "Use CDTDocumentRevision properties.";
+                NSString *description = [NSString stringWithFormat:@"%li %@", (long)code, reason];
+                NSDictionary *userInfo = @{NSLocalizedFailureReasonErrorKey: reason,
+                                           NSLocalizedDescriptionKey: description
+                                           };
+                *error = [NSError errorWithDomain:TDHTTPErrorDomain 
+                                             code:code 
+                                         userInfo:userInfo];
+            }
+            
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                       prevRev:(NSString*)prevRev
                                          body:(CDTDocumentBody*)body
@@ -398,6 +438,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                      rollback:(BOOL*)rollback
                                         error:(NSError * __autoreleasing *)error
 {
+    if (![self validateBody:body error:error]) {
+        return nil;
+    }
+    
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;

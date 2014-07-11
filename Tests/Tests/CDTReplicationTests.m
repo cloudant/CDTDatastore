@@ -90,7 +90,6 @@
     push.filter = aFilter;
     push.filterParams = @{@"param1":@"foo"};
     
-    
     CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
                                                initWithDatastoreManager:self.factory];
     [replicatorFactory start];
