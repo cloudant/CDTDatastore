@@ -5,7 +5,7 @@ end
 
 desc "Run the CDTDatastore Tests for iOS"
 task :testios do
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)' test | xcpretty; exit ${PIPESTATUS[0]}")
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=7.1,name=iPhone Retina (3.5-inch)' test | xcpretty; exit ${PIPESTATUS[0]}")
   puts "\033[0;31m! iOS unit tests failed" unless $ios_success
   if $ios_success
     puts "** All tests executed successfully"
