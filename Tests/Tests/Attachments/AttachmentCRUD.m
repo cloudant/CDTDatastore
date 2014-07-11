@@ -138,8 +138,6 @@
                                  error:&validationError],
                      [dc formattedErrors:validationError]);
     }];
-
-
 }
 
 -(void) testUpdatingDocumentRetainsAttachments
@@ -692,6 +690,71 @@
                      [dc formattedErrors:validationError]);
     }];
 
+}
+
+// Add a good and a bad attachments and check:
+// - Document isn't updated
+// - Reasonable error
+// - Attachments database is not updated with the working attachment.
+- (void)testNilAttachmentStreamWithGoodAttachmentStream
+{
+    NSString *attachmentName = @"test_an_attachment";
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
+    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:body
+                                                                error:nil];
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"image/jpg"];
+    CDTAttachment *nullAttachment = [[CDTNullAttachment alloc] init];
+    
+    NSError *error = nil;
+    CDTDocumentRevision *rev2 = [self.datastore updateAttachments:@[attachment, nullAttachment]
+                                                           forRev:rev
+                                                            error:&error];
+    
+    STAssertNil(rev2, @"Updating with broken attachment didn't give null response");
+    STAssertNotNil(error, @"error shouldn't have been nil");
+    STAssertEquals((NSInteger)kTDStatusAttachmentStreamError,
+                   error.code,
+                   @"Error should be kTDStatusAttachmentStreamError");
+    
+    // bonsai-boston should exist as it'll have been downloaded. We can't automatically
+    // clean up the file after we download it in case another document is referencing it.
+    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+                 @"Attachment file doesn't exist");
+    
+    [self.dbutil.queue inDatabase:^(FMDatabase *db ) { 
+        MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
+        
+        // Check there's only the first document rev
+        NSArray *expectedRows = @[
+                                  @[@"sequence"],
+                                  @[@1]
+                                  ];
+        
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"revs"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+        
+        // Check the attachments table is empty
+        expectedRows = @[
+                         @[@"sequence"],
+                         ];
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"attachments"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+    }];
 }
 
 #pragma mark - Utilities
