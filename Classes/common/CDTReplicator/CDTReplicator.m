@@ -15,22 +15,21 @@
 
 #import "CDTReplicator.h"
 
-#import "CDTDatastore.h"
+#import "CDTReplicatorFactory.h"
 #import "CDTDocumentRevision.h"
 
 #import "TD_Revision.h"
 #import "TD_Database.h"
 #import "TDReplicator.h"
+#import "TDReplicatorManager.h"
 
 const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 @interface CDTReplicator ()
 
-@property (nonatomic,strong) CDTDatastore *replicatorDb;
-@property (nonatomic,strong) CDTDocumentBody *body;
-@property (nonatomic,strong) NSString *replicationDocumentId;
-
-- (void) dbChanged: (NSNotification*)n;
+@property (nonatomic,strong) TDReplicatorManager *replicatorManager;
+@property (nonatomic,strong) NSDictionary *properties;
+@property (nonatomic, strong) TDReplicator *tdReplicator;
 
 // private readwrite properties
 @property (nonatomic, readwrite) CDTReplicatorState state;
@@ -61,17 +60,17 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 #pragma mark Initialise
 
--(id)initWithReplicatorDatastore:(CDTDatastore*)replicatorDb
-         replicationDocumentBody:(CDTDocumentBody*)body;
+-(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
+           replicationProperties:(NSDictionary*)properties;
 {
-    if (replicatorDb == nil || body == nil) {
+    if (replicatorManager == nil || properties == nil) {
         return nil;
     }
 
     self = [super init];
     if (self) {
-        _replicatorDb = replicatorDb;
-        _body = body;
+        _replicatorManager = replicatorManager;
+        _properties = properties;
         _state = CDTReplicatorStatePending;
     }
     return self;
@@ -85,125 +84,115 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 -(void)start
 {
-    NSError *error;
+    if (self.tdReplicator.running) {
+        LogTo(CDTReplicatorLog, @"start: Already running.");
+        return;
+    }
+    
+    //TDReplicator's can't be restarted, so always instantiate a new one.
+    self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.properties];
+    
+    if (!self.tdReplicator) {
+        Warn(@"CDTReplicator -start. Unable to instantiate TDReplicator!");
+        self.state = CDTReplicatorStateError;
+        return;
+    }
+    
+    self.changesTotal = self.changesProcessed = 0;
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(replicatorStopped:)
+                                                 name: TDReplicatorStoppedNotification
+                                               object: self.tdReplicator];
 
     [[NSNotificationCenter defaultCenter] addObserver: self
-                                             selector: @selector(dbChanged:)
-                                                 name: CDTDatastoreChangeNotification
-                                               object: self.replicatorDb];
+                                             selector: @selector(replicatorProgressChanged:)
+                                                 name: TDReplicatorProgressChangedNotification
+                                               object: self.tdReplicator];
 
-    // starts the replication immediately
-    CDTDocumentRevision *rev = [self.replicatorDb createDocumentWithBody:self.body
-                                                                   error:&error];
-    if (error != nil) {
-        LogTo(CDTReplicatorLog, @"start: Error starting replication: %@", error);
-    } else {
-        LogTo(CDTReplicatorLog, @"start: Replication document added");
-    }
+    [[NSNotificationCenter defaultCenter] addObserver: self
+                                             selector: @selector(replicatorStarted:)
+                                                 name: TDReplicatorStartedNotification
+                                               object: self.tdReplicator];
+    
+    // queues the replication on the TDReplicatorManager's replication thread
+    [self.replicatorManager startReplicator:self.tdReplicator];
+    
+    LogTo(CDTReplicatorLog, @"start: ReplicationManager starting %@, sessionID %@",
+          [self.tdReplicator class], self.tdReplicator.sessionID);
 
-    // We only store the docId as the rev will change as the replicator
-    // updates the state of the replication so the revId will be changing.
-    self.replicationDocumentId = rev.docId;
-    LogTo(CDTReplicatorLog, @"start: Replication document ID: %@", self.replicationDocumentId);
-
-    [self updatedStateFromRevision:rev];
 }
 
 -(void)stop
 {
-    // We change straight to stopped, as we can't introspect
-    // the underlying TDReplicator instance.
-    self.state = CDTReplicatorStateStopped;
-
-    if (self.replicationDocumentId == nil) {
-        return;   // not started yet
-    }
-
-    NSError *error;
-
-    // We have to get the latest version as the we need the revId
-    // for deleting.
-    // TODO revision could be changed before we delete.
-    CDTDocumentRevision *current = [self.replicatorDb getDocumentWithId:self.replicationDocumentId
-                                                                  error:&error];
-
-    if (error != nil) {
-        LogTo(CDTReplicatorLog, @"Error stopping replication: %@", error);
-    } else {
-        LogTo(CDTReplicatorLog, @"Replication document deleted");
-    }
-
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
-
-    [self.replicatorDb deleteDocumentWithId:current.docId
-                                        rev:current.revId
-                                      error:&error];
+    if (self.state == CDTReplicatorStateStopping ||
+        self.state == CDTReplicatorStateStopped )
+        return;
+    
+    self.state = CDTReplicatorStateStopping;
 
     id<CDTReplicatorDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
         [delegate replicatorDidChangeState:self];
     }
-    if ([delegate respondsToSelector:@selector(replicatorDidComplete:)]) {
-        [delegate replicatorDidComplete:self];
-    }
+    
+    [self.tdReplicator stop];
+}
+
+
+// Notified that a TDReplicator has stopped:
+- (void) replicatorStopped: (NSNotification*)n {
+    TDReplicator* repl = n.object;
+    
+    LogTo(CDTReplicatorLog, @"replicatorStopped: %@. type: %@ sessionId: %@", n.name,
+          [repl class], repl.sessionID);
+    
+    [self updatedStateFromReplicator];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:self.tdReplicator];
+    
+}
+
+// Notified that a TDReplicator has started:
+- (void) replicatorStarted: (NSNotification*)n {
+    TDReplicator* repl = n.object;
+    
+    LogTo(CDTReplicatorLog, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
+          [repl class], repl.sessionID);
+    
+    [self updatedStateFromReplicator];
 }
 
 /*
- * Notified that a _replicator database document has been created/updated/deleted.
- * We need to update our state if it's our document.
+ * Called when progress has been reported by the TDReplicator.
  */
-- (void) dbChanged: (NSNotification*)n {
-    CDTDocumentRevision* rev = (n.userInfo)[@"rev"];
-//    LogTo(CDTReplicatorLog, @"CDTReplicator: %@ %@", n.name, rev);
-    [self updatedStateFromRevision:rev];
+-(void) replicatorProgressChanged: (NSNotification *)n
+{
+    [self updatedStateFromReplicator];
 }
 
-/*
- * Called when the replication document in the _replicator database has changed.
- */
--(void)updatedStateFromRevision:(CDTDocumentRevision*)rev {
-    NSString* docID = rev.docId;
-    if (![docID isEqualToString:self.replicationDocumentId])
-        return;
-
-//    LogTo(CDTReplicatorLog, @"CDTReplicator existing state: %@",
-//          [CDTReplicator stringForReplicatorState:self.state]);
-
-//    NSLog(@"updatedStateFromRevion got: %@", rev.documentAsDictionary);
-
-    NSDictionary *body = [rev documentAsDictionary];
+-(void)updatedStateFromReplicator
+{
 
     BOOL progressChanged = NO;
-    NSDictionary *stats = [body objectForKey:@"_replication_stats"];
-    if (nil != stats) {
-        self.changesProcessed = [((NSNumber*)stats[@"changesProcessed"]) integerValue];
-        self.changesTotal = [((NSNumber*)stats[@"changesTotal"]) integerValue];
+    if (self.changesProcessed != self.tdReplicator.changesProcessed ||
+        self.changesTotal != self.tdReplicator.changesTotal) {
+
+        self.changesProcessed = self.tdReplicator.changesProcessed;
+        self.changesTotal = self.tdReplicator.changesTotal;
         progressChanged = YES;
     }
-
+    
     CDTReplicatorState oldState = self.state;
 
-    if (rev.deleted) {
-        // Should not happen, but we can assume completed
+    if (self.tdReplicator.running)
+        self.state = CDTReplicatorStateStarted;
+    else if (self.tdReplicator.error)
+        self.state = CDTReplicatorStateError;
+    else
         self.state = CDTReplicatorStateComplete;
-    } else {
-        NSString* state = [rev documentAsDictionary][@"_replication_state"];
 
-        if ([state isEqualToString:@"triggered"]) {
-            self.state = CDTReplicatorStateStarted;
-        } else if ([state isEqualToString:@"error"]) {
-            self.state = CDTReplicatorStateError;
-        } else if ([state isEqualToString:@"completed"]) {
-            self.state = CDTReplicatorStateComplete;
-        } else {
-            // probably nil, so pending as the replicator's not yet picked it up
-            self.state = CDTReplicatorStatePending;
-        }
-    }
-
-//    LogTo(CDTReplicatorLog, @"CDTReplicator new state: %@",
-//          [CDTReplicator stringForReplicatorState:self.state]);
-
+    
     // Lots of possible delegate messages at this point
     id<CDTReplicatorDelegate> delegate = self.delegate;
 

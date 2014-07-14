@@ -106,35 +106,8 @@
     STAssertNotNil([tmp.database filterNamed:pushDoc[@"filter"]],
                    @"no filter called %@", pushDoc[@"filter"]);
     
-    [replicator start];  //this should put the doc on the DB.
-    
-    NSString *replicationDocumentId = [self replicationDocumentIdForReplicator:replicator];
-
-    CDTDatastore *replicatorDB = [self.factory datastoreNamed:kTDReplicatorDatabaseName 
-                                                        error:nil];
-    error = nil;
-    CDTDocumentRevision *pushRev = [replicatorDB getDocumentWithId:replicationDocumentId
-                                                             error:&error];
-    STAssertNotNil(pushRev, @"Replication doc doesn't exist: %@", replicationDocumentId);
-    STAssertNil(error, @"%@", error);
-    
-    [replicator stop];
     [replicatorFactory stop];
 }
-
-
-- (NSString*)replicationDocumentIdForReplicator:(CDTReplicator*)replicator
-{
-    // Diddle inside the object to get the replication doc name. Bad practice to get
-    // around private property.
-    SEL selector = NSSelectorFromString(@"replicationDocumentId");
-    IMP imp = [replicator methodForSelector:selector];
-    NSString* (*func)(id, SEL) = (void *)imp;
-    NSString *replicationDocumentId = func(replicator, selector);
-    return replicationDocumentId;
-}
-
-
 
 -(CDTAbstractReplication *)buildReplicationObject:(Class)aClass remoteUrl:(NSURL *)url
 {

@@ -19,6 +19,7 @@
 
 @class CDTDatastore;
 @class CDTDocumentBody;
+@class TDReplicatorManager;
 
 /**
  * Describes the state of a CDTReplicator at a given moment.
@@ -108,7 +109,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  */
 -(BOOL)isActive;
 
-
 /**
  Returns a string representation of a CDTReplicatorState value.
 
@@ -120,8 +120,8 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /*
  Private so no docs
  */
--(id)initWithReplicatorDatastore:(CDTDatastore*)replicatorDb
-         replicationDocumentBody:(CDTDocumentBody*)body;
+-(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
+           replicationProperties:(NSDictionary*)properties;
 
 
 /**---------------------------------------------------------------------------------------

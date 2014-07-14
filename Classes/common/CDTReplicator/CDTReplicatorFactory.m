@@ -94,32 +94,9 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
         return nil;
     }
     
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:repdoc];
-    if (body == nil) {
-        if (error) {
-            NSDictionary *userInfo =
-            @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
-            *error = [NSError errorWithDomain:CDTReplicatorFactoryErrorDomain
-                                         code:CDTReplicatorFactoryErrorNilDocumentBodyForReplication
-                                     userInfo:userInfo];
-            NSLog(@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTDocumentBody. "
-                  @"%@\n %@.", [replication class], replication);
-
-        }
-        return nil;
-
-    }
-    
-    NSError *localError = nil;
-    CDTDatastore *datastore = [self.manager datastoreNamed:kTDReplicatorDatabaseName
-                                                     error:&localError];
-    if (localError != nil) {
-        if (error) *error = localError;
-        return nil;
-    }
-    
-    CDTReplicator *replicator = [[CDTReplicator alloc] initWithReplicatorDatastore:datastore
-                                                           replicationDocumentBody:body];
+    CDTReplicator *replicator = [[CDTReplicator alloc]
+                                 initWithTDReplicatorManager:self.replicatorManager
+                                 replicationProperties:repdoc];
     
     if (replicator == nil) {
         if (error) {

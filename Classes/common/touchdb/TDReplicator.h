@@ -13,6 +13,8 @@
 @class TD_Database, TD_RevisionList, TDBatcher, TDReachability;
 @protocol TDAuthorizer;
 
+/** Posted when replicator starts running. */
+extern NSString* TDReplicatorStartedNotification;
 
 /** Posted when changesProcessed or changesTotal changes. */
 extern NSString* TDReplicatorProgressChangedNotification;
@@ -108,7 +110,7 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (readonly, nonatomic) NSUInteger changesProcessed;
 
 /** Approximate total number of changes to transfer.
-    This is only an estimate and its value will change during replication. It starts at zero and returns to zero when replication stops. */
+    This is only an estimate and its value will change during replication. */
 @property (readonly, nonatomic) NSUInteger changesTotal;
 
 /** JSON-compatible array of status info about active remote HTTP requests. */
