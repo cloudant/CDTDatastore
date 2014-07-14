@@ -18,7 +18,7 @@
 #import "TDMisc.h"
 
 @interface CDTPushReplication()
-@property (nonatomic, strong) NSString *docId;
+@property (nonatomic, strong) NSString *filterId;
 @end
 
 @implementation CDTPushReplication
@@ -35,7 +35,7 @@
     if(self = [super init]) {
         _source = source;
         _target = target;
-        _docId = TDCreateUUID();
+        _filterId = TDCreateUUID();
     }
     return self;
 }
@@ -69,8 +69,7 @@
     }
 
     if (self.filter) {
-        [doc setObject:self.docId forKey:@"_id"];
-        [doc setObject:[@"filter_" stringByAppendingString:self.docId] forKey:@"filter"];
+        [doc setObject:self.filterId forKey:@"filter"];
         [doc setObject:self.filterParams ? : @{} forKey:@"query_params"];
     }
     return doc;
