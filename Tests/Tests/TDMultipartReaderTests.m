@@ -94,7 +94,7 @@
                                   $dict()];
     
     for (NSUInteger chunkSize = 1; chunkSize <= mime.length; ++chunkSize) {
-        NSLog(@"--- chunkSize = %u", (unsigned)chunkSize);
+//        NSLog(@"--- chunkSize = %u", (unsigned)chunkSize);
         MyMultipartReaderDelegate* delegate = [[MyMultipartReaderDelegate alloc] init];
         TDMultipartReader* reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY\"" delegate: delegate];
         STAssertFalse(reader.finished, @"Premature finished reading data in %s", __PRETTY_FUNCTION__);

@@ -80,7 +80,7 @@ NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
             
         }
         
-        NSLog(@"%@ : %@",[result columnNameForIndex:i], resultString);
+//        NSLog(@"%@ : %@",[result columnNameForIndex:i], resultString);
     }
 }
 
@@ -103,11 +103,11 @@ NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
         DBQueryUtils *strongSelf = weakSelf;
         FMResultSet *result = [db executeQuery:sql];
         
-        NSLog(@"results for query: %@", sql);
+//        NSLog(@"results for query: %@", sql);
         
         while([result next]){
             [strongSelf printFMResult:result ignorecolumns:nil];
-            NSLog(@" ");
+//            NSLog(@" ");
         }
         
         [result close];
@@ -170,7 +170,7 @@ NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
     
     for(NSString* table in initialRowCount){
         
-        NSLog(@"testing for modification to %@", table);
+//        NSLog(@"testing for modification to %@", table);
         NSInteger initCount = [initialRowCount[table] integerValue];
         NSInteger expectCount = initCount;
         

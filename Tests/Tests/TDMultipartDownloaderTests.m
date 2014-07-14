@@ -49,7 +49,7 @@
       {
           STAssertNil(error, @"NSError is not nil after alloc init of TDMultipartDownloader in %s", __PRETTY_FUNCTION__);
           TDMultipartDownloader* request = result;
-          NSLog(@"Got document: %@", request.document);
+//          NSLog(@"Got document: %@", request.document);
           NSDictionary* attachments = (request.document)[@"_attachments"];
           STAssertTrue(attachments.count >= 1, @"attachments.count >= 1 fails in %s", __PRETTY_FUNCTION__);
           STAssertEquals(db.attachmentStore.count, 0u, @"db.attachmentStore.count is not 0u in %s", __PRETTY_FUNCTION__);
@@ -58,7 +58,7 @@
               STAssertNotNil(writer, @"TDBlobStoreWriter is nil in %s", __PRETTY_FUNCTION__);
               STAssertTrue([writer install], @"TDBlobStoreWriter install returned NO in %s", __PRETTY_FUNCTION__);
               NSData* blob = [db.attachmentStore blobForKey: writer.blobKey];
-              NSLog(@"Found %u bytes of data for attachment %@", (unsigned)blob.length, attachment);
+//              NSLog(@"Found %u bytes of data for attachment %@", (unsigned)blob.length, attachment);
               NSNumber* lengthObj = attachment[@"encoded_length"] ?: attachment[@"length"];
               STAssertEquals(blob.length, [lengthObj unsignedLongLongValue], @"blob length and object length are not equal in %s", __PRETTY_FUNCTION__);
               STAssertEquals(writer.length, blob.length, @"writer length and blog length are not equal in %s", __PRETTY_FUNCTION__);

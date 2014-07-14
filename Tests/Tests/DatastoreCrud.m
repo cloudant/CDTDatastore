@@ -489,7 +489,6 @@
             bool foundJSON = NO;
             
             while([result next]){
-                //NSLog(@"row: %@", [result resultDictionary]);
                 STAssertEqualObjects([result stringForColumn:@"docid"], aDocId,
                                      @"Document ID mismatch: %@", [result stringForColumn:@"docid"]);
                 
@@ -973,11 +972,8 @@
     }
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": [[NSNumber alloc] initWithInt:numOfUpdates + 1]};
-    NSLog(@"checking table counts");
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
-    NSLog(@"done checking table counts");
     
-    NSLog(@"Checking revs and docs tables");
     MRDatabaseContentChecker *dc =[[MRDatabaseContentChecker alloc] init];
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
@@ -1230,16 +1226,13 @@
     
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
-    NSLog(@"checking table counts");
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
-    NSLog(@"done checking table count");
     
     //explicit check of docs/revs tables
     __block int doc_id_inDocsTable;
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
-        NSLog(@"testing content of docs table");
         STAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
         doc_id_inDocsTable = [result intForColumn:@"doc_id"];
         STAssertFalse([result next], @"There are too many rows in docs");
@@ -1251,7 +1244,6 @@
         FMResultSet *result = [db executeQuery:@"select * from revs"];
         [result next];
         
-        NSLog(@"testing content of revs table");
         NSError *error;
         
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
@@ -1348,16 +1340,13 @@
     
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @3};
-    NSLog(@"checking table counts");
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
-    NSLog(@"done checking table count");
     
     //explicit check of docs/revs tables
     __block int doc_id_inDocsTable;
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
-        NSLog(@"testing content of docs table");
         STAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
         doc_id_inDocsTable = [result intForColumn:@"doc_id"];
         STAssertFalse([result next], @"There are too many rows in docs");
@@ -1368,9 +1357,7 @@
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from revs"];
         [result next];
-        
-        NSLog(@"testing content of revs table");
-        
+            
         //initial doc
         STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
         STAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);

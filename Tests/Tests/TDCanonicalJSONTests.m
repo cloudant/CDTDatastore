@@ -29,7 +29,7 @@
 - (void)roundtrip:(id) obj
 {
     NSData* json = [TDCanonicalJSON canonicalData: obj];
-    NSLog(@"%@ --> `%@`", [obj description], [json my_UTF8ToString]);
+//    NSLog(@"%@ --> `%@`", [obj description], [json my_UTF8ToString]);
     NSError* error;
     id reconstituted = [NSJSONSerialization JSONObjectWithData: json options:NSJSONReadingAllowFragments error: &error];
     STAssertNotNil(reconstituted, @"Canonical JSON `%@` was unparseable: %@",
@@ -45,7 +45,7 @@
     STAssertNotNil(reconstituted, @"`%@` was unparseable: %@",
             [json my_UTF8ToString], error);
     double delta = [reconstituted doubleValue] / n - 1.0;
-    NSLog(@"%g --> `%@` (error = %g)", n, [json my_UTF8ToString], delta);
+//    NSLog(@"%g --> `%@` (error = %g)", n, [json my_UTF8ToString], delta);
     STAssertTrue(fabs(delta) < 1.0e-15, @"`%@` had floating point roundoff error of %g (%g vs %g)",
             [json my_UTF8ToString], delta, [reconstituted doubleValue], n);
 }
