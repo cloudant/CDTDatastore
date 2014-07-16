@@ -219,16 +219,16 @@
         [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"breakfast": foods[0], @"elevenses": foods[1], @"lunch": foods[2], @"dinner": foods[3]}] error:&error];
     }
     
-    NSLog(@"start index");
+//    NSLog(@"start index");
     [im ensureIndexedWithIndexName:@"breakfast" fieldName:@"breakfast" error:&error];
     [im ensureIndexedWithIndexName:@"elevenses" fieldName:@"elevenses" error:&error];
     [im ensureIndexedWithIndexName:@"lunch" fieldName:@"lunch" error:&error];
     [im ensureIndexedWithIndexName:@"dinner" fieldName:@"dinner" error:&error];
-    NSLog(@"end index");
+//    NSLog(@"end index");
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"breakfast":@"bacon",@"elevenses":@"ham",@"lunch":@"eggs",@"dinner":@"brie"} error:&error];
 
-    NSLog(@"end query");
+//    NSLog(@"end query");
     unsigned long count=[[res documentIds] count];
     // NB this is dependent on lrand48 implementation
     STAssertEquals(count, 98UL, @"Query should return 98 documents");
@@ -793,7 +793,7 @@
 #pragma mark Supporting methods
 
 - (void)makeSomeDocuments:(NSNumber*)thread {
-    NSLog(@"makedocs %d", [thread intValue]);
+//    NSLog(@"makedocs %d", [thread intValue]);
     int i = 100;
     while (i-- > 0) {
         [self.datastore createDocumentWithBody:

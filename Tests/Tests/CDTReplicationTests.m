@@ -90,7 +90,6 @@
     push.filter = aFilter;
     push.filterParams = @{@"param1":@"foo"};
     
-    
     CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
                                                initWithDatastoreManager:self.factory];
     [replicatorFactory start];
@@ -101,26 +100,39 @@
     STAssertNil(error, @"%@", error);
 
     NSDictionary *pushDoc = [push dictionaryForReplicatorDocument:nil];
-    STAssertNotNil(pushDoc[@"_id"], @"Should have a _id set during init. \n%@", pushDoc);
-    STAssertEqualObjects([@"filter_" stringByAppendingString:pushDoc[@"_id"]],
-                         pushDoc[@"filter"], @"\n%@", pushDoc);
-    STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
     
+    STAssertTrue(pushDoc[@"filter"] != nil, @"No filter field in push replicator document");
+    STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
     STAssertNotNil([tmp.database filterNamed:pushDoc[@"filter"]],
                    @"no filter called %@", pushDoc[@"filter"]);
     
     [replicator start];  //this should put the doc on the DB.
+    
+    NSString *replicationDocumentId = [self replicationDocumentIdForReplicator:replicator];
 
-    CDTDatastore *replicatorDB = [self.factory datastoreNamed:kTDReplicatorDatabaseName error:&error];
+    CDTDatastore *replicatorDB = [self.factory datastoreNamed:kTDReplicatorDatabaseName 
+                                                        error:nil];
     error = nil;
-    CDTDocumentRevision *pushRev = [replicatorDB getDocumentWithId:pushDoc[@"_id"] error:&error];
-    STAssertNotNil(pushRev, @"nil doc: %@", pushDoc[@"_id"]);
+    CDTDocumentRevision *pushRev = [replicatorDB getDocumentWithId:replicationDocumentId
+                                                             error:&error];
+    STAssertNotNil(pushRev, @"Replication doc doesn't exist: %@", replicationDocumentId);
     STAssertNil(error, @"%@", error);
     
     [replicator stop];
     [replicatorFactory stop];
 }
 
+
+- (NSString*)replicationDocumentIdForReplicator:(CDTReplicator*)replicator
+{
+    // Diddle inside the object to get the replication doc name. Bad practice to get
+    // around private property.
+    SEL selector = NSSelectorFromString(@"replicationDocumentId");
+    IMP imp = [replicator methodForSelector:selector];
+    NSString* (*func)(id, SEL) = (void *)imp;
+    NSString *replicationDocumentId = func(replicator, selector);
+    return replicationDocumentId;
+}
 
 
 

@@ -45,19 +45,19 @@
     NSAssert(stream == _stream, @"stream passed to stream is not _stream");
     switch (event) {
         case NSStreamEventOpenCompleted:
-            NSLog(@"NSStreamEventOpenCompleted");
+//            NSLog(@"NSStreamEventOpenCompleted");
             break;
         case NSStreamEventHasBytesAvailable: {
-            NSLog(@"NSStreamEventHasBytesAvailable");
+//            NSLog(@"NSStreamEventHasBytesAvailable");
             uint8_t buffer[10];
             NSInteger length = [_stream read: buffer maxLength: sizeof(buffer)];
-            NSLog(@"    read %d bytes", (int)length);
+//            NSLog(@"    read %d bytes", (int)length);
             //Assert(length > 0);
             [_output appendBytes: buffer length: length];
             break;
         }
         case NSStreamEventEndEncountered:
-            NSLog(@"NSStreamEventEndEncountered");
+//            NSLog(@"NSStreamEventEndEncountered");
             _finished = YES;
             break;
         default:
@@ -105,7 +105,7 @@
 - (void)testSynchronousWriter
 {
     for (unsigned bufSize = 1; bufSize < 128; ++bufSize) {
-        NSLog(@"Buffer size = %u", bufSize);
+//        NSLog(@"Buffer size = %u", bufSize);
         TDMultiStreamWriter* mp = [self createWriter:bufSize];
         STAssertNotNil(mp, @"multistream writer is nil in %s", __PRETTY_FUNCTION__);
         NSData* outputBytes = [mp allOutput];
@@ -125,16 +125,16 @@
     MyMultiStreamWriterTester *tester = [[MyMultiStreamWriterTester alloc] initWithStream: input];
     NSRunLoop* rl = [NSRunLoop currentRunLoop];
     [input scheduleInRunLoop: rl forMode: NSDefaultRunLoopMode];
-    NSLog(@"Opening stream");
+//    NSLog(@"Opening stream");
     [input open];
     
     while (!tester->_finished) {
-        NSLog(@"...waiting for stream...");
+//        NSLog(@"...waiting for stream...");
         [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate: [NSDate dateWithTimeIntervalSinceNow: 0.5]];
     }
     
     [input removeFromRunLoop: rl forMode: NSDefaultRunLoopMode];
-    NSLog(@"Closing stream");
+//    NSLog(@"Closing stream");
     [input close];
     [writer close];
     STAssertEqualObjects(tester->_output.my_UTF8ToString, self.expectedOutputString, @"unexpected string in %s", __PRETTY_FUNCTION__);

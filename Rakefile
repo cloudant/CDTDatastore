@@ -5,7 +5,13 @@ end
 
 desc "Run the CDTDatastore Tests for iOS"
 task :testios do
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=7.1,name=iPhone Retina (3.5-inch)' test | xcpretty && exit ${PIPESTATUS[0]}")
+    # build using xcpretty as otherwise it's very verbose when running tests
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=7.1,name=iPhone Retina (3.5-inch)' build | xcpretty; exit ${PIPESTATUS[0]}")
+  unless $ios_success
+    puts "** Build failed"
+    exit(-1)
+  end
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=7.1,name=iPhone Retina (3.5-inch)' test")
   puts "\033[0;31m! iOS unit tests failed with status code #{$?}" unless $ios_success
   if $ios_success
     puts "** All tests executed successfully"
@@ -16,7 +22,13 @@ end
 
 desc "Run the CDTDatastore Tests for OS X"
 task :testosx do
-  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' test | xcpretty && exit ${PIPESTATUS[0]}")
+    # build using xcpretty as otherwise it's very verbose when running tests
+  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
+  unless $osx_success
+    puts "** Build failed"
+    exit(-1)
+  end
+  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=OS X' test")
   puts "\033[0;31m! OS X unit tests failed with status code #{$?}" unless $osx_success
   if $osx_success
     puts "** All tests executed successfully"
