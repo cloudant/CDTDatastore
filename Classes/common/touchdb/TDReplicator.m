@@ -42,6 +42,7 @@
 
 NSString* TDReplicatorProgressChangedNotification = @"TDReplicatorProgressChanged";
 NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
+NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 
 @interface TDReplicator ()
@@ -236,6 +237,9 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
     self.running = YES;
     _startTime = CFAbsoluteTimeGetCurrent();
     
+    [[NSNotificationCenter defaultCenter] postNotificationName: TDReplicatorStartedNotification
+                                                        object: self];
+    
 #if TARGET_OS_IPHONE
     // Register for foreground/background transition notifications, on iOS:
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(appBackgrounding:)
@@ -291,7 +295,8 @@ NSString* TDReplicatorStoppedNotification = @"TDReplicatorStopped";
     Log(@"Replication: %@ took %.3f sec; error=%@",
         self, CFAbsoluteTimeGetCurrent()-_startTime, _error);
     self.running = NO;
-    self.changesProcessed = self.changesTotal = 0;
+    
+    
     [[NSNotificationCenter defaultCenter]
         postNotificationName: TDReplicatorStoppedNotification object: self];
     [self saveLastSequence];

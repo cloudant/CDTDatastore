@@ -90,11 +90,11 @@ static NSUInteger largeRevTreeSize = 1500;
 /**
  Create a new replicator, and wait for replication from the remote database to complete.
  */
--(void) pullFromRemote {
-    [self pullFromRemoteWithFilter:nil params:nil];
+-(CDTReplicator *) pullFromRemote {
+    return [self pullFromRemoteWithFilter:nil params:nil];
 }
 
--(void) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
 {
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
@@ -114,20 +114,22 @@ static NSUInteger largeRevTreeSize = 1500;
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
+    
+    return replicator;
 }
 
 
 /**
  Create a new replicator, and wait for replication from the local database to complete.
  */
--(void) pushToRemote {
-    [self pushToRemoteWithFilter:nil params:nil];
+-(CDTReplicator *) pushToRemote {
+    return [self pushToRemoteWithFilter:nil params:nil];
 }
 
 /**
  Create a new replicator, and wait for replication from the local database to complete.
  */
--(void) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
+-(CDTReplicator *) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
     
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
                                                                   target:self.primaryRemoteDatabaseURL];
@@ -147,6 +149,7 @@ static NSUInteger largeRevTreeSize = 1500;
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
 
+    return replicator;
 }
 
 
@@ -163,7 +166,7 @@ static NSUInteger largeRevTreeSize = 1500;
     [self createLocalDocs:n_docs];
     STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
-    [self pushToRemote];
+    CDTReplicator *replicator = [self pushToRemote];
 
     [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
                               deletedDocs:0];
@@ -171,6 +174,9 @@ static NSUInteger largeRevTreeSize = 1500;
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
     STAssertTrue(same, @"Remote and local databases differ");
+
+    STAssertEquals(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 /**
@@ -186,14 +192,20 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [self createRemoteDocs:n_docs];
 
-    [self pullFromRemote];
+    CDTReplicator *replicator = [self pullFromRemote];
 
     STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
     STAssertTrue(same, @"Remote and local databases differ");
+    
+    STAssertEquals(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    //todo.
+    //STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
+
 }
+
 
 /**
  As per testPullLotsOfOneRevDocuments but ensuring indexes are updated.
