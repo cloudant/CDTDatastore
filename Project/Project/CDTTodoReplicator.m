@@ -144,7 +144,7 @@
     [self log:@"complete"];
 }
 
--(void)replicatorDidError:(CDTReplicator *)replicator info:(CDTReplicationErrorInfo *)info {
+-(void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info {
     [self log:@"error: %@", info];
 }
 

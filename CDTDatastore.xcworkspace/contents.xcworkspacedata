@@ -76,12 +76,6 @@
                location = "group:CDTPushReplication.m">
             </FileRef>
             <FileRef
-               location = "group:CDTReplicationErrorInfo.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTReplicationErrorInfo.m">
-            </FileRef>
-            <FileRef
                location = "group:CDTReplicator.h">
             </FileRef>
             <FileRef
