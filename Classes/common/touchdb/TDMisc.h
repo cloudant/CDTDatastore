@@ -57,3 +57,6 @@ NSURL* TDURLWithoutQuery( NSURL* url );
 
 /** Appends path components to a URL. These will NOT be URL-escaped, so you can include queries. */
 NSURL* TDAppendToURL(NSURL* baseURL, NSString* toAppend);
+
+/** Filter block, used in replication. */
+typedef BOOL (^TD_FilterBlock) (TD_Revision* revision, NSDictionary* params);

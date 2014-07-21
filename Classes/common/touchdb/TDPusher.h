@@ -5,10 +5,11 @@
 //  Created by Jens Alfke on 12/5/11.
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 
-#import "TDPuller.h"
-#import "TD_Database.h"
-
+#import "TDReplicator.h"
+#import "TDMisc.h"
 
 /** Replicator that pushes to a remote CouchDB. */
 @interface TDPusher : TDReplicator
@@ -30,5 +31,9 @@
 }
 
 @property BOOL createTarget;
+
+/** Block called to filter document revisions that are pushed to the remote server. */
+@property (nonatomic,copy) TD_FilterBlock filter;
+
 
 @end

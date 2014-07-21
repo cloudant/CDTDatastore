@@ -101,10 +101,8 @@
 
     NSDictionary *pushDoc = [push dictionaryForReplicatorDocument:nil];
     
-    STAssertTrue(pushDoc[@"filter"] != nil, @"No filter field in push replicator document");
+    STAssertTrue(push.filter != nil, @"No filter set in CDTPushReplication");
     STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
-    STAssertNotNil([tmp.database filterNamed:pushDoc[@"filter"]],
-                   @"no filter called %@", pushDoc[@"filter"]);
     
     [replicatorFactory stop];
 }

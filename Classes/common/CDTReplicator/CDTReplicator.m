@@ -17,10 +17,13 @@
 
 #import "CDTReplicatorFactory.h"
 #import "CDTDocumentRevision.h"
+#import "CDTPullReplication.h"
+#import "CDTPushReplication.h"
 
 #import "TD_Revision.h"
 #import "TD_Database.h"
-#import "TDReplicator.h"
+#import "TDPusher.h"
+#import "TDPuller.h"
 #import "TDReplicatorManager.h"
 
 const NSString *CDTReplicatorLog = @"CDTReplicator";
@@ -28,14 +31,15 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 @interface CDTReplicator ()
 
 @property (nonatomic,strong) TDReplicatorManager *replicatorManager;
-@property (nonatomic,strong) NSDictionary *properties;
 @property (nonatomic, strong) TDReplicator *tdReplicator;
-
+@property (nonatomic, copy) CDTAbstractReplication* cdtReplication;
+@property (nonatomic, strong) NSDictionary *replConfig;
 // private readwrite properties
 @property (nonatomic, readwrite) CDTReplicatorState state;
 @property (nonatomic, readwrite) NSInteger changesProcessed;
 @property (nonatomic, readwrite) NSInteger changesTotal;
 
+@property (nonatomic, copy) CDTFilterBlock pushFilter;
 @end
 
 @implementation CDTReplicator
@@ -61,17 +65,25 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 #pragma mark Initialise
 
 -(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
-           replicationProperties:(NSDictionary*)properties;
+                     replication:(CDTAbstractReplication*)replication
+                           error:(NSError * __autoreleasing*)error
 {
-    if (replicatorManager == nil || properties == nil) {
+    if (replicatorManager == nil || replication == nil) {
         return nil;
     }
 
     self = [super init];
     if (self) {
         _replicatorManager = replicatorManager;
-        _properties = properties;
+        NSError *localError;
+        _replConfig =[replication dictionaryForReplicatorDocument:&localError];
+        if (!_replConfig) {
+            if(error) *error = localError;
+            return nil;
+        }
         _state = CDTReplicatorStatePending;
+        _cdtReplication = replication;
+        
     }
     return self;
 }
@@ -90,13 +102,35 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     }
     
     //TDReplicator's can't be restarted, so always instantiate a new one.
-    self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.properties];
+    self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig];
     
     if (!self.tdReplicator) {
         Warn(@"CDTReplicator -start. Unable to instantiate TDReplicator!");
         self.state = CDTReplicatorStateError;
         return;
     }
+    
+    //create TD_FilterBlock that wraps the CDTFilterBlock and set the TDPusher.filter property.
+    if ([self.cdtReplication isKindOfClass:[CDTPushReplication class]]) {
+        
+        if (![self.tdReplicator isKindOfClass:[TDPusher class]]) {
+            Warn(@"CDTReplicator -start. Unexpected TDReplicator type. Expected TDPusher.");
+            self.state = CDTReplicatorStateError;
+            return;
+        }
+        
+        CDTPushReplication *pushRep = (CDTPushReplication *)self.cdtReplication;
+        if (pushRep.filter) {
+            TDPusher *tdpusher = (TDPusher *)self.tdReplicator;
+            CDTFilterBlock cdtfilter = [pushRep.filter copy];
+            
+            tdpusher.filter = ^(TD_Revision *rev, NSDictionary* params){
+                return cdtfilter([[CDTDocumentRevision alloc] initWithTDRevision:rev], params);
+            };
+            
+        }
+    }
+    
     
     self.changesTotal = self.changesProcessed = 0;
     

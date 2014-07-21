@@ -1143,17 +1143,6 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 }
 
 
-- (void) defineFilter: (NSString*)filterName asBlock: (TD_FilterBlock)filterBlock {
-    if (!_filters)
-        _filters = [[NSMutableDictionary alloc] init];
-    [_filters setValue: [filterBlock copy] forKey: filterName];
-}
-
-- (TD_FilterBlock) filterNamed: (NSString*)filterName {
-    return _filters[filterName];
-}
-
-
 #pragma mark - VIEWS:
 
 

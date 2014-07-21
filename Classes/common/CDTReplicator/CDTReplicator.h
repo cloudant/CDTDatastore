@@ -20,6 +20,7 @@
 @class CDTDatastore;
 @class CDTDocumentBody;
 @class TDReplicatorManager;
+@class CDTAbstractReplication;
 
 /**
  * Describes the state of a CDTReplicator at a given moment.
@@ -40,8 +41,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
      */
     CDTReplicatorStateStopped,
     /**
-     * -stop has
-     * been called and the replicator is stopping its worker threads.
+     * -stop has been called and the replicator is being removed from the replication thread.
      */
     CDTReplicatorStateStopping,
     /**
@@ -121,7 +121,8 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  Private so no docs
  */
 -(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
-           replicationProperties:(NSDictionary*)properties;
+                     replication:(CDTAbstractReplication*)replication
+                           error:(NSError * __autoreleasing*)error;
 
 
 /**---------------------------------------------------------------------------------------

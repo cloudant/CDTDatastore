@@ -21,20 +21,6 @@
 @class CDTAbstractReplication;
 
 /**
-* Replication errors.
-*/
-typedef NS_ENUM(NSInteger, CDTReplicatorFactoryErrors) {
-    /**
-     * CDTReplicator was not fully constucted
-     */
-    CDTReplicatorFactoryErrorNilReplicatorObject = 1,
-    /**
-       Error creating a new CDTDocumentBody
-     */
-    CDTReplicatorFactoryErrorNilDocumentBodyForReplication  = 2
-};
-
-/**
  Factory for CDTReplicator objects.
 
  Use CDTReplicatorFactory to create CDTReplicator objects based on the parameters set in a 

@@ -28,7 +28,6 @@ NSString* const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     return nil;
 }
 
-
 - (NSString *)description
 {
     return [NSString stringWithFormat:@"Replicator Doc: %@",

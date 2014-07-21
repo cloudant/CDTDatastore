@@ -11,6 +11,7 @@
 
 #import "TD_Revision.h"
 #import "TDStatus.h"
+#import "TDMisc.h"
 
 @class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
 struct TDQueryOptions;      // declared in TD_View.h
@@ -27,9 +28,6 @@ extern NSString* const TD_DatabaseWillCloseNotification;
 /** NSNotification posted when a database is about to be deleted (but before it closes). */
 extern NSString* const TD_DatabaseWillBeDeletedNotification;
 
-
-/** Filter block, used in changes feeds and replication. */
-typedef BOOL (^TD_FilterBlock) (TD_Revision* revision, NSDictionary* params);
 
 
 /** Options for what metadata to include in document bodies */
@@ -71,7 +69,6 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     int _transactionLevel;
     NSMutableDictionary* _views;
     NSMutableDictionary* _validations;
-    NSMutableDictionary* _filters;
     TDBlobStore* _attachments;
     NSMutableDictionary* _pendingAttachmentsByDigest;
     NSMutableArray* _activeReplicators;
@@ -203,9 +200,6 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
                                   filter: (TD_FilterBlock)filter
                                   params: (NSDictionary*)filterParams;
 
-/** Define or clear a named filter function. These aren't used directly by TD_Database, but they're looked up by TDRouter when a _changes request has a ?filter parameter. */
-- (void) defineFilter: (NSString*)filterName asBlock: (TD_FilterBlock)filterBlock;
 
-- (TD_FilterBlock) filterNamed: (NSString*)filterName;
 
 @end
