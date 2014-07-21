@@ -27,7 +27,6 @@
 #import "CDTPullReplication.h"
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicatorDelegate.h"
-#import "CDTReplicationErrorInfo.h"
 
 #import "CDTIndexManager.h"
 #import "CDTIndexer.h"
