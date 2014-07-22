@@ -159,18 +159,28 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
 
 -(void)stop
 {
-    if (self.state == CDTReplicatorStateStopping ||
-        self.state == CDTReplicatorStateStopped )
-        return;
-    
-    self.state = CDTReplicatorStateStopping;
 
-    id<CDTReplicatorDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
-        [delegate replicatorDidChangeState:self];
+    switch (self.state) {
+
+        case CDTReplicatorStateStarted:
+        case CDTReplicatorStatePending: {
+            
+            self.state = CDTReplicatorStateStopping;
+            id<CDTReplicatorDelegate> delegate = self.delegate;
+            if ([delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
+                [delegate replicatorDidChangeState:self];
+            }
+            
+            [self.tdReplicator stop];
+            break;
+        }
+
+        //can only stop once. If state == 'stopped', 'stopping', 'complete', or 'error'
+        //then -stop has either already been called, or the replicator stopped due to
+        //completion or error.
+        default:
+            break;
     }
-    
-    [self.tdReplicator stop];
 }
 
 
@@ -181,7 +191,51 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     LogTo(CDTReplicatorLog, @"replicatorStopped: %@. type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
     
-    [self updatedStateFromReplicator];
+    BOOL progressChanged = [self updateProgress];
+    
+    BOOL stateChanged = NO;
+
+    switch (self.state) {
+        case CDTReplicatorStatePending:
+        case CDTReplicatorStateStopping:
+            
+            if (self.tdReplicator.error) {
+                self.state = CDTReplicatorStateError;
+            }
+            else {
+                self.state = CDTReplicatorStateStopped;
+            }
+            stateChanged = YES;
+            
+            break;
+            
+        case CDTReplicatorStateStarted:
+            
+            if (self.tdReplicator.error) {
+                self.state = CDTReplicatorStateError;
+            }
+            else {
+                self.state = CDTReplicatorStateComplete;
+            }
+            stateChanged = YES;
+            
+        //do nothing if the state is already 'complete' or 'error'.
+        //which should be impossible.
+        default:
+            Warn(@"CDTReplicator -replicatorStopped was called with unexpected state = %@",
+                 [[self class] stringForReplicatorState:self.state]);
+            break;
+    }
+    
+    id<CDTReplicatorDelegate> delegate = self.delegate;
+    
+    if (progressChanged && [delegate respondsToSelector:@selector(replicatorDidChangeProgress:)]) {
+        [delegate replicatorDidChangeProgress:self];
+    }
+    
+    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
+        [delegate replicatorDidChangeState:self];
+    }
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:self.tdReplicator];
     
@@ -194,7 +248,15 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     LogTo(CDTReplicatorLog, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
     
-    [self updatedStateFromReplicator];
+    CDTReplicatorState oldState = self.state;
+    self.state = CDTReplicatorStateStarted;
+    
+    id<CDTReplicatorDelegate> delegate = self.delegate;
+
+    BOOL stateChanged = (oldState != self.state);
+    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
+        [delegate replicatorDidChangeState:self];
+    }
 }
 
 /*
@@ -202,45 +264,30 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
  */
 -(void) replicatorProgressChanged: (NSNotification *)n
 {
-    [self updatedStateFromReplicator];
-}
-
--(void)updatedStateFromReplicator
-{
-
-    BOOL progressChanged = NO;
-    if (self.changesProcessed != self.tdReplicator.changesProcessed ||
-        self.changesTotal != self.tdReplicator.changesTotal) {
-
-        self.changesProcessed = self.tdReplicator.changesProcessed;
-        self.changesTotal = self.tdReplicator.changesTotal;
-        progressChanged = YES;
-    }
+    BOOL progressChanged = [self updateProgress];
     
     CDTReplicatorState oldState = self.state;
-
+    
     if (self.tdReplicator.running)
         self.state = CDTReplicatorStateStarted;
     else if (self.tdReplicator.error)
         self.state = CDTReplicatorStateError;
     else
         self.state = CDTReplicatorStateComplete;
-
+    
     
     // Lots of possible delegate messages at this point
     id<CDTReplicatorDelegate> delegate = self.delegate;
-
-    if (progressChanged && [delegate respondsToSelector:@selector(replicatorDidChangeProgress:)])
-    {
+    
+    if (progressChanged && [delegate respondsToSelector:@selector(replicatorDidChangeProgress:)]) {
         [delegate replicatorDidChangeProgress:self];
     }
-
+    
     BOOL stateChanged = (oldState != self.state);
-    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)])
-    {
+    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
         [delegate replicatorDidChangeState:self];
     }
-
+    
     // We're completing this time if we're transitioning from an active state into an inactive
     // non-error state.
     BOOL completingTransition = (stateChanged && self.state != CDTReplicatorStateError &&
@@ -249,7 +296,7 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
     if (completingTransition && [delegate respondsToSelector:@selector(replicatorDidComplete:)]) {
         [delegate replicatorDidComplete:self];
     }
-
+    
     // We've errored if we're transitioning from an active state into an error state.
     BOOL erroringTransition = (stateChanged && self.state == CDTReplicatorStateError &&
                                [self isActiveState:oldState]);
@@ -257,6 +304,20 @@ const NSString *CDTReplicatorLog = @"CDTReplicator";
         [delegate replicatorDidError:self info:self.tdReplicator.error];
     }
 }
+
+-(BOOL) updateProgress
+{
+    BOOL progressChanged = NO;
+    if (self.changesProcessed != self.tdReplicator.changesProcessed ||
+        self.changesTotal != self.tdReplicator.changesTotal) {
+        
+        self.changesProcessed = self.tdReplicator.changesProcessed;
+        self.changesTotal = self.tdReplicator.changesTotal;
+        progressChanged = YES;
+    }
+    return progressChanged;
+}
+
 
 #pragma mark Status information
 

@@ -44,6 +44,8 @@
 		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		86A30343408047EEBBF8EC4C /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
+		9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
+		9F1F14EE19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,6 +97,8 @@
 		27ED109F192CF8DB00F75E95 /* ReplicationAcceptanceAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReplicationAcceptanceAppTests-Info.plist"; sourceTree = "<group>"; };
 		27ED10A1192CF8DB00F75E95 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		97F72706FFD44D88B6E5E667 /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorDelegates.h; sourceTree = "<group>"; };
+		9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorDelegates.m; sourceTree = "<group>"; };
 		C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3EA8C0BBBD34854B2975F77 /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		ED591AE84EE34971AD9AAB01 /* Pods-osx.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.xcconfig"; path = "Pods/Pods-osx.xcconfig"; sourceTree = "<group>"; };
@@ -199,6 +203,8 @@
 				27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */,
 				277992B618A24F0900BAB6ED /* ReplicationAcceptance+CRUD.h */,
 				277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */,
+				9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */,
+				9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */,
 			);
 			path = ReplicationAcceptance;
 			sourceTree = "<group>";
@@ -541,6 +547,7 @@
 				27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
 				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
+				9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */,
 				27A7E6AF189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 			);
@@ -553,6 +560,7 @@
 				27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */,
 				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
+				9F1F14EE19870B88003E9F0B /* ReplicatorDelegates.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 			);

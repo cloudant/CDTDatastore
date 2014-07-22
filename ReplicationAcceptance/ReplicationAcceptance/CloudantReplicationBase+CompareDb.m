@@ -20,7 +20,7 @@
 
 -(BOOL) compareDatastore:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
 {
-    if (![self compareDocCount:local withDatabase:databaseUrl]) {
+    if (![self compareDocCount:local expectEqualWithRemoteDatabase:databaseUrl]) {
         return NO;
     }
 
@@ -40,28 +40,36 @@
  * Basic check that we've the same number of documents in the local and remote
  * databases.
  */
--(BOOL) compareDocCount:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
+-(BOOL) compareDocCount:(CDTDatastore*)local expectEqualWithRemoteDatabase:(NSURL*)databaseUrl
 {
-    NSUInteger localCount = local.documentCount;
+    return [self numberOfDocs:local relativeToRemote:databaseUrl] == 0;
+}
 
+-(NSInteger) numberOfDocs:(CDTDatastore*)local relativeToRemote:(NSURL*)databaseUrl
+{
+    //returns the difference local.documentCount - remoteDatabase.documentCount
+    
+    NSInteger localCount = local.documentCount;
+    
     // Check document count in the remote DB
     NSDictionary* headers = @{@"accept": @"application/json"};
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[databaseUrl absoluteString]];
         [request setHeaders:headers];
     }] asJson].body.object;
-
-    NSUInteger remoteCount = [json[@"doc_count"] unsignedIntegerValue];
-    if (localCount != remoteCount) {
-        STFail(@"Wrong number of remote docs");
-        return NO;
-    }
-    //    STAssertEquals(deleted,
-    //                   [response.body.object[@"doc_del_count"] integerValue],
-    //                   @"Wrong number of remote deleted docs");
-
-    return YES;
+    
+    NSInteger remoteCount = [json[@"doc_count"] unsignedIntegerValue];
+    
+    return localCount - remoteCount;
 }
+
+
+-(BOOL) compareDocCount:(CDTDatastore*)local expectFewerDocsInRemoteDatabase:(NSURL*)databaseUrl
+{
+    return [self numberOfDocs:local relativeToRemote:databaseUrl] > 0;
+}
+
+
 
 /**
  * Check each database has the same (non-deleted) doc Ids and that the
