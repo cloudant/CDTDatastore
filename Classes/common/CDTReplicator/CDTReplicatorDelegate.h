@@ -73,6 +73,6 @@
  * @param replicator the replicator issuing the event.
  * @param info information about the error that occurred.
  */
-- (void)replicatorDidError:(CDTReplicator*)replicator info:(CDTReplicationErrorInfo*)info;
+- (void)replicatorDidError:(CDTReplicator*)replicator info:(NSError*)info;
 
 @end
