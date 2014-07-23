@@ -18,26 +18,38 @@
 #import "TD_Revision.h"
 
 @class TD_RevisionList;
+@class CDTMutableDocumentRevision;
 
 /**
  * Represents a single revision of a document in a datastore.
  */
-@interface CDTDocumentRevision : NSObject
+@interface CDTDocumentRevision : NSObject {
+
+    TD_Revision * _td_rev;
+    NSString *_docId;
+    NSDictionary *_body;
+    NSArray *_attachments;
+    
+}
 
 /** Document ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *docId;
 /** Revision ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *revId;
 
+
+@property (nonatomic,strong,readonly)NSDictionary* body;
+
 /** `YES` if this document revision is deleted. */
 @property (nonatomic,readonly) BOOL deleted;
 
 @property (nonatomic,readonly) SequenceNumber sequence;
 
-@property (nonatomic,strong,readonly) TD_Revision *td_rev;
+@property (nonatomic,strong,readonly) TD_Revision *td_rev ;
 
+@property (nonatomic,strong,readonly)NSArray *attachments;
 
--(id)initWithTDRevision:(TD_Revision*)rev;
+-(id)initWithTDRevision:(TD_Revision*)rev ;
 
 
 /** 
@@ -56,6 +68,13 @@
 
  @return document content as an NSDictionary object.
  */
--(NSDictionary*)documentAsDictionary;
+-(NSDictionary*)documentAsDictionary __deprecated;
+
+/**
+ Return a mutable copy of this document.
+ 
+ @return mutable copy of this document
+ */
+-(id)mutableCopy;
 
 @end

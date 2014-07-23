@@ -23,6 +23,7 @@
  *
  * Can return the JSON as an NSData object or a NSDictionary.
  */
+__deprecated
 @interface CDTDocumentBody : NSObject
 
 /**

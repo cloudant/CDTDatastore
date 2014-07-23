@@ -18,6 +18,7 @@
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
 @class FMDatabase;
+@class CDTMutableDocumentRevision;
 
 /** NSNotification posted when a document is updated.
  UserInfo keys:
@@ -97,7 +98,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  */
 -(CDTDocumentRevision *) createDocumentWithId:(NSString*)docId
                                          body:(CDTDocumentBody*)body
-                                        error:(NSError * __autoreleasing *)error;
+                                        error:(NSError * __autoreleasing *)error __deprecated;
 
 
 /**
@@ -111,7 +112,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @return revision of the newly created document
  */
 -(CDTDocumentRevision *) createDocumentWithBody:(CDTDocumentBody*)body
-                                          error:(NSError * __autoreleasing *)error;
+                                          error:(NSError * __autoreleasing *)error __deprecated;
 
 
 /**
@@ -216,7 +217,7 @@ extern NSString* const CDTDatastoreChangeNotification;
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
                                    prevRev:(NSString*)prevRev
                                          body:(CDTDocumentBody*)body
-                                        error:(NSError * __autoreleasing *)error;
+                                        error:(NSError * __autoreleasing *)error __deprecated;
 
 /*
  Allow for updateDocumentWithId to partake in a transaction. Useful for
@@ -232,7 +233,7 @@ extern NSString* const CDTDatastoreChangeNotification;
                                          body:(CDTDocumentBody*)body
                                 inTransaction:(FMDatabase*)db
                                      rollback:(BOOL*)rollback
-                                        error:(NSError * __autoreleasing *)error;
+                                        error:(NSError * __autoreleasing *)error __deprecated;
 
 /**
  * Delete a document.
@@ -248,7 +249,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  */
 -(CDTDocumentRevision*) deleteDocumentWithId:(NSString*)docId
                                          rev:(NSString*)rev
-                                       error:(NSError * __autoreleasing *)error;
+                                       error:(NSError * __autoreleasing *)error __deprecated; //unsure if this should be deprecated
 
 /**
  * Return a directory for an extension to store its data for this CDTDatastore.
@@ -259,5 +260,21 @@ extern NSString* const CDTDatastoreChangeNotification;
  */
 -(NSString*) extensionDataFolder:(NSString*)extensionName;
 
+#pragma mark API V2
+/**
+ * Creates a document from a MutableDocumentRevision
+ *
+ * @param revision document revision to create document from
+ *
+ * @return document revision created
+ */
+-(CDTDocumentRevision*) createDocumentFromRevision: (CDTMutableDocumentRevision*)revision
+                                             error:(NSError * __autoreleasing *)error;
+
+-(CDTDocumentRevision*) updateDocumentFromRevision: (CDTMutableDocumentRevision*)revision
+                                             error:(NSError * __autoreleasing *)error;
+
+-(CDTDocumentRevision*) deleteDocumentFromRevision:(CDTDocumentRevision*)revision
+                                             error:(NSError * __autoreleasing *)error;
 @end
 

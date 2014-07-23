@@ -14,27 +14,44 @@
 //  and limitations under the License.
 
 #import "CDTDocumentRevision.h"
-
+#import "CDTMutableDocumentRevision.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
 #import "TD_Body.h"
 
 @interface CDTDocumentRevision ()
 
-@property (nonatomic,strong,readonly) NSDictionary *attachments;
+
 @property (nonatomic,strong,readonly) TD_RevisionList *revs;
 @property (nonatomic,strong,readonly) NSArray *revsInfo;
 @property (nonatomic,strong,readonly) NSArray *conflicts;
+@property (nonatomic,strong,readonly) TD_Body *td_body;
 
 @end
 
 @implementation CDTDocumentRevision
+
+@synthesize docId = _docId;
+@synthesize revId = _revId;
+@synthesize deleted = _deleted;
+@synthesize sequence = _sequence;
 
 -(id)initWithTDRevision:(TD_Revision*)rev
 {
     self = [super init];
     if (self) {
         _td_rev = rev;
+        _revId = _td_rev.revID;
+        NSMutableDictionary *mutableCopy = [_td_rev.body.properties mutableCopy];
+        [mutableCopy removeObjectsForKeys:@[
+                                            @"_id",
+                                            @"_rev",
+                                            @"_deleted"
+                                            ]];
+        _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        _docId = _td_rev.docID;
+        _deleted = _td_rev.deleted;
+        _sequence = _td_rev.sequence;
     }
     return self;
 }
@@ -43,27 +60,6 @@
 {
     return self.td_rev;
 }
-
--(NSString*)docId
-{
-    return self.td_rev.docID;
-}
-
--(NSString*)revId
-{
-    return self.td_rev.revID;
-}
-
--(BOOL)deleted
-{
-    return self.td_rev.deleted;
-}
-
--(SequenceNumber)sequence 
-{
-    return self.td_rev.sequence;
-}
-
 
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {
@@ -106,6 +102,17 @@
 
     // return a non-mutable dictionary
     return [NSDictionary dictionaryWithDictionary:touch_properties];
+}
+
+-(id)mutableCopy
+{
+    CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
+    mutableCopy.attachments = [self.attachments mutableCopy];
+    mutableCopy.sourceRevId = self.revId;
+    mutableCopy.docId = self.docId;
+    mutableCopy.body = [self.body mutableCopy];
+    
+    return mutableCopy;
 }
 
 @end

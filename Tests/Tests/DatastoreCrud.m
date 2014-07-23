@@ -23,6 +23,7 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
+#import "CDTMutableDocumentRevision.h"
 #import "TD_Revision.h"
 
 #import "FMDatabaseAdditions.h"
@@ -294,6 +295,41 @@
     STAssertTrue(error.code == 409, @"Incorrect error code: %@", error);
     STAssertNil(ob3, @"CDTDocumentRevision object was not nil");
     
+}
+
+-(void)testCreateUsingCDTMutableDocumentRevision
+{
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
+    doc.docId = @"MyFirstTestDoc";
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    STAssertTrue(saved, @"Failed to save new document");
+    
+}
+
+-(void) testCreateWithoutBodyInCDTMutableDocumentRevision
+{
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    STAssertNil(saved, @"Document was created without a body");
+}
+
+-(void)testCreateWithaDocumentIdNoBodyCDTMutableDocumentRevision{
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.docId = @"doc1";
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    STAssertNil(saved, @"Document with Id but no body created");
+}
+
+-(void)testCreateWithOnlyBodyCDTMutableDocumentRevision{
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.body = [@{@"DocumentBodyItem1":@"Hi",@"Hello":@"World"} mutableCopy];
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
+    STAssertTrue(saved, @"Document was not created");
 }
 
 #pragma mark - READ tests
@@ -1134,6 +1170,19 @@
     
 }
 
+-(void) testUpdateDocumentThroughCDTMutableRevision{
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
+    doc.docId = @"MyFirstTestDoc";
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    STAssertTrue(saved, @"Failed to save new document");
+    
+    CDTMutableDocumentRevision *update = [saved mutableCopy];
+    [update.body setObject:@"UpdatedDocValue" forKey:@"UpdatedDoc"];
+    CDTDocumentRevision *updated = [self.datastore updateDocumentFromRevision:update error:&error];
+    STAssertTrue(updated, @"Object did not update");
+}
 
 #pragma mark - DELETE tests
 
@@ -1627,6 +1676,20 @@
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
     
 }
+
+-(void)testDeleteUsingCDTDocumentRevision
+{
+    NSError * error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
+    doc.docId = @"MyFirstTestDoc";
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    STAssertTrue(saved, @"Failed to save new document");
+    
+    CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:saved error:&error];
+    STAssertTrue(deleted && deleted.deleted, @"Document was not deleted");
+}
+
 
 #pragma mark - Other Tests
 
