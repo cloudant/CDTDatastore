@@ -54,11 +54,14 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
 /**
  Returns attachment `name` for the revision.
 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
+ 
  @return CDTAttachment or nil no attachment with that name.
  */
 -(CDTAttachment*) attachmentNamed:(NSString*)name
                            forRev:(CDTDocumentRevision*)rev
-                            error:(NSError * __autoreleasing *)error;
+                            error:(NSError * __autoreleasing *)error __deprecated;
 
 /**
  Set the content of attachments on a document, creating
@@ -68,16 +71,22 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  new attachments will be created, and attachments already
  existing on the document which are not included in
  `attachments` will remain as attachments on the document.
+ 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
 
  @return New revision, or nil on error.
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
                                    forRev:(CDTDocumentRevision*)rev
-                                    error:(NSError * __autoreleasing *)error;
+                                    error:(NSError * __autoreleasing *)error __deprecated;
 
 /**
  Remove attachments `names` from a document, creating a new revision.
 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
+ 
  @param rev rev to update.
  @param names NSArray of NSStrings, each being an attachment name
  to remove
@@ -85,6 +94,23 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */ 
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
                                   fromRev:(CDTDocumentRevision*)rev
-                                    error:(NSError * __autoreleasing *)error;
+                                    error:(NSError * __autoreleasing *)error __deprecated;
+
+/*
+ Streams attachment data into a blob in the blob store.
+ Returns nil if there was a problem, otherwise a dictionary
+ with the sha and size of the file.
+ */
+-(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment
+                                      error:(NSError * __autoreleasing *)error;
+
+/*
+ Add the row in the attachments table for a given attachment.
+ The attachments dict should store the attachments CDTAttachment
+ object, its length and its sha key.
+ */
+-(BOOL) addAttachment:(NSDictionary*)attachmentData
+                toRev:(CDTDocumentRevision*)revision
+           inDatabase:(FMDatabase*)db;
 
 @end

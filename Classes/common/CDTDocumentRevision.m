@@ -14,57 +14,71 @@
 //  and limitations under the License.
 
 #import "CDTDocumentRevision.h"
-
+#import "CDTMutableDocumentRevision.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
 #import "TD_Body.h"
 
 @interface CDTDocumentRevision ()
 
-@property (nonatomic,strong,readonly) NSDictionary *attachments;
+
 @property (nonatomic,strong,readonly) TD_RevisionList *revs;
 @property (nonatomic,strong,readonly) NSArray *revsInfo;
 @property (nonatomic,strong,readonly) NSArray *conflicts;
+@property (nonatomic,strong,readonly) TD_Body *td_body;
+@property (nonatomic,strong,readonly) NSDictionary *private_body;
+@property (nonatomic,strong,readonly) NSDictionary *private_attachments;
 
 @end
 
 @implementation CDTDocumentRevision
 
+@synthesize docId = _docId;
+@synthesize revId = _revId;
+@synthesize deleted = _deleted;
+@synthesize sequence = _sequence;
+
 -(id)initWithTDRevision:(TD_Revision*)rev
+{
+    return [self initWithTDRevision:rev andAttachments:nil];
+}
+
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSDictionary *) attachments
 {
     self = [super init];
     if (self) {
         _td_rev = rev;
+        _revId = _td_rev.revID;
+        
+        // Copy td_body propertes and
+        // remove all _ prefixed properties, _ prefixed properties are reservered for internal
+        // use in TouchDB
+        
+        NSMutableDictionary *mutableCopy = [_td_rev.body.properties mutableCopy];
+        
+        NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
+        
+        NSArray * keysToRemove = [[_td_rev.body.properties allKeys]
+                                  filteredArrayUsingPredicate: _prefixPredicate];
+        
+        [mutableCopy removeObjectsForKeys:keysToRemove];
+        _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        _docId = _td_rev.docID;
+        _deleted = _td_rev.deleted;
+        _sequence = _td_rev.sequence;
+        _private_attachments = [attachments copy];
     }
     return self;
 }
+
 
 -(TD_Revision*)TD_RevisionValue
 {
     return self.td_rev;
 }
 
--(NSString*)docId
-{
-    return self.td_rev.docID;
-}
-
--(NSString*)revId
-{
-    return self.td_rev.revID;
-}
-
--(BOOL)deleted
-{
-    return self.td_rev.deleted;
-}
-
--(SequenceNumber)sequence 
-{
-    return self.td_rev.sequence;
-}
-
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {
     NSError *innerError = nil;
@@ -106,6 +120,27 @@
 
     // return a non-mutable dictionary
     return [NSDictionary dictionaryWithDictionary:touch_properties];
+}
+
+-(CDTMutableDocumentRevision*)mutableCopy
+{
+    CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
+    mutableCopy.sourceRevId = self.revId;
+    mutableCopy.docId = self.docId;
+    mutableCopy.attachments = self.attachments;
+    mutableCopy.body = self.private_body;
+    
+    return mutableCopy;
+}
+
+-(NSDictionary*)body
+{
+    return self.private_body;
+}
+
+-(NSDictionary*)attachments
+{
+    return self.private_attachments;
 }
 
 @end

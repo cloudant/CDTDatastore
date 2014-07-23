@@ -35,6 +35,10 @@
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
 		8E3377D518ABF36E003E3D93 /* IndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */; };
 		8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */; };
+		985F84D4198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */; };
+		985F84D5198BDA6D004D8713 /* AttachmentCRUDMutableDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */; };
+		989E6E22198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
+		989E6E23198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
 		9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -100,6 +104,8 @@
 		2996853CB13542679108F845 /* Pods-osx.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.xcconfig"; path = "Pods/Pods-osx.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerTests.m; sourceTree = "<group>"; };
+		985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUDMutableDocument.m; path = Attachments/AttachmentCRUDMutableDocument.m; sourceTree = "<group>"; };
+		989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreMutableDocumentCrud.m; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
 		9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartWriterTests.m; sourceTree = "<group>"; };
@@ -189,6 +195,7 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */,
 				27ACD1EC193DDDCC00658EC2 /* Events */,
 				27F43D4618E99C31003E8422 /* osx-aws-toolkit */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
@@ -264,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				27D96E3718E1D93F00DEA006 /* AttachmentCRUD.m */,
+				985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */,
 			);
 			name = Attachments;
 			sourceTree = "<group>";
@@ -333,6 +341,7 @@
 		27389E02185345DA0027A404 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0500;
 				TargetAttributes = {
 					27CCEDC5187AD64F006F3C66 = {
@@ -462,9 +471,11 @@
 				27389E3518534E050027A404 /* CloudantSyncTests.m in Sources */,
 				9F0D24111890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */,
+				989E6E22198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */,
 				9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				9F0D23FA188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
+				985F84D4198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m in Sources */,
 				9F0D2402188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				27389E3818534E050027A404 /* SetUpDatastore.m in Sources */,
@@ -481,6 +492,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				985F84D5198BDA6D004D8713 /* AttachmentCRUDMutableDocument.m in Sources */,
 				9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */,
 				8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
@@ -494,6 +506,7 @@
 				27CCEDD8187AD719006F3C66 /* DatastoreCrud.m in Sources */,
 				9F0D24121890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */,
+				989E6E23198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */,
 				9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				9F0D23FB188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
