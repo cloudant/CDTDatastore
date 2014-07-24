@@ -115,11 +115,17 @@
     MYOnThread(_serverThread, block);
 }
 
-- (TDReplicator* ) createReplicatorWithProperties: (NSDictionary*) properties
+- (TDReplicator* ) createReplicatorWithProperties:(NSDictionary*) properties
+                                            error:(NSError *__autoreleasing*)error
 {
     
-    TDReplicator* repl = [_dbManager replicatorWithProperties: properties status: NULL];
+    TDStatus outStatus;
+    TDReplicator* repl = [_dbManager replicatorWithProperties: properties status: &outStatus];
+    
     if (!repl) {
+        if (error) {
+            *error = TDStatusToNSError(outStatus, nil);
+        }
         Warn(@"ReplicatorManager: Can't create replicator for %@", properties);
         return nil;
     }

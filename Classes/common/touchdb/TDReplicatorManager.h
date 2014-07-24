@@ -33,7 +33,8 @@ One must -start (-stop) the TDReplicatorManager in order to setup (destroy) the 
 - (void) start;
 - (void) stop;
 
-- (TDReplicator* ) createReplicatorWithProperties: (NSDictionary*) properties;
+- (TDReplicator* ) createReplicatorWithProperties:(NSDictionary*) properties
+                                            error:(NSError *__autoreleasing*)error;
 - (void) startReplicator: (TDReplicator*) repl;
 
 @end

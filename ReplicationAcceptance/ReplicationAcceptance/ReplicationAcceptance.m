@@ -109,7 +109,9 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertNotNil(replicator, @"CDTReplicator is nil");
     
     NSLog(@"Replicating from %@", [pull.source absoluteString]);
-    [replicator start];
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
     
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
@@ -143,7 +145,9 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertNotNil(replicator, @"CDTReplicator is nil");
     
     NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
-    [replicator start];
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
    
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
@@ -345,7 +349,10 @@ static NSUInteger largeRevTreeSize = 1500;
     CDTTestReplicatorDelegateStopAfterStart *myDelegate = [[CDTTestReplicatorDelegateStopAfterStart alloc] init];
     replicator.delegate = myDelegate;
     
-    [replicator start];
+    NSError *error;
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
     
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
@@ -357,7 +364,7 @@ static NSUInteger largeRevTreeSize = 1500;
     BOOL docComparison = [self compareDocCount:self.datastore
       expectFewerDocsInRemoteDatabase:self.primaryRemoteDatabaseURL];
     
-    STAssertTrue(!docComparison, @"Remote database doesn't have fewer docs than local.");
+    STAssertTrue(docComparison, @"Remote database doesn't have fewer docs than local.");
 }
 
 /**
@@ -644,8 +651,11 @@ static NSUInteger largeRevTreeSize = 1500;
     CDTReplicator *replicator = [self.replicatorFactory oneWay:push error:nil];
 
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
-    [replicator start];
-
+    NSError *error;
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
@@ -750,8 +760,11 @@ static NSUInteger largeRevTreeSize = 1500;
     CDTReplicator *replicator = [self.replicatorFactory oneWay:push error:nil];
     
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
-    [replicator start];
-
+    NSError *error;
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
