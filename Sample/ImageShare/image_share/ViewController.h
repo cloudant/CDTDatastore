@@ -7,9 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CloudantSync.h>
 
 @interface ViewController : UIViewController
 
 @property(nonatomic, weak) IBOutlet UICollectionView *collectionView;
+
+@property CDTDatastoreManager *manager;
+
+@property CDTDatastore *ds;
 
 @end

@@ -61,11 +61,62 @@
     return UIEdgeInsetsMake(50, 20, 50, 20);
 }
 
+- (void)initDatastore
+{
+    // Create a CDTDatastoreManager using application internal storage path
+    NSError *outError = nil;
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    
+    NSURL *documentsDir = [[fileManager URLsForDirectory:NSDocumentDirectory
+                                               inDomains:NSUserDomainMask] lastObject];
+    NSURL *storeURL = [documentsDir URLByAppendingPathComponent:@"cloudant-sync-datastore"];
+    NSString *path = [storeURL path];
+    
+    self.manager =
+    [[CDTDatastoreManager alloc] initWithDirectory:path error:&outError];
+    
+    self.ds = [self.manager datastoreNamed:@"my_datastore"
+                                         error:&outError];
+    if (outError != NULL){
+        NSLog(@"%@", outError);
+    }
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"Cell "];
+    UIBarButtonItem *addBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addAction)];
+    UIBarButtonItem *connectBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
+    UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
+    self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem, connectBarButtonItem, pushBarButtonItem, nil];
+    
+    [self initDatastore];
+}
+
+-(void)addAction
+{
+    // Create a document
+    NSDictionary *doc = @{
+                          @"description": @"Buy milk",
+                          @"completed": @NO,
+                          @"type": @"com.cloudant.sync.example.task"
+                          };
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
+    
+    NSError *error;
+    CDTDocumentRevision *revision = [self.ds createDocumentWithBody:body
+                                                                error:&error];
+    if (error != NULL){
+        NSLog(@"%@", error);
+    }
+    NSLog(@"add button clicked");
+}
+
+-(void)connectAction
+{
+    NSLog(@"connect button clicked");
 }
 
 - (void)didReceiveMemoryWarning
