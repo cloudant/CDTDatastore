@@ -96,7 +96,9 @@
     UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
     self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem, connectBarButtonItem, pushBarButtonItem, nil];
     
+    self.images = [[NSMutableArray alloc] init];
     [self initDatastore];
+    [self loadDocs];
 }
 
 // Init imagePickerController
@@ -110,34 +112,58 @@
 
 // Pick an image from the phone
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    if (self.images == NULL) {
-        self.images = [[NSMutableArray alloc] init];
-    }
-    
-	[picker dismissViewControllerAnimated:YES completion:nil];
+    [picker dismissViewControllerAnimated:YES completion:nil];
 	//imageView.image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
     
     UIImage *img = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
     [self.images addObject:img];
     [self.collectionView reloadData];
+    [self createDoc:img];
 }
 
--(void)createDoc
+-(void)createDoc:(UIImage *)image
 {
     // Create a document
-     NSDictionary *doc = @{
-         @"description": @"Buy milk",
-         @"completed": @NO,
-         @"type": @"com.cloudant.sync.example.task"
-     };
-     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
+    NSDictionary *doc = @{
+        @"description": @"Buy milk",
+        @"completed": @NO,
+        @"type": @"com.cloudant.sync.example.task"
+    };
+    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
      
-     NSError *error;
-     CDTDocumentRevision *revision = [self.ds createDocumentWithBody:body
-     error:&error];
+    NSError *error;
+    CDTDocumentRevision *rev1 = [self.ds createDocumentWithBody:body
+    error:nil];
+    
+    
+    NSData *data = UIImageJPEGRepresentation(image, 0.7);
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:@"image"
+                                                                          type:@"image/jpg"];
+    
+    CDTDocumentRevision *rev2 = [self.ds updateAttachments:@[attachment]
+                                                           forRev:rev1
+                                                           error:&error];
      if (error != NULL){
          NSLog(@"%@", error);
      }
+}
+
+-(void)loadDocs
+{
+    NSArray *docs = self.ds.getAllDocuments;
+    for (CDTDocumentRevision *rev in docs){
+        CDTAttachment *retrievedAttachment = [self.ds attachmentNamed:@"image"
+                                                                      forRev:rev
+                                                                       error:nil];
+        if (retrievedAttachment != NULL){
+            NSLog(@"%@",rev.docId);
+            NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
+            UIImage *image = [UIImage imageWithData:attachmentData];
+            [self.images addObject:image];
+        }
+    }
+    [self.collectionView reloadData];
 }
 
 -(void)connectAction
