@@ -19,16 +19,7 @@
     
 }
 
--(id)init{
-    self = [super init];
-    
-    if(self){
-        //do some set up here
-    }
-    return self;
-}
-
--(id)initWithDocumentId:(NSString *)documentId andBody:(NSMutableDictionary *) body
+-(id)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *) body
 {
     self = [super init];
     

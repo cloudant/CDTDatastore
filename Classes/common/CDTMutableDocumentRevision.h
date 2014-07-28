@@ -17,8 +17,7 @@
 
 +(CDTMutableDocumentRevision *)revision;
 
--(id)init;
--(id)initWithDocumentId:(NSString *)documentId andBody:(NSMutableDictionary *)body;
+-(id)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *)body;
 
 
 @end
