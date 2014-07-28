@@ -45,7 +45,7 @@
 
 @property (nonatomic,readonly) SequenceNumber sequence;
 
-@property (nonatomic,strong,readonly) TD_Revision *td_rev ;
+@property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
 @property (nonatomic,strong,readonly)NSArray *attachments;
 
