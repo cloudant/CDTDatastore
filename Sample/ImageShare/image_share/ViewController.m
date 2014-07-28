@@ -65,36 +65,19 @@
     return UIEdgeInsetsMake(50, 20, 50, 20);
 }
 
-- (void)initDatastore
-{
-    // Create a CDTDatastoreManager using application internal storage path
-    NSError *outError = nil;
-    NSFileManager *fileManager= [NSFileManager defaultManager];
-    
-    NSURL *documentsDir = [[fileManager URLsForDirectory:NSDocumentDirectory
-                                               inDomains:NSUserDomainMask] lastObject];
-    NSURL *storeURL = [documentsDir URLByAppendingPathComponent:@"cloudant-sync-datastore"];
-    NSString *path = [storeURL path];
-    
-    self.manager =
-    [[CDTDatastoreManager alloc] initWithDirectory:path error:&outError];
-    
-    self.ds = [self.manager datastoreNamed:@"my_datastore"
-                                         error:&outError];
-    if (outError != NULL){
-        NSLog(@"%@", outError);
-    }
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"Cell "];
     UIBarButtonItem *addBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addAction)];
+    UIBarButtonItem *deleteBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deleteDatastore)];
     UIBarButtonItem *connectBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
-    UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
-    self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem, connectBarButtonItem, pushBarButtonItem, nil];
+    UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(pushReplicateAction)];
+    UIBarButtonItem *pullBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Pull" style:UIBarButtonItemStylePlain target:self action:@selector(pullReplicateAction)];
+    self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem,
+                                               deleteBarButtonItem, connectBarButtonItem, pushBarButtonItem,
+                                               pullBarButtonItem, nil];
     
     self.images = [[NSMutableArray alloc] init];
     [self initDatastore];
@@ -149,6 +132,7 @@
      }
 }
 
+// Load images stored in a local datastore
 -(void)loadDocs
 {
     NSArray *docs = self.ds.getAllDocuments;
@@ -164,6 +148,97 @@
         }
     }
     [self.collectionView reloadData];
+}
+
+- (void)initDatastore
+{
+    // Create a CDTDatastoreManager using application internal storage path
+    NSError *outError = nil;
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    
+    NSURL *documentsDir = [[fileManager URLsForDirectory:NSDocumentDirectory
+                                               inDomains:NSUserDomainMask] lastObject];
+    NSURL *storeURL = [documentsDir URLByAppendingPathComponent:@"cloudant-sync-datastore"];
+    NSString *path = [storeURL path];
+    
+    self.manager =
+    [[CDTDatastoreManager alloc] initWithDirectory:path error:&outError];
+    
+    self.ds = [self.manager datastoreNamed:@"my_datastore"
+                                     error:&outError];
+    if (outError != NULL){
+        NSLog(@"%@", outError);
+    }
+}
+
+-(void)deleteDatastore
+{
+    NSError *outError = nil;
+    [self.manager deleteDatastoreNamed:@"my_datastore" error:nil];
+    self.ds = [self.manager datastoreNamed:@"my_datastore"
+                                     error:&outError];
+    if (outError != NULL){
+        NSLog(@"%@", outError);
+    }
+    
+    [self.images removeAllObjects];
+    [self.collectionView reloadData];
+}
+
+-(void)pushReplicateAction
+{
+    CDTReplicatorFactory *replicatorFactory =
+    [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.manager];
+    [replicatorFactory start];
+    
+    // username/password can be Cloudant API keys
+    //TODO: don't commit quthentication info
+    NSString *s = @"https://username:password@username.cloudant.com/my_database";
+    NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
+
+    // Create a replicator that replicates changes from the local
+    // datastore to the remote database.
+    CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:self.ds
+                                                                             target:remoteDatabaseURL];
+    NSError *error;
+    CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
+    //check error
+    
+    // Start the replication and wait for it to complete
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+}
+
+-(void)pullReplicateAction
+{
+    CDTReplicatorFactory *replicatorFactory =
+    [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.manager];
+    [replicatorFactory start];
+    
+    // username/password can be Cloudant API keys
+    //TODO: don't commit quthentication info
+    NSString *s = @"https://username:password@username.cloudant.com/my_database";
+    NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
+    
+    // Create a replicator that replicates changes from the local
+    // datastore to the remote database.
+    CDTPullReplication *pullReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
+                                                                             target:self.ds];
+    NSError *error;
+    CDTReplicator *replicator = [replicatorFactory oneWay:pullReplication error:&error];
+    //check error
+    
+    // Start the replication and wait for it to complete
+    [replicator start];
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    [self loadDocs];
 }
 
 -(void)connectAction
