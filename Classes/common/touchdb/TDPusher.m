@@ -22,9 +22,7 @@
 #import "TDBatcher.h"
 #import "TDMultipartUploader.h"
 #import "TDInternal.h"
-#import "TDMisc.h"
 #import "TDCanonicalJSON.h"
-
 
 
 @interface TDPusher ()
@@ -42,23 +40,6 @@
     return YES;
 }
 
-
-- (TD_FilterBlock) filter {
-    if (!_filterName)
-        return NULL;
-    TD_FilterBlock filter = [_db filterNamed: _filterName];
-    if (!filter) {
-        Warn(@"%@: No TDFilterBlock registered for filter '%@'", self, _filterName);
-        if (!_error) {
-            NSDictionary* info = $dict({NSLocalizedFailureReasonErrorKey, @"Unknown filter"});
-            self.error = [NSError errorWithDomain: TDHTTPErrorDomain
-                                             code: kTDStatusNotFound
-                                         userInfo: info];
-        }
-        [self stop];
-    }
-    return filter;
-}
 
 
 // This is called before beginReplicating, if the target db might not exist
@@ -93,12 +74,6 @@
     _pendingSequences = [NSMutableIndexSet indexSet];
     _maxPendingSequence = self.lastSequence.longLongValue;
     
-    TD_FilterBlock filter = NULL;
-    if (_filterName) {
-        filter = self.filter;
-        if (!filter)
-            return; // missing filter block
-    }
     
     // Include conflicts so all conflicting revisions are replicated too
     TDChangesOptions options = kDefaultTDChangesOptions;
@@ -106,7 +81,7 @@
     // Process existing changes since the last push:
     [self addRevsToInbox: [_db changesSinceSequence: [_lastSequence longLongValue]
                                             options: &options
-                                             filter: filter
+                                             filter: self.filter
                                              params: _filterParameters]];
     [_batcher flush];  // process up to the first 100 revs
     
@@ -192,11 +167,9 @@
         return;
     TD_Revision* rev = userInfo[@"rev"];
 
-    if (_filterName) {
-        TD_FilterBlock filter = self.filter;
-        if (!filter || !filter(rev, _filterParameters))
-            return;
-    }
+
+    if (!self.filter || !self.filter(rev, _filterParameters))
+        return;
     
     LogTo(SyncVerbose, @"%@: Queuing #%lld %@", self, rev.sequence, rev);
     [self addToInbox: rev];

@@ -87,42 +87,21 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
                    error:(NSError * __autoreleasing *)error
 {
     
-    NSError *localErr;
-    NSDictionary *repdoc = [replication dictionaryForReplicatorDocument:&localErr];
-    if (localErr) {
-        if (error) *error = localErr;
-        return nil;
-    }
-    
+    NSError *localError;
     CDTReplicator *replicator = [[CDTReplicator alloc]
                                  initWithTDReplicatorManager:self.replicatorManager
-                                 replicationProperties:repdoc];
+                                                 replication:replication
+                                                       error:&localError];
     
     if (replicator == nil) {
+        Warn(@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
+              @"%@\n %@", [replication class], replication);
+        
         if (error) {
-            NSDictionary *userInfo =
-            @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
-            *error = [NSError errorWithDomain:CDTReplicatorFactoryErrorDomain
-                                         code:CDTReplicatorFactoryErrorNilReplicatorObject
-                                     userInfo:userInfo];
-            NSLog(@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
-                  @"%@\n %@", [replication class], replication);
+            *error = localError;
         }
+            
         return nil;
-    }
-    
-    //insert the filter into a TD_FilterBlock and
-    //define it in the TD_Database with the approriate name
-    if([replication isKindOfClass:[CDTPushReplication class]]) {
-        CDTPushReplication *pushRep = (CDTPushReplication *)replication;
-        if(pushRep.filter){
-            
-            TD_FilterBlock tdfilter = ^(TD_Revision *rev, NSDictionary* params){
-                return pushRep.filter([[CDTDocumentRevision alloc] initWithTDRevision:rev], params);
-            };
-            
-            [pushRep.source.database defineFilter:repdoc[@"filter"] asBlock:tdfilter];
-        }
     }
     
     return replicator;
