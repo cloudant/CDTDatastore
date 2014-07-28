@@ -43,11 +43,13 @@
         _td_rev = rev;
         _revId = _td_rev.revID;
         NSMutableDictionary *mutableCopy = [_td_rev.body.properties mutableCopy];
-        [mutableCopy removeObjectsForKeys:@[
-                                            @"_id",
-                                            @"_rev",
-                                            @"_deleted"
-                                            ]];
+        
+        NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
+        
+        NSArray * keysToRemove = [[_td_rev.body.properties allKeys]
+                                  filteredArrayUsingPredicate: _prefixPredicate];
+        
+        [mutableCopy removeObjectsForKeys:keysToRemove];
         _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
         _docId = _td_rev.docID;
         _deleted = _td_rev.deleted;
