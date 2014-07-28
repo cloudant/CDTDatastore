@@ -58,6 +58,4 @@
     return [[TD_Revision alloc] initWithBody:self.td_body];
 }
 
-
-
 @end

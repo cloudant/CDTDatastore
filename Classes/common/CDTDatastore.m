@@ -372,15 +372,14 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 -(BOOL) validateBody:(CDTDocumentBody*)body
                error:(NSError * __autoreleasing *)error
 {
-    
-    // Check user hasn't provided _fields, which should be provided
-    // as metadata in the CDTDocumentRevision object rather than
-    // via _fields in the body dictionary.
     NSDictionary *bodyDict = body.td_body.asObject;
     return [self validateBodyDictionary:bodyDict error:error];
 }
 
 -(BOOL) validateBodyDictionary:(NSDictionary *)body error:(NSError * __autoreleasing *)error{
+    // Check user hasn't provided _fields, which should be provided
+    // as metadata in the CDTDocumentRevision object rather than
+    // via _fields in the body dictionary.
     for (NSString *key in [body keyEnumerator]) {
         if ([key hasPrefix:@"_"]) {
             if (error) {
