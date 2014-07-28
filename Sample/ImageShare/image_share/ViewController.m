@@ -8,7 +8,8 @@
 
 #import "ViewController.h"
 
-@interface ViewController () <UITextFieldDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
+@interface ViewController () <UITextFieldDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout,
+                              UIImagePickerControllerDelegate>
 
 @end
 
@@ -17,12 +18,13 @@
 //UICollectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section
 {
-    return 2; // Guaranteed to be random. Chosen by a fair dice.
+    return [self.images count];
+    //return 1;
 }
 
 - (NSInteger)numberOfSectionsInCollectionView: (UICollectionView *)collectionView
 {
-    return 2;
+    return 1;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)cv cellForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -32,7 +34,9 @@
     
     CGRect  viewRect = CGRectMake(0, 0, 100, 100);
     UIImageView *myImageView = [[UIImageView alloc] initWithFrame:viewRect];
-    myImageView.image = [UIImage imageNamed:@"image.jpg"];
+    
+    //NSLog(@"Index row: %d", indexPath.row);
+    myImageView.image = self.images[indexPath.row];
     
     [cell.contentView addSubview:myImageView];
     
@@ -95,23 +99,45 @@
     [self initDatastore];
 }
 
+// Init imagePickerController
 -(void)addAction
 {
-    // Create a document
-    NSDictionary *doc = @{
-                          @"description": @"Buy milk",
-                          @"completed": @NO,
-                          @"type": @"com.cloudant.sync.example.task"
-                          };
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
-    
-    NSError *error;
-    CDTDocumentRevision *revision = [self.ds createDocumentWithBody:body
-                                                                error:&error];
-    if (error != NULL){
-        NSLog(@"%@", error);
+    UIImagePickerController * picker = [[UIImagePickerController alloc] init];
+	picker.delegate = self;
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    [self presentViewController:picker animated:YES completion:nil];
+}
+
+// Pick an image from the phone
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    if (self.images == NULL) {
+        self.images = [[NSMutableArray alloc] init];
     }
-    NSLog(@"add button clicked");
+    
+	[picker dismissViewControllerAnimated:YES completion:nil];
+	//imageView.image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    
+    UIImage *img = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    [self.images addObject:img];
+    [self.collectionView reloadData];
+}
+
+-(void)createDoc
+{
+    // Create a document
+     NSDictionary *doc = @{
+         @"description": @"Buy milk",
+         @"completed": @NO,
+         @"type": @"com.cloudant.sync.example.task"
+     };
+     CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
+     
+     NSError *error;
+     CDTDocumentRevision *revision = [self.ds createDocumentWithBody:body
+     error:&error];
+     if (error != NULL){
+         NSLog(@"%@", error);
+     }
 }
 
 -(void)connectAction

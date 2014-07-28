@@ -9,12 +9,14 @@
 #import <UIKit/UIKit.h>
 #import <CloudantSync.h>
 
-@interface ViewController : UIViewController
+@interface ViewController : UIViewController < UIImagePickerControllerDelegate, UINavigationControllerDelegate >
 
 @property(nonatomic, weak) IBOutlet UICollectionView *collectionView;
 
 @property CDTDatastoreManager *manager;
 
 @property CDTDatastore *ds;
+
+@property NSMutableArray *images;
 
 @end
