@@ -11,7 +11,7 @@
 @interface CDTMutableDocumentRevision :CDTDocumentRevision
 
 @property (nonatomic,strong,readwrite) NSMutableDictionary *body;
-@property (nonatomic,strong,readwrite) NSMutableArray *attachments; //make mutable so atachments can be added whenever
+@property (nonatomic,strong,readwrite) NSArray *attachments; //make mutable so atachments can be added whenever
 @property (nonatomic,strong,readwrite) NSString *sourceRevId;
 @property (nonatomic,strong, readwrite) NSString *docId;
 

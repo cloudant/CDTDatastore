@@ -23,14 +23,7 @@
 /**
  * Represents a single revision of a document in a datastore.
  */
-@interface CDTDocumentRevision : NSObject {
-
-    TD_Revision * _td_rev;
-    NSString *_docId;
-    NSDictionary *_body;
-    NSArray *_attachments;
-    
-}
+@interface CDTDocumentRevision : NSObject
 
 /** Document ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *docId;

@@ -11,6 +11,13 @@
 
 @implementation CDTMutableDocumentRevision
 
+@synthesize docId =_docId;
+@synthesize revId = _revId;
+@synthesize deleted = _deleted;
+@synthesize attachments = _attachments;
+@synthesize body = _body;
+
+
 
 +(CDTMutableDocumentRevision *)revision
 {
@@ -42,18 +49,7 @@
     _docId = docId;
 }
 
--(TD_Revision*)td_rev
-{
-    if(_td_rev){
-        _td_rev.body = [[TD_Body alloc]initWithProperties:_body];
-    } else {
-        _td_rev = [[TD_Revision alloc]initWithProperties:_body];
-    }
-    
-    return super.td_rev;
-}
-
--(NSMutableArray*)attachments
+-(NSArray*)attachments
 {
     return _attachments;
 }
@@ -61,6 +57,17 @@
 -(void)setAttachments:(NSMutableArray *)attachments
 {
     _attachments = attachments;
+}
+
+-(TD_Revision*)td_rev
+{
+        if(super.td_rev){
+            super.td_rev.body = [[TD_Body alloc]initWithProperties:_body];
+        } else {
+            return  [[TD_Revision alloc]initWithProperties:_body];
+        }
+    
+    return super.td_rev;
 }
 
 @end
