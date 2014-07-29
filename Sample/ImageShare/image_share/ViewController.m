@@ -15,6 +15,8 @@
 
 @implementation ViewController
 
+#define DEFAULT_USER @"ptiurin"
+
 //UICollectionViewDataSource
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section
 {
@@ -73,15 +75,17 @@
     UIBarButtonItem *addBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addAction)];
     UIBarButtonItem *deleteBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deleteDatastore)];
     UIBarButtonItem *connectBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
+    UIBarButtonItem *createBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Create DB" style:UIBarButtonItemStylePlain target:self action:@selector(createAction)];
     UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(pushReplicateAction)];
     UIBarButtonItem *pullBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Pull" style:UIBarButtonItemStylePlain target:self action:@selector(pullReplicateAction)];
     self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem,
                                                deleteBarButtonItem, connectBarButtonItem, pushBarButtonItem,
-                                               pullBarButtonItem, nil];
+                                               pullBarButtonItem, createBarButtonItem, nil];
     
     self.images = [[NSMutableArray alloc] init];
     [self initDatastore];
     [self loadDocs];
+    [self loadDefaults];
 }
 
 // Init imagePickerController
@@ -193,7 +197,8 @@
     
     // username/password can be Cloudant API keys
     //TODO: don't commit quthentication info
-    NSString *s = @"https://username:password@username.cloudant.com/my_database";
+    NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
+                   self.APIPass, DEFAULT_USER, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
 
     // Create a replicator that replicates changes from the local
@@ -220,7 +225,8 @@
     
     // username/password can be Cloudant API keys
     //TODO: don't commit quthentication info
-    NSString *s = @"https://username:password@username.cloudant.com/my_database";
+    NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
+                   self.APIPass, DEFAULT_USER, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
     
     // Create a replicator that replicates changes from the local
@@ -244,6 +250,41 @@
 -(void)connectAction
 {
     NSLog(@"connect button clicked");
+}
+
+-(void)createAction
+{
+    NSString *url = @"http://127.0.0.1:5000/";
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithURL:[NSURL URLWithString:url]
+            completionHandler:^(NSData *data,
+                                NSURLResponse *response,
+                                NSError *error) {
+                // handle response
+                NSLog(@"Got response %@ with error %@.\n", response, error);
+                NSString *auth_data = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+                NSLog(@"DATA:\n%@\nEND DATA\n", auth_data);
+                NSDictionary* json = [NSJSONSerialization
+                                      JSONObjectWithData:data
+                                      options:kNilOptions
+                                      error:&error];
+                NSLog(@"DB: %@ created.\n", [json objectForKey:@"key"]);
+                self.remoteDatabase = json[@"db name"];
+                self.APIKey = json[@"key"];
+                self.APIPass = json[@"password"];
+                // Store authentication info on the phone
+                [[NSUserDefaults standardUserDefaults] setObject:self.remoteDatabase forKey:@"db"];
+                [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
+                [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+            }] resume];
+}
+
+-(void)loadDefaults
+{
+    self.remoteDatabase = [[NSUserDefaults standardUserDefaults] stringForKey:@"db"];
+    self.APIKey = [[NSUserDefaults standardUserDefaults] stringForKey:@"key"];
+    self.APIPass = [[NSUserDefaults standardUserDefaults] stringForKey:@"pass"];
 }
 
 - (void)didReceiveMemoryWarning

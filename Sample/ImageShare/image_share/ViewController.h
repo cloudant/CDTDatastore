@@ -19,4 +19,10 @@
 
 @property NSMutableArray *images;
 
+@property NSString *remoteDatabase;
+
+@property NSString *APIKey;
+
+@property NSString *APIPass;
+
 @end

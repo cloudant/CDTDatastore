@@ -3,13 +3,12 @@
 
 target "image_share" do
 
-pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore.git'
+pod "CDTDatastore"#, :git => 'https://github.com/cloudant/CDTDatastore.git'
 
 end
 
 target "image_shareTests" do
 
-pod "CDTDatastore", :git => 'https://github.com/cloudant/CDTDatastore.git'
+pod "CDTDatastore"#, :git => 'https://github.com/cloudant/CDTDatastore.git'
 
 end
-
