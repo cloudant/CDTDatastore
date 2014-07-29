@@ -498,6 +498,9 @@
       location = "group:CHANGELOG.md">
    </FileRef>
    <FileRef
+      location = "group:CDTDatastore.podspec">
+   </FileRef>
+   <FileRef
       location = "group:Tests/Tests.xcodeproj">
    </FileRef>
    <FileRef
