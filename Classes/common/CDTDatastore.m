@@ -416,9 +416,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
     
     __block CDTDocumentRevision *result;
-    
+    __weak CDTDatastore *datastore = self;
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        result = [self updateDocumentWithId:docId
+        result = [datastore updateDocumentWithId:docId
                                     prevRev:prevRev
                                        body:body
                               inTransaction:db
@@ -568,14 +568,16 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     converted.body = [[TD_Body alloc]initWithProperties:revision.body];
     
     __block CDTDocumentRevision *result;
+    __weak CDTDatastore *datastore = self;
     
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        result = [self updateDocumentFromTDRevision:converted
+        result = [datastore updateDocumentFromTDRevision:converted
                                               docId:revision.docId
                                             prevRev:revision.sourceRevId
                                       inTransaction:db
                                            rollback:rollback error:error];
     }];
+    
     
     if (result) {
         
