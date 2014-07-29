@@ -475,10 +475,12 @@
         else{
             cdt_rev = [self.datastore getDocumentWithId:randomId
                                                   error:&error];
+            CDTMutableDocumentRevision *update = [cdt_rev mutableCopy];
+            update.body = rev.body;
             STAssertNil(error, @"Error getting document");
             STAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
             error = nil;
-            cdt_rev = [self.datastore updateDocumentFromRevision:rev error:&error];
+            cdt_rev = [self.datastore updateDocumentFromRevision:update error:&error];
             STAssertNil(error, @"Error updating document");
             STAssertNotNil(cdt_rev, @"updated CDTDocumentRevision was nil");
         }
