@@ -27,7 +27,7 @@ This library is for iOS, an [Android version][android] is also available.
 
 [android]: https://github.com/cloudant/sync-android
 
-If you have questions, please join our [mailing list][mlist] and drop us a 
+If you have questions, please join our [mailing list][mlist] and drop us a
 line.
 
 [mlist]: https://groups.google.com/forum/#!forum/cloudant-sync
@@ -179,10 +179,7 @@ to create further branches in the tree. At this point your document is
 conflicted and needs some surgury to resolve the conflicts and bring it
 back to full health.
 
-This is coming up for iOS, so see the Android docs for the soon-to-be-complete
-process:
-
-- [Android conflicts documentation](https://github.com/cloudant/sync-android/blob/master/doc/conflicts.md).
+- See [conflicts documentation](https://github.com/cloudant/CDTDatastore/blob/master/doc/conflicts.md).
 
 
 ## Requirements
