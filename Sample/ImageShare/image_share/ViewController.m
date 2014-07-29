@@ -260,7 +260,17 @@
 
 -(void)connectAction
 {
-    NSLog(@"connect button clicked");
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connect to remote DB" message:@"Enter the database name to connect" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Connect", nil];
+    alert.alertViewStyle = UIAlertViewStylePlainTextInput;
+    [alert show];
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    if (buttonIndex == 1){
+        NSLog(@"Entered: %@",[[alertView textFieldAtIndex:0] text]);
+        self.remoteDatabase = [[alertView textFieldAtIndex:0] text];
+    }
+    //TODO: query the auth server for API key with received db name.
 }
 
 -(void)createAction
