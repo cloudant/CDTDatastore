@@ -59,15 +59,4 @@
     _attachments = attachments;
 }
 
--(TD_Revision*)td_rev
-{
-        if(super.td_rev){
-            super.td_rev.body = [[TD_Body alloc]initWithProperties:_body];
-        } else {
-            return  [[TD_Revision alloc]initWithProperties:_body];
-        }
-    
-    return super.td_rev;
-}
-
 @end

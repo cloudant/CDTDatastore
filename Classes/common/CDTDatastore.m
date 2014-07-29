@@ -562,10 +562,15 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
+    TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
+                                                         revID:revision.sourceRevId
+                                                       deleted:revision.deleted];
+    converted.body = [[TD_Body alloc]initWithProperties:revision.body];
+    
     __block CDTDocumentRevision *result;
     
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        result = [self updateDocumentFromTDRevision:revision.td_rev
+        result = [self updateDocumentFromTDRevision:converted
                                               docId:revision.docId
                                             prevRev:revision.sourceRevId
                                       inTransaction:db
