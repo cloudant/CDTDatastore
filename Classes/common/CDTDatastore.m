@@ -518,8 +518,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
+    
+    //convert CDTMutableDocument to TD_Revision
+    
+    //we know it shouldn't have a TD_revision behind it, since its a create
+    
+    TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
+                                                         revID:nil
+                                                       deleted:false];
+    converted.body = [[TD_Body alloc]initWithProperties:revision.body];
+    
     TDStatus status;
-    TD_Revision *new = [self.database putRevision:revision.td_rev
+    TD_Revision *new = [self.database putRevision:converted
                                    prevRevisionID:nil
                                     allowConflict:NO
                                            status:&status];
