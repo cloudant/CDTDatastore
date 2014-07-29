@@ -590,7 +590,10 @@
         // Results will be ordered by docId, so give an orderable ID.
         error = nil;
         NSString *docId = [NSString stringWithFormat:@"hello-%010d", i];
-        CDTDocumentRevision *ob = [self.datastore createDocumentWithId:docId body:bodies[i] error:&error];
+        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        rev.docId = docId;
+        rev.body = bodies[i];
+        CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
         STAssertNil(error, @"Error creating document");
         [dbObjects addObject:ob];
     }
