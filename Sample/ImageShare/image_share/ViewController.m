@@ -72,15 +72,26 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"Cell "];
+    // Add image
     UIBarButtonItem *addBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addAction)];
+    // Delete local database
     UIBarButtonItem *deleteBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deleteDatastore)];
+    // Share
+    UIBarButtonItem *shareBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareAction)];
+    
     UIBarButtonItem *connectBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Connect" style:UIBarButtonItemStylePlain target:self action:@selector(connectAction)];
-    UIBarButtonItem *createBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Create DB" style:UIBarButtonItemStylePlain target:self action:@selector(createAction)];
+    UIBarButtonItem *createBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"New" style:UIBarButtonItemStylePlain target:self action:@selector(createAction)];
     UIBarButtonItem *pushBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Push" style:UIBarButtonItemStylePlain target:self action:@selector(pushReplicateAction)];
     UIBarButtonItem *pullBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Pull" style:UIBarButtonItemStylePlain target:self action:@selector(pullReplicateAction)];
+    
     self.navigationItem.rightBarButtonItems = [[NSArray alloc] initWithObjects:addBarButtonItem,
-                                               deleteBarButtonItem, connectBarButtonItem, pushBarButtonItem,
-                                               pullBarButtonItem, createBarButtonItem, nil];
+                                               deleteBarButtonItem, connectBarButtonItem, createBarButtonItem, nil];
+    
+    
+    [self.navigationController setToolbarHidden:NO];
+    [self setToolbarItems:[[NSArray alloc] initWithObjects: shareBarButtonItem, pushBarButtonItem,
+                            pullBarButtonItem, nil]];
+    
     
     self.images = [[NSMutableArray alloc] init];
     [self initDatastore];
@@ -278,6 +289,12 @@
                 [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
                 [[NSUserDefaults standardUserDefaults] synchronize];
             }] resume];
+}
+
+-(void)shareAction
+{
+    UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+    pasteboard.string = self.remoteDatabase;
 }
 
 -(void)loadDefaults
