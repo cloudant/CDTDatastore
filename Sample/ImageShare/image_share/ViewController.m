@@ -260,7 +260,9 @@
 
 -(void)connectAction
 {
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connect to remote DB" message:@"Enter the database name to connect" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Connect", nil];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Connect to remote DB"
+                          message:@"Enter the database name to connect" delegate:self
+                          cancelButtonTitle:@"Cancel" otherButtonTitles:@"Connect", nil];
     alert.alertViewStyle = UIAlertViewStylePlainTextInput;
     [alert show];
 }
@@ -270,35 +272,66 @@
         NSLog(@"Entered: %@",[[alertView textFieldAtIndex:0] text]);
         self.remoteDatabase = [[alertView textFieldAtIndex:0] text];
     }
-    //TODO: query the auth server for API key with received db name.
+    NSError *error;
+    
+    NSURL *url = [NSURL URLWithString:@"http://127.0.0.1:5000/get_key"];
+    
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration defaultSessionConfiguration];
+    sessionConfiguration.HTTPAdditionalHeaders = @{@"Content-Type"  : @"application/json"};
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:sessionConfiguration];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+    request.HTTPMethod = @"PUT";
+    NSDictionary *dict = @{@"db":self.remoteDatabase};
+    NSData *send_data = [NSJSONSerialization dataWithJSONObject:dict options:kNilOptions error:&error];
+    [request setHTTPBody:send_data];
+    NSLog(@"Error: %@", error);
+    
+    
+    NSURLSessionDataTask *uploadTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        // handle response
+        NSLog(@"Got response %@ with error %@.\n", response, error);
+        NSString *auth_data = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+        NSLog(@"DATA:\n%@\nEND DATA\n", auth_data);
+        NSDictionary* json = [NSJSONSerialization
+                              JSONObjectWithData:data
+                              options:kNilOptions
+                              error:&error];
+        NSLog(@"key: %@ recieved.\n", [json objectForKey:@"key"]);
+        self.APIKey = json[@"key"];
+        self.APIPass = json[@"password"];
+        // Store authentication info on the phone
+        [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
+        [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }];
+    [uploadTask resume];
 }
 
 -(void)createAction
 {
-    NSString *url = @"http://127.0.0.1:5000/";
+    NSURL *url = [NSURL URLWithString:@"http://127.0.0.1:5000/"];
     NSURLSession *session = [NSURLSession sharedSession];
-    [[session dataTaskWithURL:[NSURL URLWithString:url]
-            completionHandler:^(NSData *data,
-                                NSURLResponse *response,
-                                NSError *error) {
-                // handle response
-                NSLog(@"Got response %@ with error %@.\n", response, error);
-                NSString *auth_data = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
-                NSLog(@"DATA:\n%@\nEND DATA\n", auth_data);
-                NSDictionary* json = [NSJSONSerialization
-                                      JSONObjectWithData:data
-                                      options:kNilOptions
-                                      error:&error];
-                NSLog(@"DB: %@ created.\n", [json objectForKey:@"key"]);
-                self.remoteDatabase = json[@"db name"];
-                self.APIKey = json[@"key"];
-                self.APIPass = json[@"password"];
-                // Store authentication info on the phone
-                [[NSUserDefaults standardUserDefaults] setObject:self.remoteDatabase forKey:@"db"];
-                [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
-                [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
-                [[NSUserDefaults standardUserDefaults] synchronize];
-            }] resume];
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
+    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        // handle response
+        NSLog(@"Got response %@ with error %@.\n", response, error);
+        NSString *auth_data = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+        NSLog(@"DATA:\n%@\nEND DATA\n", auth_data);
+        NSDictionary* json = [NSJSONSerialization
+                              JSONObjectWithData:data
+                              options:kNilOptions
+                              error:&error];
+        NSLog(@"DB: %@ created.\n", [json objectForKey:@"db name"]);
+        self.remoteDatabase = json[@"db name"];
+        self.APIKey = json[@"key"];
+        self.APIPass = json[@"password"];
+        // Store authentication info on the phone
+        [[NSUserDefaults standardUserDefaults] setObject:self.remoteDatabase forKey:@"db"];
+        [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
+        [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }];
+    [dataTask resume];
 }
 
 -(void)shareAction
