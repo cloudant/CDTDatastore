@@ -505,6 +505,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 {
     //first lets check to see if we can save the document
     if(!revision.body){
+        TDStatus status = kTDStatusBadRequest;
+        *error = TDStatusToNSError(status, nil);
         return nil;
     }
     
