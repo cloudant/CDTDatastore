@@ -148,7 +148,7 @@
 
 -(void)testCannotInsertNil
 {
-    //TODO port test, unsure if this one should be ported though
+
     NSError *error;
     NSString *testDocId = @"document_id_for_cannotInsertNil";
 
