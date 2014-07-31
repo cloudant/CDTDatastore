@@ -1,6 +1,6 @@
 //
 //  ViewController.m
-//  test_3
+//
 //
 //  Created by Petro Tyurin on 7/23/14.
 //  Copyright (c) 2014 Petro Tyurin. All rights reserved.
@@ -65,13 +65,13 @@
                         layout:(UICollectionViewLayout*)collectionViewLayout
         insetForSectionAtIndex:(NSInteger)section
 {
-    return UIEdgeInsetsMake(50, 20, 50, 20);
+    UIEdgeInsets insets = { .left = 40, .right = 40, .top = -40, .bottom = 100 };
+    return insets;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
     [self.collectionView registerClass:[UICollectionViewCell class]
             forCellWithReuseIdentifier:@"Cell "];
     // Add image
@@ -84,12 +84,12 @@
                                             initWithBarButtonSystemItem:UIBarButtonSystemItemTrash
                                                                  target:self
                                                                  action:@selector(deleteDatastore)];
-    // Share
-    UIBarButtonItem *shareBarButtonItem = [[UIBarButtonItem alloc]
-                                           initWithBarButtonSystemItem:UIBarButtonSystemItemAction
-                                                                target:self
-                                                                action:@selector(shareAction)];
     
+    UIBarButtonItem *shareBarButtonItem = [[UIBarButtonItem alloc]
+                                             initWithTitle:@"Share"
+                                                     style:UIBarButtonItemStylePlain
+                                                     target:self
+                                                     action:@selector(shareAction)];
     UIBarButtonItem *connectBarButtonItem = [[UIBarButtonItem alloc]
                                              initWithTitle:@"Connect"
                                                      style:UIBarButtonItemStylePlain
@@ -117,12 +117,17 @@
                                                                connectBarButtonItem,
                                                                createBarButtonItem,
                                                                nil];
-    
-    
+    // Add flexible space to center toolbar buttons
+    UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc]
+                                      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                                                           target:nil
+                                                           action:nil];
     [self.navigationController setToolbarHidden:NO];
-    [self setToolbarItems:[[NSArray alloc] initWithObjects:shareBarButtonItem,
+    [self setToolbarItems:[[NSArray alloc] initWithObjects:flexibleSpace,
+                                                           shareBarButtonItem,
                                                            pushBarButtonItem,
                                                            pullBarButtonItem,
+                                                           flexibleSpace,
                                                            nil]];
     
     
@@ -252,8 +257,6 @@
     [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.manager];
     [replicatorFactory start];
     
-    // username/password can be Cloudant API keys
-    //TODO: don't commit quthentication info
     NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
                    self.APIPass, DEFAULT_USER, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
@@ -284,8 +287,6 @@
     [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.manager];
     [replicatorFactory start];
     
-    // username/password can be Cloudant API keys
-    //TODO: don't commit quthentication info
     NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
                    self.APIPass, DEFAULT_USER, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
@@ -390,8 +391,8 @@
                               JSONObjectWithData:data
                               options:kNilOptions
                               error:&error];
-        NSLog(@"DB: %@ created.\n", [json objectForKey:@"db name"]);
-        self.remoteDatabase = json[@"db name"];
+        NSLog(@"DB: %@ created.\n", json[@"db_name"]);
+        self.remoteDatabase = json[@"db_name"];
         self.APIKey = json[@"key"];
         self.APIPass = json[@"password"];
         // Store authentication info on the phone
@@ -421,7 +422,6 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end
