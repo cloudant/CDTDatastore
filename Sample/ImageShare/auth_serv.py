@@ -7,10 +7,6 @@ import argparse
 import json
 
 app = Flask(__name__)
-#account = ""
-#password = ""
-#creds = ("", "")
-
 
 # Creates a new database and associates it with certain link
 @app.route('/')
@@ -24,13 +20,8 @@ def create_db():
             break
 
     key = gen_key(db_name)
-    # TODO: proper JSON lib
-    
-    data = {"db_name":db_name, "key":key.json()["key"],"password":key.json()["password"]}
-    
-    #json = "{\"db name\":\"%s\",\"key\":\"%s\",\"password\":\"%s\"}" % \
-    #    (db_name, key.json()["key"], key.json()["password"])
-    return json.dumps(data)
+    key["db_name"] = db_name;
+    return json.dumps(key)
 
 
 # Returns an api key given the link to some database
@@ -42,7 +33,7 @@ def get_key():
                      request.get_json()['db'], auth=creds)
     if r.status_code == 200:
         key = gen_key(request.get_json()['db'])
-        return key.text
+        return json.dumps(key)
     else:
         return "Invalid db name!"
 
@@ -58,7 +49,9 @@ def gen_key(db_name):
                       "roles": ["_reader", "_writer"]
                   },
                   auth=creds)
-    return api_key
+    json_data = json.loads(api_key.text)
+    json_data['login'] = args.login
+    return json_data
 
 
 if __name__ == '__main__':

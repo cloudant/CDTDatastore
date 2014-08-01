@@ -19,6 +19,8 @@
 
 @property NSMutableArray *images;
 
+@property NSString *account;
+
 @property NSString *remoteDatabase;
 
 @property NSString *APIKey;

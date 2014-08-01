@@ -14,8 +14,6 @@
 
 @implementation ViewController
 
-#define DEFAULT_USER @"ptiurin"
-
 - (NSInteger)collectionView:(UICollectionView *)view numberOfItemsInSection:(NSInteger)section
 {
     return [self.images count];
@@ -177,7 +175,7 @@
     
     NSData *data = UIImageJPEGRepresentation(image, 0.7);
     CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
-                                                                          name:@"image"
+                                                                          name:@"image.jpg"
                                                                           type:@"image/jpg"];
     
     CDTDocumentRevision *rev2 = [self.ds updateAttachments:@[attachment]
@@ -194,7 +192,7 @@
     NSError *error;
     NSArray *docs = self.ds.getAllDocuments;
     for (CDTDocumentRevision *rev in docs){
-        CDTAttachment *retrievedAttachment = [self.ds attachmentNamed:@"image"
+        CDTAttachment *retrievedAttachment = [self.ds attachmentNamed:@"image.jpg"
                                                                forRev:rev
                                                                 error:&error];
         if (error != NULL) {
@@ -258,7 +256,7 @@
     [replicatorFactory start];
     
     NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
-                   self.APIPass, DEFAULT_USER, self.remoteDatabase];
+                   self.APIPass, self.account, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
 
     // Create a replicator that replicates changes from the local
@@ -288,7 +286,7 @@
     [replicatorFactory start];
     
     NSString *s = [NSString stringWithFormat:@"https://%@:%@@%@.cloudant.com/%@", self.APIKey,
-                   self.APIPass, DEFAULT_USER, self.remoteDatabase];
+                   self.APIPass, self.account, self.remoteDatabase];
     NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
     
     // Create a replicator that replicates changes from the local
@@ -365,9 +363,11 @@
         NSLog(@"key: %@ recieved.\n", [json objectForKey:@"key"]);
         self.APIKey = json[@"key"];
         self.APIPass = json[@"password"];
+        self.account = json[@"login"];
         // Store authentication info on the phone
         [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
         [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
+        [[NSUserDefaults standardUserDefaults] setObject:self.account forKey:@"account"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }];
     [uploadTask resume];
@@ -395,10 +395,12 @@
         self.remoteDatabase = json[@"db_name"];
         self.APIKey = json[@"key"];
         self.APIPass = json[@"password"];
+        self.account = json[@"login"];
         // Store authentication info on the phone
         [[NSUserDefaults standardUserDefaults] setObject:self.remoteDatabase forKey:@"db"];
         [[NSUserDefaults standardUserDefaults] setObject:self.APIKey forKey:@"key"];
         [[NSUserDefaults standardUserDefaults] setObject:self.APIPass forKey:@"pass"];
+        [[NSUserDefaults standardUserDefaults] setObject:self.account forKey:@"account"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }];
     [dataTask resume];
@@ -417,6 +419,7 @@
     self.remoteDatabase = [[NSUserDefaults standardUserDefaults] stringForKey:@"db"];
     self.APIKey = [[NSUserDefaults standardUserDefaults] stringForKey:@"key"];
     self.APIPass = [[NSUserDefaults standardUserDefaults] stringForKey:@"pass"];
+    self.account = [[NSUserDefaults standardUserDefaults] stringForKey:@"account"];
 }
 
 - (void)didReceiveMemoryWarning
