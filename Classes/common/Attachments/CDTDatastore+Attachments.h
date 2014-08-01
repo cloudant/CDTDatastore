@@ -58,7 +58,7 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */
 -(CDTAttachment*) attachmentNamed:(NSString*)name
                            forRev:(CDTDocumentRevision*)rev
-                            error:(NSError * __autoreleasing *)error;
+                            error:(NSError * __autoreleasing *)error __deprecated;
 
 /**
  Set the content of attachments on a document, creating
@@ -73,7 +73,7 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */
 -(CDTDocumentRevision*) updateAttachments:(NSArray*)attachments
                                    forRev:(CDTDocumentRevision*)rev
-                                    error:(NSError * __autoreleasing *)error;
+                                    error:(NSError * __autoreleasing *)error __deprecated;
 
 /**
  Remove attachments `names` from a document, creating a new revision.
@@ -85,6 +85,23 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */ 
 -(CDTDocumentRevision*) removeAttachments:(NSArray*)attachmentNames
                                   fromRev:(CDTDocumentRevision*)rev
-                                    error:(NSError * __autoreleasing *)error;
+                                    error:(NSError * __autoreleasing *)error __deprecated;
+
+/*
+ Streams attachment data into a blob in the blob store.
+ Returns nil if there was a problem, otherwise a dictionary
+ with the sha and size of the file.
+ */
+-(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment
+                                      error:(NSError * __autoreleasing *)error;
+
+/*
+ Add the row in the attachments table for a given attachment.
+ The attachments dict should store the attachments CDTAttachment
+ object, its length and its sha key.
+ */
+-(BOOL) addAttachment:(NSDictionary*)attachmentData
+                toRev:(CDTDocumentRevision*)revision
+           inDatabase:(FMDatabase*)db;
 
 @end

@@ -38,6 +38,11 @@
 
 -(id)initWithTDRevision:(TD_Revision*)rev
 {
+    return [self initWithTDRevision:rev andAttchments:nil];
+}
+
+-(id)initWithTDRevision:(TD_Revision*)rev andAttchments: (NSArray *) attachments
+{
     self = [super init];
     if (self) {
         _td_rev = rev;
@@ -54,9 +59,11 @@
         _docId = _td_rev.docID;
         _deleted = _td_rev.deleted;
         _sequence = _td_rev.sequence;
+        _attachments = [attachments copy];
     }
     return self;
 }
+
 
 -(TD_Revision*)TD_RevisionValue
 {

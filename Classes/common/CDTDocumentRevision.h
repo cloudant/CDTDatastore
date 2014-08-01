@@ -43,7 +43,7 @@
 @property (nonatomic,strong,readonly)NSArray *attachments;
 
 -(id)initWithTDRevision:(TD_Revision*)rev ;
-
+-(id)initWithTDRevision:(TD_Revision*)rev andAttchments: (NSArray *) attachments;
 
 /** 
  Return document content as an NSData object.
