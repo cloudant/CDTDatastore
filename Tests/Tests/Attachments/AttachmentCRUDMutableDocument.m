@@ -144,6 +144,66 @@
     }];
 }
 
+- (void)testCreateWithMutableBodyAndAttachments
+{
+    NSError *error = nil;
+    NSString *attachmentName = @"test_an_attachment";
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    
+    CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
+    document.body = [dict mutableCopy];
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document error:&error];
+    document = [rev mutableCopy];
+    document.attachments = @[];
+    
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
+                                                                     error:&error];
+    
+    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"image/jpg"];
+    
+    document = [rev2 mutableCopy];
+    document.attachments = [@[attachment] mutableCopy];
+    
+    CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
+                                                                     error:&error];
+    
+    STAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
+    
+    NSArray *attachments = rev3.attachments;
+    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    STAssertEqualObjects([attachments[0] name], attachmentName, @"Attachment wasn't in document");
+    
+    // Check db and fs
+    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+                 @"Attachment file doesn't exist");
+    
+    [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
+        NSArray *expectedRows = @[
+                                  @[@"sequence", @"filename", @"type", @"length", @"revpos", @"encoding", @"encoded_length"],
+                                  @[@3, attachmentName, @"image/jpg", @(data.length), @3, @0, @(data.length)],
+                                  ];
+        
+        MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
+        NSError *validationError;
+        STAssertTrue([dc checkDatabase:db
+                                 table:@"attachments"
+                               hasRows:expectedRows
+                                 error:&validationError],
+                     [dc formattedErrors:validationError]);
+    }];
+}
+
+
 -(void) testUpdatingDocumentRetainsAttachments
 {
     NSError *error = nil;
@@ -323,7 +383,7 @@
                                                                              name:@"lorem"
                                                                              type:@"text/plain"];
     rev = [savedRev mutableCopy];
-    NSMutableArray *attachments = rev.attachments;
+    NSMutableArray *attachments = [rev attachments];
     [attachments addObject:txtAttachment];
     rev.attachments = attachments;
     [self.datastore updateDocumentFromRevision:rev error:&error];
