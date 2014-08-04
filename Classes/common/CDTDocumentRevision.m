@@ -116,10 +116,10 @@
 -(id)mutableCopy
 {
     CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
-    mutableCopy.attachments = [self.attachments mutableCopy];
     mutableCopy.sourceRevId = self.revId;
     mutableCopy.docId = self.docId;
-    mutableCopy.body = [self.body mutableCopy];
+    [mutableCopy setAttachments:self.attachments];
+    [mutableCopy setBody:self.body];
     
     return mutableCopy;
 }

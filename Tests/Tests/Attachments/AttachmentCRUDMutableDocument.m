@@ -93,11 +93,11 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document error:&error];
     document = [rev mutableCopy];
-    document.attachments = [@[] mutableCopy];
+    document.attachments = @[];
 
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
@@ -113,7 +113,7 @@
                                                                           type:@"image/jpg"];
 
     document = [rev2 mutableCopy];
-    document.attachments = [@[attachment] mutableCopy];
+    document.attachments = @[attachment];
     
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
@@ -151,7 +151,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document error:&error];
 
@@ -162,7 +162,7 @@
                                                                              name:@"bonsai-boston"
                                                                              type:@"image/jpg"];
     document = [rev mutableCopy];
-    document.attachments = [@[imgAttachment]mutableCopy];
+    document.attachments = @[imgAttachment];
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
 
 
@@ -198,7 +198,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document error:&error];
 
@@ -219,7 +219,7 @@
                                                                              type:@"text/plain"];
 
     document = [rev mutableCopy];
-    document.attachments = [@[imgAttachment,txtAttachment] mutableCopy];
+    document.attachments = @[imgAttachment,txtAttachment];
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
     
 
@@ -233,7 +233,7 @@
                                                                               name:@"lorem2"
                                                                               type:@"text/plain"];
     document = [rev mutableCopy];
-    NSMutableArray *mutableCopy = [document.attachments mutableCopy];
+    NSMutableArray *mutableCopy = [document attachments];
     [mutableCopy addObject:txtAttachment2];
     document.attachments = mutableCopy;
     
@@ -302,7 +302,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
-    rev.body = [dict mutableCopy];
+    rev.body = dict;
 
 
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -312,7 +312,7 @@
                                                                              name:@"bonsai-boston"
                                                                              type:@"image/jpg"];
     
-    rev.attachments = [@[imgAttachment]mutableCopy];
+    rev.attachments = @[imgAttachment];
     
     CDTDocumentRevision * savedRev = [self.datastore createDocumentFromRevision:rev error:&error];
     
@@ -323,7 +323,7 @@
                                                                              name:@"lorem"
                                                                              type:@"text/plain"];
     rev = [savedRev mutableCopy];
-    NSMutableArray *attachments = [rev.attachments mutableCopy];
+    NSMutableArray *attachments = rev.attachments;
     [attachments addObject:txtAttachment];
     rev.attachments = attachments;
     [self.datastore updateDocumentFromRevision:rev error:&error];
@@ -391,7 +391,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
 
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:document
@@ -408,7 +408,7 @@
                                                                              type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = [@[imgAttachment] mutableCopy];
+    document.attachments = @[imgAttachment];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -441,7 +441,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:document error:&error];
 
@@ -455,7 +455,7 @@
 
     
     document = [rev1 mutableCopy];
-    document.attachments = [@[imgAttachment] mutableCopy];
+    document.attachments = @[imgAttachment];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -471,7 +471,7 @@
     NSData *inputMD5 = [self MD5:txtData];
 
     document = [rev2 mutableCopy];
-    document.attachments = [@[attachment2] mutableCopy];
+    document.attachments = @[attachment2];
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
     
@@ -525,7 +525,7 @@
 
     NSDictionary *dict = @{@"hello": @"world"};
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:document
                                                                      error:&error];
 
@@ -538,7 +538,7 @@
                                                                           type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = [@[attachment] mutableCopy];
+    document.attachments = @[attachment];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -598,7 +598,7 @@
     NSDictionary *dict = @{@"hello": @"world"};
     
     CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
-    document.body = [dict mutableCopy];
+    document.body = dict;
     
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:document error:&error];
 
@@ -613,7 +613,7 @@
                                                                              type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = [@[imgAttachment]mutableCopy];
+    document.attachments = @[imgAttachment];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 

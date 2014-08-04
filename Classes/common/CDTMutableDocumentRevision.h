@@ -10,8 +10,6 @@
 
 @interface CDTMutableDocumentRevision :CDTDocumentRevision
 
-@property (nonatomic,strong,readwrite) NSMutableDictionary *body;
-@property (nonatomic,strong,readwrite) NSMutableArray *attachments;
 @property (nonatomic,strong,readwrite) NSString *sourceRevId;
 @property (nonatomic,strong, readwrite) NSString *docId;
 
@@ -19,5 +17,12 @@
 
 -(id)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *)body;
 
+-(void)setBody:(NSDictionary *)body;
+
+-(NSMutableDictionary*)body;
+
+-(NSMutableArray*)attachments;
+
+-(void)setAttachments:(NSArray *)attachments;
 
 @end
