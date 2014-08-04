@@ -97,7 +97,7 @@
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document error:&error];
     document = [rev mutableCopy];
-    document.attachments = @[];
+    document.attachments = [@[] mutableCopy];
 
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
@@ -113,7 +113,7 @@
                                                                           type:@"image/jpg"];
 
     document = [rev2 mutableCopy];
-    document.attachments = @[attachment];
+    document.attachments = [@[attachment] mutableCopy];
     
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
@@ -162,7 +162,7 @@
                                                                              name:@"bonsai-boston"
                                                                              type:@"image/jpg"];
     document = [rev mutableCopy];
-    document.attachments = @[imgAttachment];
+    document.attachments = [@[imgAttachment]mutableCopy];
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
 
 
@@ -219,7 +219,7 @@
                                                                              type:@"text/plain"];
 
     document = [rev mutableCopy];
-    document.attachments = @[imgAttachment,txtAttachment];
+    document.attachments = [@[imgAttachment,txtAttachment] mutableCopy];
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
     
 
@@ -312,7 +312,7 @@
                                                                              name:@"bonsai-boston"
                                                                              type:@"image/jpg"];
     
-    rev.attachments = @[imgAttachment];
+    rev.attachments = [@[imgAttachment]mutableCopy];
     
     CDTDocumentRevision * savedRev = [self.datastore createDocumentFromRevision:rev error:&error];
     
@@ -408,7 +408,7 @@
                                                                              type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = @[imgAttachment];
+    document.attachments = [@[imgAttachment] mutableCopy];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -455,7 +455,7 @@
 
     
     document = [rev1 mutableCopy];
-    document.attachments = @[imgAttachment];
+    document.attachments = [@[imgAttachment] mutableCopy];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -538,7 +538,7 @@
                                                                           type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = @[attachment];
+    document.attachments = [@[attachment] mutableCopy];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -613,7 +613,7 @@
                                                                              type:@"image/jpg"];
 
     document = [rev1 mutableCopy];
-    document.attachments = @[imgAttachment];
+    document.attachments = [@[imgAttachment]mutableCopy];
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
