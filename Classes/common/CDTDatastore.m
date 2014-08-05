@@ -668,8 +668,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     *rollback = YES;
                 }
             }
-            
-            
         }
     }];
     
