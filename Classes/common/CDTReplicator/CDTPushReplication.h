@@ -45,7 +45,7 @@ typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* par
  @see CDTAbstractReplication
 */
 
-@interface CDTPushReplication : CDTAbstractReplication
+@interface CDTPushReplication : CDTAbstractReplication <NSCopying>
 
 /**
  @name Creating a replication configuration
@@ -143,7 +143,7 @@ typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* par
  
  @see -filter
  */
-@property (nonatomic, strong) NSDictionary *filterParams;
+@property (nonatomic, copy) NSDictionary *filterParams;
 
 
 @end
