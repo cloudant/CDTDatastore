@@ -409,7 +409,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     
     return YES;
     
-    
 }
 
 
@@ -558,8 +557,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                       converted.revID);
                 return nil;
             }
-            
-            
         }
     }
     
@@ -596,12 +593,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             
             saved = [[CDTDocumentRevision alloc]initWithTDRevision:new];
         }
-        
-        
-        
-        
-        
     }];
+    
     if(saved){
         NSArray * attcachmentsFromBlobStore = [self attachmentsForRev:saved error:error];
         saved = [[CDTDocumentRevision alloc] initWithTDRevision:saved.td_rev
@@ -651,8 +644,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                       converted.revID);
                 return nil;
             }
-            
-            
         }
     }
     
@@ -680,9 +671,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             
             
         }
-        
-        
     }];
+    
     if (result) {
         
         //populate the attachment array with attachments
@@ -708,8 +698,6 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                             legacyAPI:(BOOL) legacy
                                                 error:(NSError * __autoreleasing *)error
 {
-    
-    
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
