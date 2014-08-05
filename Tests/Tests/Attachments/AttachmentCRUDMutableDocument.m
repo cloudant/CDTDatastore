@@ -120,7 +120,7 @@
 
     STAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
 
-    NSArray *attachments = rev3.attachments;
+    NSArray *attachments = [rev3 attachments];
     STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
     STAssertEqualObjects([attachments[0] name], attachmentName, @"Attachment wasn't in document");
 
@@ -284,7 +284,7 @@
     
 
     STAssertEquals((NSUInteger)2,
-                   [rev.attachments count],
+                   [[rev attachments ] count],
                    @"Wrong number of attachments");
 
     // Add a third attachment

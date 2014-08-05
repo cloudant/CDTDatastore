@@ -26,6 +26,8 @@
 @property (nonatomic,strong,readonly) NSArray *revsInfo;
 @property (nonatomic,strong,readonly) NSArray *conflicts;
 @property (nonatomic,strong,readonly) TD_Body *td_body;
+@property (nonatomic,strong,readonly) NSDictionary *private_body;
+@property (nonatomic,strong,readonly) NSArray *private_attachments;
 
 @end
 
@@ -55,11 +57,11 @@
                                   filteredArrayUsingPredicate: _prefixPredicate];
         
         [mutableCopy removeObjectsForKeys:keysToRemove];
-        _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
         _docId = _td_rev.docID;
         _deleted = _td_rev.deleted;
         _sequence = _td_rev.sequence;
-        _attachments = [attachments copy];
+        _private_attachments = [attachments copy];
     }
     return self;
 }
@@ -118,10 +120,20 @@
     CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
     mutableCopy.sourceRevId = self.revId;
     mutableCopy.docId = self.docId;
-    [mutableCopy setAttachments:self.attachments];
-    [mutableCopy setBody:self.body];
+    [mutableCopy setAttachments:self.private_attachments];
+    [mutableCopy setBody:self.private_body];
     
     return mutableCopy;
+}
+
+-(NSDictionary*)body
+{
+    return self.private_body;
+}
+
+-(NSArray*)attachments
+{
+    return self.private_attachments;
 }
 
 @end
