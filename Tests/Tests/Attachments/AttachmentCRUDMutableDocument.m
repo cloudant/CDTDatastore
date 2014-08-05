@@ -300,9 +300,8 @@
 
     // Add a third attachment
 
-    CDTAttachment *txtAttachment2 = [[CDTUnsavedDataAttachment alloc] initWithData:txtData
-                                                                              name:@"lorem2"
-                                                                              type:@"text/plain"];
+    CDTAttachment *txtAttachment2 = [[CDTUnsavedDataAttachment alloc]
+                                     initWithData:txtData name:@"lorem2" type:@"text/plain"];
     document = [rev mutableCopy];
     NSMutableArray *mutableCopy = [document attachments];
     [mutableCopy addObject:txtAttachment2];
@@ -379,9 +378,10 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
-    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc] initWithData:imageData
-                                                                             name:@"bonsai-boston"
-                                                                             type:@"image/jpg"];
+    CDTAttachment *imgAttachment = [[CDTUnsavedDataAttachment alloc]
+                                    initWithData:imageData
+                                            name:@"bonsai-boston"
+                                            type:@"image/jpg"];
     
     rev.attachments = @[imgAttachment];
     
