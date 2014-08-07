@@ -596,9 +596,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }];
     
     if(saved){
-        NSArray * attcachmentsFromBlobStore = [self attachmentsForRev:saved error:error];
+        NSArray * attachmentsFromBlobStore = [self attachmentsForRev:saved error:error];
         saved = [[CDTDocumentRevision alloc] initWithTDRevision:saved.td_rev
-                                                  andAttchments:attcachmentsFromBlobStore];
+                                                  andAttchments:attachmentsFromBlobStore];
     }
     return saved;
     
@@ -674,9 +674,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (result) {
         
         //populate the attachment array with attachments
-        NSArray * attcachmentsFromBlobStore = [self attachmentsForRev:result error:error];
+        NSArray * attachmentsFromBlobStore = [self attachmentsForRev:result error:error];
         result = [[CDTDocumentRevision alloc] initWithTDRevision:result.td_rev
-                                                   andAttchments:attcachmentsFromBlobStore];
+                                                   andAttchments:attachmentsFromBlobStore];
         
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});

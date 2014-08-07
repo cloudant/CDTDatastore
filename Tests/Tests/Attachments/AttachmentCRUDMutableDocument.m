@@ -2,9 +2,16 @@
 //  AttachmentCRUD.m
 //  Tests
 //
-//  Created by Michael Rhodes on 25/03/2014.
+//  Created by Rhys Short on 07/08/2014.
+//  Copyright (c) 2013 Cloudant. All rights reserved.
 //
-//
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 
 #import <SenTestingKit/SenTestingKit.h>
 #import <CommonCrypto/CommonDigest.h>
@@ -397,12 +404,6 @@
     [attachments addObject:txtAttachment];
     rev.attachments = attachments;
     [self.datastore updateDocumentFromRevision:rev error:&error];
-//    savedRev = [self.datastore updateAttachments:@[txtAttachment]
-//                                     forRev:savedRev
-//                                      error:nil];
-
-//    NSArray *attachments = [self.datastore attachmentsForRev:rev
-//                                                       error:nil];
     
     CDTDocumentRevision *revision = [self.datastore getDocumentWithId:rev.docId
                                                                 error:&error];
