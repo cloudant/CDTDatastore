@@ -544,18 +544,24 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     
     if(revision.attachments){
         for (CDTAttachment *attachment in revision.attachments) {
-            NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
-                                                                       error:error];
-            if (attachmentData != nil) {
-                [downloadedAttachments addObject:attachmentData];
-            } else {  // Error downloading the attachment, bail
-                // error out variable set by -stream...
-                LogTo(CDTDatastore,
-                      @"Error reading %@ from stream for doc <%@, %@>, rolling back",
-                      attachment.name,
-                      converted.docID,
-                      converted.revID);
-                return nil;
+            
+            if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
+                
+                NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
+                                                                           error:error];
+                if (attachmentData != nil) {
+                    [downloadedAttachments addObject:attachmentData];
+                } else {  // Error downloading the attachment, bail
+                    // error out variable set by -stream...
+                    LogTo(CDTDatastore,
+                          @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                          attachment.name,
+                          converted.docID,
+                          converted.revID);
+                    return nil;
+                }
+            } else {
+                [downloadedAttachments addObject:attachment];
             }
         }
     }
@@ -631,19 +637,26 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSMutableArray *downloadedAttachments = [[NSMutableArray alloc]init];
     if(revision.attachments){
         for (CDTAttachment *attachment in revision.attachments) {
-            NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
-                                                                       error:error];
-            if (attachmentData != nil) {
-                [downloadedAttachments addObject:attachmentData];
-            } else {  // Error downloading the attachment, bail
-                // error out variable set by -stream...
-                LogTo(CDTDatastore,
-                      @"Error reading %@ from stream for doc <%@, %@>, rolling back",
-                      attachment.name,
-                      converted.docID,
-                      converted.revID);
-                return nil;
+            
+            if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
+                
+                NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
+                                                                           error:error];
+                if (attachmentData != nil) {
+                    [downloadedAttachments addObject:attachmentData];
+                } else {  // Error downloading the attachment, bail
+                    // error out variable set by -stream...
+                    LogTo(CDTDatastore,
+                          @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                          attachment.name,
+                          converted.docID,
+                          converted.revID);
+                    return nil;
+                }
+            } else {
+                [downloadedAttachments addObject:attachment];
             }
+            
         }
     }
     
