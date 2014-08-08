@@ -357,9 +357,9 @@
         @[@"sequence", @"filename", @"type", @"length", @"revpos", @"encoding", @"encoded_length"],
         @[@2, @"bonsai-boston", @"image/jpg", @(imageData.length), @2, @0, @(imageData.length)],
         @[@2, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
-        @[@3, @"bonsai-boston", @"image/jpg", @(imageData.length), @3, @0, @(imageData.length)],
-        @[@3, @"lorem", @"text/plain", @(txtData.length), @3, @0, @(txtData.length)],
         @[@3, @"lorem2", @"text/plain", @(txtData.length), @3, @0, @(txtData.length)],
+        @[@3, @"bonsai-boston", @"image/jpg", @(imageData.length), @2, @0, @(imageData.length)],
+        @[@3, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
         ];
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
@@ -442,8 +442,8 @@
         NSArray *expectedRows = @[
         @[@"sequence", @"filename", @"type", @"length", @"revpos", @"encoding", @"encoded_length"],
         @[@1, @"bonsai-boston", @"image/jpg", @(imageData.length), @1, @0, @(imageData.length)],
-        @[@2, @"bonsai-boston", @"image/jpg", @(imageData.length), @2, @0, @(imageData.length)],
         @[@2, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
+        @[@2, @"bonsai-boston", @"image/jpg", @(imageData.length), @1, @0, @(imageData.length)],
         ];
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];

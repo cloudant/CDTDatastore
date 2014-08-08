@@ -635,6 +635,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     converted.body = [[TD_Body alloc]initWithProperties:revision.body];
     
     NSMutableArray *downloadedAttachments = [[NSMutableArray alloc]init];
+    NSMutableArray *attachmentToCopy = [[NSMutableArray alloc]init];
     if(revision.attachments){
         for (CDTAttachment *attachment in revision.attachments) {
             
@@ -654,7 +655,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     return nil;
                 }
             } else {
-                [downloadedAttachments addObject:attachment];
+                [attachmentToCopy addObject:attachment];
             }
             
         }
@@ -680,6 +681,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     result = nil;
                     *rollback = YES;
                 }
+            }
+            for(CDTSavedAttachment *attachment in attachmentToCopy){
+                TDStatus status =  [self.database copyAttachmentNamed:attachment.name
+                                                         fromSequence:attachment.sequence
+                                                           toSequence:result.sequence
+                                                           inDatabase:db];
+                if (TDStatusIsError(status)) {
+                    *error = TDStatusToNSError(status, nil);
+                    *rollback = YES;
+                    result = nil;
+                }
+
             }
         }
     }];
