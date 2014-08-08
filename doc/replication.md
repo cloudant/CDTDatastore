@@ -88,3 +88,51 @@ while (replicator.isActive) {
     NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
 }
 ```
+
+#### Using a replication delegate
+
+Once you've created a `CDTReplicator` object, you probably don't want your main 
+thread to go into the loop shown above, as it'll block your user interface.
+Instead, the `CDTReplicator` object can be given a delegate conforming to the
+[`CDTReplicatorDelegate`](https://github.com/cloudant/CDTDatastore/blob/master/Classes/common/CDTReplicator/CDTReplicatorDelegate.h) protocol.
+
+This protocol has four methods, all optional:
+
+```objc
+/**
+* Called when the replicator changes state.
+*/
+-(void) replicatorDidChangeState:(CDTReplicator*)replicator;
+
+/**
+* Called whenever the replicator changes progress
+*/
+-(void) replicatorDidChangeProgress:(CDTReplicator*)replicator;
+
+/**
+* Called when a state transition to COMPLETE or STOPPED is
+* completed.
+*/
+- (void)replicatorDidComplete:(CDTReplicator*)replicator;
+
+/**
+* Called when a state transition to ERROR is completed.
+*/
+- (void)replicatorDidError:(CDTReplicator*)replicator info:(NSError*)info;
+```
+
+To use, just assign to the `delegate` property of the replicator object. **Note:**
+this is a `weak` property, so the delegate needs to be strongly retained elsewhere,
+as otherwise its methods won't be called.
+
+```objc
+// For this example, self retains the delegate
+self.replicationDelegate = /* alloc/init a sync delegate, or share one */;
+
+CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:datastore
+                                                                         target:remoteDatabaseURL];
+NSError *error;
+CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
+replicator.delegate = self.replicationDelegate;
+[replicator start];
+```
