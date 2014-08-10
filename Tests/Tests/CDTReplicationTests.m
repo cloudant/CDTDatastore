@@ -25,6 +25,8 @@
 #import "CDTDocumentBody.h"
 #import "TD_Body.h"
 #import "TD_Revision.h"
+#import "TDPuller.h"
+#import "TDPusher.h"
 
 @interface CDTReplicationTests : CloudantSyncTests
 
@@ -53,6 +55,16 @@
     NSDictionary *pullDict = [pull dictionaryForReplicatorDocument:&error];
     STAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, pull);
     STAssertEqualObjects(pullDict, expectedDictionary, @"pull dictionary: %@", pullDict);
+    
+    //ensure that TDReplicatorManager makes the appropriate TDPuller object
+    //The code to do this, seems, a bit precarious and this guards against any future
+    //changes that could affect this process.
+    error = nil;
+    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
+                                              initWithDatabaseManager:self.factory.manager];
+    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pullDict
+                                                                             error:&error];
+    STAssertEqualObjects([tdreplicator class], [TDPuller class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 -(void)testDictionaryForPushReplicationDocument
@@ -72,6 +84,16 @@
     NSDictionary *pushDict = [push dictionaryForReplicatorDocument:&error];
     STAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);
     STAssertEqualObjects(pushDict, expectedDictionary, @"push dictionary: %@", pushDict);
+    
+    //ensure that TDReplicatorManager makes the appropriate TDPuller object
+    //The code to do this, seems, a bit precarious and this guards against any future
+    //changes that could affect this process.
+    error = nil;
+    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
+                                              initWithDatabaseManager:self.factory.manager];
+    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDict
+                                                                             error:&error];
+    STAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 
@@ -105,6 +127,16 @@
     STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
     
     [replicatorFactory stop];
+    
+    //ensure that TDReplicatorManager makes the appropriate TDPuller object
+    //The code to do this, seems, a bit precarious and this guards against any future
+    //changes that could affect this process.
+    error = nil;
+    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
+                                              initWithDatabaseManager:self.factory.manager];
+    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDoc
+                                                                             error:&error];
+    STAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 -(CDTAbstractReplication *)buildReplicationObject:(Class)aClass remoteUrl:(NSURL *)url
@@ -217,7 +249,7 @@
 
 -(void)testRemoteURL
 {
-    
+
     //tests for the pull replication class
     [self runUrlTestFor:[CDTPullReplication class]];
     
