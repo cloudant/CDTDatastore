@@ -27,7 +27,7 @@
 @property (nonatomic,strong,readonly) NSArray *conflicts;
 @property (nonatomic,strong,readonly) TD_Body *td_body;
 @property (nonatomic,strong,readonly) NSDictionary *private_body;
-@property (nonatomic,strong,readonly) NSArray *private_attachments;
+@property (nonatomic,strong,readonly) NSDictionary *private_attachments;
 
 @end
 
@@ -43,7 +43,7 @@
     return [self initWithTDRevision:rev andAttachments:nil];
 }
 
--(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSArray *) attachments
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSDictionary *) attachments
 {
     self = [super init];
     if (self) {
@@ -120,8 +120,8 @@
     CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
     mutableCopy.sourceRevId = self.revId;
     mutableCopy.docId = self.docId;
-    [mutableCopy setAttachments:self.private_attachments];
-    [mutableCopy setBody:self.private_body];
+    mutableCopy.attachments = self.attachments;
+    mutableCopy.body = self.private_body;
     
     return mutableCopy;
 }
@@ -131,7 +131,7 @@
     return self.private_body;
 }
 
--(NSArray*)attachments
+-(NSDictionary*)attachments
 {
     return self.private_attachments;
 }

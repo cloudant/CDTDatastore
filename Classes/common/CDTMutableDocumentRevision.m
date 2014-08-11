@@ -11,7 +11,7 @@
 
 @interface CDTMutableDocumentRevision ()
 
-@property (strong,nonatomic,readwrite) NSMutableArray * private_attachments;
+@property (strong,nonatomic,readwrite) NSMutableDictionary * private_attachments;
 @property (strong,nonatomic,readwrite) NSMutableDictionary * private_body;
 
 @end
@@ -56,12 +56,12 @@ NSMutableDictionary* _body=nil;
     return self.private_body;
 }
 
--(NSMutableArray*)attachments
+-(NSMutableDictionary*)attachments
 {
     return self.private_attachments;
 }
 
--(void)setAttachments:(NSArray *)attachments
+-(void)setAttachments:(NSMutableDictionary *)attachments
 {
     self.private_attachments = [attachments mutableCopy];
 }

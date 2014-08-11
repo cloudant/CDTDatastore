@@ -38,7 +38,7 @@
 @property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
 -(id)initWithTDRevision:(TD_Revision*)rev ;
--(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSArray *) attachments;
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSDictionary *) attachments;
 
 /** 
  Return document content as an NSData object.
@@ -67,6 +67,6 @@
 
 -(NSDictionary*)body;
 
--(NSArray*)attachments;
+-(NSDictionary*)attachments;
 
 @end

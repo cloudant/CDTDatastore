@@ -21,8 +21,8 @@
 
 -(NSMutableDictionary*)body;
 
--(NSMutableArray*)attachments;
+-(NSMutableDictionary*)attachments;
 
--(void)setAttachments:(NSArray *)attachments;
+-(void)setAttachments:(NSDictionary *)attachments;
 
 @end
