@@ -294,7 +294,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  */
 -(CDTDocumentRevision*) updateDocumentFromRevision: (CDTMutableDocumentRevision*)revision
-                                             :(NSError * __autoreleasing *)error;
+                                             error:(NSError * __autoreleasing *)error;
 /**
  * Deletes a document from the datastore.
  *
