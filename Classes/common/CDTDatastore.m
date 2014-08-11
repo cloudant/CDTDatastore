@@ -234,7 +234,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     
     CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithTDRevision:rev];
     NSArray * attachments = [self attachmentsForRev:revision error:error];
-    revision = [[CDTDocumentRevision alloc]initWithTDRevision:rev andAttchments:attachments];
+    revision = [[CDTDocumentRevision alloc]initWithTDRevision:rev andAttachments:attachments];
     
     return revision;
 }
@@ -539,10 +539,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     
     //dowload attachments to the blob store
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
-    
+    NSMutableArray *attachmentsToCopy = [NSMutableArray array];
     if(revision.attachments){
         for (CDTAttachment *attachment in revision.attachments) {
             
+            //check if thae attachment has been saved to blobstore, if not save it
             if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
                 
                 NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
@@ -559,7 +560,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     return nil;
                 }
             } else {
-                [downloadedAttachments addObject:attachment];
+                [attachmentsToCopy addObject:attachment];
             }
         }
     }
@@ -592,7 +593,22 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     //failed need to rollback
                     saved = nil;
                     *rollback = YES;
+                    return;
                 }
+            }
+            // copy saved attachments
+            for(CDTSavedAttachment *attachment in attachmentsToCopy){
+                TDStatus status =  [self.database copyAttachmentNamed:attachment.name
+                                                         fromSequence:attachment.sequence
+                                                           toSequence:new.sequence
+                                                           inDatabase:db];
+                if (TDStatusIsError(status)) {
+                    *error = TDStatusToNSError(status, nil);
+                    *rollback = YES;
+                    saved = nil;
+                    return;
+                }
+                
             }
             
             saved = [[CDTDocumentRevision alloc]initWithTDRevision:new];
@@ -602,7 +618,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if(saved){
         NSArray * attachmentsFromBlobStore = [self attachmentsForRev:saved error:error];
         saved = [[CDTDocumentRevision alloc] initWithTDRevision:saved.td_rev
-                                                  andAttchments:attachmentsFromBlobStore];
+                                                  andAttachments:attachmentsFromBlobStore];
     }
     return saved;
     
@@ -637,6 +653,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if(revision.attachments){
         for (CDTAttachment *attachment in revision.attachments) {
             
+            //if the attachment is not saved, save it to the blob store
+            //otherwise add it to the array to copy it to the new revision
             if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
                 
                 NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
@@ -700,7 +718,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         //populate the attachment array with attachments
         NSArray * attachmentsFromBlobStore = [self attachmentsForRev:result error:error];
         result = [[CDTDocumentRevision alloc] initWithTDRevision:result.td_rev
-                                                   andAttchments:attachmentsFromBlobStore];
+                                                   andAttachments:attachmentsFromBlobStore];
         
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});
@@ -742,7 +760,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    //due to to the change in APIs, each document has its attchments processed every update
+    //due to to the change in APIs, each document has its attachments processed every update
     //the old API however still needs this little bit of code, so a simple on off switch will
     //allow both APIs to work as expected
     

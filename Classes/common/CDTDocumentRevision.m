@@ -40,10 +40,10 @@
 
 -(id)initWithTDRevision:(TD_Revision*)rev
 {
-    return [self initWithTDRevision:rev andAttchments:nil];
+    return [self initWithTDRevision:rev andAttachments:nil];
 }
 
--(id)initWithTDRevision:(TD_Revision*)rev andAttchments: (NSArray *) attachments
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSArray *) attachments
 {
     self = [super init];
     if (self) {
