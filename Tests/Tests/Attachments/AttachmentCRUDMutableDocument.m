@@ -892,6 +892,43 @@
     }];
 }
 
+-(void) createDocumentWithaSharedAttachment {
+    NSString *attachmentName = @"test_an_attachment";
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+
+    NSError *error;
+    
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"image/jpg"];
+    
+    CDTMutableDocumentRevision *mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.body = dict;
+    mutableRev.attachments=@[attachment];
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev  error:&error];
+    
+    
+    STAssertNil(error,@"An error occured saving the document");
+    STAssertNotNil(rev, @"First document was not created");
+    
+    mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.body = dict;
+    mutableRev.attachments=rev.attachments;
+    
+    CDTDocumentRevision *doc2 = [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    
+    STAssertNil(error, @"An error occured saving the document");
+    STAssertNotNil(doc2, @"New document was nil");
+    
+
+}
+
 #pragma mark - Utilities
 
 - (NSString*)tempFileName
