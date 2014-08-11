@@ -892,7 +892,7 @@
     }];
 }
 
--(void) createDocumentWithaSharedAttachment {
+-(void) testCreateDocumentWithaSharedAttachment {
     NSString *attachmentName = @"test_an_attachment";
     
     NSDictionary *dict = @{@"hello": @"world"};
