@@ -54,6 +54,9 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
 /**
  Returns attachment `name` for the revision.
 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
+ 
  @return CDTAttachment or nil no attachment with that name.
  */
 -(CDTAttachment*) attachmentNamed:(NSString*)name
@@ -68,6 +71,9 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  new attachments will be created, and attachments already
  existing on the document which are not included in
  `attachments` will remain as attachments on the document.
+ 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
 
  @return New revision, or nil on error.
  */
@@ -78,6 +84,9 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
 /**
  Remove attachments `names` from a document, creating a new revision.
 
+ This method has been deprecated, document attachments are now handled in CDTMutableDocumentRevision
+ see the README for more information
+ 
  @param rev rev to update.
  @param names NSArray of NSStrings, each being an attachment name
  to remove

@@ -233,9 +233,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
     
     CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithTDRevision:rev];
-    
     NSArray * attachments = [self attachmentsForRev:revision error:error];
-    
     revision = [[CDTDocumentRevision alloc]initWithTDRevision:rev andAttchments:attachments];
     
     return revision;
