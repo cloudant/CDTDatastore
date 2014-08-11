@@ -30,9 +30,6 @@
 /** Revision ID for this document revision. */
 @property (nonatomic,strong,readonly) NSString *revId;
 
-
-@property (nonatomic,strong,readonly)NSDictionary* body;
-
 /** `YES` if this document revision is deleted. */
 @property (nonatomic,readonly) BOOL deleted;
 
@@ -40,10 +37,8 @@
 
 @property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
-@property (nonatomic,strong,readonly)NSArray *attachments;
-
 -(id)initWithTDRevision:(TD_Revision*)rev ;
-
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSArray *) attachments;
 
 /** 
  Return document content as an NSData object.
@@ -69,5 +64,9 @@
  @return mutable copy of this document
  */
 -(id)mutableCopy;
+
+-(NSDictionary*)body;
+
+-(NSArray*)attachments;
 
 @end

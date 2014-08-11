@@ -26,6 +26,8 @@
 @property (nonatomic,strong,readonly) NSArray *revsInfo;
 @property (nonatomic,strong,readonly) NSArray *conflicts;
 @property (nonatomic,strong,readonly) TD_Body *td_body;
+@property (nonatomic,strong,readonly) NSDictionary *private_body;
+@property (nonatomic,strong,readonly) NSArray *private_attachments;
 
 @end
 
@@ -37,6 +39,11 @@
 @synthesize sequence = _sequence;
 
 -(id)initWithTDRevision:(TD_Revision*)rev
+{
+    return [self initWithTDRevision:rev andAttachments:nil];
+}
+
+-(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSArray *) attachments
 {
     self = [super init];
     if (self) {
@@ -50,13 +57,15 @@
                                   filteredArrayUsingPredicate: _prefixPredicate];
         
         [mutableCopy removeObjectsForKeys:keysToRemove];
-        _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
         _docId = _td_rev.docID;
         _deleted = _td_rev.deleted;
         _sequence = _td_rev.sequence;
+        _private_attachments = [attachments copy];
     }
     return self;
 }
+
 
 -(TD_Revision*)TD_RevisionValue
 {
@@ -109,12 +118,22 @@
 -(id)mutableCopy
 {
     CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
-    mutableCopy.attachments = [self.attachments mutableCopy];
     mutableCopy.sourceRevId = self.revId;
     mutableCopy.docId = self.docId;
-    mutableCopy.body = [self.body mutableCopy];
+    [mutableCopy setAttachments:self.private_attachments];
+    [mutableCopy setBody:self.private_body];
     
     return mutableCopy;
+}
+
+-(NSDictionary*)body
+{
+    return self.private_body;
+}
+
+-(NSArray*)attachments
+{
+    return self.private_attachments;
 }
 
 @end

@@ -9,13 +9,20 @@
 #import "CDTMutableDocumentRevision.h"
 #import "TD_Body.h"
 
+@interface CDTMutableDocumentRevision ()
+
+@property (strong,nonatomic,readwrite) NSMutableArray * private_attachments;
+@property (strong,nonatomic,readwrite) NSMutableDictionary * private_body;
+
+@end
+
 @implementation CDTMutableDocumentRevision
 
 @synthesize docId =_docId;
 @synthesize revId = _revId;
 @synthesize deleted = _deleted;
-@synthesize attachments = _attachments;
-@synthesize body = _body;
+NSMutableArray * _attachments =nil;
+NSMutableDictionary* _body=nil;
 
 
 
@@ -39,24 +46,24 @@
     return self;
 }
 
--(void)setBody:(NSMutableDictionary *)body
+-(void)setBody:(NSDictionary *)body
 {
-    _body = body;
+    self.private_body = [body mutableCopy];
 }
 
--(void)setDocId:(NSString *)docId
+-(NSMutableDictionary*)body
 {
-    _docId = docId;
+    return self.private_body;
 }
 
--(NSArray*)attachments
+-(NSMutableArray*)attachments
 {
-    return _attachments;
+    return self.private_attachments;
 }
 
--(void)setAttachments:(NSMutableArray *)attachments
+-(void)setAttachments:(NSArray *)attachments
 {
-    _attachments = attachments;
+    self.private_attachments = [attachments mutableCopy];
 }
 
 @end

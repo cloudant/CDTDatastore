@@ -89,6 +89,8 @@ extern NSString* const CDTDatastoreChangeNotification;
 
 /**
  * Add a new document with the given ID and body.
+ * This method has been deprecated and replaced with createDocumentFromMutableRevision:error: see the
+ * README for more information.
  *
  * @param docId id for the document
  * @param body  JSON body for the document
@@ -105,6 +107,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  * Add a new document with an auto-generated ID.
  *
  * The generated ID can be found from the returned CDTDocumentRevision.
+ *
+ * This method has been deprecated and replaced with createDocumentFromMutableRevision:error: see the
+ * README for more information.
  *
  * @param body JSON body for the document
  * @param error will point to an NSError object in case of error.
@@ -207,6 +212,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  * The `prevRev` parameter must contain the revision ID of the current
  * winning revision, otherwise a conflict error will be returned.
  *
+ * This method has been deprecated and replaced with updateDocumentFromMutableRevision:error: see
+ * the README for more information.
+ *
  * @param docId ID of document
  * @param prevRev revision ID of revision to replace
  * @param body          document body of the new revision
@@ -226,6 +234,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  
  This method modifies multiple tables, so must be called in a transaction.
  
+ This method has been depercated and replaced with updateDocumentFromMutableRevision:error: see the
+ README for more information.
+ 
  @return New revision, or nil if the update failed.
  */
 -(CDTDocumentRevision *) updateDocumentWithId:(NSString*)docId
@@ -240,6 +251,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * Any non-deleted leaf revision of a document may be deleted using this method,
  * to allow for conflicts to be cleaned up.
+ *
+ * This method has been deprecated and replaced with deleteDocumentFromRevision: see the README
+ * for more information
  *
  * @param docId documentId of the document to be deleted
  * @param rev revision ID of a leaf revision of the document
@@ -265,15 +279,28 @@ extern NSString* const CDTDatastoreChangeNotification;
  * Creates a document from a MutableDocumentRevision
  *
  * @param revision document revision to create document from
+ * @param error will point to an NSError object in the case of an error
  *
  * @return document revision created
  */
 -(CDTDocumentRevision*) createDocumentFromRevision: (CDTMutableDocumentRevision*)revision
                                              error:(NSError * __autoreleasing *)error;
 
+/**
+ * Updates a document in the datastore with a new revision 
+ *
+ *  @parm revision updated document revision
+ *  @param error will point to an NSError object in the case of an error
+ *
+ */
 -(CDTDocumentRevision*) updateDocumentFromRevision: (CDTMutableDocumentRevision*)revision
                                              error:(NSError * __autoreleasing *)error;
-
+/**
+ * Deletes a document from the datastore.
+ *
+ * @param revision document to delete from the datastore
+ * @param error will point to an NSError object in the case of an error
+ */
 -(CDTDocumentRevision*) deleteDocumentFromRevision:(CDTDocumentRevision*)revision
                                              error:(NSError * __autoreleasing *)error;
 @end
