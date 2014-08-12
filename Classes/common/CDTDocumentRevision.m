@@ -72,6 +72,8 @@
     return self.td_rev;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
 {
     NSError *innerError = nil;

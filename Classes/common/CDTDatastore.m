@@ -381,7 +381,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 -(BOOL) validateBody:(CDTDocumentBody*)body
                error:(NSError * __autoreleasing *)error
 {
