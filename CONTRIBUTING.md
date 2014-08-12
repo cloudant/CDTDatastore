@@ -37,6 +37,10 @@ sudo gem install xcpretty
 [homebrew]: http://brew.sh
 [cpinstall]: http://guides.cocoapods.org/using/index.html
 
+## Coding guidelines
+
+The house style is [documented](doc/style-guide.md).
+
 ## Getting started with the project
 
 The main workspace is `CDTDatastore.xcworkspace` in the root of the checkout.
