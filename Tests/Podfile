@@ -3,7 +3,7 @@
 
 def import_pods
     pod "CDTDatastore", :path => "../"
-    pod "MRDatabaseContentChecker", :git => "https://github.com/mikerhodes/MRDatabaseContentChecker.git"
+    pod "MRDatabaseContentChecker"
 end
 
 target :ios do
