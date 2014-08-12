@@ -350,19 +350,22 @@
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
         @[@"sequence", @"filename", @"type", @"length", @"revpos", @"encoding", @"encoded_length"],
-        @[@2, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
         @[@2, @"bonsai-boston", @"image/jpg", @(imageData.length), @2, @0, @(imageData.length)],
-        @[@3, @"lorem2", @"text/plain", @(txtData.length), @3, @0, @(txtData.length)],
-        @[@3, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
+        @[@2, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
         @[@3, @"bonsai-boston", @"image/jpg", @(imageData.length), @2, @0, @(imageData.length)],
+        @[@3, @"lorem", @"text/plain", @(txtData.length), @2, @0, @(txtData.length)],
+        @[@3, @"lorem2", @"text/plain", @(txtData.length), @3, @0, @(txtData.length)],
+
 
         ];
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
+        NSArray * orderBy = @[@"sequence", @"filename"];
         STAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
+                               orderBy:orderBy
                                  error:&validationError],
                      [dc formattedErrors:validationError]);
     }];
@@ -749,6 +752,8 @@
     }];
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 - (void) testNilAttachmentStream
 {
     NSError *error;
@@ -861,6 +866,8 @@
     }];
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 -(void) testCreateDocumentWithaSharedAttachment {
     NSString *attachmentName = @"test_an_attachment";
     
