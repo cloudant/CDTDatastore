@@ -19,6 +19,7 @@
 #import "CDTDatastore.h"
 #import "CDTDatastore+Attachments.h"
 #import "CDTDocumentRevision.h"
+#import "CDTMutableDocumentRevision.h"
 #import "CDTDocumentBody.h"
 #import "CDTAttachment.h"
 
