@@ -248,6 +248,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 -(NSArray*) getAllDocuments
 {
+    NSError* error;
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
@@ -285,7 +286,14 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
             
             CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
-            [batch addObject:ob];
+            
+            NSArray * attachments = [self attachmentsForRev:ob error:&error];
+            NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+            for (CDTAttachment * attachment in attachments){
+                [dict setObject:attachment forKey:attachment.name];
+            }
+            [batch addObject:[[CDTDocumentRevision alloc] initWithTDRevision:revision
+                                                              andAttachments:dict ]];
         }
         
         result = [result arrayByAddingObjectsFromArray:batch];
@@ -316,10 +324,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 -(NSArray*) getDocumentsWithIds:(NSArray*)docIds
 {
+    TDContentOptions contentOptions = kTDIncludeLocalSeq;
     struct TDQueryOptions query = {
         .limit = UINT_MAX,
         .inclusiveEnd = YES,
-        .includeDocs = YES
+        .includeDocs = YES,
+        .content = contentOptions
     };
     return [self allDocsQuery:docIds options:&query];
 }
@@ -327,6 +337,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 /* docIds can be null for getting all documents */
 -(NSArray*)allDocsQuery:(NSArray*)docIds options:(TDQueryOptions*)queryOptions
 {
+    NSError *error;
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
@@ -347,6 +358,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:revId
                                                            deleted:deleted];
+        revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
         
         // Deleted documents won't have a `doc` field
         if (!deleted) {
@@ -354,7 +366,13 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
         
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
-        [result addObject:ob];
+        NSArray * attachments = [self attachmentsForRev:ob error:&error];
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        for (CDTAttachment * attachment in attachments){
+            [dict setObject:attachment forKey:attachment.name];
+        }
+        [result addObject:[[CDTDocumentRevision alloc] initWithTDRevision:revision
+                                                           andAttachments:dict ]];
     }
     
     return result;

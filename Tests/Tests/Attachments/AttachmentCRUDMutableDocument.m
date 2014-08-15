@@ -901,6 +901,96 @@
 
 }
 
+- (void)testRetriveAttachmentsViaAllDocuments
+{
+    NSError *error = nil;
+    NSString *attachmentName = @"test_an_attachment";
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    
+    CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
+    document.body = [dict mutableCopy];
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document
+                                                                    error:&error];
+    document = [rev mutableCopy];
+    document.attachments = @{};
+    
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
+                                                                     error:&error];
+    
+    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"image/jpg"];
+    
+    document = [rev2 mutableCopy];
+    document.attachments = [@{attachment.name:attachment} mutableCopy];
+    
+    CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
+                                                                     error:&error];
+    
+    //attachments have been completed inerted, now attempt to get them via all docs
+    
+    NSArray * allDocuuments = [self.datastore getAllDocuments];
+    
+    for(CDTDocumentRevision * revision in allDocuuments){
+        STAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+    }
+}
+
+- (void)testRetriveAttachmentsViaAllDocumentsById
+{
+    NSError *error = nil;
+    NSString *attachmentName = @"test_an_attachment";
+    
+    NSDictionary *dict = @{@"hello": @"world"};
+    
+    CDTMutableDocumentRevision *document = [CDTMutableDocumentRevision revision];
+    document.body = [dict mutableCopy];
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document
+                                                                    error:&error];
+    document = [rev mutableCopy];
+    document.attachments = @{};
+    
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
+                                                                     error:&error];
+    
+    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:attachmentName
+                                                                          type:@"image/jpg"];
+    
+    document = [rev2 mutableCopy];
+    document.attachments = [@{attachment.name:attachment} mutableCopy];
+    
+    CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
+                                                                     error:&error];
+    
+    //attachments have been completed inerted, now attempt to get them via all docs
+    
+    NSArray * allDocuuments = [self.datastore getDocumentsWithIds:@[rev.docId]];
+    
+    STAssertTrue([allDocuuments count] == 1,
+                 @"Unexpected number of documents 1 expected got %d",
+                 [allDocuuments count]);
+    
+    for(CDTDocumentRevision * revision in allDocuuments){
+        STAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+    }
+}
+
 
 #pragma mark - Utilities
 
