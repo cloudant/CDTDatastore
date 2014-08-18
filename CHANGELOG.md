@@ -1,5 +1,14 @@
 # CDTDatastore CHANGELOG
 
+## 0.7.0 (2014-08-18)
+
+- NEW CRUD and Attachments API. See doc/crud.md for docs on both CRUD and
+  attachments, along with a cookbook on using the new API.
+- DEPRECATED Existing attachments and CRUD APIs. These will be removed before
+  1.0.
+- When a replication fails, the error message is properly propagated through
+  the error callback on a CDTReplicator object.
+
 ## 0.0.6 (2014-07-29)
 
 - NEW Conflicts API, a developer can resolve a conflicted document
