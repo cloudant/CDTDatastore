@@ -84,16 +84,24 @@ CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"
                                             error:&outError];
 
 // Create a document
-NSDictionary *doc = @{
+CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+rev.docId = @"doc1";  // Or don't and get an ID generated for you
+rev.body = @{
     @"description": @"Buy milk",
     @"completed": @NO,
     @"type": @"com.cloudant.sync.example.task"
 };
-CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
 
-NSError *error;
-CDTDocumentRevision *revision = [datastore createDocumentWithBody:body
-                                                            error:&error];
+// Add an attachment -- binary data like a JPEG
+CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
+                          initWithPath:@"/path/to/image.jpg"
+                          name:@"cute_cat.jpg"
+                          type:@"image/jpeg"]]
+rev.attachments = @{ att1.name:att1 };
+
+// Save the document to the database
+CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
+                                                                error:&error];
 
 // Read a document
 NSString *docId = revision.docId;
