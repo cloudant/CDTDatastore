@@ -53,8 +53,8 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
 
 
 -(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
-                        error:(NSError * __autoreleasing *)error
-                inTransaction:(FMDatabase *)db;
+                inTransaction:(FMDatabase *)db
+                        error:(NSError * __autoreleasing *)error;
 
 /**
  Returns attachment `name` for the revision.

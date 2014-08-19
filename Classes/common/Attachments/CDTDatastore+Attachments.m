@@ -65,56 +65,54 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
 {
     FMDatabaseQueue *db_queue = self.database.fmdbQueue;
     
-    __block NSArray *attachments = [NSMutableArray array];
+    __block NSArray *attachments;
     
     __weak CDTDatastore *weakSelf = self;
     
     [db_queue inDatabase:^(FMDatabase *db) {
         
         CDTDatastore *strongSelf = weakSelf;
-        attachments = [strongSelf attachmentsForRev:rev error:error inTransaction:db];
-
+        attachments = [strongSelf attachmentsForRev:rev inTransaction:db error:error ];
+        
     }];
     
     return attachments;
 }
 
 -(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
+                inTransaction:(FMDatabase *)db
                         error:(NSError * __autoreleasing *)error
-                inTransaction:(FMDatabase *)db;
 {
     
     NSMutableArray *attachments = [NSMutableArray array];
 
+    // Get all attachments for this revision using the revision's
+    // sequence number
     
-        
-        // Get all attachments for this revision using the revision's
-        // sequence number
-        
-        NSDictionary *params = @{@"sequence": @(rev.sequence)};
-        FMResultSet *r = [db executeQuery:[SQL_ATTACHMENTS_SELECT_ALL copy]
-                  withParameterDictionary:params];
-        
-        @try {
-            while ([r next]) {
-                
-                CDTSavedAttachment *attachment = [self attachmentFromDbRow:r];
-                
-                if (attachment != nil) {
-                    [attachments addObject:attachment];
-                } else {
-                    LogTo(CDTDatastore,
-                          @"Error reading an attachment row for attachments on doc <%@, %@>"
-                          @"Closed connection during read?",
-                          rev.docId,
-                          rev.revId);
-                }
+    NSDictionary *params = @{@"sequence": @(rev.sequence)};
+    FMResultSet *r = [db executeQuery:[SQL_ATTACHMENTS_SELECT_ALL copy]
+              withParameterDictionary:params];
+    
+    @try {
+        while ([r next]) {
+            
+            CDTSavedAttachment *attachment = [self attachmentFromDbRow:r];
+            
+            if (attachment != nil) {
+                [attachments addObject:attachment];
+            } else {
+                LogTo(CDTDatastore,
+                      @"Error reading an attachment row for attachments on doc <%@, %@>"
+                      @"Closed connection during read?",
+                      rev.docId,
+                      rev.revId);
             }
         }
-        @finally {
-            [r close];
-        }
-
+    }
+    @finally {
+        [r close];
+    }
+    
     
     return attachments;
 }

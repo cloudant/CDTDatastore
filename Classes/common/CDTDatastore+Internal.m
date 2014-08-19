@@ -41,7 +41,7 @@
         
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:tdRev];
         
-        NSArray * attachmentArray = [self attachmentsForRev:ob error:nil inTransaction:db];
+        NSArray * attachmentArray = [self attachmentsForRev:ob  inTransaction:db error:nil];
         NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
         
         for(CDTAttachment * attachment in attachmentArray){
