@@ -620,6 +620,10 @@
                    @"Unexpected RevId: %@", rev.revId);
     STAssertTrue([[rev documentAsDictionary] isEqualToDictionary:myResolver.resolvedDocumentAsDictionary],
                  @"Unexpected document: %@", [rev documentAsDictionary]);
+    STAssertTrue([rev.attachments count] == 1,
+                 @"Unexpected number of attachments. expected %d, actual %d",
+                 1,
+                 [rev.attachments count]);
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];

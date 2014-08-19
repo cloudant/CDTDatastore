@@ -14,6 +14,8 @@
 
 
 #import "CDTDatastore+Internal.h"
+#import "CDTDatastore+Attachments.h"
+#import "CDTAttachment.h"
 #import "TD_Database.h"
 #import "CDTDocumentRevision.h"
 
@@ -38,6 +40,16 @@
         [self.database loadRevisionBody:tdRev options:0 database:db];
         
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:tdRev];
+        
+        NSArray * attachmentArray = [self attachmentsForRev:ob error:nil inTransaction:db];
+        NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
+        
+        for(CDTAttachment * attachment in attachmentArray){
+            [attachments setObject:attachment forKey:attachment.name];
+        }
+        
+        ob = [[CDTDocumentRevision alloc] initWithTDRevision:tdRev andAttachments:attachments];
+        
         [results addObject:ob];
     }
     
