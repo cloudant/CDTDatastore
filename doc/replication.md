@@ -71,11 +71,11 @@ CDTReplicatorFactory *replicatorFactory =
 // username/password can be Cloudant API keys
 NSString *s = @"https://username:password@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
-CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
+CDTDatastore datastore = [manager datastoreNamed:@"my_datastore"];
 
 // Create a replicator that replicates changes from the local
 // datastore to the remote database.
-CDTPullReplication *pushReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
+CDTPullReplication *pullReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
                                                                          target:datastore];
 NSError *error;
 CDTReplicator *replicator = [replicatorFactory oneWay:pullReplication error:&error];
