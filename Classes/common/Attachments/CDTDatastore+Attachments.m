@@ -65,30 +65,45 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
 {
     FMDatabaseQueue *db_queue = self.database.fmdbQueue;
     
-    NSMutableArray *attachments = [NSMutableArray array];
+    __block NSArray *attachments = [NSMutableArray array];
     
     __weak CDTDatastore *weakSelf = self;
     
     [db_queue inDatabase:^(FMDatabase *db) {
         
         CDTDatastore *strongSelf = weakSelf;
+        attachments = [strongSelf attachmentsForRev:rev error:error inTransaction:db];
+
+    }];
+    
+    return attachments;
+}
+
+-(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
+                        error:(NSError * __autoreleasing *)error
+                inTransaction:(FMDatabase *)db;
+{
+    
+    NSMutableArray *attachments = [NSMutableArray array];
+
+    
         
         // Get all attachments for this revision using the revision's
         // sequence number
         
         NSDictionary *params = @{@"sequence": @(rev.sequence)};
-        FMResultSet *r = [db executeQuery:[SQL_ATTACHMENTS_SELECT_ALL copy] 
+        FMResultSet *r = [db executeQuery:[SQL_ATTACHMENTS_SELECT_ALL copy]
                   withParameterDictionary:params];
         
         @try {
             while ([r next]) {
                 
-                CDTSavedAttachment *attachment = [strongSelf attachmentFromDbRow:r];
+                CDTSavedAttachment *attachment = [self attachmentFromDbRow:r];
                 
-                if (attachment != nil) {                
+                if (attachment != nil) {
                     [attachments addObject:attachment];
                 } else {
-                    LogTo(CDTDatastore, 
+                    LogTo(CDTDatastore,
                           @"Error reading an attachment row for attachments on doc <%@, %@>"
                           @"Closed connection during read?",
                           rev.docId,
@@ -99,7 +114,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         @finally {
             [r close];
         }
-    }];
+
     
     return attachments;
 }
