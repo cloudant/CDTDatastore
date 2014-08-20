@@ -17,6 +17,8 @@
 
 -(id)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *)body;
 
+-(id)initWithSourceRevisionId:(NSString *)sourceRevId;
+
 -(void)setBody:(NSDictionary *)body;
 
 -(NSMutableDictionary*)body;
