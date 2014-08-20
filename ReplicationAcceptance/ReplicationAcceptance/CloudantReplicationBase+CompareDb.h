@@ -21,6 +21,8 @@
 
 -(BOOL) compareDatastore:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl;
 
+-(BOOL) compareDocCount:(CDTDatastore*)local expectFewerDocsInRemoteDatabase:(NSURL*)databaseUrl;
+
 /**
  Specialised, so we call it out as a separate method.
  */

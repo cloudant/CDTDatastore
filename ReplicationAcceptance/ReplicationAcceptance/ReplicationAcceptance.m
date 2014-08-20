@@ -17,6 +17,7 @@
 #import "CloudantReplicationBase.h"
 #import "CloudantReplicationBase+CompareDb.h"
 #import "ReplicationAcceptance+CRUD.h"
+#import "ReplicatorDelegates.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
@@ -330,6 +331,34 @@ static NSUInteger largeRevTreeSize = 1500;
     
 }
 
+-(void) testPushStateAfterStopping
+{
+    // Create docs in local store
+    int nlocalDocs = 5000;
+    [self createLocalDocs:nlocalDocs];
+
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    CDTTestReplicatorDelegateStopAfterStart *myDelegate = [[CDTTestReplicatorDelegateStopAfterStart alloc] init];
+    replicator.delegate = myDelegate;
+    
+    [replicator start];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    STAssertEquals(replicator.state, CDTReplicatorStateStopped, @"expected a different state: %d (%@)",
+                   replicator.state, [CDTReplicator stringForReplicatorState:replicator.state]);
+    
+    BOOL docComparison = [self compareDocCount:self.datastore
+      expectFewerDocsInRemoteDatabase:self.primaryRemoteDatabaseURL];
+    
+    STAssertTrue(!docComparison, @"Remote database doesn't have fewer docs than local.");
+}
 
 /**
  Push a document with largeRevTreeSize revisions (>1000).
