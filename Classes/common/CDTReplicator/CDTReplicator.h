@@ -23,6 +23,25 @@
 @class CDTAbstractReplication;
 
 /**
+ * Replicator errors.
+ */
+typedef NS_ENUM(NSInteger, CDTReplicatorErrors) {
+    /**
+     * CDTReplicator -start: was previously called
+     */
+    CDTReplicatorErrorAlreadyStarted = 1,
+    /**
+     Internal error: unable to create a new TDReplicator object
+     */
+    CDTReplicatorErrorTDReplicatorNil  = 2,
+    /**
+     Internal error: TDReplicator object of wrong type.
+     */
+    CDTReplicatorErrorTDReplicatorWrongType  = 2
+};
+
+
+/**
  * Describes the state of a CDTReplicator at a given moment.
 
  @see CDTReplicator
@@ -133,34 +152,27 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /**
  * Starts a replication.
  *
- * The replication will continue until the
- * replication is caught up with the source database; that is, until
- * there are no current changes to replicate.
+ * The replication will continue until the replication is caught up with the source database; 
+ * that is, until there are no current changes to replicate.
  *
- * -start can be called from any thread. It spawns background
- * threads for its work. The methods on the ReplicationListener
- * may be called from the background threads; any work that needs
- * to be on the main thread will need to be explicitly executed
- * on that thread.
+ * -startWithError can be called from any thread and will immediately return. It queues its work
+ * on a separate replication thread. The methods on the CDTReplicatorDelegate
+ * may be called from the background threads.
  *
- * -start will spawn a manager thread for the replication and
- * immediately return.
+ * A given CDTReplicator instance cannot be reused. Calling this method more than once will
+ * return NO. Only when in `CDTReplicatorStatePending` will replication.
  *
- * A given replicator instance can be reused:
- *
- * - If you call -start when in `CDTReplicatorStatePending`,
- *   replication will start.
- * - In `CDTReplicatorStateStarted`, nothing changes.
- * - In `CDTReplicatorStateStopping`, nothing changes.
- * - In `CDTReplicatorStateError`, the replication will restart.
- *   It's likely its going to error again, however, depending on whether
- *   the error is transient or not.
- * - In `CDTReplicatorStateStopped` or `CDTReplicatorStateComplete`, the
- *   replication will start a second or further time.
+ * @param error the error describing a failure.
+ * @return YES or NO depending on success.
  *
  * @see CDTReplicatorState
  */
-- (void)start;
+- (BOOL)startWithError:(NSError * __autoreleasing*)error;
+
+/**
+  Use startWithError. This will be deprecated.
+ */
+- (void)start __deprecated;
 
 /**
  * Stop an in-progress replication.
@@ -186,9 +198,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * It is also possible the replicator moves to the
  * `CDTReplicatorStateError` state if an error happened during the
  * shutdown process.
- *
- * If the replicator is in the `CDTReplicatorStateStopping` state,
- * it will immediately move to the `CDTReplicatorStateStopped` state.
  *
  * @see CDTReplicatorState
  */
