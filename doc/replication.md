@@ -40,7 +40,7 @@ CDTReplicatorFactory *replicatorFactory =
 // username/password can be Cloudant API keys
 NSString *s = @"https://username:password@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
-CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
+CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
 
 // Create a replicator that replicates changes from the local
 // datastore to the remote database.
@@ -48,7 +48,8 @@ CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:
                                                                          target:remoteDatabaseURL];
 NSError *error;
 CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
-//check error
+
+// Check replicator isn't nil, if so check error
 
 // Start the replication and wait for it to complete
 [replicator start];
@@ -71,15 +72,16 @@ CDTReplicatorFactory *replicatorFactory =
 // username/password can be Cloudant API keys
 NSString *s = @"https://username:password@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
-CDTDatastore ds = [manager datastoreNamed:@"my_datastore"];
+CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
 
-// Create a replicator that replicates changes from the local
-// datastore to the remote database.
-CDTPullReplication *pushReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
+// Create a replicator that replicates changes from a remote
+// database to the local one.
+CDTPullReplication *pullReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
                                                                          target:datastore];
 NSError *error;
 CDTReplicator *replicator = [replicatorFactory oneWay:pullReplication error:&error];
-//check error
+
+// Check replicator isn't nil, if so check error
 
 // Start the replication and wait for it to complete
 [replicator start];
