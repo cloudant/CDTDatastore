@@ -38,6 +38,19 @@
     return self;
 }
 
+-(instancetype) copyWithZone:(NSZone *)zone
+{
+    CDTPushReplication *copy = [[CDTPushReplication allocWithZone:zone] initWithSource:self.source
+                                                                                target:self.target];
+    if (copy) {
+        copy.filter = self.filter;
+        copy.filterParams = self.filterParams;
+    }
+    
+    return copy;
+}
+
+
 -(NSDictionary*) dictionaryForReplicatorDocument:(NSError * __autoreleasing*)error
 {
     NSError *localError;

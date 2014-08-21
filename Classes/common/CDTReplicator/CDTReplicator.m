@@ -33,7 +33,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 @property (nonatomic, strong) TDReplicatorManager *replicatorManager;
 @property (nonatomic, strong) TDReplicator *tdReplicator;
-@property (nonatomic, strong) CDTAbstractReplication* cdtReplication;
+@property (nonatomic, copy)   CDTAbstractReplication* cdtReplication;
 @property (nonatomic, strong) NSDictionary *replConfig;
 // private readwrite properties
 @property (nonatomic, readwrite) CDTReplicatorState state;
@@ -78,15 +78,18 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     self = [super init];
     if (self) {
         _replicatorManager = replicatorManager;
+        _cdtReplication = [replication copy];
+        
         NSError *localError;
-        _replConfig =[replication dictionaryForReplicatorDocument:&localError];
+        _replConfig =[_cdtReplication dictionaryForReplicatorDocument:&localError];
         if (!_replConfig) {
             if(error) *error = localError;
             return nil;
         }
+        
         _state = CDTReplicatorStatePending;
-        _cdtReplication = replication;
         _started = NO;
+        
     }
     return self;
 }

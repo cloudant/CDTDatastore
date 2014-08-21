@@ -41,7 +41,7 @@
  
  */
 
-@interface CDTPullReplication : CDTAbstractReplication
+@interface CDTPullReplication : CDTAbstractReplication <NSCopying>
 
 /**
  @name Creating a replication configuration
@@ -143,13 +143,13 @@
  
 
  */
-@property (nonatomic, strong) NSString *filter;
+@property (nonatomic, copy) NSString *filter;
 
 /** The filter function query parameters
  
  @see -filter
  */
-@property (nonatomic, strong) NSDictionary *filterParams;
+@property (nonatomic, copy) NSDictionary *filterParams;
 
 
 @end
