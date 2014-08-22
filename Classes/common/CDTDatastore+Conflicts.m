@@ -15,13 +15,20 @@
 
 #import "CDTDatastore+Conflicts.h"
 #import "CDTDatastore+Internal.h"
+#import "TD_Database+Attachments.h"
 #import "CDTDocumentRevision.h"
+#import "CDTDatastore+Attachments.h"
+#import "CDTAttachment.h"
 #import "TD_Revision.h"
 #import "TD_Database+Conflicts.h"
 #import "TD_Database+Insertion.h"
 #import "CDTConflictResolver.h"
 #import "CDTDocumentBody.h"
 #import "TDStatus.h"
+#import "CDTMutableDocumentRevision.h"
+#import "TDInternal.h"
+#import "fmdb.h"
+#import "TD_Body.h"
 
 @implementation CDTDatastore (Conflicts)
 
@@ -39,50 +46,105 @@
                            resolver:(NSObject<CDTConflictResolver>*)resolver
                               error:(NSError * __autoreleasing *)error
 {
+    
     if (![self.database open]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return NO;
     }
     
+    NSArray *revsArray = [self activeRevisionsForDocumentId:docId];
+    NSString * winningRev;
+    
+    if (revsArray.count <= 1) { //no conflicts for this doc
+        return kTDStatusOK;
+    }
+    
+    CDTDocumentRevision *resolvedRev = [resolver resolve:docId conflicts:revsArray];
+    NSMutableArray *downloadedAttachments = [NSMutableArray array];
+    NSMutableArray *attachmentsToCopy = [NSMutableArray array];
+    
+    if (resolvedRev == nil) { //do nothing
+        return kTDStatusOK;
+    } else if ([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]){
+        CDTMutableDocumentRevision *mutableResolvedRev = (CDTMutableDocumentRevision *)resolvedRev;
+        
+        if(mutableResolvedRev.sourceRevId == nil){
+            [NSException raise:@"Source Revision cannot be nil" format:@""];
+        }else {
+            winningRev = mutableResolvedRev.sourceRevId;
+            
+            //need to download attachments to the blob store if there are any which are not saved
+            
+            if(mutableResolvedRev.attachments){
+                for(NSString * key in mutableResolvedRev.attachments){
+                    CDTAttachment * attachment = [mutableResolvedRev.attachments objectForKey:key];
+                    
+                    if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
+                        NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
+                                                                                   error:error];
+                        if(attachmentData == nil){
+                            //well we failed to download lets just move on and return false
+                            // error is set by streamAttachmentToBlobStore so no need to set
+                            return NO;
+                        }
+                        [downloadedAttachments addObject:attachmentData];
+
+                    } else {
+                        //umm need to add this to the array to copy;;
+                        [attachmentsToCopy addObject:attachment];
+                    }
+                }
+            }
+        }
+    }
     __block NSError *localError;
     __weak CDTDatastore  *weakSelf = self;
-
-    TDStatus retStatus = [self.database inTransaction:^TDStatus(FMDatabase *db) {
     
+    TDStatus retStatus = [self.database inTransaction:^TDStatus(FMDatabase *db) {
+        
         CDTDatastore *strongSelf = weakSelf;
         localError = nil;
-    
-        NSArray *revsArray = [strongSelf activeRevisionsForDocumentId:docId database:db];
         
-        if (revsArray.count <= 1) { //no conflicts for this doc
-            return kTDStatusOK;
-        }
+        //insert at specfied rev
+        //I assume thats already attached so I just insert
+        TDStatus status;
         
-        CDTDocumentRevision *resolvedRev = [resolver resolve:docId conflicts:revsArray];
-        
-        if (resolvedRev == nil) { //do nothing
-            return kTDStatusOK;
-        }
-        
-        //
-        //ensure resolvedRev was in the revsArray
-        //we check pointers instead of docid/revid of the returned resolvedRev
-        //to protect against the scenario where a developer tries to circumvent
-        //the API and return a modified document revision.
-        NSUInteger resolvedRevIndex = [revsArray indexOfObjectPassingTest:
-                                       ^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-            return obj == resolvedRev;
-        }];
-        
-        if (resolvedRevIndex == NSNotFound) {
-            localError = TDStatusToNSErrorWithInfo(kTDStatusCallbackError, nil, nil);
+        if([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]){
+            TD_Revision *converted = [[TD_Revision alloc]initWithDocID:resolvedRev.docId
+                                                                 revID:nil
+                                                               deleted:NO];
+            converted.body = [[TD_Body alloc] initWithProperties:resolvedRev.body];
             
-            Warn(@"CDTDatastore+Conflicts -resolveConflictsForDocument: The CDTDocumentRevision "
-                 @"returned by CDTConflictResolver -resolve:conflicts was "
-                 @"not found in conflicts array. "
-                 @"Error code %ud, Document id: %@", kTDStatusCallbackError, docId);
+            TD_Revision * winner = [strongSelf.database putRevision:converted
+                                                     prevRevisionID:winningRev
+                                                      allowConflict:NO
+                                                             status:&status
+                                                           database:db];
+            if(TDStatusIsError(status)){
+                //well conflic res failed
+                localError = TDStatusToNSError(status, nil);
+                return status;
+            }
             
-            return kTDStatusCallbackError;
+            //okay we have the new winner, need to insert the attachments
+            //start with the new ones
+            for(NSDictionary * attachment in downloadedAttachments){
+                if(![strongSelf addAttachment:attachment
+                                        toRev:[[CDTDocumentRevision alloc]initWithTDRevision:winner]
+                                   inDatabase:db]){
+                    localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
+                    return kTDStatusAttachmentError;
+                }
+            }
+            for(CDTSavedAttachment *attachment in attachmentsToCopy){
+
+                status = [strongSelf.database copyAttachmentNamed:attachment.name fromSequence:attachment.sequence toSequence:winner.sequence inDatabase:db];
+                
+                if(TDStatusIsError(status)){
+                    localError = TDStatusToNSError(status, nil);
+                    return status;
+                }
+            }
         }
         
         //
@@ -90,13 +152,13 @@
         //
         for (CDTDocumentRevision *theRev in revsArray) {
             
-            if (theRev == resolvedRev) {
+            if (theRev == resolvedRev || [theRev.revId isEqualToString: winningRev]) {
                 continue;
             }
             
             TD_Revision * toPutRevision = [[TD_Revision alloc] initWithDocID:docId
-                                                         revID:nil
-                                                       deleted:YES];
+                                                                       revID:nil
+                                                                     deleted:YES];
             
             TDStatus status;
             [strongSelf.database putRevision:toPutRevision
@@ -116,8 +178,6 @@
         }
         
         return kTDStatusOK;
-    
-        
     }];
     
     *error = localError;

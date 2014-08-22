@@ -520,55 +520,6 @@
     
 }
 
-- (void) testCannotResolveWithNewRevision
-{
-    //this test ensures that when a CDTConflictResolver returns a CDTDocumentRevision
-    //that is not in the conflicts array, the resolveConflictForDocument fails appropriately
-    
-    [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
-    
-    CDTTestNewRevisionResolver *myResolver = [[CDTTestNewRevisionResolver alloc] init];
-    
-    NSArray *conflictedDocs = [self.datastore getConflictedDocumentIds];
-    STAssertEquals(conflictedDocs.count, (NSUInteger)1, @"");
-    
-    for (NSString *docId in conflictedDocs) {
-        NSError *error;
-        STAssertFalse([self.datastore resolveConflictsForDocument:docId
-                                                        resolver:myResolver
-                                                           error:&error],
-                     @"Expected resolve to fail. %@", docId);
-        NSError *expectError = TDStatusToNSErrorWithInfo(kTDStatusServerError, nil, nil);
-        
-        STAssertEquals(error.code, expectError.code, @"Unexpected Error %@. \n Expected %@ \n", error, expectError);
-    }
-    
-    
-    //make sure there is still a conflicting document
-    conflictedDocs = [self.datastore getConflictedDocumentIds];
-    STAssertEquals(conflictedDocs.count, (NSUInteger)1, @"");
-    
-    //make sure that doc0 still has two conflicting revsions
-    __weak DatastoreConflicts  *weakSelf = self;
-    [[self.dbutil queue] inDatabase:^(FMDatabase *db) {
-        DatastoreConflicts *strongSelf = weakSelf;
-        NSArray *revsArray = [strongSelf.datastore activeRevisionsForDocumentId:@"doc0" database:db];
-        STAssertEquals(revsArray.count, (NSUInteger)2, @"");
-        
-    }];
-    
-    //The winning revision should still have a prefix of 3-
-    NSError *error = nil;
-    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:@"doc0" error:&error];
-    STAssertNil(error, @"Error getting document");
-    STAssertNotNil(rev, @"CDTDocumentRevision object was nil");
-    STAssertEquals([TD_Revision generationFromRevID:rev.revId], (unsigned)3,
-                   @"Unexpected RevId: %@", rev.revId);
-    STAssertTrue([[rev documentAsDictionary] isEqualToDictionary:@{@"foo3.a":@"bar3.a"}],
-                 @"Unexpected document: %@", [rev documentAsDictionary]);
-    
-}
-
 -(void) testResolveConflictWithAttachmentWithBiggestRev
 {
     //this tests that the conflict resolution retains the revisions association with an attachment
@@ -727,6 +678,7 @@
 
     
 }
+
 
 
 

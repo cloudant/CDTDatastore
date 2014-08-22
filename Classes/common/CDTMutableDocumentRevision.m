@@ -42,6 +42,17 @@
     return self;
 }
 
+-(id) initWithSourceRevisionId:(NSString *)sourceRevId
+{
+    self = [super init];
+    
+    if(self){
+        _sourceRevId = sourceRevId;
+    }
+    
+    return self;
+}
+
 -(void)setBody:(NSDictionary *)body
 {
     self.private_body = [body mutableCopy];

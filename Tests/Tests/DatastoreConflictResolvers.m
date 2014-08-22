@@ -17,6 +17,8 @@
 #import "TD_Revision.h"
 #import "TD_Body.h"
 #import "CDTDocumentRevision.h"
+#import "CDTMutableDocumentRevision.h"
+#import "CDTAttachment.h"
 
 #pragma mark CDTTestBiggestRevResolver
 @interface CDTTestBiggestRevResolver()
@@ -163,4 +165,63 @@
 
 @end
 
+#pragma mark CDTTestMutableDocumentResolver
+
+@implementation CDTestMutableDocumentResolver
+
+-(id) init
+{
+    self = [super init];
+    if (self) {
+        _selectParentRev = NO;
+    }
+    return self;
+}
+
+-(CDTDocumentRevision *)resolve:(NSString *)docId conflicts:(NSArray *)conflicts
+{
+    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.body = @{};
+    mutableRev.attachments = @{};
+    mutableRev.docId = docId;
+    
+    for(CDTDocumentRevision * revision in conflicts){
+        for(NSString *key in revision.body){
+            [mutableRev.body setObject:[revision.body objectForKey:key] forKey:key];
+        }
+        for(NSString * key in revision.attachments){
+            [mutableRev.attachments setObject:[revision.attachments objectForKey: key] forKey:key];
+        }
+        
+    }
+    
+    if(self.addAttachment){
+        
+        NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+        NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+        NSData *data = [NSData dataWithContentsOfFile:imagePath];
+        
+        NSString *attachmentName = @"Resolver-bonsai-boston";
+        CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                              name:attachmentName
+                                                                              type:@"image/jpg"];
+        [mutableRev.attachments setObject:attachment forKey:attachment.name];
+
+    }
+    
+    if(self.selectParentRev){
+        //pick a random rev from the array and use that as the parent
+        int lowerBound = 0;
+        int upperBound = [conflicts count]-1;
+        int randomParentIndex = lowerBound + arc4random() % (upperBound - lowerBound);
+        CDTDocumentRevision *rev =  [conflicts objectAtIndex:randomParentIndex];
+        mutableRev.sourceRevId = rev.revId;
+        self.selectedParent = rev;
+    }
+    
+    return mutableRev;
+    
+}
+
+@end
 

@@ -124,8 +124,7 @@
 
 -(CDTMutableDocumentRevision*)mutableCopy
 {
-    CDTMutableDocumentRevision *mutableCopy = [CDTMutableDocumentRevision revision];
-    mutableCopy.sourceRevId = self.revId;
+    CDTMutableDocumentRevision *mutableCopy = [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
     mutableCopy.docId = self.docId;
     mutableCopy.attachments = self.attachments;
     mutableCopy.body = self.private_body;

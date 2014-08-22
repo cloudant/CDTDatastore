@@ -83,4 +83,21 @@
 -(instancetype) initWithDictionary:(NSDictionary *)documentBody;
 @end
 
+/**
+
+ This class resolves conflicts by creating a new revision containing a combined body and
+ attachments.
+ 
+ Optionally this class can randomly select a parent revision determined by the value of the 
+ selectParentRev property, the selected parent can be returned through the selectedParent property
+ 
+ Additionally a new attachment can optionally be added to the new revision by setting the addAttachment
+ flag to YES. The attachment added would be an image witth the name "Resolver-bonsai-boston"
+ 
+ */
+@interface CDTestMutableDocumentResolver : NSObject<CDTConflictResolver>
+@property  BOOL selectParentRev;
+@property BOOL addAttachment;
+@property CDTDocumentRevision * selectedParent;
+@end
 
