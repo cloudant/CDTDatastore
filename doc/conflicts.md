@@ -139,8 +139,10 @@ The `CDTConflictResolver` interface has one method:
 @end
 ```
 
-This method is passed the docId and the list of active revisions, including
-the current winning revision. A rather simplistic implementation would be:
+This method is passed the docId and the list of active revisions,
+including the current winning revision. A rather simplistic
+implementation which returns a revision from the list of conflicts
+would be:
 
 ```objc
 @implementation CDTPickFirstResolver
@@ -156,6 +158,22 @@ the current winning revision. A rather simplistic implementation would be:
 
 Clearly, in the general case this will discard the user's data(!),
 but it'll do for this example.
+
+It is also possible to return a `CDTMutableDocumentRevision` from
+`resolve`, perhaps by merging data from the conflicts:
+
+```objc
+@implementation CDTMergeResolver
+
+-(CDTDocumentRevision *)resolve:(NSString*)docId
+                      conflicts:(NSArray*)conflicts
+{
+    CDTMutableDocumentRevision *rev = [[conflicts objectAtIndex:0] mutableCopy];
+    rev.body = /* ...update body, perhaps with data from the other conflicts */
+    rev.attachments = /* ...you can also create/update/delete attachments */
+    return rev;
+}
+```
 
 Conceptually, the `resolveConflictsForDocument:resolver:error:` method
 does the following:
