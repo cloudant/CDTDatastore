@@ -418,6 +418,13 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void) addToInbox: (TD_Revision*)rev {
     Assert(_running);
+    
+    // if we're filtering client side, and it's not on the list
+    // nothing to do
+    if (self.clientFilterDocIds != nil &&
+        ![self.clientFilterDocIds containsObject:rev.docID])
+        return;
+    
     [_batcher queueObject: rev];
     [self updateActive];
 }

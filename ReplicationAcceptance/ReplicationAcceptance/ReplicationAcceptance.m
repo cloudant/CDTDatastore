@@ -94,16 +94,25 @@ static NSUInteger largeRevTreeSize = 1500;
  Create a new replicator, and wait for replication from the remote database to complete.
  */
 -(CDTReplicator *) pullFromRemote {
-    return [self pullFromRemoteWithFilter:nil params:nil];
+    return [self pullFromRemoteWithFilter:nil params:nil clientFilterDocIds:nil];
 }
 
--(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName
+                                     params:(NSDictionary*)params
+{
+    return [self pullFromRemoteWithFilter:filterName params:params clientFilterDocIds:nil];
+}
+
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName
+                                     params:(NSDictionary*)params
+                         clientFilterDocIds:(NSArray*)filterDocIds
 {
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
     
     pull.filter = filterName;
     pull.filterParams = params;
+    pull.clientFilterDocIds = filterDocIds;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
@@ -122,6 +131,11 @@ static NSUInteger largeRevTreeSize = 1500;
     
     return replicator;
 }
+
+-(CDTReplicator *) pullFromRemoteWithClientFilterDocIds:(NSArray*)clientFilterDocIds {
+    return [self pullFromRemoteWithFilter:nil params:nil clientFilterDocIds:clientFilterDocIds];
+}
+
 
 
 /**
@@ -856,6 +870,67 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 
     [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
+}
+
+-(void) testPullClientFiltered {
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                        [NSString stringWithFormat:@"doc-%i", 3],
+                        [NSString stringWithFormat:@"doc-%i", 13],
+                        [NSString stringWithFormat:@"doc-%i", 23]];
+
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    
+    NSArray *localDocs = [self.datastore getDocumentsWithIds:filterDocIds];
+    
+    STAssertNotNil(localDocs, @"nil");
+    STAssertTrue(localDocs.count == filterDocIds.count, @"unexpected number of docs: %@",localDocs.count);
+    STAssertTrue(self.datastore.documentCount == filterDocIds.count,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+}
+
+-(void) testPullClientFilteredNewDocsAppear {
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23],
+                              [NSString stringWithFormat:@"doc-%i", 70]];
+    
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    STAssertTrue(self.datastore.documentCount == 4,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+
+    
+    // 50 more
+    [self createRemoteDocs:51 count:ndocs];
+
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    STAssertTrue(self.datastore.documentCount == 5,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+
+    
+    NSArray *localDocs = [self.datastore getAllDocuments];
+    
+    STAssertTrue(localDocs.count == filterDocIds.count, @"unexpected number of docs: %@",localDocs.count);
+    STAssertTrue(self.datastore.documentCount == filterDocIds.count,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
 }
 
 
