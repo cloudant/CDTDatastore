@@ -304,6 +304,15 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                                 authorizer: NULL];
 }
 
+- (TDReplicator*) replicatorWithProperties: (NSDictionary*)properties
+                        clientFilterDocIds: (NSArray*)filterDocIds
+                                    status: (TDStatus*)outStatus
+{
+    TDReplicator *repl = [self replicatorWithProperties:properties
+                                                 status:outStatus];
+    repl.clientFilterDocIds = filterDocIds;
+    return repl;
+}
 
 - (TDReplicator*) replicatorWithProperties: (NSDictionary*)properties
                                     status: (TDStatus*)outStatus
@@ -345,6 +354,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     repl.options = properties;
     repl.requestHeaders = headers;
     repl.authorizer = authorizer;
+    repl.clientFilterDocIds = $castIf(NSArray, properties[@"client_filter_doc_ids"]);
     if (push)
         ((TDPusher*)repl).createTarget = createTarget;
     
