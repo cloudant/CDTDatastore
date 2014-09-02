@@ -73,6 +73,15 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "27389E0B185345FD0027A404"
+            BuildableName = "Tests.octest"
+            BlueprintName = "Tests"
+            ReferencedContainer = "container:Tests.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OBJC_DISABLE_GC"
@@ -85,7 +94,7 @@
    </LaunchAction>
    <ProfileAction
       shouldUseLaunchSchemeArgsEnv = "YES"
-      savedToolIdentifier = ""
+      savedToolIdentifier = "/Applications/Xcode.app/Contents/Applications/Instruments.app/Contents/Resources/templates/Leaks.tracetemplate"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
       debugDocumentVersioning = "YES">

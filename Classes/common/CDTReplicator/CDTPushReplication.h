@@ -60,6 +60,11 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
  */
 + (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target;
 
++(instancetype) replicationWithSource:(CDTDatastore *)source
+                               target:(NSURL *)target
+                    purgeOnCompletion:(BOOL)purge;
+
+
 /**
  @name Accessing the replication source and target
  */
@@ -143,5 +148,8 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
  @see -filter
  */
 @property (nonatomic, copy) NSDictionary *filterParams;
+
+@property BOOL purgeOnCompletion;
+
 
 @end

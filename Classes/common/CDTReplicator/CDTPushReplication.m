@@ -27,14 +27,24 @@
 
 + (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target
 {
-    return [[self alloc] initWithSource:source target:target];
+    return [[self alloc] initWithSource:source target:target purgeOnCompletion:NO];
 }
 
-- (instancetype)initWithSource:(CDTDatastore *)source target:(NSURL *)target
++(instancetype) replicationWithSource:(CDTDatastore *)source
+                               target:(NSURL *)target
+                    purgeOnCompletion:(BOOL)purge
+{
+    return [[self alloc] initWithSource:source target:target purgeOnCompletion:purge];
+}
+
+-(instancetype) initWithSource:(CDTDatastore *)source
+                        target:(NSURL *)target
+             purgeOnCompletion:(BOOL)purge
 {
     if (self = [super init]) {
         _source = source;
         _target = target;
+        _purgeOnCompletion = purge;
     }
     return self;
 }

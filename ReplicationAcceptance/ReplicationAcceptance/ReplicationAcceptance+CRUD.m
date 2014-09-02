@@ -120,15 +120,15 @@
 
 - (void)createRemoteDocs:(NSInteger)count
 {
-    [self createRemoteDocs:count suffixFrom:0];
+    [self createRemoteDocs:count suffixFrom:1];
 }
 
 -(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start
 {
     NSMutableArray *docs = [NSMutableArray array];
-    NSUInteger currentIndex = start;
-    for (long i = 1; i < count+1; i++) {
-        currentIndex++;
+    NSUInteger currentIndex;
+    for (long i = 0; i < count; i++) {
+        currentIndex = start+i;
         NSString *docId = [NSString stringWithFormat:@"doc-%li", currentIndex];
         NSDictionary *dict = @{@"_id": docId, 
                                @"hello": @"world", 
