@@ -152,7 +152,12 @@
         error = TDStatusToNSError(status, nil);
     }
     STAssertNil(error, @"Error creating conflict %@", error);
-    CDTDocumentRevision *rev2b = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
+    CDTDocumentRevision *rev2b = [[CDTDocumentRevision alloc]initWithDocId:td_rev.docID
+                                                                revisionId:td_rev.revID
+                                                                      body:td_rev.body.properties
+                                                                   deleted:td_rev.deleted
+                                                               attachments:@{}
+                                                                  sequence:td_rev.sequence];
     STAssertNotNil(rev2b, @"CDTDocumentRevision object was nil");
     
     error = nil;
@@ -170,7 +175,12 @@
         error = TDStatusToNSError(status, nil);
     }
     STAssertNil(error, @"Error creating conflict %@", error);
-    CDTDocumentRevision *rev2c = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
+    CDTDocumentRevision *rev2c = [[CDTDocumentRevision alloc]initWithDocId:td_rev.docID
+                                                                revisionId:td_rev.revID
+                                                                      body:td_rev.body.properties
+                                                                   deleted:td_rev.deleted
+                                                               attachments:@{}
+                                                                  sequence:td_rev.sequence];
     STAssertNotNil(rev2c, @"CDTDocumentRevision object was nil");
     
     

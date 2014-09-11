@@ -458,7 +458,7 @@
     STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
     
     for(CDTDocumentRevision *doc in res) {
-        NSNumber *val = [[[[doc td_rev] body] properties] objectForKey:@"area"];
+        NSNumber *val = [[doc body] objectForKey:@"area"];
         int valInt = [val intValue];
         STAssertTrue(valInt <= lastVal, @"Not sorted");
         lastVal = valInt;
@@ -485,7 +485,7 @@
     STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
     
     for(CDTDocumentRevision *doc in res) {
-        NSString *val = [[[[doc td_rev] body] properties] objectForKey:@"name"];
+        NSString *val = [[doc body] objectForKey:@"name"];
 
         STAssertTrue([val compare:lastName] < 0, @"Not sorted correctly");
         lastName = val;
@@ -1061,7 +1061,7 @@
                    indexName:(NSString*)indexName
 
 {
-    NSString *value = [[[[revision td_rev] body] properties] valueForKey:indexName];
+    NSString *value = [[revision body] valueForKey:indexName];
 
     NSString *prefix1 = [value substringToIndex:1];
     NSString *prefix2 = [value substringToIndex:2];

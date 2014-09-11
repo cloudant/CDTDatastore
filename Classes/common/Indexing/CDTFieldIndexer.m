@@ -38,7 +38,7 @@
 -(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
                    indexName:(NSString*)indexName
 {
-    NSObject *value = [[[[revision td_rev] body] properties] valueForKey:_fieldName];
+    NSObject *value = [[revision body] valueForKey:_fieldName];
     
     // only index strings, numbers, or arrays
     if ([value isKindOfClass: [NSString class]] || [value isKindOfClass: [NSNumber class]]) {

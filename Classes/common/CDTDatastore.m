@@ -113,13 +113,23 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     
     if (nil != nUserInfo[@"rev"]) {
-        userInfo[@"rev"] = [[CDTDocumentRevision alloc]
-                            initWithTDRevision:nUserInfo[@"rev"]];
+        TD_Revision *tdRev = nUserInfo[@"rev"];
+        userInfo[@"rev"] = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
+                                                          revisionId:tdRev.revID
+                                                                body:tdRev.body.properties
+                                                             deleted:tdRev.deleted
+                                                         attachments:@{}
+                                                            sequence:tdRev.sequence];
     }
     
     if (nil != nUserInfo[@"winner"]) {
-        userInfo[@"winner"] = [[CDTDocumentRevision alloc]
-                               initWithTDRevision:nUserInfo[@"rev"]];
+        TD_Revision *tdRev = nUserInfo[@"rev"];
+        userInfo[@"winner"] = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
+                                                             revisionId:tdRev.revID
+                                                                   body:tdRev.body.properties
+                                                                deleted:tdRev.deleted
+                                                            attachments:@{}
+                                                               sequence:tdRev.sequence];
     }
     
     if (nil != nUserInfo[@"source"]) {
@@ -173,7 +183,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+    return [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                          revisionId:new.revID
+                                                body:new.body.properties
+                                             deleted:new.deleted
+                                         attachments:@{}
+                                            sequence:new.sequence];
 }
 
 
@@ -200,7 +215,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+    return [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                          revisionId:new.revID
+                                                body:new.body.properties
+                                             deleted:new.deleted
+                                         attachments:@{}
+                                            sequence:new.sequence];
 }
 
 
@@ -232,7 +252,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithTDRevision:rev];
+    CDTDocumentRevision *revision = [[CDTDocumentRevision alloc]initWithDocId:rev.docID
+                                                                   revisionId:rev.revID
+                                                                         body:rev.body.properties
+                                                                      deleted:rev.deleted
+                                                                  attachments:@{}
+                                                                     sequence:rev.sequence];
     NSArray * attachments = [self attachmentsForRev:revision error:error];
     
     NSMutableDictionary * attachmentsDict =  [NSMutableDictionary dictionary];
@@ -241,7 +266,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         [attachmentsDict setObject:attachment forKey:attachment.name];
     }
     
-    revision = [[CDTDocumentRevision alloc]initWithTDRevision:rev andAttachments:attachmentsDict];
+    revision = [[CDTDocumentRevision alloc]initWithDocId:rev.docID
+                                              revisionId:rev.revID
+                                                    body:rev.body.properties
+                                                 deleted:rev.deleted
+                                             attachments:attachmentsDict
+                                                sequence:rev.sequence];
     
     return revision;
 }
@@ -285,15 +315,24 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
             revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
             
-            CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
+            CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:revision.docID
+                                                                     revisionId:revision.revID
+                                                                           body:revision.body.properties
+                                                                        deleted:revision.deleted
+                                                                    attachments:@{}
+                                                                       sequence:revision.sequence];
             
             NSArray * attachments = [self attachmentsForRev:ob error:&error];
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
             for (CDTAttachment * attachment in attachments){
                 [dict setObject:attachment forKey:attachment.name];
             }
-            [batch addObject:[[CDTDocumentRevision alloc] initWithTDRevision:revision
-                                                              andAttachments:dict ]];
+            [batch addObject:[[CDTDocumentRevision alloc]initWithDocId:revision.docID
+                                                            revisionId:revision.revID
+                                                                  body:revision.body.properties
+                                                               deleted:revision.deleted
+                                                           attachments:dict
+                                                              sequence:revision.sequence]];
         }
         
         result = [result arrayByAddingObjectsFromArray:batch];
@@ -365,14 +404,23 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
         }
         
-        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:revision];
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:revision.docID
+                                                                 revisionId:revision.revID
+                                                                       body:revision.body.properties
+                                                                    deleted:revision.deleted
+                                                                attachments:@{}
+                                                                   sequence:revision.sequence];
         NSArray * attachments = [self attachmentsForRev:ob error:&error];
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         for (CDTAttachment * attachment in attachments){
             [dict setObject:attachment forKey:attachment.name];
         }
-        [result addObject:[[CDTDocumentRevision alloc] initWithTDRevision:revision
-                                                           andAttachments:dict ]];
+        [result addObject:[[CDTDocumentRevision alloc]initWithDocId:revision.docID
+                                                         revisionId:revision.revID
+                                                               body:revision.body.properties
+                                                            deleted:revision.deleted
+                                                        attachments:dict
+                                                           sequence:revision.sequence]];
     }
     
     return result;
@@ -388,10 +436,21 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSMutableArray *result = [NSMutableArray array];
     
     // Array of TD_Revision
-    NSArray *td_revs = [self.database getRevisionHistory:revision.td_rev];
+    TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
+                                                         revID:revision.revId
+                                                       deleted:revision.deleted];
+
+    
+    
+    NSArray *td_revs = [self.database getRevisionHistory:converted];
     
     for (TD_Revision *td_rev in td_revs) {
-        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:td_rev.docID
+                                                                 revisionId:td_rev.revID
+                                                                       body:td_rev.body.properties
+                                                                    deleted:td_rev.deleted
+                                                                attachments:@{}
+                                                                   sequence:td_rev.sequence];
         [result addObject:ob];
     }
     
@@ -514,7 +573,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+    return [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                          revisionId:new.revID
+                                                body:new.body.properties
+                                             deleted:new.deleted
+                                         attachments:@{}
+                                            sequence:new.sequence];
 }
 
 -(NSString*) extensionDataFolder:(NSString*)extensionName
@@ -610,7 +674,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             saved = nil;
             return;
         }else {
-            saved = [[CDTDocumentRevision alloc] initWithTDRevision:new];
+            saved = [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                                   revisionId:new.revID
+                                                         body:new.body.properties
+                                                      deleted:new.deleted
+                                                  attachments:@{}
+                                                     sequence:new.sequence];
             for(NSDictionary * attachment in downloadedAttachments){
                 //insert each attchment into the database, if this fails rollback
                 if(![datastore addAttachment:attachment toRev:saved inDatabase:db]){
@@ -635,7 +704,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                 
             }
             
-            saved = [[CDTDocumentRevision alloc]initWithTDRevision:new];
+            saved = [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                                   revisionId:new.revID
+                                                         body:new.body.properties
+                                                      deleted:new.deleted
+                                                  attachments:@{}
+                                                     sequence:new.sequence];
         }
     }];
     
@@ -647,8 +721,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
         
-        saved = [[CDTDocumentRevision alloc] initWithTDRevision:saved.td_rev
-                                                  andAttachments:attachmentDict];
+        saved = [[CDTDocumentRevision alloc] initWithDocId:saved.docId
+                                                revisionId:saved.revId
+                                                      body:saved.body
+                                                   deleted:saved.deleted
+                                               attachments:attachmentDict
+                                                  sequence:saved.sequence];
     }
     return saved;
     
@@ -753,8 +831,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
         
-        result = [[CDTDocumentRevision alloc] initWithTDRevision:result.td_rev
-                                                   andAttachments:attachmentDict];
+        result = [[CDTDocumentRevision alloc] initWithDocId:result.docId
+                                                revisionId:result.revId
+                                                      body:result.body
+                                                   deleted:result.deleted
+                                               attachments:attachmentDict
+                                                   sequence:result.sequence];
         
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});
@@ -829,7 +911,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
     }
     
-    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+    return [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                          revisionId:new.revID
+                                                body:new.body.properties
+                                             deleted:new.deleted
+                                         attachments:@{}
+                                            sequence:new.sequence];
 }
 
 -(CDTDocumentRevision*)deleteDocumentFromRevision:(CDTDocumentRevision *)revision
@@ -853,7 +940,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
     
-    return [[CDTDocumentRevision alloc] initWithTDRevision:new];
+    return [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                          revisionId:new.revID
+                                                body:new.body.properties
+                                             deleted:new.deleted
+                                         attachments:@{}
+                                            sequence:new.sequence];
 }
 
 -(NSArray*)deleteDocumentWithId:(NSString *)docId
@@ -888,7 +980,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                 *rollback = YES;
                 return;
             }
-            deleted = [[CDTDocumentRevision alloc] initWithTDRevision:new];
+            deleted = [[CDTDocumentRevision alloc]initWithDocId:new.docID
+                                                     revisionId:new.revID
+                                                           body:new.body.properties
+                                                        deleted:new.deleted
+                                                    attachments:@{}
+                                                       sequence:new.sequence];
             [deletedDocs addObject:deleted];
 
         }
