@@ -35,7 +35,6 @@
 
 @property (nonatomic,readonly) SequenceNumber sequence;
 
-@property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
 /**
  Creates an CDTDocumentRevision from JSON Data
@@ -46,6 +45,17 @@
  @return new CDTDocument Revision instance
 */
 +(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json error:(NSError * __autoreleasing *) error;
+
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+           deleted:(BOOL) deleted
+       attachments:(NSDictionary *) attachments;
+
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+           deleted:(BOOL) deleted;
 
 -(id)initWithTDRevision:(TD_Revision*)rev ;
 

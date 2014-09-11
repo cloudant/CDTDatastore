@@ -84,18 +84,33 @@
            deleted:(BOOL) deleted
 {
     
+    return [self initWithDocId:docId
+                    revisionId:revId
+                          body:body
+                       deleted:deleted
+                   attachments:[NSDictionary dictionary]];
+}
+
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+           deleted:(BOOL) deleted
+       attachments:(NSDictionary *) attachments
+{
     self = [super init];
     
     if(self){
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
+        _private_attachments = attachments;
         if(!deleted)
             _private_body = body;
         else
             _private_body = [NSDictionary dictionary];
     }
     return self;
+    
 }
 
 -(id)initWithTDRevision:(TD_Revision*)rev
@@ -107,34 +122,27 @@
 {
     self = [super init];
     if (self) {
-        _td_rev = rev;
-        _revId = _td_rev.revID;
+        _revId = rev.revID;
         
         // Copy td_body propertes and
         // remove all _ prefixed properties, _ prefixed properties are reservered for internal
         // use in TouchDB
         
-        NSMutableDictionary *mutableCopy = [_td_rev.body.properties mutableCopy];
+        NSMutableDictionary *mutableCopy = [rev.body.properties mutableCopy];
         
         NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
         
-        NSArray * keysToRemove = [[_td_rev.body.properties allKeys]
+        NSArray * keysToRemove = [[rev.body.properties allKeys]
                                   filteredArrayUsingPredicate: _prefixPredicate];
         
         [mutableCopy removeObjectsForKeys:keysToRemove];
         _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        _docId = _td_rev.docID;
-        _deleted = _td_rev.deleted;
-        _sequence = _td_rev.sequence;
+        _docId = rev.docID;
+        _deleted = rev.deleted;
+        _sequence = rev.sequence;
         _private_attachments = [attachments copy];
     }
     return self;
-}
-
-
--(TD_Revision*)TD_RevisionValue
-{
-    return self.td_rev;
 }
 
 #pragma GCC diagnostic push
@@ -152,13 +160,14 @@
         return nil;
     }
     
-    return json;}
+    return json;
+}
 
 -(NSDictionary*)documentAsDictionary
 {
     // First remove extra _properties added by TD_Database.m#extraPropertiesForRevision:options:
     // and put them into attributes
-    NSMutableDictionary *touch_properties = [self.td_rev.body.properties mutableCopy];
+    NSMutableDictionary *touch_properties = [self.body mutableCopy];
 
     // _id, _rev, _deleted are already stored outside the dictionary
     [touch_properties removeObjectForKey:@"_id"];

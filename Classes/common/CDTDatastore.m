@@ -388,7 +388,13 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSMutableArray *result = [NSMutableArray array];
     
     // Array of TD_Revision
-    NSArray *td_revs = [self.database getRevisionHistory:revision.td_rev];
+    TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
+                                                         revID:revision.revId
+                                                       deleted:revision.deleted];
+
+    
+    
+    NSArray *td_revs = [self.database getRevisionHistory:converted];
     
     for (TD_Revision *td_rev in td_revs) {
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:td_rev];
@@ -647,8 +653,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
         
-        saved = [[CDTDocumentRevision alloc] initWithTDRevision:saved.td_rev
-                                                  andAttachments:attachmentDict];
+        saved = [[CDTDocumentRevision alloc] initWithDocId:saved.docId
+                                                revisionId:saved.revId
+                                                      body:saved.body
+                                                   deleted:saved.deleted
+                                               attachments:attachmentDict];
     }
     return saved;
     
@@ -753,8 +762,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
         
-        result = [[CDTDocumentRevision alloc] initWithTDRevision:result.td_rev
-                                                   andAttachments:attachmentDict];
+        result = [[CDTDocumentRevision alloc] initWithDocId:result.docId
+                                                revisionId:result.revId
+                                                      body:result.body
+                                                   deleted:result.deleted
+                                               attachments:attachmentDict];
         
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});
