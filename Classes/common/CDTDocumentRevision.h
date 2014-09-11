@@ -37,6 +37,16 @@
 
 @property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
+/**
+ Creates an CDTDocumentRevision from JSON Data
+ 
+ @param json Json data to create an object from
+ @param error points to an NSError in case of error
+ 
+ @return new CDTDocument Revision instance
+*/
++(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json error:(NSError * __autoreleasing *) error;
+
 -(id)initWithTDRevision:(TD_Revision*)rev ;
 
 -(id)initWithTDRevision:(TD_Revision*)rev

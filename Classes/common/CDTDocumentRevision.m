@@ -18,6 +18,7 @@
 #import "TDJSON.h"
 #import "TD_Revision.h"
 #import "TD_Body.h"
+#import "TD_Database.h"
 
 @interface CDTDocumentRevision ()
 
@@ -37,6 +38,65 @@
 @synthesize revId = _revId;
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
+
+
++(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json error:(NSError * __autoreleasing *) error
+{
+    NSDictionary* jsonDict = [NSJSONSerialization JSONObjectWithData:json options:0 error:error];
+    
+    if(*error)
+        return nil;
+    
+    NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_' \
+                                                                        && self != \"_id\" \
+                                                                        && self != \"_rev\" \
+                                                                        && self != \"_deleted\""
+                                                                    ];
+    
+    NSArray * invalidKeys = [[jsonDict allKeys] filteredArrayUsingPredicate:_prefixPredicate];
+    
+    if([invalidKeys count] != 0){
+        *error = TDStatusToNSError(kTDStatusBadJSON,nil);
+        return nil;
+    }
+    
+    NSString * docId = [jsonDict objectForKey:@"_id"];
+    NSString * revId = [jsonDict objectForKey:@"_rev"];
+    NSNumber * deleted = [jsonDict objectForKey:@"_deleted"];
+    
+    if(!deleted)
+        deleted = [NSNumber numberWithBool:NO];
+    
+    
+    NSMutableDictionary * body = [jsonDict mutableCopy];
+    [body removeObjectsForKeys:@[@"_id",@"_rev",@"_deleted"]];
+    
+    return [[CDTDocumentRevision alloc]initWithDocId:docId
+                                          revisionId:revId
+                                                body:body
+                                             deleted:[deleted boolValue]];
+    
+}
+
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+           deleted:(BOOL) deleted
+{
+    
+    self = [super init];
+    
+    if(self){
+        _docId = docId;
+        _revId = revId;
+        _deleted = deleted;
+        if(!deleted)
+            _private_body = body;
+        else
+            _private_body = [NSDictionary dictionary];
+    }
+    return self;
+}
 
 -(id)initWithTDRevision:(TD_Revision*)rev
 {
