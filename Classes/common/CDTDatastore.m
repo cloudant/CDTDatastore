@@ -763,10 +763,10 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
         
         result = [[CDTDocumentRevision alloc] initWithDocId:result.docId
-                                                revisionId:result.revId
-                                                      body:result.body
-                                                   deleted:result.deleted
-                                               attachments:attachmentDict];
+                                                 revisionId:result.revId
+                                                       body:result.body
+                                                    deleted:result.deleted
+                                                attachments:attachmentDict];
         
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});

@@ -38,6 +38,8 @@
 
 /**
  Creates an CDTDocumentRevision from JSON Data
+ The json data is expected to have been outputted from
+ cloudant or a CouchDB instance.
  
  @param json Json data to create an object from
  @param error points to an NSError in case of error
