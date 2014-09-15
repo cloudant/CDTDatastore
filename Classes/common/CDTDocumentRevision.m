@@ -89,6 +89,7 @@
     
 }
 
+#pragma mark convenience constructors
 -(id)initWithDocId:(NSString *)docId
         revisionId:(NSString *) revId
               body:(NSDictionary *)body
@@ -103,11 +104,43 @@
 }
 
 -(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+          sequence:(SequenceNumber)sequence
+{
+    return [self initWithDocId:docId
+                    revisionId:revId
+                          body:body
+                       deleted:deleted
+                   attachments:[NSDictionary dictionary]
+                      sequence:sequence];
+}
+
+-(id)initWithDocId:(NSString *)docId
         revisionId:(NSString *) revId
               body:(NSDictionary *)body
            deleted:(BOOL) deleted
        attachments:(NSDictionary *) attachments
 {
+    return [self initWithDocId:docId
+                    revisionId:revId
+                          body:body
+                       deleted:deleted
+                   attachments:attachments
+                      sequence:0];
+}
+
+#pragma mark Actual constructor
+
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+       attachments:(NSDictionary *)attachments
+          sequence:(SequenceNumber)sequence
+{
+ 
     self = [super init];
     
     if(self){
@@ -115,46 +148,27 @@
         _revId = revId;
         _deleted = deleted;
         _private_attachments = attachments;
-        if(!deleted)
-            _private_body = body;
+        _sequence = sequence;
+        if(!deleted){
+            NSMutableDictionary *mutableCopy = [body mutableCopy];
+            
+            NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
+            
+            NSArray * keysToRemove = [[body allKeys]
+                                      filteredArrayUsingPredicate: _prefixPredicate];
+            
+            [mutableCopy removeObjectsForKeys:keysToRemove];
+            _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        }
         else
             _private_body = [NSDictionary dictionary];
     }
     return self;
     
+    
 }
 
--(id)initWithTDRevision:(TD_Revision*)rev
-{
-    return [self initWithTDRevision:rev andAttachments:nil];
-}
 
--(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSDictionary *) attachments
-{
-    self = [super init];
-    if (self) {
-        _revId = rev.revID;
-        
-        // Copy td_body propertes and
-        // remove all _ prefixed properties, _ prefixed properties are reservered for internal
-        // use in TouchDB
-        
-        NSMutableDictionary *mutableCopy = [rev.body.properties mutableCopy];
-        
-        NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
-        
-        NSArray * keysToRemove = [[rev.body.properties allKeys]
-                                  filteredArrayUsingPredicate: _prefixPredicate];
-        
-        [mutableCopy removeObjectsForKeys:keysToRemove];
-        _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        _docId = rev.docID;
-        _deleted = rev.deleted;
-        _sequence = rev.sequence;
-        _private_attachments = [attachments copy];
-    }
-    return self;
-}
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

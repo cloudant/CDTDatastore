@@ -22,6 +22,7 @@
 #import "CDTDatastore.h"
 
 #import "TD_Database.h"
+#import "TD_Body.h"
 
 #import "FMResultSet.h"
 #import "FMDatabase.h"
@@ -597,8 +598,11 @@ static const int VERSION = 1;
 
             // Insert new values if the rev isn't deleted
             if (!rev.deleted) {
-                NSArray *valuesInsert = [f valuesForRevision:[[CDTDocumentRevision alloc]
-                                                              initWithTDRevision:rev]
+                NSArray *valuesInsert = [f valuesForRevision:[[CDTDocumentRevision alloc]initWithDocId:rev.docID
+                                                                                            revisionId:rev.revID
+                                                                                                  body:rev.body.properties
+                                                                                               deleted:rev.deleted
+                                                                                              sequence:rev.sequence]
                                                    indexName:[index indexName]];
                 for (NSObject *rawValue in valuesInsert) {
                     NSObject *convertedValue = [helper convertIndexValue:rawValue];

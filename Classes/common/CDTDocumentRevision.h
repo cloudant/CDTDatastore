@@ -59,10 +59,23 @@
               body:(NSDictionary *)body
            deleted:(BOOL) deleted;
 
--(id)initWithTDRevision:(TD_Revision*)rev ;
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+          sequence:(SequenceNumber)sequence;
 
--(id)initWithTDRevision:(TD_Revision*)rev
-         andAttachments: (NSDictionary *) attachments;
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+       attachments:(NSDictionary *)attachments
+          sequence:(SequenceNumber)sequence;
+
+//-(id)initWithTDRevision:(TD_Revision*)rev ;
+//
+//-(id)initWithTDRevision:(TD_Revision*)rev
+//         andAttachments: (NSDictionary *) attachments;
 
 /** 
  Return document content as an NSData object.

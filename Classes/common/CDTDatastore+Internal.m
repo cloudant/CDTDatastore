@@ -17,6 +17,7 @@
 #import "CDTDatastore+Attachments.h"
 #import "CDTAttachment.h"
 #import "TD_Database.h"
+#import "TD_Body.h"
 #import "CDTDocumentRevision.h"
 
 @implementation CDTDatastore (Internal)
@@ -39,7 +40,13 @@
     for (TD_Revision *tdRev in revs) {
         [self.database loadRevisionBody:tdRev options:0 database:db];
         
-        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithTDRevision:tdRev];
+        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
+                                                                 revisionId:tdRev.revID
+                                                                       body:tdRev.body.properties
+                                                                    deleted:tdRev.deleted
+                                                                   sequence:tdRev.sequence];
+        
+        //[[CDTDocumentRevision alloc] initWithTDRevision:tdRev];
         
         NSArray * attachmentArray = [self attachmentsForRev:ob  inTransaction:db error:nil];
         NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
@@ -48,7 +55,13 @@
             [attachments setObject:attachment forKey:attachment.name];
         }
         
-        ob = [[CDTDocumentRevision alloc] initWithTDRevision:tdRev andAttachments:attachments];
+        ob = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
+                                            revisionId:tdRev.revID
+                                                  body:tdRev.body.properties
+                                               deleted:tdRev.deleted
+                                           attachments:attachments
+                                              sequence:tdRev.sequence];
+        
         
         [results addObject:ob];
     }

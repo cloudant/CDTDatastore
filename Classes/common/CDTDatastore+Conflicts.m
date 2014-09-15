@@ -130,7 +130,11 @@
             //start with the new ones
             for(NSDictionary * attachment in downloadedAttachments){
                 if(![strongSelf addAttachment:attachment
-                                        toRev:[[CDTDocumentRevision alloc]initWithTDRevision:winner]
+                                        toRev:[[CDTDocumentRevision alloc]initWithDocId:winner.docID
+                                                                              revisionId:winner.revID
+                                                                                    body:winner.body.properties
+                                                                                 deleted:winner.deleted
+                                                                               sequence:winner.sequence]
                                    inDatabase:db]){
                     localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
                     return kTDStatusAttachmentError;
