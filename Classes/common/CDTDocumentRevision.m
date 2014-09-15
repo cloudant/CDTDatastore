@@ -44,13 +44,24 @@
 {
     NSDictionary* jsonDict = [NSJSONSerialization JSONObjectWithData:json options:0 error:error];
     
+    //these values are defined in the couchDB get/${db}/ ${docid} api reference
+    
+    NSArray* allowed_prefixedValues = @[@"_id",
+                                        @"_rev",
+                                        @"_deleted",
+                                        @"_attachments",
+                                        @"_conflicts",
+                                        @"_deleted_conflicts",
+                                        @"_local_seq",
+                                        @"_revs_info",
+                                        @"_revisions"
+                                        ];
     if(*error)
         return nil;
     
     NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_' \
-                                                                        && self != \"_id\" \
-                                                                        && self != \"_rev\" \
-                                                                        && self != \"_deleted\""
+                                                                        && NOT (self IN %@)",
+                                                                     allowed_prefixedValues
                                                                     ];
     
     NSArray * invalidKeys = [[jsonDict allKeys] filteredArrayUsingPredicate:_prefixPredicate];
@@ -69,7 +80,7 @@
     
     
     NSMutableDictionary * body = [jsonDict mutableCopy];
-    [body removeObjectsForKeys:@[@"_id",@"_rev",@"_deleted"]];
+    [body removeObjectsForKeys:allowed_prefixedValues];
     
     return [[CDTDocumentRevision alloc]initWithDocId:docId
                                           revisionId:revId
