@@ -151,7 +151,9 @@
  */
 @property (nonatomic, copy) NSDictionary *filterParams;
 
-
+/**
+ TODO doc 
+ */
 @property (nonatomic, copy) NSArray *clientFilterDocIds;
 
 

@@ -64,6 +64,23 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 
 - (void) beginReplicating {
+    
+    // download the missing documents according to the doc id filter
+    if (self.clientFilterNewDocIds) {
+        // start a batcher and fill it with missing doc ids
+        _clientFilterNewDocsToInsert = [[TDBatcher alloc] initWithCapacity: 200 delay: 1.0
+                                              processor: ^(NSArray *downloads) {
+                                                  [self insertClientFilterNewDocIds: downloads];
+                                              }];
+        for (NSString *docId in self.clientFilterNewDocIds) {
+            TD_Revision *rev = [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:FALSE];
+            rev.sequence = -1; // fake sequence number means "don't track sequence numbers"
+            [_clientFilterNewDocsToInsert queueObject:rev];
+        }
+        // TODO does this tie up the main thread?
+        [_clientFilterNewDocsToInsert flushAll];
+    }
+    
     if (!_downloadsToInsert) {
         // Note: This is a ref cycle, because the block has a (retained) reference to 'self',
         // and _downloadsToInsert retains the block, and of course I retain _downloadsToInsert.
@@ -341,7 +358,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 if (queue.count == 0)
                     break;  // both queues are empty
             }
-            [self pullRemoteRevision: queue[0]];
+            [self pullRemoteRevision: queue[0] ignoreMissingDocs:FALSE];
             [queue removeObjectAtIndex: 0];
         }
     }
@@ -351,6 +368,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 // Fetches the contents of a revision from the remote db, including its parent revision ID.
 // The contents are stored into rev.properties.
 - (void) pullRemoteRevision: (TD_Revision*)rev
+          ignoreMissingDocs:(BOOL)ignoreMissingDocs
 {
     [self asyncTaskStarted];
     ++_httpConnectionCount;
@@ -359,8 +377,15 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // been added since the latest revisions we have locally.
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#GET
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#Getting_Attachments_With_a_Document
-    NSString* path = $sprintf(@"%@?rev=%@&revs=true&attachments=true",
+    NSString* path;
+    // if revID isn't supplied, get the latest revision
+    if (rev.revID) {
+        path = $sprintf(@"%@?rev=%@&revs=true&attachments=true",
                               TDEscapeID(rev.docID), TDEscapeID(rev.revID));
+    } else {
+        path = $sprintf(@"%@?revs=true&attachments=true",
+                        TDEscapeID(rev.docID));
+    }
     NSArray* knownRevs = [_db getPossibleAncestorRevisionIDs: rev limit: kMaxNumberOfAttsSince];
     if (knownRevs.count > 0)
         path = [path stringByAppendingFormat: @"&atts_since=%@", joinQuotedEscaped(knownRevs)];
@@ -378,9 +403,12 @@ static NSString* joinQuotedEscaped(NSArray* strings);
             __strong TDPuller *strongSelf = weakSelf;
             // OK, now we've got the response revision:
             if (error) {
-                strongSelf.error = error;
-                [strongSelf revisionFailed];
-                strongSelf.changesProcessed++;
+                // if ignoreMissingDocs is true, we know that some requests might 404
+                if (!(ignoreMissingDocs && error.code == 404)) {
+                    strongSelf.error = error;
+                    [strongSelf revisionFailed];
+                    strongSelf.changesProcessed++;
+                }
             } else {
                 TD_Revision* gotRev = [TD_Revision revisionWithProperties: dl.document];
                 gotRev.sequence = rev.sequence;
@@ -501,7 +529,9 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 }
                 
                 // Mark this revision's fake sequence as processed:
-                [_pendingSequences removeSequence: fakeSequence];
+                if (fakeSequence != -1) {
+                    [_pendingSequences removeSequence: fakeSequence];
+                }
             }
         }
         
@@ -527,6 +557,11 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     [self asyncTasksFinished: downloads.count];
 }
 
+- (void) insertClientFilterNewDocIds:(NSArray *)downloads {
+    for (TD_Revision *rev in downloads) {
+        [self pullRemoteRevision:rev ignoreMissingDocs:TRUE];
+    }
+}
 
 @end
 

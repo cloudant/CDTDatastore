@@ -25,6 +25,7 @@
     NSMutableArray* _bulkRevsToPull;    // TDPulledRevisions that can be fetched in bulk
     NSUInteger _httpConnectionCount;    // Number of active NSURLConnections
     TDBatcher* _downloadsToInsert;      // Queue of TDPulledRevisions, with bodies, to insert in DB
+    TDBatcher* _clientFilterNewDocsToInsert;  // Queue of missing revisions, specified by client Doc ID filter, but not in database yet
 }
 
 @end
