@@ -118,3 +118,32 @@
                         type:(NSString*)type;
 
 @end
+
+@interface CDTRemoteAttachment : CDTAttachment
+
+/**
+ 
+ Creates a CDTRemoteAttachment object from the parameters given.
+ 
+ @param name The name of the attachment eg example.txt
+ @param jsonData The decoded jsonData reccived from couchdb / cloudant
+ @param document the URL of the document this attachment is attached to
+ @param error will point to an NSError object in case of error
+ 
+ */
++(CDTRemoteAttachment *)createAttachmentForName:(NSString *)name
+                                   withJSONData:(NSDictionary *) jsonData
+                                    forDocument:(NSURL*)document
+                                          error:(NSError * __autoreleasing *) error;
+
+/**
+ 
+ Returns the data for an attachment. If attachment data requries downloading, (ie it was not provided
+ in the JSON with the document download) it will block while downloading the data from the remote 
+ server
+ 
+ @return the attachments data
+ 
+ */
+-(NSData*)dataFromAttachmentContent;
+@end

@@ -15,6 +15,7 @@
 
 #import "CDTDocumentRevision.h"
 #import "CDTMutableDocumentRevision.h"
+#import "Attachments/CDTAttachment.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
 #import "TD_Body.h"
@@ -40,7 +41,7 @@
 @synthesize sequence = _sequence;
 
 
-+(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json error:(NSError * __autoreleasing *) error
++(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json forDocument:(NSURL *)documentURL error:(NSError * __autoreleasing *) error
 {
     NSDictionary* jsonDict = [NSJSONSerialization JSONObjectWithData:json options:0 error:error];
     
@@ -74,9 +75,28 @@
     NSString * docId = [jsonDict objectForKey:@"_id"];
     NSString * revId = [jsonDict objectForKey:@"_rev"];
     NSNumber * deleted = [jsonDict objectForKey:@"_deleted"];
+    NSDictionary * attachmentData = [jsonDict objectForKey:@"_attachments"];
+    
     
     if(!deleted)
         deleted = [NSNumber numberWithBool:NO];
+    
+    NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
+    
+    
+    //build the attachment objects
+    for(NSString * key in [attachmentData allKeys]){
+        CDTRemoteAttachment * attachment = [CDTRemoteAttachment createAttachmentForName:key
+                                                                           withJSONData:[attachmentData
+                                                                                         objectForKey:key]
+                                                                            forDocument:documentURL
+                                                                                  error:error];
+        if(*error){
+            return nil;
+        }
+        
+        [attachments setObject:attachment forKey:key];
+    }
     
     
     NSMutableDictionary * body = [jsonDict mutableCopy];
@@ -85,7 +105,8 @@
     return [[CDTDocumentRevision alloc]initWithDocId:docId
                                           revisionId:revId
                                                 body:body
-                                             deleted:[deleted boolValue]];
+                                             deleted:[deleted boolValue]
+                                         attachments:attachments];
     
 }
 

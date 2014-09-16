@@ -42,11 +42,14 @@
  cloudant or a CouchDB instance.
  
  @param json Json data to create an object from
+ @param documentURL the url of the document
  @param error points to an NSError in case of error
  
  @return new CDTDocument Revision instance
 */
-+(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json error:(NSError * __autoreleasing *) error;
++(CDTDocumentRevision*)createRevisionFromJson:(NSData*)json
+                                  forDocument:(NSURL *)documentURL
+                                        error:(NSError * __autoreleasing *) error;
 
 -(id)initWithDocId:(NSString *)docId
         revisionId:(NSString *) revId

@@ -97,7 +97,10 @@
     
     STAssertNil(error, @"Error should have been nil");
     
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     
     STAssertNil(error, @"Error occured creating document with valid data");
     STAssertNotNil(rev, @"Revision was nil");
@@ -123,7 +126,10 @@
     
     STAssertNil(error, @"Error should have been nil");
     
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     
     STAssertNil(error, @"Error occured creating document with valid data");
     STAssertNotNil(rev, @"Revision was nil");
@@ -145,7 +151,10 @@
     
     STAssertNil(error, @"Error should have been nil");
     
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     
     STAssertNil(error, @"Error occured creating document with valid data");
     STAssertNotNil(rev, @"Revision was nil");
@@ -169,7 +178,10 @@
     
     STAssertNil(error, @"Error should have been nil");
     
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     
     STAssertNotNil(error, @"Error did not occur whencreating document with invalid data");
     STAssertNil(rev, @"Revision was not nil");
@@ -182,7 +194,7 @@
     NSDictionary * dict = @{@"_id":@"someIdHere",
                             @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
                             @"aKey":@"aValue",
-                            @"_attachments":@[],
+                            @"_attachments":@{},
                             @"_conflicts":@[],
                             @"_deleted_conflicts":@[],
                             @"_local_seq":@1,
@@ -196,7 +208,10 @@
     
     STAssertNil(error, @"Error should have been nil");
     
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:jsonData
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     
     STAssertNil(error, @"Error occured creating document with valid data");
     STAssertNotNil(rev, @"Revision was nil");
@@ -220,7 +235,11 @@
     NSData* data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
    
     NSError *error;
-    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:data error:&error];
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:data
+                                                                forDocument:[
+                                                                             NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
     STAssertNil(rev, @"Revision should be nil with invalid json");
     STAssertNotNil(error, @"Error should be set");
 }

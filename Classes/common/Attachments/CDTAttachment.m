@@ -17,6 +17,8 @@
 #import "CDTAttachment.h"
 
 #import "GTMNSData+zlib.h"
+#import "TDBase64.h"
+#import "TD_Database.h"
 
 @implementation CDTAttachment
 
@@ -186,3 +188,62 @@
 }
 
 @end
+
+@interface CDTRemoteAttachment ()
+
+@property  NSData * attachmentData;
+@property (readonly) NSURL * attachmentURL;
+
+@end
+
+@implementation CDTRemoteAttachment
+
++(CDTRemoteAttachment *)createAttachmentForName:(NSString *)name
+                                   withJSONData:(NSDictionary *) jsonData
+                                    forDocument:(NSURL*)document
+                                          error:(NSError * __autoreleasing *) error
+{
+    NSNumber * stub = [jsonData objectForKey:@"stub"];
+    NSNumber * length = [jsonData objectForKey:@"length"];
+    NSString * digest = [jsonData objectForKey:@"digest"];
+    NSNumber * revpos = [jsonData objectForKey:@"revpos"];
+    NSString * contentType = [jsonData objectForKey:@"content_type"];
+    NSString * data = [jsonData objectForKey:@"data"];
+    NSData * decodedData = nil;
+    
+    if(![stub boolValue]){
+        decodedData =  [TDBase64 decode:data];
+        
+        if(!decodedData){
+            *error = TDStatusToNSError(kTDStatusAttachmentError, nil);
+            return nil;
+        }
+    }
+    
+    return [[CDTRemoteAttachment alloc]initWithDocumentURL:document name:name type:contentType size:[length integerValue] data:decodedData];
+}
+
+-(id)initWithDocumentURL:(NSURL*)document name:(NSString *)name type:(NSString *)type size:(NSInteger)size data:(NSData*)data
+{
+    self = [super initWithName:name type:type size:size];
+    
+    if(self){
+        _attachmentData = data;
+        _attachmentURL = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"./%@",name]
+                                         relativeToURL:document];
+    }
+    
+    return self;
+}
+
+-(NSData*)dataFromAttachmentContent
+{
+    if(!self.attachmentData){
+        self.attachmentData = [NSData dataWithContentsOfURL:self.attachmentURL];
+    }
+
+     return self.attachmentData;
+}
+
+@end
+
