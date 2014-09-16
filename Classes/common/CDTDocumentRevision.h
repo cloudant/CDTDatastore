@@ -72,11 +72,6 @@
        attachments:(NSDictionary *)attachments
           sequence:(SequenceNumber)sequence;
 
-//-(id)initWithTDRevision:(TD_Revision*)rev ;
-//
-//-(id)initWithTDRevision:(TD_Revision*)rev
-//         andAttachments: (NSDictionary *) attachments;
-
 /** 
  Return document content as an NSData object.
  
