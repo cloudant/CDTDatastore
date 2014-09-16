@@ -200,12 +200,29 @@
     
     STAssertNil(error, @"Error occured creating document with valid data");
     STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    STAssertEqualObjects(@"someIdHere",
+                         rev.docId,
+                         @"docId was different, expected someIdHere actual %@",
+                         rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+                         rev.revId,
+                         @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
+                         rev.revId);
     
     STAssertEqualObjects(body, rev.body, @"Body was different");
     STAssertFalse(rev.deleted, @"Document is not marked as deleted");
     
+}
+
+-(void)testDocumentRevisionFactoryWithCorruptedJson
+{
+    NSString * jsonString = @"{\"aKey\":\"aValue\",\"hello\":}";
+    NSData* data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+   
+    NSError *error;
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:data error:&error];
+    STAssertNil(rev, @"Revision should be nil with invalid json");
+    STAssertNotNil(error, @"Error should be set");
 }
 
 -(void)testCreateOneDocumentSQLEntries
