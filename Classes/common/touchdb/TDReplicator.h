@@ -72,6 +72,11 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSDictionary* options;
 @property (copy) NSArray* clientFilterDocIds;
 
+// this is the set based on what we currently have
+@property NSMutableSet *clientFilterCurrentSetDocIds;
+// this is any new ones
+@property NSMutableSet *clientFilterNewDocIds;
+
 /** Optional dictionary of headers to be added to all requests to remote servers. */
 @property (copy) NSDictionary* requestHeaders;
 

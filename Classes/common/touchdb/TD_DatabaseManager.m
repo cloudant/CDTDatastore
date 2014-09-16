@@ -305,16 +305,6 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 }
 
 - (TDReplicator*) replicatorWithProperties: (NSDictionary*)properties
-                        clientFilterDocIds: (NSArray*)filterDocIds
-                                    status: (TDStatus*)outStatus
-{
-    TDReplicator *repl = [self replicatorWithProperties:properties
-                                                 status:outStatus];
-    repl.clientFilterDocIds = filterDocIds;
-    return repl;
-}
-
-- (TDReplicator*) replicatorWithProperties: (NSDictionary*)properties
                                     status: (TDStatus*)outStatus
 {
     // Extract the parameters from the JSON request body:
@@ -355,6 +345,32 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     repl.requestHeaders = headers;
     repl.authorizer = authorizer;
     repl.clientFilterDocIds = $castIf(NSArray, properties[@"client_filter_doc_ids"]);
+    if (repl.clientFilterDocIds != nil) {
+
+        // we split the client filter into two lists:
+        // i)  the list of which is included in the current set of docs
+        // ii) the rest, which is the docs we don't yet have
+        // then i) will be used for filter inclusion, and ii) will be
+        // downloaded separately
+        
+        struct TDQueryOptions query = {
+            .limit = (unsigned int)repl.db.documentCount,
+            .inclusiveEnd = YES,
+            .skip = 0,
+            .descending = NO,
+            .includeDocs = NO,
+            .content = 0
+        };
+        repl.clientFilterCurrentSetDocIds = [NSMutableSet setWithCapacity:10];
+        for (NSDictionary *doc in [[repl.db getAllDocs:&query] objectForKey:@"rows"]) {
+            [repl.clientFilterCurrentSetDocIds addObject:[doc objectForKey:@"id"]];
+        }
+        // this is the list for which we already have these docs
+        [repl.clientFilterCurrentSetDocIds intersectSet:[NSSet setWithArray:repl.clientFilterDocIds]];
+        // and this is the list for which we don't
+        repl.clientFilterNewDocIds = [NSMutableSet setWithArray:repl.clientFilterDocIds];
+        [repl.clientFilterNewDocIds minusSet:repl.clientFilterCurrentSetDocIds];
+    }
     if (push)
         ((TDPusher*)repl).createTarget = createTarget;
     
