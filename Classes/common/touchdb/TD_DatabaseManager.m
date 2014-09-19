@@ -349,7 +349,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     if (push)
         ((TDPusher*)repl).createTarget = createTarget;
     if (!push)
-        [(TDPuller*)repl doSetClientFilterDocIds:$castIf(NSArray, properties[@"client_filter_doc_ids"])];
+        [(TDPuller*)repl setClientFilterDocIds:$castIf(NSArray, properties[@"client_filter_doc_ids"])];
     
     if (outStatus)
         *outStatus = kTDStatusOK;

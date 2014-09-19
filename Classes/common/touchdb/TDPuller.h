@@ -42,7 +42,7 @@
 - (void) addToInbox: (TD_Revision*)rev;
 
 
-- (void) doSetClientFilterDocIds:(NSArray *)clientFilterDocIds;
+- (void) setClientFilterDocIds:(NSArray *)clientFilterDocIds;
 
 @end
 
