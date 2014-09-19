@@ -582,7 +582,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     [super addToInbox:rev];
 }
 
-- (void) doSetClientFilterDocIds:(NSArray *)clientFilterDocIds
+- (void) setClientFilterDocIds:(NSArray *)clientFilterDocIds
 {
     if (clientFilterDocIds != nil) {
         
