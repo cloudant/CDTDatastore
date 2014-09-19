@@ -26,7 +26,23 @@
     NSUInteger _httpConnectionCount;    // Number of active NSURLConnections
     TDBatcher* _downloadsToInsert;      // Queue of TDPulledRevisions, with bodies, to insert in DB
     TDBatcher* _clientFilterNewDocsToInsert;  // Queue of missing revisions, specified by client Doc ID filter, but not in database yet
+
+    NSArray* _clientFilterDocIds;
+    
+    // this is the set based on what we currently have
+    NSMutableSet *_clientFilterCurrentSetDocIds;
+    // this is any new ones
+    NSMutableSet *_clientFilterNewDocIds;
+
+
 }
+
+// overrides
+- (NSString*) remoteCheckpointDocID;
+- (void) addToInbox: (TD_Revision*)rev;
+
+
+- (void) doSetClientFilterDocIds:(NSArray *)clientFilterDocIds;
 
 @end
 
