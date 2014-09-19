@@ -417,14 +417,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 
 - (void) addToInbox: (TD_Revision*)rev {
-    Assert(_running);
-    
-    // if we're filtering client side, and it's not on the list
-    // nothing to do
-    if (self.clientFilterCurrentSetDocIds != nil &&
-        ![self.clientFilterCurrentSetDocIds containsObject:rev.docID])
-        return;
-    
+    Assert(_running);    
     [_batcher queueObject: rev];
     [self updateActive];
 }
@@ -592,7 +585,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     It's based on the local database UUID (the private one, to make the result unguessable),
     the remote database's URL, and the filter name and parameters (if any). */
 - (NSString*) remoteCheckpointDocID {
-    // TODO if we are using a client filter on doc ids then the checkpoint doc id should be based on a hash of these.
     NSMutableDictionary* spec = $mdict({@"localUUID", _db.privateUUID},
                                        {@"remoteURL", _remote.absoluteString},
                                        {@"push", @(self.isPush)},

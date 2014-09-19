@@ -70,12 +70,6 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSDictionary* filterParameters;
 @property (copy) NSArray *docIDs;
 @property (copy) NSDictionary* options;
-@property (copy) NSArray* clientFilterDocIds;
-
-// this is the set based on what we currently have
-@property NSMutableSet *clientFilterCurrentSetDocIds;
-// this is any new ones
-@property NSMutableSet *clientFilterNewDocIds;
 
 /** Optional dictionary of headers to be added to all requests to remote servers. */
 @property (copy) NSDictionary* requestHeaders;
@@ -94,6 +88,9 @@ extern NSString* TDReplicatorStoppedNotification;
     Any pending asynchronous operations will be canceled.
     TDReplicatorStoppedNotification will be posted when it finally stops. */
 - (void) stop;
+
+- (NSString*) remoteCheckpointDocID;
+
 
 /** Is the replicator running? (Observable) */
 @property (readonly, nonatomic) BOOL running;

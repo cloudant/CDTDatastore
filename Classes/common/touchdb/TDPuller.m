@@ -66,13 +66,13 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void) beginReplicating {
     
     // download the missing documents according to the doc id filter
-    if (self.clientFilterNewDocIds) {
+    if (_clientFilterNewDocIds) {
         // start a batcher and fill it with missing doc ids
         _clientFilterNewDocsToInsert = [[TDBatcher alloc] initWithCapacity: 200 delay: 1.0
                                               processor: ^(NSArray *downloads) {
                                                   [self insertClientFilterNewDocIds: downloads];
                                               }];
-        for (NSString *docId in self.clientFilterNewDocIds) {
+        for (NSString *docId in _clientFilterNewDocIds) {
             TD_Revision *rev = [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:FALSE];
             rev.sequence = -1; // fake sequence number means "don't track sequence numbers"
             [_clientFilterNewDocsToInsert queueObject:rev];
@@ -562,6 +562,59 @@ static NSString* joinQuotedEscaped(NSArray* strings);
         [self pullRemoteRevision:rev ignoreMissingDocs:TRUE];
     }
 }
+
+/* over-ride implementation in TDReplicator */
+- (NSString*) remoteCheckpointDocID {
+    if (_clientFilterDocIds) {
+        NSString *str = [NSString stringWithFormat:@"%@%@", self.remote, @"cloudantSyncDocIdSubset"];
+        return TDHexSHA1Digest([str dataUsingEncoding:NSUTF8StringEncoding]);
+    } else {
+        return [super remoteCheckpointDocID];
+    }
+}
+
+- (void) addToInbox: (TD_Revision*)rev {
+    // if we're filtering client side, and it's not on the list
+    // nothing to do
+    if (_clientFilterCurrentSetDocIds != nil &&
+        ![_clientFilterCurrentSetDocIds containsObject:rev.docID])
+        return;
+    [super addToInbox:rev];
+}
+
+- (void) doSetClientFilterDocIds:(NSArray *)clientFilterDocIds
+{
+    if (clientFilterDocIds != nil) {
+        
+        _clientFilterDocIds = clientFilterDocIds;
+        
+        // we split the client filter into two lists:
+        // i)  the list of which is included in the current set of docs
+        // ii) the rest, which is the docs we don't yet have
+        // then i) will be used for filter inclusion, and ii) will be
+        // downloaded separately
+        
+        struct TDQueryOptions query = {
+            .limit = (unsigned int)_db.documentCount,
+            .inclusiveEnd = YES,
+            .skip = 0,
+            .descending = NO,
+            .includeDocs = NO,
+            .content = 0
+        };        
+        _clientFilterCurrentSetDocIds = [NSMutableSet setWithCapacity:10];
+        for (NSDictionary *doc in [[_db getAllDocs:&query] objectForKey:@"rows"]) {
+            [_clientFilterCurrentSetDocIds addObject:[doc objectForKey:@"id"]];
+        }
+        // this is the list for which we already have these docs
+        [_clientFilterCurrentSetDocIds intersectSet:[NSSet setWithArray:_clientFilterDocIds]];
+        // and this is the list for which we don't
+        _clientFilterNewDocIds = [NSMutableSet setWithArray:_clientFilterDocIds];
+        [_clientFilterNewDocIds minusSet:_clientFilterCurrentSetDocIds];
+    }
+
+}
+
 
 @end
 
