@@ -860,437 +860,228 @@
     
     CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
     
-    mutableRev.body = @{@"name": @"Afghanistan", @"area": @(647500), @"elec_consumption": @(652200000),  @"population": @(29928987)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    NSArray *array = @[
+                       @{@"name": @"Afghanistan", @"area": @(647500), @"elec_consumption": @(652200000),  @"population": @(29928987)},
+                       @{@"name": @"Albania",     @"area": @(28748),  @"elec_consumption": @(6760000000), @"population": @(3563112)},
+                       @{@"name": @"Algeria",     @"area": @(2381740),@"elec_consumption": @(23610000000),@"population": @(32531853)},
+                       @{@"name": @"American Samoa", @"area": @(199), @"elec_consumption": @(120900000),  @"population": @(57881)},
+                       @{@"name": @"Angola", @"area": @(1246700), @"elec_consumption": @(1587000000), @"population": @(11190786)},
+                       @{@"name": @"Anguilla", @"area": @(102), @"elec_consumption": @(42600000), @"population": @(13254)},
+                       @{@"name": @"Antigua and Barbuda", @"area": @(443), @"elec_consumption": @(103000000), @"population": @(68722)},
+                       @{@"name": @"Argentina", @"area": @(2766890), @"elec_consumption": @(81650000000), @"population": @(39537943)},
+                       @{@"name": @"Armenia", @"area": @(29800), @"elec_consumption": @(5797000000), @"population": @(2982904)},
+                       @{@"name": @"Aruba", @"area": @(193), @"elec_consumption": @(751200000), @"population": @(71566)},
+                       @{@"name": @"Australia", @"area": @(7686850), @"elec_consumption": @(195600000000), @"population": @(20090437)},
+                       @{@"name": @"Austria", @"area": @(83870), @"elec_consumption": @(55090000000), @"population": @(8184691)},
+                       @{@"name": @"Azerbaijan", @"area": @(86600), @"elec_consumption": @(17370000000), @"population": @(7911974)},
+                       @{@"name": @"Bahamas The", @"area": @(13940), @"elec_consumption": @(1596000000), @"population": @(301790)},
+                       @{@"name": @"Bahrain", @"area": @(665), @"elec_consumption": @(6379000000), @"population": @(688345)},
+                       @{@"name": @"Bangladesh", @"area": @(144000), @"elec_consumption": @(15300000000), @"population": @(144319628)},
+                       @{@"name": @"Barbados", @"area": @(431), @"elec_consumption": @(744000000), @"population": @(279254)},
+                       @{@"name": @"Belarus", @"area": @(207600), @"elec_consumption": @(34300000000), @"population": @(10300483)},
+                       @{@"name": @"Belgium", @"area": @(30528), @"elec_consumption": @(78820000000), @"population": @(10364388)},
+                       @{@"name": @"Belize", @"area": @(22966), @"elec_consumption": @(108800000), @"population": @(279457)},
+                       @{@"name": @"Benin", @"area": @(112620), @"elec_consumption": @(565200000), @"population": @(7460025)},
+                       @{@"name": @"Bermuda", @"area": @(53), @"elec_consumption": @(598000000), @"population": @(65365)},
+                       @{@"name": @"Bhutan", @"area": @(47000), @"elec_consumption": @(312900000), @"population": @(2232291)},
+                       @{@"name": @"Bolivia", @"area": @(1098580), @"elec_consumption": @(3848000000), @"population": @(8857870)},
+                       @{@"name": @"Bosnia and Herzegovina", @"area": @(51129), @"elec_consumption": @(8318000000), @"population": @(4025476)},
+                       @{@"name": @"Botswana", @"area": @(600370), @"elec_consumption": @(1890000000), @"population": @(1640115)},
+                       @{@"name": @"Brazil", @"area": @(8511965), @"elec_consumption": @(351900000000), @"population": @(186112794)},
+                       @{@"name": @"British Virgin Islands", @"area": @(153), @"elec_consumption": @(33740000), @"population": @(22643)},
+                       @{@"name": @"Brunei", @"area": @(5770), @"elec_consumption": @(2286000000), @"population": @(372361)},
+                       @{@"name": @"Bulgaria", @"area": @(110910), @"elec_consumption": @(32710000000), @"population": @(7450349)},
+                       @{@"name": @"Burkina Faso", @"area": @(274200), @"elec_consumption": @(335700000), @"population": @(13925313)},
+                       @{@"name": @"Burma", @"area": @(678500), @"elec_consumption": @(3484000000), @"population": @(42909464)},
+                       @{@"name": @"Burundi", @"area": @(27830), @"elec_consumption": @(137800000), @"population": @(6370609)},
+                       @{@"name": @"Cambodia", @"area": @(181040), @"elec_consumption": @(100600000), @"population": @(13607069)},
+                       @{@"name": @"Cameroon", @"area": @(475440), @"elec_consumption": @(3321000000), @"population": @(16380005)},
+                       @{@"name": @"Canada", @"area": @(9984670), @"elec_consumption": @(487300000000), @"population": @(32805041)},
+                       @{@"name": @"Cape Verde", @"area": @(4033), @"elec_consumption": @(40060000), @"population": @(418224)},
+                       @{@"name": @"Cayman Islands", @"area": @(262), @"elec_consumption": @(382100000), @"population": @(44270)},
+                       @{@"name": @"Central African Republic", @"area": @(622984), @"elec_consumption": @(98580000), @"population": @(3799897)},
+                       @{@"name": @"Chad", @"area": @(1284000), @"elec_consumption": @(89400000), @"population": @(9826419)},
+                       @{@"name": @"Chile", @"area": @(756950), @"elec_consumption": @(41800000000), @"population": @(15980912)},
+                       @{@"name": @"China", @"area": @(9596960), @"elec_consumption": @(1630000000000), @"population": @(1306313812)},
+                       @{@"name": @"Colombia", @"area": @(1138910), @"elec_consumption": @(41140000000), @"population": @(42954279)},
+                       @{@"name": @"Comoros", @"area": @(2170), @"elec_consumption": @(22170000), @"population": @(671247)},
+                       @{@"name": @"Congo Democratic Republic of the", @"area": @(2345410), @"elec_consumption": @(4168000000), @"population": @(60085804)},
+                       @{@"name": @"Congo Republic of the", @"area": @(342000), @"elec_consumption": @(573600000), @"population": @(3039126)},
+                       @{@"name": @"Cook Islands", @"area": @(240), @"elec_consumption": @(25110000), @"population": @(21388)},
+                       @{@"name": @"Costa Rica", @"area": @(51100), @"elec_consumption": @(5733000000), @"population": @(4016173)},
+                       @{@"name": @"Cote d'Ivoire", @"area": @(322460), @"elec_consumption": @(2976000000), @"population": @(17298040)},
+                       @{@"name": @"Croatia", @"area": @(56542), @"elec_consumption": @(15200000000), @"population": @(4495904)},
+                       @{@"name": @"Cuba", @"area": @(110860), @"elec_consumption": @(13400000000), @"population": @(11346670)},
+                       @{@"name": @"Cyprus", @"area": @(9250), @"elec_consumption": @(602000000), @"population": @(780133)},
+                       @{@"name": @"Czech Republic", @"area": @(78866), @"elec_consumption": @(55330000000), @"population": @(10241138)},
+                       @{@"name": @"Denmark", @"area": @(43094), @"elec_consumption": @(31630000000), @"population": @(5432335)},
+                       @{@"name": @"Djibouti", @"area": @(23000), @"elec_consumption": @(167400000), @"population": @(476703)},
+                       @{@"name": @"Dominica", @"area": @(754), @"elec_consumption": @(63620000), @"population": @(69029)},
+                       @{@"name": @"Dominican Republic", @"area": @(48730), @"elec_consumption": @(8912000000), @"population": @(8950034)},
+                       @{@"name": @"Ecuador", @"area": @(283560), @"elec_consumption": @(75580000000), @"population": @(13363593)},
+                       @{@"name": @"Egypt", @"area": @(1001450), @"elec_consumption": @(75580000000), @"population": @(77505756)},
+                       @{@"name": @"El Salvador", @"area": @(21040), @"elec_consumption": @(4450000000), @"population": @(6704932)},
+                       @{@"name": @"Equatorial Guinea", @"area": @(28051), @"elec_consumption": @(24820000), @"population": @(535881)},
+                       @{@"name": @"Eritrea", @"area": @(121320), @"elec_consumption": @(229400000), @"population": @(4561599)},
+                       @{@"name": @"Estonia", @"area": @(45226), @"elec_consumption": @(6358000000), @"population": @(1332893)},
+                       @{@"name": @"Ethiopia", @"area": @(1127127), @"elec_consumption": @(1998000000), @"population": @(73053286)},
+                       @{@"name": @"#European Union", @"area": @(3976372), @"elec_consumption": @(2661000000000), @"population": @(457030418)},
+                       @{@"name": @"Falkland Islands (Islas Malvinas)", @"area": @(12173), @"elec_consumption": @(17720000), @"population": @(2967)},
+                       @{@"name": @"Faroe Islands", @"area": @(1399), @"elec_consumption": @(204600000), @"population": @(46962)},
+                       @{@"name": @"Fiji", @"area": @(18270), @"elec_consumption": @(697500000), @"population": @(893354)},
+                       @{@"name": @"Finland", @"area": @(338145), @"elec_consumption": @(78580000000), @"population": @(5223442)},
+                       @{@"name": @"France", @"area": @(547030), @"elec_consumption": @(414700000000), @"population": @(60656178)},
+                       @{@"name": @"French Guiana", @"area": @(91000), @"elec_consumption": @(427900000), @"population": @(195506)},
+                       @{@"name": @"French Polynesia", @"area": @(4167), @"elec_consumption": @(353400000), @"population": @(270485)},
+                       @{@"name": @"Gabon", @"area": @(267667), @"elec_consumption": @(1080000000), @"population": @(1389201)},
+                       @{@"name": @"Gambia The", @"area": @(11300), @"elec_consumption": @(83990000), @"population": @(1593256)},
+                       @{@"name": @"Georgia", @"area": @(69700), @"elec_consumption": @(6811000000), @"population": @(4677401)},
+                       @{@"name": @"Germany", @"area": @(357021), @"elec_consumption": @(519500000000), @"population": @(82431390)},
+                       @{@"name": @"Ghana", @"area": @(239460), @"elec_consumption": @(6137000000), @"population": @(21029853)},
+                       @{@"name": @"Gibraltar", @"area": @(7), @"elec_consumption": @(96760000), @"population": @(27884)},
+                       @{@"name": @"Greece", @"area": @(131940), @"elec_consumption": @(47420000000), @"population": @(10668354)},
+                       @{@"name": @"Greenland", @"area": @(2166086), @"elec_consumption": @(227900000), @"population": @(56375)},
+                       @{@"name": @"Grenada", @"area": @(344), @"elec_consumption": @(138600000), @"population": @(89502)},
+                       @{@"name": @"Guadeloupe", @"area": @(1780), @"elec_consumption": @(1079000000), @"population": @(448713)},
+                       @{@"name": @"Guam", @"area": @(549), @"elec_consumption": @(776600000), @"population": @(168564)},
+                       @{@"name": @"Guatemala", @"area": @(108890), @"elec_consumption": @(5760000000), @"population": @(14655189)},
+                       @{@"name": @"Guinea", @"area": @(245857), @"elec_consumption": @(795200000), @"population": @(9467866)},
+                       @{@"name": @"Guinea-Bissau", @"area": @(36120), @"elec_consumption": @(51150000), @"population": @(1416027)},
+                       @{@"name": @"Guyana", @"area": @(214970), @"elec_consumption": @(751400000), @"population": @(765283)},
+                       @{@"name": @"Haiti", @"area": @(27750), @"elec_consumption": @(574700000), @"population": @(8121622)},
+                       @{@"name": @"Honduras", @"area": @(112090), @"elec_consumption": @(3771000000), @"population": @(6975204)},
+                       @{@"name": @"Hong Kong", @"area": @(1092), @"elec_consumption": @(38450000000), @"population": @(6898686)},
+                       @{@"name": @"Hungary", @"area": @(93030), @"elec_consumption": @(35990000000), @"population": @(10006835)},
+                       @{@"name": @"Iceland", @"area": @(103000), @"elec_consumption": @(7692000000), @"population": @(296737)},
+                       @{@"name": @"India", @"area": @(3287590), @"elec_consumption": @(510100000000), @"population": @(1080264388)},
+                       @{@"name": @"Indonesia", @"area": @(1919440), @"elec_consumption": @(92350000000), @"population": @(241973879)},
+                       @{@"name": @"Iran", @"area": @(1648000), @"elec_consumption": @(119900000000), @"population": @(68017860)},
+                       @{@"name": @"Iraq", @"area": @(437072), @"elec_consumption": @(33700000000), @"population": @(26074906)},
+                       @{@"name": @"Ireland", @"area": @(70280), @"elec_consumption": @(21780000000), @"population": @(4015676)},
+                       @{@"name": @"Israel", @"area": @(20770), @"elec_consumption": @(38300000000), @"population": @(6276883)},
+                       @{@"name": @"Italy", @"area": @(301230), @"elec_consumption": @(293900000000), @"population": @(58103033)},
+                       @{@"name": @"Jamaica", @"area": @(10991), @"elec_consumption": @(5849000000), @"population": @(2731832)},
+                       @{@"name": @"Japan", @"area": @(377835), @"elec_consumption": @(971000000000), @"population": @(127417244)},
+                       @{@"name": @"Jersey", @"area": @(116), @"elec_consumption": @(630100000), @"population": @(90812)},
+                       @{@"name": @"Jordan", @"area": @(92300), @"elec_consumption": @(7094000000), @"population": @(5759732)},
+                       @{@"name": @"Kazakhstan", @"area": @(2717300), @"elec_consumption": @(62210000000), @"population": @(15185844)},
+                       @{@"name": @"Kenya", @"area": @(582650), @"elec_consumption": @(4337000000), @"population": @(33829590)},
+                       @{@"name": @"Kiribati", @"area": @(811), @"elec_consumption": @(6510000), @"population": @(103092)},
+                       @{@"name": @"Korea North", @"area": @(120540), @"elec_consumption": @(31260000000), @"population": @(22912177)},
+                       @{@"name": @"Korea South", @"area": @(98480), @"elec_consumption": @(293600000000), @"population": @(48422644)},
+                       @{@"name": @"Kuwait", @"area": @(17820), @"elec_consumption": @(30160000000), @"population": @(2335648)},
+                       @{@"name": @"Kyrgyzstan", @"area": @(198500), @"elec_consumption": @(10210000000), @"population": @(5146281)},
+                       @{@"name": @"Laos", @"area": @(236800), @"elec_consumption": @(3036000000), @"population": @(6217141)},
+                       @{@"name": @"Latvia", @"area": @(64589), @"elec_consumption": @(5829000000), @"population": @(2290237)},
+                       @{@"name": @"Lebanon", @"area": @(10400), @"elec_consumption": @(8591000000), @"population": @(3826018)},
+                       @{@"name": @"Lesotho", @"area": @(30355), @"elec_consumption": @(308000000), @"population": @(1867035)},
+                       @{@"name": @"Liberia", @"area": @(111370), @"elec_consumption": @(454600000), @"population": @(3482211)},
+                       @{@"name": @"Libya", @"area": @(1759540), @"elec_consumption": @(19430000000), @"population": @(5765563)},
+                       @{@"name": @"Lithuania", @"area": @(65200), @"elec_consumption": @(10170000000), @"population": @(3596617)},
+                       @{@"name": @"Luxembourg", @"area": @(2586), @"elec_consumption": @(5735000000), @"population": @(468571)},
+                       @{@"name": @"Macau", @"area": @(25), @"elec_consumption": @(1772000000), @"population": @(449198)},
+                       @{@"name": @"Macedonia", @"area": @(25333), @"elec_consumption": @(7216000000), @"population": @(2045262)},
+                       @{@"name": @"Madagascar", @"area": @(587040), @"elec_consumption": @(781400000), @"population": @(18040341)},
+                       @{@"name": @"Malawi", @"area": @(118480), @"elec_consumption": @(1012000000), @"population": @(12158924)},
+                       @{@"name": @"Malaysia", @"area": @(329750), @"elec_consumption": @(68400000000), @"population": @(23953136)},
+                       @{@"name": @"Maldives", @"area": @(300), @"elec_consumption": @(115700000), @"population": @(349106)},
+                       @{@"name": @"Mali", @"area": @(1240000), @"elec_consumption": @(651000000), @"population": @(12291529)},
+                       @{@"name": @"Malta", @"area": @(316), @"elec_consumption": @(2000000000), @"population": @(398534)},
+                       @{@"name": @"Martinique", @"area": @(1100), @"elec_consumption": @(1095000000), @"population": @(432900)},
+                       @{@"name": @"Mauritania", @"area": @(1030700), @"elec_consumption": @(176900000), @"population": @(3086859)},
+                       @{@"name": @"Mauritius", @"area": @(2040), @"elec_consumption": @(1707000000), @"population": @(1230602)},
+                       @{@"name": @"Mexico", @"area": @(1972550), @"elec_consumption": @(189700000000), @"population": @(106202903)},
+                       @{@"name": @"Micronesia Federated States of", @"area": @(702), @"elec_consumption": @(178600000), @"population": @(108105)},
+                       @{@"name": @"Moldova", @"area": @(33843), @"elec_consumption": @(4605000000), @"population": @(4455421)},
+                       @{@"name": @"Mongolia", @"area": @(1564116), @"elec_consumption": @(2209000000), @"population": @(2791272)},
+                       @{@"name": @"Montserrat", @"area": @(102), @"elec_consumption": @(1674000), @"population": @(9341)},
+                       @{@"name": @"Morocco", @"area": @(446550), @"elec_consumption": @(14240000000), @"population": @(32725847)},
+                       @{@"name": @"Mozambique", @"area": @(801590), @"elec_consumption": @(5046000000), @"population": @(19406703)},
+                       @{@"name": @"Namibia", @"area": @(825418), @"elec_consumption": @(1920000000), @"population": @(2030692)},
+                       @{@"name": @"Nauru", @"area": @(21), @"elec_consumption": @(27900000), @"population": @(13048)},
+                       @{@"name": @"Nepal", @"area": @(140800), @"elec_consumption": @(2005000000), @"population": @(27676547)},
+                       @{@"name": @"Netherlands", @"area": @(41526), @"elec_consumption": @(100700000000), @"population": @(16407491)},
+                       @{@"name": @"Netherlands Antilles", @"area": @(960), @"elec_consumption": @(934300000), @"population": @(219958)},
+                       @{@"name": @"New Caledonia", @"area": @(19060), @"elec_consumption": @(1471000000), @"population": @(216494)},
+                       @{@"name": @"New Zealand", @"area": @(268680), @"elec_consumption": @(35710000000), @"population": @(4035461)},
+                       @{@"name": @"Nicaragua", @"area": @(129494), @"elec_consumption": @(2318000000), @"population": @(5465100)},
+                       @{@"name": @"Niger", @"area": @(1267000), @"elec_consumption": @(327600000), @"population": @(11665937)},
+                       @{@"name": @"Nigeria", @"area": @(923768), @"elec_consumption": @(18430000000), @"population": @(128771988)},
+                       @{@"name": @"Niue", @"area": @(260), @"elec_consumption": @(2790000), @"population": @(2166)},
+                       @{@"name": @"Norway", @"area": @(324220), @"elec_consumption": @(107400000000), @"population": @(4593041)},
+                       @{@"name": @"Oman", @"area": @(212460), @"elec_consumption": @(9792000000), @"population": @(3001583)},
+                       @{@"name": @"Pakistan", @"area": @(803940), @"elec_consumption": @(52660000000), @"population": @(162419946)},
+                       @{@"name": @"Panama", @"area": @(78200), @"elec_consumption": @(4473000000), @"population": @(3039150)},
+                       @{@"name": @"Papua New Guinea", @"area": @(462840), @"elec_consumption": @(1561000000), @"population": @(5545268)},
+                       @{@"name": @"Paraguay", @"area": @(406750), @"elec_consumption": @(2469000000), @"population": @(6347884)},
+                       @{@"name": @"Peru", @"area": @(1285220), @"elec_consumption": @(20220000000), @"population": @(27925628)},
+                       @{@"name": @"Philippines", @"area": @(300000), @"elec_consumption": @(46050000000), @"population": @(87857473)},
+                       @{@"name": @"Poland", @"area": @(312685), @"elec_consumption": @(117400000000), @"population": @(38635144)},
+                       @{@"name": @"Portugal", @"area": @(92391), @"elec_consumption": @(42150000000), @"population": @(10566212)},
+                       @{@"name": @"Puerto Rico", @"area": @(9104), @"elec_consumption": @(20540000000), @"population": @(3916632)},
+                       @{@"name": @"Qatar", @"area": @(11437), @"elec_consumption": @(9046000000), @"population": @(863051)},
+                       @{@"name": @"Reunion", @"area": @(2517), @"elec_consumption": @(1084000000), @"population": @(776948)},
+                       @{@"name": @"Romania", @"area": @(237500), @"elec_consumption": @(57500000000), @"population": @(22329977)},
+                       @{@"name": @"Russia", @"area": @(17075200), @"elec_consumption": @(894300000000), @"population": @(143420309)},
+                       @{@"name": @"Rwanda", @"area": @(26338), @"elec_consumption": @(195000000), @"population": @(8440820)},
+                       @{@"name": @"Saint Helena", @"area": @(410), @"elec_consumption": @(4650000), @"population": @(7460)},
+                       @{@"name": @"Saint Kitts and Nevis", @"area": @(261), @"elec_consumption": @(98440000), @"population": @(38958)},
+                       @{@"name": @"Saint Lucia", @"area": @(616), @"elec_consumption": @(251300000), @"population": @(166312)},
+                       @{@"name": @"Saint Pierre and Miquelon", @"area": @(242), @"elec_consumption": @(40060000), @"population": @(7012)},
+                       @{@"name": @"Saint Vincent and the Grenadines", @"area": @(389), @"elec_consumption": @(84820000), @"population": @(117534)},
+                       @{@"name": @"Samoa", @"area": @(2944), @"elec_consumption": @(113500000), @"population": @(177287)},
+                       @{@"name": @"Sao Tome and Principe", @"area": @(1001), @"elec_consumption": @(15810000), @"population": @(187410)},
+                       @{@"name": @"Saudi Arabia", @"area": @(1960582), @"elec_consumption": @(128500000000), @"population": @(26417599)},
+                       @{@"name": @"Senegal", @"area": @(196190), @"elec_consumption": @(1615000000), @"population": @(11126832)},
+                       @{@"name": @"Serbia and Montenegro", @"area": @(102350), @"elec_consumption": @(32330000000), @"population": @(10829175)},
+                       @{@"name": @"Seychelles", @"area": @(455), @"elec_consumption": @(202800000), @"population": @(81188)},
+                       @{@"name": @"Sierra Leone", @"area": @(71740), @"elec_consumption": @(237400000), @"population": @(6017643)},
+                       @{@"name": @"Singapore", @"area": @(693), @"elec_consumption": @(32000000000), @"population": @(4425720)},
+                       @{@"name": @"Slovakia", @"area": @(48845), @"elec_consumption": @(28890000000), @"population": @(5431363)},
+                       @{@"name": @"Slovenia", @"area": @(20273), @"elec_consumption": @(11800000000), @"population": @(2011070)},
+                       @{@"name": @"Solomon Islands", @"area": @(28450), @"elec_consumption": @(29760000), @"population": @(538032)},
+                       @{@"name": @"Somalia", @"area": @(637657), @"elec_consumption": @(223500000), @"population": @(8591629)},
+                       @{@"name": @"South Africa", @"area": @(1219912), @"elec_consumption": @(189400000000), @"population": @(44344136)},
+                       @{@"name": @"Spain", @"area": @(504782), @"elec_consumption": @(218400000000), @"population": @(40341462)},
+                       @{@"name": @"Sri Lanka", @"area": @(65610), @"elec_consumption": @(6228000000), @"population": @(20064776)},
+                       @{@"name": @"Sudan", @"area": @(2505810), @"elec_consumption": @(2400000000), @"population": @(40187486)},
+                       @{@"name": @"Suriname", @"area": @(163270), @"elec_consumption": @(1845000000), @"population": @(438144)},
+                       @{@"name": @"Swaziland", @"area": @(17363), @"elec_consumption": @(1173000000), @"population": @(1173900)},
+                       @{@"name": @"Sweden", @"area": @(449964), @"elec_consumption": @(138100000000), @"population": @(9001774)},
+                       @{@"name": @"Switzerland", @"area": @(41290), @"elec_consumption": @(54530000000), @"population": @(7489370)},
+                       @{@"name": @"Syria", @"area": @(185180), @"elec_consumption": @(24320000000), @"population": @(18448752)},
+                       @{@"name": @"Taiwan", @"area": @(35980), @"elec_consumption": @(147400000000), @"population": @(22894384)},
+                       @{@"name": @"Tajikistan", @"area": @(143100), @"elec_consumption": @(14410000000), @"population": @(7163506)},
+                       @{@"name": @"Tanzania", @"area": @(945087), @"elec_consumption": @(2566000000), @"population": @(36766356)},
+                       @{@"name": @"Thailand", @"area": @(514000), @"elec_consumption": @(106100000000), @"population": @(65444371)},
+                       @{@"name": @"Togo", @"area": @(56785), @"elec_consumption": @(451200000), @"population": @(5681519)},
+                       @{@"name": @"Tonga", @"area": @(748), @"elec_consumption": @(23060000), @"population": @(112422)},
+                       @{@"name": @"Trinidad and Tobago", @"area": @(5128), @"elec_consumption": @(5341000000), @"population": @(1088644)},
+                       @{@"name": @"Tunisia", @"area": @(163610), @"elec_consumption": @(10050000000), @"population": @(10074951)},
+                       @{@"name": @"Turkey", @"area": @(780580), @"elec_consumption": @(117900000000), @"population": @(69660559)},
+                       @{@"name": @"Turkmenistan", @"area": @(488100), @"elec_consumption": @(8908000000), @"population": @(4952081)},
+                       @{@"name": @"Turks and Caicos Islands", @"area": @(430), @"elec_consumption": @(4650000), @"population": @(20556)},
+                       @{@"name": @"Uganda", @"area": @(236040), @"elec_consumption": @(1401000000), @"population": @(27269482)},
+                       @{@"name": @"Ukraine", @"area": @(603700), @"elec_consumption": @(132000000000), @"population": @(47425336)},
+                       @{@"name": @"United Arab Emirates", @"area": @(82880), @"elec_consumption": @(36510000000), @"population": @(2563212)},
+                       @{@"name": @"United Kingdom", @"area": @(244820), @"elec_consumption": @(337400000000), @"population": @(60441457)},
+                       @{@"name": @"United States", @"area": @(9631418), @"elec_consumption": @(3660000000000), @"population": @(295734134)},
+                       @{@"name": @"Uruguay", @"area": @(176220), @"elec_consumption": @(5878000000), @"population": @(3415920)},
+                       @{@"name": @"Uzbekistan", @"area": @(447400), @"elec_consumption": @(46660000000), @"population": @(26851195)},
+                       @{@"name": @"Vanuatu", @"area": @(12200), @"elec_consumption": @(45030000), @"population": @(205754)},
+                       @{@"name": @"Venezuela", @"area": @(912050), @"elec_consumption": @(89300000000), @"population": @(25375281)},
+                       @{@"name": @"Vietnam", @"area": @(329560), @"elec_consumption": @(32060000000), @"population": @(83535576)},
+                       @{@"name": @"Virgin Islands", @"area": @(352), @"elec_consumption": @(962600000), @"population": @(108708)},
+                       @{@"name": @"Western Sahara", @"area": @(266000), @"elec_consumption": @(83700000), @"population": @(273008)},
+                       @{@"name": @"Yemen", @"area": @(527970), @"elec_consumption": @(2827000000), @"population": @(20727063)},
+                       @{@"name": @"Zambia", @"area": @(752614), @"elec_consumption": @(5345000000), @"population": @(11261795)},
+                       @{@"name": @"Zimbabwe", @"area": @(390580), @"elec_consumption": @(11220000000), @"population": @(12746990)},
+                       ];
     
-    mutableRev.body = @{@"name": @"Albania",     @"area": @(28748),  @"elec_consumption": @(6760000000), @"population": @(3563112)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Algeria",     @"area": @(2381740),@"elec_consumption": @(23610000000),@"population": @(32531853)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"American Samoa", @"area": @(199), @"elec_consumption": @(120900000),  @"population": @(57881)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Angola", @"area": @(1246700), @"elec_consumption": @(1587000000), @"population": @(11190786)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Anguilla", @"area": @(102), @"elec_consumption": @(42600000), @"population": @(13254)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Antigua and Barbuda", @"area": @(443), @"elec_consumption": @(103000000), @"population": @(68722)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Argentina", @"area": @(2766890), @"elec_consumption": @(81650000000), @"population": @(39537943)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Armenia", @"area": @(29800), @"elec_consumption": @(5797000000), @"population": @(2982904)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Aruba", @"area": @(193), @"elec_consumption": @(751200000), @"population": @(71566)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Australia", @"area": @(7686850), @"elec_consumption": @(195600000000), @"population": @(20090437)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Austria", @"area": @(83870), @"elec_consumption": @(55090000000), @"population": @(8184691)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Azerbaijan", @"area": @(86600), @"elec_consumption": @(17370000000), @"population": @(7911974)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bahamas The", @"area": @(13940), @"elec_consumption": @(1596000000), @"population": @(301790)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bahrain", @"area": @(665), @"elec_consumption": @(6379000000), @"population": @(688345)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bangladesh", @"area": @(144000), @"elec_consumption": @(15300000000), @"population": @(144319628)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Barbados", @"area": @(431), @"elec_consumption": @(744000000), @"population": @(279254)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Belarus", @"area": @(207600), @"elec_consumption": @(34300000000), @"population": @(10300483)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Belgium", @"area": @(30528), @"elec_consumption": @(78820000000), @"population": @(10364388)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Belize", @"area": @(22966), @"elec_consumption": @(108800000), @"population": @(279457)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Benin", @"area": @(112620), @"elec_consumption": @(565200000), @"population": @(7460025)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bermuda", @"area": @(53), @"elec_consumption": @(598000000), @"population": @(65365)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bhutan", @"area": @(47000), @"elec_consumption": @(312900000), @"population": @(2232291)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bolivia", @"area": @(1098580), @"elec_consumption": @(3848000000), @"population": @(8857870)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bosnia and Herzegovina", @"area": @(51129), @"elec_consumption": @(8318000000), @"population": @(4025476)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Botswana", @"area": @(600370), @"elec_consumption": @(1890000000), @"population": @(1640115)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Brazil", @"area": @(8511965), @"elec_consumption": @(351900000000), @"population": @(186112794)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"British Virgin Islands", @"area": @(153), @"elec_consumption": @(33740000), @"population": @(22643)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Brunei", @"area": @(5770), @"elec_consumption": @(2286000000), @"population": @(372361)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Bulgaria", @"area": @(110910), @"elec_consumption": @(32710000000), @"population": @(7450349)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Burkina Faso", @"area": @(274200), @"elec_consumption": @(335700000), @"population": @(13925313)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Burma", @"area": @(678500), @"elec_consumption": @(3484000000), @"population": @(42909464)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Burundi", @"area": @(27830), @"elec_consumption": @(137800000), @"population": @(6370609)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cambodia", @"area": @(181040), @"elec_consumption": @(100600000), @"population": @(13607069)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cameroon", @"area": @(475440), @"elec_consumption": @(3321000000), @"population": @(16380005)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Canada", @"area": @(9984670), @"elec_consumption": @(487300000000), @"population": @(32805041)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cape Verde", @"area": @(4033), @"elec_consumption": @(40060000), @"population": @(418224)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cayman Islands", @"area": @(262), @"elec_consumption": @(382100000), @"population": @(44270)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Central African Republic", @"area": @(622984), @"elec_consumption": @(98580000), @"population": @(3799897)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Chad", @"area": @(1284000), @"elec_consumption": @(89400000), @"population": @(9826419)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Chile", @"area": @(756950), @"elec_consumption": @(41800000000), @"population": @(15980912)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"China", @"area": @(9596960), @"elec_consumption": @(1630000000000), @"population": @(1306313812)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Colombia", @"area": @(1138910), @"elec_consumption": @(41140000000), @"population": @(42954279)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Comoros", @"area": @(2170), @"elec_consumption": @(22170000), @"population": @(671247)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Congo Democratic Republic of the", @"area": @(2345410), @"elec_consumption": @(4168000000), @"population": @(60085804)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Congo Republic of the", @"area": @(342000), @"elec_consumption": @(573600000), @"population": @(3039126)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cook Islands", @"area": @(240), @"elec_consumption": @(25110000), @"population": @(21388)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Costa Rica", @"area": @(51100), @"elec_consumption": @(5733000000), @"population": @(4016173)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cote d'Ivoire", @"area": @(322460), @"elec_consumption": @(2976000000), @"population": @(17298040)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Croatia", @"area": @(56542), @"elec_consumption": @(15200000000), @"population": @(4495904)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cuba", @"area": @(110860), @"elec_consumption": @(13400000000), @"population": @(11346670)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Cyprus", @"area": @(9250), @"elec_consumption": @(602000000), @"population": @(780133)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Czech Republic", @"area": @(78866), @"elec_consumption": @(55330000000), @"population": @(10241138)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Denmark", @"area": @(43094), @"elec_consumption": @(31630000000), @"population": @(5432335)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Djibouti", @"area": @(23000), @"elec_consumption": @(167400000), @"population": @(476703)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Dominica", @"area": @(754), @"elec_consumption": @(63620000), @"population": @(69029)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Dominican Republic", @"area": @(48730), @"elec_consumption": @(8912000000), @"population": @(8950034)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Ecuador", @"area": @(283560), @"elec_consumption": @(75580000000), @"population": @(13363593)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Egypt", @"area": @(1001450), @"elec_consumption": @(75580000000), @"population": @(77505756)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"El Salvador", @"area": @(21040), @"elec_consumption": @(4450000000), @"population": @(6704932)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Equatorial Guinea", @"area": @(28051), @"elec_consumption": @(24820000), @"population": @(535881)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Eritrea", @"area": @(121320), @"elec_consumption": @(229400000), @"population": @(4561599)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Estonia", @"area": @(45226), @"elec_consumption": @(6358000000), @"population": @(1332893)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Ethiopia", @"area": @(1127127), @"elec_consumption": @(1998000000), @"population": @(73053286)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"#European Union", @"area": @(3976372), @"elec_consumption": @(2661000000000), @"population": @(457030418)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Falkland Islands (Islas Malvinas)", @"area": @(12173), @"elec_consumption": @(17720000), @"population": @(2967)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Faroe Islands", @"area": @(1399), @"elec_consumption": @(204600000), @"population": @(46962)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Fiji", @"area": @(18270), @"elec_consumption": @(697500000), @"population": @(893354)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Finland", @"area": @(338145), @"elec_consumption": @(78580000000), @"population": @(5223442)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"France", @"area": @(547030), @"elec_consumption": @(414700000000), @"population": @(60656178)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"French Guiana", @"area": @(91000), @"elec_consumption": @(427900000), @"population": @(195506)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"French Polynesia", @"area": @(4167), @"elec_consumption": @(353400000), @"population": @(270485)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Gabon", @"area": @(267667), @"elec_consumption": @(1080000000), @"population": @(1389201)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Gambia The", @"area": @(11300), @"elec_consumption": @(83990000), @"population": @(1593256)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Georgia", @"area": @(69700), @"elec_consumption": @(6811000000), @"population": @(4677401)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Germany", @"area": @(357021), @"elec_consumption": @(519500000000), @"population": @(82431390)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Ghana", @"area": @(239460), @"elec_consumption": @(6137000000), @"population": @(21029853)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Gibraltar", @"area": @(7), @"elec_consumption": @(96760000), @"population": @(27884)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Greece", @"area": @(131940), @"elec_consumption": @(47420000000), @"population": @(10668354)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Greenland", @"area": @(2166086), @"elec_consumption": @(227900000), @"population": @(56375)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Grenada", @"area": @(344), @"elec_consumption": @(138600000), @"population": @(89502)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guadeloupe", @"area": @(1780), @"elec_consumption": @(1079000000), @"population": @(448713)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guam", @"area": @(549), @"elec_consumption": @(776600000), @"population": @(168564)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guatemala", @"area": @(108890), @"elec_consumption": @(5760000000), @"population": @(14655189)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guinea", @"area": @(245857), @"elec_consumption": @(795200000), @"population": @(9467866)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guinea-Bissau", @"area": @(36120), @"elec_consumption": @(51150000), @"population": @(1416027)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Guyana", @"area": @(214970), @"elec_consumption": @(751400000), @"population": @(765283)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Haiti", @"area": @(27750), @"elec_consumption": @(574700000), @"population": @(8121622)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Honduras", @"area": @(112090), @"elec_consumption": @(3771000000), @"population": @(6975204)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Hong Kong", @"area": @(1092), @"elec_consumption": @(38450000000), @"population": @(6898686)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Hungary", @"area": @(93030), @"elec_consumption": @(35990000000), @"population": @(10006835)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Iceland", @"area": @(103000), @"elec_consumption": @(7692000000), @"population": @(296737)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"India", @"area": @(3287590), @"elec_consumption": @(510100000000), @"population": @(1080264388)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Indonesia", @"area": @(1919440), @"elec_consumption": @(92350000000), @"population": @(241973879)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Iran", @"area": @(1648000), @"elec_consumption": @(119900000000), @"population": @(68017860)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Iraq", @"area": @(437072), @"elec_consumption": @(33700000000), @"population": @(26074906)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Ireland", @"area": @(70280), @"elec_consumption": @(21780000000), @"population": @(4015676)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Israel", @"area": @(20770), @"elec_consumption": @(38300000000), @"population": @(6276883)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Italy", @"area": @(301230), @"elec_consumption": @(293900000000), @"population": @(58103033)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Jamaica", @"area": @(10991), @"elec_consumption": @(5849000000), @"population": @(2731832)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Japan", @"area": @(377835), @"elec_consumption": @(971000000000), @"population": @(127417244)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Jersey", @"area": @(116), @"elec_consumption": @(630100000), @"population": @(90812)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Jordan", @"area": @(92300), @"elec_consumption": @(7094000000), @"population": @(5759732)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Kazakhstan", @"area": @(2717300), @"elec_consumption": @(62210000000), @"population": @(15185844)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Kenya", @"area": @(582650), @"elec_consumption": @(4337000000), @"population": @(33829590)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Kiribati", @"area": @(811), @"elec_consumption": @(6510000), @"population": @(103092)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Korea North", @"area": @(120540), @"elec_consumption": @(31260000000), @"population": @(22912177)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Korea South", @"area": @(98480), @"elec_consumption": @(293600000000), @"population": @(48422644)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Kuwait", @"area": @(17820), @"elec_consumption": @(30160000000), @"population": @(2335648)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Kyrgyzstan", @"area": @(198500), @"elec_consumption": @(10210000000), @"population": @(5146281)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Laos", @"area": @(236800), @"elec_consumption": @(3036000000), @"population": @(6217141)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Latvia", @"area": @(64589), @"elec_consumption": @(5829000000), @"population": @(2290237)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Lebanon", @"area": @(10400), @"elec_consumption": @(8591000000), @"population": @(3826018)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Lesotho", @"area": @(30355), @"elec_consumption": @(308000000), @"population": @(1867035)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Liberia", @"area": @(111370), @"elec_consumption": @(454600000), @"population": @(3482211)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Libya", @"area": @(1759540), @"elec_consumption": @(19430000000), @"population": @(5765563)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Lithuania", @"area": @(65200), @"elec_consumption": @(10170000000), @"population": @(3596617)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Luxembourg", @"area": @(2586), @"elec_consumption": @(5735000000), @"population": @(468571)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Macau", @"area": @(25), @"elec_consumption": @(1772000000), @"population": @(449198)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Macedonia", @"area": @(25333), @"elec_consumption": @(7216000000), @"population": @(2045262)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Madagascar", @"area": @(587040), @"elec_consumption": @(781400000), @"population": @(18040341)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Malawi", @"area": @(118480), @"elec_consumption": @(1012000000), @"population": @(12158924)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Malaysia", @"area": @(329750), @"elec_consumption": @(68400000000), @"population": @(23953136)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Maldives", @"area": @(300), @"elec_consumption": @(115700000), @"population": @(349106)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mali", @"area": @(1240000), @"elec_consumption": @(651000000), @"population": @(12291529)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Malta", @"area": @(316), @"elec_consumption": @(2000000000), @"population": @(398534)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Martinique", @"area": @(1100), @"elec_consumption": @(1095000000), @"population": @(432900)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mauritania", @"area": @(1030700), @"elec_consumption": @(176900000), @"population": @(3086859)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mauritius", @"area": @(2040), @"elec_consumption": @(1707000000), @"population": @(1230602)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mexico", @"area": @(1972550), @"elec_consumption": @(189700000000), @"population": @(106202903)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Micronesia Federated States of", @"area": @(702), @"elec_consumption": @(178600000), @"population": @(108105)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Moldova", @"area": @(33843), @"elec_consumption": @(4605000000), @"population": @(4455421)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mongolia", @"area": @(1564116), @"elec_consumption": @(2209000000), @"population": @(2791272)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Montserrat", @"area": @(102), @"elec_consumption": @(1674000), @"population": @(9341)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Morocco", @"area": @(446550), @"elec_consumption": @(14240000000), @"population": @(32725847)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Mozambique", @"area": @(801590), @"elec_consumption": @(5046000000), @"population": @(19406703)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Namibia", @"area": @(825418), @"elec_consumption": @(1920000000), @"population": @(2030692)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Nauru", @"area": @(21), @"elec_consumption": @(27900000), @"population": @(13048)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Nepal", @"area": @(140800), @"elec_consumption": @(2005000000), @"population": @(27676547)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Netherlands", @"area": @(41526), @"elec_consumption": @(100700000000), @"population": @(16407491)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Netherlands Antilles", @"area": @(960), @"elec_consumption": @(934300000), @"population": @(219958)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"New Caledonia", @"area": @(19060), @"elec_consumption": @(1471000000), @"population": @(216494)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"New Zealand", @"area": @(268680), @"elec_consumption": @(35710000000), @"population": @(4035461)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Nicaragua", @"area": @(129494), @"elec_consumption": @(2318000000), @"population": @(5465100)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Niger", @"area": @(1267000), @"elec_consumption": @(327600000), @"population": @(11665937)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Nigeria", @"area": @(923768), @"elec_consumption": @(18430000000), @"population": @(128771988)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Niue", @"area": @(260), @"elec_consumption": @(2790000), @"population": @(2166)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Norway", @"area": @(324220), @"elec_consumption": @(107400000000), @"population": @(4593041)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Oman", @"area": @(212460), @"elec_consumption": @(9792000000), @"population": @(3001583)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Pakistan", @"area": @(803940), @"elec_consumption": @(52660000000), @"population": @(162419946)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Panama", @"area": @(78200), @"elec_consumption": @(4473000000), @"population": @(3039150)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Papua New Guinea", @"area": @(462840), @"elec_consumption": @(1561000000), @"population": @(5545268)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Paraguay", @"area": @(406750), @"elec_consumption": @(2469000000), @"population": @(6347884)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Peru", @"area": @(1285220), @"elec_consumption": @(20220000000), @"population": @(27925628)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Philippines", @"area": @(300000), @"elec_consumption": @(46050000000), @"population": @(87857473)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Poland", @"area": @(312685), @"elec_consumption": @(117400000000), @"population": @(38635144)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Portugal", @"area": @(92391), @"elec_consumption": @(42150000000), @"population": @(10566212)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Puerto Rico", @"area": @(9104), @"elec_consumption": @(20540000000), @"population": @(3916632)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Qatar", @"area": @(11437), @"elec_consumption": @(9046000000), @"population": @(863051)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Reunion", @"area": @(2517), @"elec_consumption": @(1084000000), @"population": @(776948)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Romania", @"area": @(237500), @"elec_consumption": @(57500000000), @"population": @(22329977)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Russia", @"area": @(17075200), @"elec_consumption": @(894300000000), @"population": @(143420309)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Rwanda", @"area": @(26338), @"elec_consumption": @(195000000), @"population": @(8440820)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saint Helena", @"area": @(410), @"elec_consumption": @(4650000), @"population": @(7460)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saint Kitts and Nevis", @"area": @(261), @"elec_consumption": @(98440000), @"population": @(38958)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saint Lucia", @"area": @(616), @"elec_consumption": @(251300000), @"population": @(166312)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saint Pierre and Miquelon", @"area": @(242), @"elec_consumption": @(40060000), @"population": @(7012)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saint Vincent and the Grenadines", @"area": @(389), @"elec_consumption": @(84820000), @"population": @(117534)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Samoa", @"area": @(2944), @"elec_consumption": @(113500000), @"population": @(177287)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Sao Tome and Principe", @"area": @(1001), @"elec_consumption": @(15810000), @"population": @(187410)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Saudi Arabia", @"area": @(1960582), @"elec_consumption": @(128500000000), @"population": @(26417599)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Senegal", @"area": @(196190), @"elec_consumption": @(1615000000), @"population": @(11126832)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Serbia and Montenegro", @"area": @(102350), @"elec_consumption": @(32330000000), @"population": @(10829175)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Seychelles", @"area": @(455), @"elec_consumption": @(202800000), @"population": @(81188)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Sierra Leone", @"area": @(71740), @"elec_consumption": @(237400000), @"population": @(6017643)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Singapore", @"area": @(693), @"elec_consumption": @(32000000000), @"population": @(4425720)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Slovakia", @"area": @(48845), @"elec_consumption": @(28890000000), @"population": @(5431363)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Slovenia", @"area": @(20273), @"elec_consumption": @(11800000000), @"population": @(2011070)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Solomon Islands", @"area": @(28450), @"elec_consumption": @(29760000), @"population": @(538032)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Somalia", @"area": @(637657), @"elec_consumption": @(223500000), @"population": @(8591629)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"South Africa", @"area": @(1219912), @"elec_consumption": @(189400000000), @"population": @(44344136)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Spain", @"area": @(504782), @"elec_consumption": @(218400000000), @"population": @(40341462)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Sri Lanka", @"area": @(65610), @"elec_consumption": @(6228000000), @"population": @(20064776)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Sudan", @"area": @(2505810), @"elec_consumption": @(2400000000), @"population": @(40187486)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Suriname", @"area": @(163270), @"elec_consumption": @(1845000000), @"population": @(438144)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Swaziland", @"area": @(17363), @"elec_consumption": @(1173000000), @"population": @(1173900)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Sweden", @"area": @(449964), @"elec_consumption": @(138100000000), @"population": @(9001774)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Switzerland", @"area": @(41290), @"elec_consumption": @(54530000000), @"population": @(7489370)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Syria", @"area": @(185180), @"elec_consumption": @(24320000000), @"population": @(18448752)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Taiwan", @"area": @(35980), @"elec_consumption": @(147400000000), @"population": @(22894384)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Tajikistan", @"area": @(143100), @"elec_consumption": @(14410000000), @"population": @(7163506)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Tanzania", @"area": @(945087), @"elec_consumption": @(2566000000), @"population": @(36766356)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Thailand", @"area": @(514000), @"elec_consumption": @(106100000000), @"population": @(65444371)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Togo", @"area": @(56785), @"elec_consumption": @(451200000), @"population": @(5681519)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Tonga", @"area": @(748), @"elec_consumption": @(23060000), @"population": @(112422)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Trinidad and Tobago", @"area": @(5128), @"elec_consumption": @(5341000000), @"population": @(1088644)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Tunisia", @"area": @(163610), @"elec_consumption": @(10050000000), @"population": @(10074951)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Turkey", @"area": @(780580), @"elec_consumption": @(117900000000), @"population": @(69660559)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Turkmenistan", @"area": @(488100), @"elec_consumption": @(8908000000), @"population": @(4952081)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Turks and Caicos Islands", @"area": @(430), @"elec_consumption": @(4650000), @"population": @(20556)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Uganda", @"area": @(236040), @"elec_consumption": @(1401000000), @"population": @(27269482)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Ukraine", @"area": @(603700), @"elec_consumption": @(132000000000), @"population": @(47425336)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"United Arab Emirates", @"area": @(82880), @"elec_consumption": @(36510000000), @"population": @(2563212)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"United Kingdom", @"area": @(244820), @"elec_consumption": @(337400000000), @"population": @(60441457)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"United States", @"area": @(9631418), @"elec_consumption": @(3660000000000), @"population": @(295734134)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Uruguay", @"area": @(176220), @"elec_consumption": @(5878000000), @"population": @(3415920)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Uzbekistan", @"area": @(447400), @"elec_consumption": @(46660000000), @"population": @(26851195)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Vanuatu", @"area": @(12200), @"elec_consumption": @(45030000), @"population": @(205754)};
-    mutableRev.body = @{@"name": @"Venezuela", @"area": @(912050), @"elec_consumption": @(89300000000), @"population": @(25375281)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Vietnam", @"area": @(329560), @"elec_consumption": @(32060000000), @"population": @(83535576)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Virgin Islands", @"area": @(352), @"elec_consumption": @(962600000), @"population": @(108708)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Western Sahara", @"area": @(266000), @"elec_consumption": @(83700000), @"population": @(273008)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Yemen", @"area": @(527970), @"elec_consumption": @(2827000000), @"population": @(20727063)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Zambia", @"area": @(752614), @"elec_consumption": @(5345000000), @"population": @(11261795)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    mutableRev.body = @{@"name": @"Zimbabwe", @"area": @(390580), @"elec_consumption": @(11220000000), @"population": @(12746990)};
-    [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    
+    for (NSDictionary *doc in array) {
+        mutableRev.body = doc;
+        [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    }
 }
 
 - (int)countResults:(CDTQueryResult*)res
