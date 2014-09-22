@@ -22,6 +22,7 @@
 
 #import "TD_Revision.h"
 #import "TD_Database.h"
+#import "TD_Body.h"
 #import "TDPusher.h"
 #import "TDPuller.h"
 #import "TDReplicatorManager.h"
@@ -160,7 +161,12 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             CDTFilterBlock cdtfilter = [pushRep.filter copy];
             
             tdpusher.filter = ^(TD_Revision *rev, NSDictionary* params){
-                return cdtfilter([[CDTDocumentRevision alloc] initWithTDRevision:rev], params);
+                return cdtfilter([[CDTDocumentRevision alloc]initWithDocId:rev.docID
+                                                                revisionId:rev.revID
+                                                                      body:rev.body.properties
+                                                                   deleted:rev.deleted
+                                                               attachments:@{}
+                                                                  sequence:rev.sequence], params);
             };
             
         }

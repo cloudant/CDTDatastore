@@ -35,12 +35,19 @@
 
 @property (nonatomic,readonly) SequenceNumber sequence;
 
-@property (nonatomic,strong,readonly) TD_Revision *td_rev;
 
--(id)initWithTDRevision:(TD_Revision*)rev ;
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+       attachments:(NSDictionary *) attachments;
 
--(id)initWithTDRevision:(TD_Revision*)rev
-         andAttachments: (NSDictionary *) attachments;
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+       attachments:(NSDictionary *)attachments
+          sequence:(SequenceNumber)sequence;
+
 
 /** 
  Return document content as an NSData object.

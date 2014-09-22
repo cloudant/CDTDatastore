@@ -38,43 +38,56 @@
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
 
--(id)initWithTDRevision:(TD_Revision*)rev
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *) revId
+              body:(NSDictionary *)body
+       attachments:(NSDictionary *) attachments
 {
-    return [self initWithTDRevision:rev andAttachments:nil];
+    return [self initWithDocId:docId
+                    revisionId:revId
+                          body:body
+                       deleted:NO
+                   attachments:attachments
+                      sequence:0];
 }
 
--(id)initWithTDRevision:(TD_Revision*)rev andAttachments: (NSDictionary *) attachments
+-(id)initWithDocId:(NSString *)docId
+        revisionId:(NSString *)revId
+              body:(NSDictionary *)body
+           deleted:(BOOL)deleted
+       attachments:(NSDictionary *)attachments
+          sequence:(SequenceNumber)sequence
 {
+ 
     self = [super init];
-    if (self) {
-        _td_rev = rev;
-        _revId = _td_rev.revID;
+    
+    if(self){
         
-        // Copy td_body propertes and
-        // remove all _ prefixed properties, _ prefixed properties are reservered for internal
-        // use in TouchDB
-        
-        NSMutableDictionary *mutableCopy = [_td_rev.body.properties mutableCopy];
-        
-        NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
-        
-        NSArray * keysToRemove = [[_td_rev.body.properties allKeys]
-                                  filteredArrayUsingPredicate: _prefixPredicate];
-        
-        [mutableCopy removeObjectsForKeys:keysToRemove];
-        _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        _docId = _td_rev.docID;
-        _deleted = _td_rev.deleted;
-        _sequence = _td_rev.sequence;
-        _private_attachments = [attachments copy];
+        if(!docId || !revId || !body){
+            return nil;
+        }
+        _docId = docId;
+        _revId = revId;
+        _deleted = deleted;
+        _private_attachments = attachments;
+        _sequence = sequence;
+        if(!deleted){
+            NSMutableDictionary *mutableCopy = [body mutableCopy];
+            
+            NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
+            
+            NSArray * keysToRemove = [[body allKeys]
+                                      filteredArrayUsingPredicate: _prefixPredicate];
+            
+            [mutableCopy removeObjectsForKeys:keysToRemove];
+            _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+        }
+        else
+            _private_body = [NSDictionary dictionary];
     }
     return self;
-}
-
-
--(TD_Revision*)TD_RevisionValue
-{
-    return self.td_rev;
+    
+    
 }
 
 #pragma GCC diagnostic push
@@ -92,13 +105,14 @@
         return nil;
     }
     
-    return json;}
+    return json;
+}
 
 -(NSDictionary*)documentAsDictionary
 {
     // First remove extra _properties added by TD_Database.m#extraPropertiesForRevision:options:
     // and put them into attributes
-    NSMutableDictionary *touch_properties = [self.td_rev.body.properties mutableCopy];
+    NSMutableDictionary *touch_properties = [self.body mutableCopy];
 
     // _id, _rev, _deleted are already stored outside the dictionary
     [touch_properties removeObjectForKey:@"_id"];

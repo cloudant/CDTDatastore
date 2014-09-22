@@ -53,7 +53,12 @@
     TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                          revID:nil
                                                        deleted:YES];
-    return [[CDTDocumentRevision alloc] initWithTDRevision:revision];
+    return [[CDTDocumentRevision alloc]initWithDocId:revision.docID
+                                          revisionId:revision.revID
+                                                body:revision.body.properties
+                                             deleted:revision.deleted
+                                         attachments:@{}
+                                            sequence:revision.sequence];
 }
 @end
 
@@ -132,7 +137,11 @@
                                                       revID:old.revId
                                                     deleted:NO];
     tdrev.body = tdbody;
-    CDTDocumentRevision *theReturn = [[CDTDocumentRevision alloc] initWithTDRevision:tdrev];
+    CDTDocumentRevision *theReturn = [[CDTDocumentRevision alloc]initWithDocId:tdrev.docID
+                                                                    revisionId:tdrev.revID
+                                                                          body:tdrev.body.properties
+                                                                       deleted:tdrev.deleted attachments:@{}
+                                                                      sequence:tdrev.sequence];
     
     return theReturn;
     
