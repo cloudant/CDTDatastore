@@ -39,6 +39,8 @@
 		985F84D5198BDA6D004D8713 /* AttachmentCRUDMutableDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */; };
 		985FEFFF19CC597400EA5392 /* IndexManagerTestsNewAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FEFFE19CC597400EA5392 /* IndexManagerTestsNewAPI.m */; };
 		985FF00019CC597400EA5392 /* IndexManagerTestsNewAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FEFFE19CC597400EA5392 /* IndexManagerTestsNewAPI.m */; };
+		985FF00219D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */; };
+		985FF00319D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */; };
 		989E6E22198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
 		989E6E23198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
@@ -109,6 +111,7 @@
 		985F84D3198BD3A4004D8713 /* AttachmentCRUDMutableDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUDMutableDocument.m; path = Attachments/AttachmentCRUDMutableDocument.m; sourceTree = "<group>"; };
 		985FEFFD19CC597400EA5392 /* IndexManagerTestsNewAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexManagerTestsNewAPI.h; sourceTree = "<group>"; };
 		985FEFFE19CC597400EA5392 /* IndexManagerTestsNewAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerTestsNewAPI.m; sourceTree = "<group>"; };
+		985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEventsNewAPIs.m; path = Events/CDTDatastoreEventsNewAPIs.m; sourceTree = "<group>"; };
 		989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreMutableDocumentCrud.m; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
@@ -250,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				27ACD1ED193DDDF000658EC2 /* CDTDatastoreEvents.m */,
+				985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */,
 			);
 			name = Events;
 			sourceTree = "<group>";
@@ -470,6 +474,7 @@
 				9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D23FF188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
+				985FF00219D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27D96E3818E1D93F00DEA006 /* AttachmentCRUD.m in Sources */,
 				27389E3618534E050027A404 /* DatastoreActions.m in Sources */,
@@ -505,6 +510,7 @@
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D2400188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
+				985FF00319D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */,
 				9F0D240F188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				9F0D23F8188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27D96E3918E1D93F00DEA006 /* AttachmentCRUD.m in Sources */,
