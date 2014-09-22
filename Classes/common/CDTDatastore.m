@@ -983,6 +983,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             if (TDStatusIsError(status)) {
                 *error = TDStatusToNSError(status, nil);
                 *rollback = YES;
+                deletedDocs = nil;
                 return;
             }
             deleted = [[CDTDocumentRevision alloc]initWithDocId:new.docID
@@ -996,6 +997,13 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
 
     }];
+
+    if(deletedDocs){
+        NSDictionary* userInfo = $dict({@"deletedRevs",deletedDocs});
+        [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
+                                                            object:self
+                                                          userInfo:userInfo];
+    }
 
     return [deletedDocs copy];
 }

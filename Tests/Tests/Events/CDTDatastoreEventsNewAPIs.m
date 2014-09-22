@@ -182,8 +182,9 @@
     
    [self.datastore deleteDocumentWithId:mutableRev.docId error:&error];
 
-    STAssertEquals(self.watcher.counter, (NSInteger)2, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)2, @"Event not fired");
+    //3 notifications get fired for the set up, another one for the double delete
+    STAssertEquals(self.watcher.counter, (NSInteger)4, @"Event not fired");
+    STAssertEquals(self.globalWatcher.counter, (NSInteger)4, @"Event not fired");
     STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
     
 }
