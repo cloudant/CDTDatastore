@@ -324,7 +324,7 @@
 			name = Tests;
 			productName = Tests;
 			productReference = 27389E0C185345FD0027A404 /* Tests.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productType = "com.apple.product-type.bundle";
 		};
 		27CCEDC5187AD64F006F3C66 /* Tests OSX */ = {
 			isa = PBXNativeTarget;
@@ -343,7 +343,7 @@
 			name = "Tests OSX";
 			productName = "Tests OSX";
 			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
 
