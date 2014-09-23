@@ -447,7 +447,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     for (TD_Revision *td_rev in td_revs) {
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:td_rev.docID
                                                                  revisionId:td_rev.revID
-                                                                       body:td_rev.body.properties
+                                                                       body:@{}
                                                                     deleted:td_rev.deleted
                                                                 attachments:@{}
                                                                    sequence:td_rev.sequence];
