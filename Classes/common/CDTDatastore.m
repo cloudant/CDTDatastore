@@ -61,11 +61,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         if (![_database open]) {
             return nil;
         }
-        
+
         NSString *dir = [[database path] stringByDeletingLastPathComponent];
         NSString *name = [database name];
         _extensionsDir = [dir stringByAppendingPathComponent: [NSString stringWithFormat:@"%@_extensions", name]];
-        
+
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(TDdbChanged:)
                                                      name: TD_DatabaseChangeNotification
@@ -97,21 +97,21 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
  * All this wrapping is to prevent TD* types escaping.
  */
 - (void) TDdbChanged:(NSNotification*)n {
-    
+
     // Notification structure:
-    
+
     /** NSNotification posted when a document is updated.
      UserInfo keys:
      - @"rev": the new TD_Revision,
      - @"source": NSURL of remote db pulled from,
      - @"winner": new winning TD_Revision, _if_ it changed (often same as rev).
      */
-    
+
     //    LogTo(CDTReplicatorLog, @"CDTReplicator: dbChanged");
-    
+
     NSDictionary *nUserInfo = n.userInfo;
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-    
+
     if (nil != nUserInfo[@"rev"]) {
         TD_Revision *tdRev = nUserInfo[@"rev"];
         userInfo[@"rev"] = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
@@ -121,7 +121,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                          attachments:@{}
                                                             sequence:tdRev.sequence];
     }
-    
+
     if (nil != nUserInfo[@"winner"]) {
         TD_Revision *tdRev = nUserInfo[@"rev"];
         userInfo[@"winner"] = [[CDTDocumentRevision alloc]initWithDocId:tdRev.docID
@@ -131,11 +131,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                             attachments:@{}
                                                                sequence:tdRev.sequence];
     }
-    
+
     if (nil != nUserInfo[@"source"]) {
         userInfo[@"winner"] = nUserInfo[@"source"];
     }
-    
+
     [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
                                                         object:self
                                                       userInfo:userInfo];
@@ -161,18 +161,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self validateBody:body error:error]) {
         return nil;
     }
-    
+
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
-    
+
+
     TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                          revID:nil
                                                        deleted:NO];
     revision.body = body.td_body;
-    
+
     TDStatus status;
     TD_Revision *new = [self.database putRevision:revision
                                    prevRevisionID:nil
@@ -182,7 +182,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     return [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                           revisionId:new.revID
                                                 body:new.body.properties
@@ -198,23 +198,23 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self validateBody:body error:error]) {
         return nil;
     }
-    
+
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     TDStatus status;
     TD_Revision *new = [self.database putRevision:[body TD_RevisionValue]
                                    prevRevisionID:nil
                                     allowConflict:NO
                                            status:&status];
-    
+
     if (TDStatusIsError(status)) {
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     return [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                           revisionId:new.revID
                                                 body:new.body.properties
@@ -239,7 +239,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     TDStatus status;
     TD_Revision *rev = [self.database getDocumentWithID:docId
                                              revisionID:revId
@@ -251,7 +251,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
         return nil;
     }
-    
+
     CDTDocumentRevision *revision = [[CDTDocumentRevision alloc]initWithDocId:rev.docID
                                                                    revisionId:rev.revID
                                                                          body:rev.body.properties
@@ -259,20 +259,20 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                                   attachments:@{}
                                                                      sequence:rev.sequence];
     NSArray * attachments = [self attachmentsForRev:revision error:error];
-    
+
     NSMutableDictionary * attachmentsDict =  [NSMutableDictionary dictionary];
-    
+
     for(CDTAttachment * attachment in attachments){
         [attachmentsDict setObject:attachment forKey:attachment.name];
     }
-    
+
     revision = [[CDTDocumentRevision alloc]initWithDocId:rev.docID
                                               revisionId:rev.revID
                                                     body:rev.body.properties
                                                  deleted:rev.deleted
                                              attachments:attachmentsDict
                                                 sequence:rev.sequence];
-    
+
     return revision;
 }
 
@@ -282,7 +282,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
-    
+
     NSArray *result = [NSArray array];
     TDContentOptions contentOptions = kTDIncludeLocalSeq;
     struct TDQueryOptions query = {
@@ -293,35 +293,35 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         .includeDocs = YES,
         .content = contentOptions
     };
-    
+
     // This method must loop to get around the fact that conflicted documents
     // contribute more than one row in the query -getDocsWithIDs:options: uses,
     // so in the face of conflicted documents, the initial query above will
     // only return the winning revisions of a subset of the documents.
     BOOL done = NO;
     do {
-        
+
         NSMutableArray *batch = [NSMutableArray array];
-        
+
         NSDictionary *dictResults = [self.database getDocsWithIDs:nil options:&query];
-        
+
         for (NSDictionary *row in dictResults[@"rows"]) {
             NSString *docId = row[@"id"];
             NSString *revId = row[@"value"][@"rev"];
-            
+
             TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                                  revID:revId
                                                                deleted:NO];
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
             revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
-            
+
             CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:revision.docID
                                                                      revisionId:revision.revID
                                                                            body:revision.body.properties
                                                                         deleted:revision.deleted
                                                                     attachments:@{}
                                                                        sequence:revision.sequence];
-            
+
             NSArray * attachments = [self attachmentsForRev:ob error:&error];
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
             for (CDTAttachment * attachment in attachments){
@@ -334,15 +334,15 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                            attachments:dict
                                                               sequence:revision.sequence]];
         }
-        
+
         result = [result arrayByAddingObjectsFromArray:batch];
-        
+
         done = ((NSArray*)dictResults[@"rows"]).count == 0;
-        
+
         query.skip = query.skip + query.limit;
-        
+
     } while (!done);
-    
+
     return result;
 }
 
@@ -380,30 +380,30 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
-    
+
     NSMutableArray *result = [NSMutableArray array];
-    
+
     NSDictionary *dictResults = [self.database getDocsWithIDs:docIds options:queryOptions];
-    
+
     for (NSDictionary *row in dictResults[@"rows"]) {
         //            NSLog(@"%@", row);
         NSString *docId = row[@"id"];
         NSString *revId = row[@"value"][@"rev"];
-        
+
         // deleted field only present in deleted documents, but to be safe we use
         // the fact that (BOOL)[nil -boolValue] is false
         BOOL deleted = (BOOL)[row[@"value"][@"deleted"] boolValue];
-        
+
         TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                              revID:revId
                                                            deleted:deleted];
         revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
-        
+
         // Deleted documents won't have a `doc` field
         if (!deleted) {
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
         }
-        
+
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:revision.docID
                                                                  revisionId:revision.revID
                                                                        body:revision.body.properties
@@ -422,7 +422,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                         attachments:dict
                                                            sequence:revision.sequence]];
     }
-    
+
     return result;
 }
 
@@ -432,18 +432,18 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
-    
+
     NSMutableArray *result = [NSMutableArray array];
-    
+
     // Array of TD_Revision
     TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
                                                          revID:revision.revId
                                                        deleted:revision.deleted];
 
-    
-    
+
+
     NSArray *td_revs = [self.database getRevisionHistory:converted];
-    
+
     for (TD_Revision *td_rev in td_revs) {
         CDTDocumentRevision *ob = [[CDTDocumentRevision alloc]initWithDocId:td_rev.docID
                                                                  revisionId:td_rev.revID
@@ -453,7 +453,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                                    sequence:td_rev.sequence];
         [result addObject:ob];
     }
-    
+
     return result;
 }
 
@@ -485,13 +485,13 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                              code:code
                                          userInfo:userInfo];
             }
-            
+
             return NO;
         }
     }
-    
+
     return YES;
-    
+
 }
 
 
@@ -504,7 +504,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     __block CDTDocumentRevision *result;
     __weak CDTDatastore *datastore = self;
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
@@ -515,15 +515,15 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                         rollback:rollback
                                            error:error];
     }];
-    
+
     if (result) {
-        
+
         NSDictionary* userInfo = @{@"rev": result, @"winner": result};
         [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
                                                             object:self
                                                           userInfo:userInfo];
     }
-    
+
     return result;
 }
 
@@ -537,7 +537,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self validateBody:body error:error]) {
         return nil;
     }
-    
+
     return [self updateDocumentFromTDRevision:body.TD_RevisionValue
                                         docId:docId
                                       prevRev:prevRev
@@ -545,8 +545,8 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                      rollback:rollback
                                     legacyAPI:YES
                                         error:error];
-    
-    
+
+
 }
 
 
@@ -554,12 +554,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                          rev:(NSString*)rev
                                        error:(NSError * __autoreleasing *)error
 {
-    
+
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return NO;
     }
-    
+
     TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                          revID:nil
                                                        deleted:YES];
@@ -572,7 +572,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     return [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                           revisionId:new.revID
                                                 body:new.body.properties
@@ -604,27 +604,27 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     if (![self validateBodyDictionary:revision.body error:error]) {
         return nil;
     }
-    
-    
+
+
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     //convert CDTMutableDocument to TD_Revision
-    
+
     //we know it shouldn't have a TD_revision behind it, since its a create
-    
+
     TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
                                                          revID:nil
                                                        deleted:false];
     converted.body = [[TD_Body alloc]initWithProperties:revision.body];
-    
-    
+
+
     //dowload attachments to the blob store
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     NSMutableArray *attachmentsToCopy = [NSMutableArray array];
@@ -633,7 +633,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             CDTAttachment * attachment = [revision.attachments objectForKey:key];
             //check if thae attachment has been saved to blobstore, if not save it
             if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
-                
+
                 NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
                                                                            error:error];
                 if (attachmentData != nil) {
@@ -652,22 +652,22 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             }
         }
     }
-    
-    
+
+
     //create the document revision with the attachments
-    
+
     __block CDTDocumentRevision *saved;
     __weak CDTDatastore *datastore = self;
-    
+
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        
+
         TDStatus status;
         TD_Revision *new =  [datastore.database putRevision:converted
                                              prevRevisionID:nil
                                               allowConflict:NO
                                                      status:&status
                                                    database:db];
-        
+
         if (TDStatusIsError(status)) {
             *error = TDStatusToNSError(status, nil);
             *rollback = YES;
@@ -701,9 +701,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     saved = nil;
                     return;
                 }
-                
+
             }
-            
+
             saved = [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                                    revisionId:new.revID
                                                          body:new.body.properties
@@ -712,24 +712,29 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                      sequence:new.sequence];
         }
     }];
-    
+
     if(saved){
         NSArray * attachmentsFromBlobStore = [self attachmentsForRev:saved error:error];
         NSMutableDictionary * attachmentDict = [NSMutableDictionary dictionary];
-        
+
         for(CDTAttachment * attachment in attachmentsFromBlobStore){
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
-        
+
         saved = [[CDTDocumentRevision alloc] initWithDocId:saved.docId
                                                 revisionId:saved.revId
                                                       body:saved.body
                                                    deleted:saved.deleted
                                                attachments:attachmentDict
                                                   sequence:saved.sequence];
+
+        NSDictionary* userInfo = @{@"rev": saved, @"winner": saved};
+        [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
+                                                            object:self
+                                                          userInfo:userInfo];
     }
     return saved;
-    
+
 }
 
 -(CDTDocumentRevision*)updateDocumentFromRevision:(CDTMutableDocumentRevision *)revision
@@ -740,22 +745,22 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     if(![self validateBodyDictionary:revision.body error:error]) {
         return nil;
     }
-    
+
     if (![self ensureDatabaseOpen]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
-    
+
+
     TD_Revision *converted = [[TD_Revision alloc]initWithDocID:revision.docId
                                                          revID:revision.sourceRevId
                                                        deleted:revision.deleted];
     converted.body = [[TD_Body alloc]initWithProperties:revision.body];
-    
+
     NSMutableArray *downloadedAttachments = [[NSMutableArray alloc]init];
     NSMutableArray *attachmentToCopy = [[NSMutableArray alloc]init];
     if(revision.attachments){
@@ -764,7 +769,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             //if the attachment is not saved, save it to the blob store
             //otherwise add it to the array to copy it to the new revision
             if(![attachment isKindOfClass:[CDTSavedAttachment class]]){
-                
+
                 NSDictionary *attachmentData = [self streamAttachmentToBlobStore:attachment
                                                                            error:error];
                 if (attachmentData != nil) {
@@ -781,13 +786,13 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             } else {
                 [attachmentToCopy addObject:attachment];
             }
-            
+
         }
     }
-    
+
     __block CDTDocumentRevision *result;
     __weak CDTDatastore *datastore = self;
-    
+
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         result = [datastore updateDocumentFromTDRevision:converted
                                                    docId:revision.docId
@@ -796,7 +801,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                 rollback:rollback
                                                legacyAPI:NO
                                                    error:error];
-        
+
         if(result){
             for(NSDictionary * attachment in downloadedAttachments){
                 //insert each attchment into the database, if this fails rollback
@@ -820,31 +825,31 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             }
         }
     }];
-    
+
     if (result) {
-        
+
         //populate the attachment array with attachments
         NSArray * attachmentsFromBlobStore = [self attachmentsForRev:result error:error];
         NSMutableDictionary * attachmentDict = [NSMutableDictionary dictionary];
-        
+
         for(CDTAttachment * attachment in attachmentsFromBlobStore){
             [attachmentDict setObject:attachment forKey:attachment.name];
         }
-        
+
         result = [[CDTDocumentRevision alloc] initWithDocId:result.docId
                                                 revisionId:result.revId
                                                       body:result.body
                                                    deleted:result.deleted
                                                attachments:attachmentDict
                                                    sequence:result.sequence];
-        
+
         NSDictionary* userInfo = $dict({@"rev", result},
                                        {@"winner", result});
         [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
                                                             object:self
                                                           userInfo:userInfo];
     }
-    
+
     return result;
 }
 
@@ -860,12 +865,12 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
                                                          revID:nil
                                                        deleted:NO];
     revision.body = td_rev.body;
-    
+
     TDStatus status;
     TD_Revision *new = [self.database putRevision:revision
                                    prevRevisionID:prevRev
@@ -877,21 +882,21 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *rollback = YES;
         return nil;
     }
-    
+
     //due to to the change in APIs, each document has its attachments processed every update
     //the old API however still needs this little bit of code, so a simple on off switch will
     //allow both APIs to work as expected
-    
+
     if(legacy){
         // Copy over the existing attachments, as this API's contract
         // is that updating a document maintains attachments. putRevision:...
         // only carries over attachments in the _attachments dict of the
         // body, which we don't fill up as it'd be wasteful.
         if (prevRev != nil) {  // there is a previous revision to copy from
-            
+
             // Three database calls here, but safer to use TouchDB's
             // functions for now.
-            
+
             SInt64 docNumericId = [self.database getDocNumericID:docId
                                                         database:db];
             SequenceNumber fromSequence = [self.database getSequenceOfDocument:docNumericId
@@ -901,16 +906,16 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             TDStatus status = [self.database copyAttachmentsFromSequence:fromSequence
                                                               toSequence:new.sequence
                                                               inDatabase:db];
-            
+
             if (TDStatusIsError(status)) {
                 *error = TDStatusToNSError(status, nil);
                 *rollback = YES;
                 return nil;
             }
-            
+
         }
     }
-    
+
     return [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                           revisionId:new.revID
                                                 body:new.body.properties
@@ -926,7 +931,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(kTDStatusException, nil);
         return nil;
     }
-    
+
     TD_Revision *td_revision = [[TD_Revision alloc] initWithDocID:revision.docId
                                                             revID:nil
                                                           deleted:YES];
@@ -939,7 +944,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         *error = TDStatusToNSError(status, nil);
         return nil;
     }
-    
+
     return [[CDTDocumentRevision alloc]initWithDocId:new.docID
                                           revisionId:new.revID
                                                 body:new.body.properties
@@ -951,20 +956,20 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 -(NSArray*)deleteDocumentWithId:(NSString *)docId
                                       error:(NSError * __autoreleasing *) error
 {
-    
+
     __weak CDTDatastore *weakself = self;
     __block NSMutableArray *deletedDocs = [NSMutableArray array];
-    
+
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
       FMResultSet * result =  [db executeQueryWithFormat:@"SELECT revs.revid FROM docs,revs WHERE \
         revs.doc_id = docs.doc_id AND docs.docid = %@ AND deleted = 0 AND revs.sequence \
         NOT IN (SELECT DISTINCT parent FROM revs WHERE parent NOT NULL)",docId];
-        
+
         while ([result next]){
             NSString * revId = [result stringForColumn:@"revid"];
             CDTDocumentRevision * deleted;
-            
+
             TD_Revision *td_revision = [[TD_Revision alloc] initWithDocID:docId
                                                                     revID:nil
                                                                   deleted:YES];
@@ -974,10 +979,11 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                             allowConflict:NO
                                                    status:&status
                                                  database:db];
-              
+
             if (TDStatusIsError(status)) {
                 *error = TDStatusToNSError(status, nil);
                 *rollback = YES;
+                deletedDocs = nil;
                 return;
             }
             deleted = [[CDTDocumentRevision alloc]initWithDocId:new.docID
@@ -989,9 +995,16 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             [deletedDocs addObject:deleted];
 
         }
-        
+
     }];
-    
+
+    if(deletedDocs){
+        NSDictionary* userInfo = $dict({@"deletedRevs",deletedDocs});
+        [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
+                                                            object:self
+                                                          userInfo:userInfo];
+    }
+
     return [deletedDocs copy];
 }
 
