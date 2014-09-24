@@ -22,7 +22,7 @@
  */
 @interface CDTTodo : NSObject
 
-@property (nonatomic,strong) NSString *description;
+@property (nonatomic,strong) NSString *taskDescription;
 @property (nonatomic) BOOL completed;
 
 -(instancetype)initWithDescription:(NSString*)description completed:(BOOL)completed;

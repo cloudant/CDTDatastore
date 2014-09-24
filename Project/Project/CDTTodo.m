@@ -22,8 +22,8 @@
 {
     self = [super init];
     if (self) {
-        self.description = description;
-        self.completed = completed;
+        _taskDescription = description;
+        _completed = completed;
     }
     return self;
 }
@@ -37,7 +37,7 @@
 -(NSDictionary*)toDict
 {
     NSDictionary *dict = @{
-                          @"description": self.description,
+                          @"description": self.taskDescription,
                           @"completed": @(self.completed),
                           @"type": @"com.cloudant.sync.example.task"
                           };

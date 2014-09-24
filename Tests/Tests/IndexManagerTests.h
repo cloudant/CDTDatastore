@@ -19,6 +19,6 @@
 
 @end
 
-@interface CDTTestIndexer1 : NSObject<CDTIndexer>
+@interface CDTTestIndexer1NewAPI : NSObject<CDTIndexer>
 
 @end
