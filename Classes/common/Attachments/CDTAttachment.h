@@ -118,3 +118,49 @@
                         type:(NSString*)type;
 
 @end
+
+@interface CDTSavedHTTPAttachment : CDTAttachment
+
+/**
+ 
+ Creates a CDTRemoteAttachment object from information obtained from
+ the _attachments object in a couch get request
+ 
+ @param name The name of the attachment eg example.txt
+ @param jsonData The decoded jsonData reccived from couchdb / cloudant
+ @param document the URL of the document this attachment is attached to
+ @param error will point to an NSError object in case of error
+ 
+ */
++(CDTSavedHTTPAttachment *)createAttachmentWithName:(NSString *)name
+                                           JSONData:(NSDictionary *) jsonData
+                                      attachmentURL:(NSURL*)attachmentURL
+                                              error:(NSError * __autoreleasing *) error;
+/**
+ 
+ Creates an attachment that represents a remote HTTP accessed attachment
+ 
+ @param attachmentURL the URL to the attachment file
+ @param name the name of the attachment
+ @param type the mime type of the attachment eg image/jpeg
+ @param size the size of the file in bytes (-1 if unkown)
+ @param data attschment data if it has already been downloaded
+ 
+ */
+-(id)initWithDocumentURL:(NSURL*)attachmentURL
+                    name:(NSString *)name
+                    type:(NSString *)type
+                    size:(NSInteger)size
+                    data:(NSData*)data;
+
+/**
+ 
+ Returns the data for an attachment. If attachment data requries downloading, (ie it was not provided
+ in the JSON with the document download) it will block while downloading the data from the remote 
+ server
+ 
+ @return the attachments data
+ 
+ */
+-(NSData*)dataFromAttachmentContent;
+@end

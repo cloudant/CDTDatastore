@@ -17,6 +17,8 @@
 #import "CDTAttachment.h"
 
 #import "GTMNSData+zlib.h"
+#import "TDBase64.h"
+#import "TD_Database.h"
 
 @implementation CDTAttachment
 
@@ -186,3 +188,70 @@
 }
 
 @end
+
+@interface CDTSavedHTTPAttachment ()
+
+@property (nonatomic) NSData * attachmentData;
+@property (readonly,nonatomic) NSURL * attachmentURL;
+
+@end
+
+@implementation CDTSavedHTTPAttachment
+
++(CDTSavedHTTPAttachment *)createAttachmentWithName:(NSString *)name
+                                   JSONData:(NSDictionary *) jsonData
+                                    attachmentURL:(NSURL*)document
+                                          error:(NSError * __autoreleasing *) error
+{
+    BOOL stub = [jsonData[@"stub"] boolValue];
+    NSNumber * length = jsonData[@"length"];
+    NSString * digest = jsonData[@"digest"];
+    NSNumber * revpos = jsonData[@"revpos"];
+    NSString * contentType = jsonData[@"content_type"];
+    NSString * data = jsonData[@"data"];
+    NSData * decodedData = nil;
+    
+    if(!stub){
+        decodedData =  [TDBase64 decode:data];
+        
+        if(!decodedData){
+            *error = TDStatusToNSError(kTDStatusAttachmentError, nil);
+            return nil;
+        }
+    }
+    
+    return [[CDTSavedHTTPAttachment alloc]initWithDocumentURL:document
+                                                      name:name
+                                                      type:contentType
+                                                      size:[length integerValue]
+                                                      data:decodedData];
+}
+
+-(id)initWithDocumentURL:(NSURL*)attachmentURL
+                    name:(NSString *)name
+                    type:(NSString *)type
+                    size:(NSInteger)size
+                    data:(NSData*)data
+{
+    self = [super initWithName:name type:type size:size];
+    
+    if(self){
+        _attachmentData = data;
+        _attachmentURL = attachmentURL;
+    }
+    
+    return self;
+}
+
+-(NSData*)dataFromAttachmentContent
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        self.attachmentData = [NSData dataWithContentsOfURL:self.attachmentURL];
+    });
+    
+    return self.attachmentData;
+}
+
+@end
+

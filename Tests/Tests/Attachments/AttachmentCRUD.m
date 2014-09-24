@@ -95,6 +95,114 @@
 
 #pragma mark Tests
 
+-(void)testDocumentRevisionFactoryWithAttachmentDataIncluded
+{
+    NSError * error;
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    NSString *encoded = [data base64EncodedStringWithOptions:0];
+    
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"aKey":@"aValue",
+                            @"_attachments":@{@"bonsai-boston.jpg":@{@"stub":[NSNumber numberWithBool:NO],
+                                                                     @"length":[NSNumber numberWithLong:[encoded length]],
+                                                                     @"digest":@"thisisahashiswear1234",
+                                                                     @"revpos":[NSNumber numberWithInt:1],
+                                                                     @"content_type":@"image/jpeg",
+                                                                     @"data":encoded
+                                                                     }
+                                              },
+                            @"_conflicts":@[],
+                            @"_deleted_conflicts":@[],
+                            @"_local_seq":@1,
+                            @"_revs_info":@{},
+                            @"_revisions":@[],
+                            @"hello":@"world"
+                            };
+    NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
+    
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere",
+                         rev.docId,
+                         @"docId was different, expected someIdHere actual %@",
+                         rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+                         rev.revId,
+                         @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
+                         rev.revId);
+    
+    STAssertEqualObjects(body, rev.body, @"Body was different");
+    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    STAssertEquals([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
+    
+}
+
+-(void)testDocumentRevisionFactoryWithAttachmentDataExcluded
+{
+    NSError * error;
+    
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:imagePath];
+    NSString *encoded = [data base64EncodedStringWithOptions:0];
+    NSURL * attachmentDir = [bundle resourceURL];
+    
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"aKey":@"aValue",
+                            @"_attachments":@{@"bonsai-boston.jpg":@{@"stub":[NSNumber numberWithBool:YES],
+                                                                     @"length":[NSNumber numberWithLong:[encoded length]],
+                                                                     @"digest":@"thisisahashiswear1234",
+                                                                     @"revpos":[NSNumber numberWithInt:1],
+                                                                     @"content_type":@"image/jpeg",
+                                                                     }
+                                              },
+                            @"_conflicts":@[],
+                            @"_deleted_conflicts":@[],
+                            @"_local_seq":@1,
+                            @"_revs_info":@{},
+                            @"_revisions":@[],
+                            @"hello":@"world"
+                            };
+    NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
+    
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:attachmentDir
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere",
+                         rev.docId,
+                         @"docId was different, expected someIdHere actual %@",
+                         rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+                         rev.revId,
+                         @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
+                         rev.revId);
+    
+    STAssertEqualObjects(body, rev.body, @"Body was different");
+    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    STAssertEquals([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
+    STAssertEqualObjects(data, [[rev.attachments objectForKey:@"bonsai-boston.jpg"]dataFromAttachmentContent],@"data was not the same");
+    
+}
+
 - (void)testCreate
 {
     NSError *error = nil;

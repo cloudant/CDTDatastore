@@ -70,8 +70,6 @@
 #pragma mark - helper methods
 
 
-
-
 -(NSArray*)generateDocuments:(int)count
 {
     NSMutableArray *result = [NSMutableArray arrayWithCapacity:count];
@@ -85,6 +83,148 @@
 
 #pragma mark - CREATE tests
 
+-(void)testDocumentRevisionFactoryValidData
+{
+    NSError * error;
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"aKey":@"aValue",
+                            @"hello":@"world"
+                            };
+    NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
+    
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+
+    STAssertEqualObjects(body, rev.body, @"Body was different");
+    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    
+}
+
+-(void)testDocumentRevisionValidDataDeletedDocWithBody
+{
+    NSError * error;
+    NSDictionary *body = @{ @"aKey":@"aValue",
+                            @"hello":@"world"
+                            };
+    
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"_deleted":[NSNumber numberWithBool:YES],
+                            @"aKey":@"aValue",
+                            @"hello":@"world"
+                            };
+
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    
+    STAssertEqualObjects(@{}, rev.body, @"Body should be empty");
+    STAssertTrue(rev.deleted, @"Document is not marked as deleted");
+}
+
+-(void)testDocumentRevisionValidDataDeletedDocWithoutBody{
+    NSError * error;
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"_deleted":[NSNumber numberWithBool:YES]
+                            };
+    
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    
+    STAssertEqualObjects([NSDictionary dictionary], rev.body, @"Body should be empty");
+    STAssertTrue(rev.deleted, @"Document is not marked as deleted");
+}
+
+-(void) testDocumentRevisionInvalidData{
+    NSError * error;
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"aKey":@"aValue",
+                            @"hello":@"world",
+                            @"_invalidKey":@"someValue"
+                            };
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNotNil(error, @"Error did not occur whencreating document with invalid data");
+    STAssertNil(rev, @"Revision was not nil");
+
+}
+
+-(void)testDocumentRevisionFactoryWithValidValuesAll_prefixs
+{
+    NSError * error;
+    NSDictionary * dict = @{@"_id":@"someIdHere",
+                            @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
+                            @"aKey":@"aValue",
+                            @"_attachments":@{},
+                            @"_conflicts":@[],
+                            @"_deleted_conflicts":@[],
+                            @"_local_seq":@1,
+                            @"_revs_info":@{},
+                            @"_revisions":@[],
+                            @"hello":@"world"
+                            };
+    NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
+    
+    STAssertNil(error, @"Error should have been nil");
+    
+    CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
+                                                                forDocument:[NSURL
+                                                                             URLWithString:@"http://localhost:5984/temp/doc"]
+                                                                      error:&error];
+    
+    STAssertNil(error, @"Error occured creating document with valid data");
+    STAssertNotNil(rev, @"Revision was nil");
+    STAssertEqualObjects(@"someIdHere",
+                         rev.docId,
+                         @"docId was different, expected someIdHere actual %@",
+                         rev.docId);
+    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+                         rev.revId,
+                         @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
+                         rev.revId);
+    
+    STAssertEqualObjects(body, rev.body, @"Body was different");
+    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    
+}
 
 -(void)testCreateOneDocumentSQLEntries
 {

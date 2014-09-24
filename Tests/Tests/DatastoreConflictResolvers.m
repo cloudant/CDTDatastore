@@ -55,7 +55,8 @@
                                                  body:@{}
                                               deleted:YES
                                           attachments:@{}
-                                             sequence:0];
+                                             sequence:0
+            ];
 }
 @end
 

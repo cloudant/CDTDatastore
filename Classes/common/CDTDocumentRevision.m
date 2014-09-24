@@ -15,9 +15,11 @@
 
 #import "CDTDocumentRevision.h"
 #import "CDTMutableDocumentRevision.h"
+#import "Attachments/CDTAttachment.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
 #import "TD_Body.h"
+#import "TD_Database.h"
 
 @interface CDTDocumentRevision ()
 
@@ -38,11 +40,78 @@
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
 
++(CDTDocumentRevision*)createRevisionFromJson:(NSDictionary*)jsonDict forDocument:(NSURL *)documentURL error:(NSError * __autoreleasing *) error
+{
+    
+    //these values are defined http://docs.couchdb.org/en/latest/api/document/common.html
+    
+    NSArray* allowed_prefixedValues = @[@"_id",
+                                        @"_rev",
+                                        @"_deleted",
+                                        @"_attachments",
+                                        @"_conflicts",
+                                        @"_deleted_conflicts",
+                                        @"_local_seq",
+                                        @"_revs_info",
+                                        @"_revisions"
+                                        ];
+    if(*error)
+        return nil;
+    
+    NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_' \
+                                                                        && NOT (self IN %@)",
+                                                                     allowed_prefixedValues
+                                                                    ];
+    
+    NSArray * invalidKeys = [[jsonDict allKeys] filteredArrayUsingPredicate:_prefixPredicate];
+    
+    if([invalidKeys count] != 0){
+        *error = TDStatusToNSError(kTDStatusBadJSON,nil);
+        return nil;
+    }
+    
+    NSString * docId = [jsonDict objectForKey:@"_id"];
+    NSString * revId = [jsonDict objectForKey:@"_rev"];
+    BOOL deleted = [[jsonDict objectForKey:@"_deleted"] boolValue];
+    NSDictionary * attachmentData = [jsonDict objectForKey:@"_attachments"];
+    
+    NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
+    
+    
+    //build the attachment objects
+    for(NSString * key in [attachmentData allKeys]){
+        NSURL * url = [NSURL URLWithString:key relativeToURL:documentURL];
+        CDTSavedHTTPAttachment * attachment = [CDTSavedHTTPAttachment createAttachmentWithName:key
+                                                                                      JSONData:[attachmentData
+                                                                                         objectForKey:key]
+                                                                                 attachmentURL:url
+                                                                                         error:error];
+        if(*error){
+            return nil;
+        }
+        
+        [attachments setObject:attachment forKey:key];
+    }
+    
+    
+    NSMutableDictionary * body = [jsonDict mutableCopy];
+    [body removeObjectsForKeys:allowed_prefixedValues];
+    
+    
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:revId
+                                                 body:body
+                                              deleted:deleted
+                                          attachments:attachments
+                                             sequence:0];
+}
+
 -(id)initWithDocId:(NSString *)docId
         revisionId:(NSString *) revId
               body:(NSDictionary *)body
        attachments:(NSDictionary *) attachments
 {
+    
     return [self initWithDocId:docId
                     revisionId:revId
                           body:body
