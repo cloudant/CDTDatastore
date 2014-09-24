@@ -20,6 +20,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTFieldIndexer.h"
 #import "CDTDatastore.h"
+#import "CDTQueryBuilder.h"
 
 #import "TD_Database.h"
 #import "TD_Body.h"
@@ -46,8 +47,6 @@ static const int VERSION = 1;
 @interface CDTIndexManager()
 
 -(CDTIndex*)getIndexWithName:(NSString*)indexName;
-
--(NSDictionary*)getAllIndexes;
 
 -(NSString*)createIndexTable:(NSString*)indexName
                         type:(CDTIndexType)type;
@@ -191,6 +190,52 @@ static const int VERSION = 1;
     return ok;
 }
 
+#pragma mark Querying
+
+-(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
+                                error: (NSError * __autoreleasing *)error
+{
+    return [self queryWithPredicate:predicate options: nil error:error];
+}
+
+-(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
+                              options: (NSDictionary*)options
+                                error: (NSError * __autoreleasing *)error
+{
+
+    CDTQueryBuilderResult* query = [CDTQueryBuilder buildWithPredicate: predicate
+                                                               options: options
+                                                                 error: error];
+    
+    if (query == nil) {
+        return nil; // error is populated by the builder
+    }
+    
+    // Validate all indexes specified in the predicate exist.
+    for(NSString *indexName in query.usedIndexes) {
+        if (![self indexExists:indexName 
+                   description:@"Index named in query does not exist."
+                         error:error]) {
+            return nil;  // error populated by indexExists:...
+        }
+    }
+    
+    NSMutableArray *docids = [NSMutableArray array];
+    
+    [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        FMResultSet *results = [db executeQuery:query.sql withArgumentsInArray:query.values];
+        while ([results next]) {
+            NSString *docid = [results stringForColumnIndex:0];
+            [docids addObject:docid];
+        }
+    }];
+    
+    // now return CDTQueryResult which is an iterator over the documents for these ids
+    CDTQueryResult *result = [[CDTQueryResult alloc] initWithDocIds:docids datastore:_datastore];
+    return result;
+}
+
+            
 -(CDTQueryResult*) queryWithDictionary:(NSDictionary*)query
                                  error:(NSError * __autoreleasing *)error
 {
@@ -217,21 +262,9 @@ static const int VERSION = 1;
     // iterate through query terms and build SQL
     for(NSString *indexName in [query keyEnumerator]) {
         
-        // validate index name
-        if (![self isValidIndexName:indexName error:error]) {
-            return nil;
-        }
-        // ... and check it exists
-        if (![self getIndexWithName:indexName]) {
-            if (error) {
-                NSDictionary *userInfo =
-                    @{NSLocalizedDescriptionKey: NSLocalizedString(@"Index named in query does not exist.", nil),
-                      NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:@"There is no index with the name \"%@\".", indexName],
-                      NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Call one of the ensureIndexed… methods to create the index as required.", nil)};
-                *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
-                                             code:CDTIndexErrorIndexDoesNotExist
-                                         userInfo:userInfo];
-            }
+        if (![self indexExists:indexName 
+                   description:@"Index named in query does not exist."
+                         error:error]) {
             return nil;
         }
         
@@ -320,22 +353,10 @@ static const int VERSION = 1;
     NSString *orderByClause = @"";
     if (options && [options valueForKey:kCDTQueryOptionSortBy]) {
         NSString *sort = [options valueForKey:kCDTQueryOptionSortBy];
-
-        // validate index name
-        if (![self isValidIndexName:sort error:error]) {
-            return nil;
-        }
-        // ... and check it exists
-        if (![self getIndexWithName:sort]) {
-            if (error) {
-                NSDictionary *userInfo =
-                    @{NSLocalizedDescriptionKey: NSLocalizedString(@"Index named in sort_by option does not exist.", nil),
-                      NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:@"There is no index with the name \"%@\".", sort],
-                      NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Call one of the ensureIndexed… methods to create the index as required.", nil)};
-                *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
-                                             code:CDTIndexErrorIndexDoesNotExist
-                                         userInfo:userInfo];
-            }
+        
+        if (![self indexExists:sort 
+                   description:@"Index named in sort_by option does not exist."
+                         error:error]) {
             return nil;
         }
         
@@ -412,21 +433,9 @@ static const int VERSION = 1;
 -(NSArray*) uniqueValuesForIndex:(NSString*)indexName
                            error:(NSError * __autoreleasing *)error
 {
-    // validate index name
-    if (![self isValidIndexName:indexName error:error]) {
-        return nil;
-    }
-    // ... and check it exists
-    if (![self getIndexWithName:indexName]) {
-        if (error) {
-            NSDictionary *userInfo =
-                @{NSLocalizedDescriptionKey: NSLocalizedString(@"Index named does not exist.", nil),
-                  NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:@"There is no index with the name \"%@\".", indexName],
-                  NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Call one of the ensureIndexed… methods to create the index as required.", nil)};
-            *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
-                                         code:CDTIndexErrorIndexDoesNotExist
-                                     userInfo:userInfo];
-        }
+    if (![self indexExists:indexName 
+               description:@"Index named in query does not exist."
+                     error:error]) {
         return nil;
     }
 
@@ -757,11 +766,41 @@ static const int VERSION = 1;
     return success;
 }
 
+
+-(BOOL)indexExists:(NSString*)indexName 
+       description:(NSString*)description
+             error:(NSError * __autoreleasing *)error
+{
+    // validate index name
+    if (![self isValidIndexName:indexName error:error]) {
+        return NO;
+    }
+    // ... and check it exists
+    if (![self getIndexWithName:indexName]) {
+        if (error) {
+            NSDictionary *userInfo =
+            @{NSLocalizedDescriptionKey: NSLocalizedString(description, nil),
+              NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:@"There is no index "
+                                                 "with the name \"%@\".", indexName],
+              NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Call one of the "
+                                                                       "ensureIndexed… methods to create the index as required.", nil)};
+            *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
+                                         code:CDTIndexErrorIndexDoesNotExist
+                                     userInfo:userInfo];
+        }
+        return NO;
+    }
+    
+    return YES;
+}
+
 -(BOOL)isValidIndexName:(NSString*)indexName
                   error:(NSError * __autoreleasing *)error
 {
-    if ([_validFieldRegexp numberOfMatchesInString:indexName
-                                           options:0 range:NSMakeRange(0,[indexName length])] == 0) {
+    NSUInteger matches = [_validFieldRegexp numberOfMatchesInString:indexName
+                                                            options:0 
+                                                              range:NSMakeRange(0, indexName.length)];
+    if (matches == 0) {
         if (error) {
             NSDictionary *userInfo =
                 @{NSLocalizedDescriptionKey: NSLocalizedString(@"Index name is not valid.", nil),

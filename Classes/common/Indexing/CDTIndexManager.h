@@ -31,6 +31,8 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
     /**
      * Index name not valid. Names can only contain letters,
      * digits and underscores. They must not start with a digit.
+     * For clarity, the validation regex is:
+     * `^[a-zA-Z][a-zA-Z0-9_]*$?`
      */
     CDTIndexErrorInvalidIndexName = 1,
     /**
@@ -208,6 +210,39 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  *  --------------------------------------------------------------------------------------
  */
 
+/**
+ * Execute query with NSPredicate.
+ *
+ * Use for/in loop or any other enumeration to retrieve the results.
+ * If only the Document IDs are required, then access the documentIds property.
+ *
+ * @param predicate NSPredicate expressing query.
+ * @param error will point to an NSError object in case of error.
+ *
+ * @return CDTQueryResult object for enumeration or retrieving Document IDs; or nil in case of
+ *         error.
+ *
+ */
+-(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
+                                error: (NSError * __autoreleasing *)error;
+
+/**
+ * Execute query with NSPredicate.
+ *
+ * Use for/in loop or any other enumeration to retrieve the results.
+ * If only the Document IDs are required, then access the documentIds property.
+ *
+ * @param predicate NSPredicate expressing query.
+ * @param options key/value pairs specifying options.
+ * @param error will point to an NSError object in case of error.
+ *
+ * @return CDTQueryResult object for enumeration or retrieving Document IDs; or nil in case of
+ *         error.
+ *
+ */
+-(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
+                              options: (NSDictionary*)options
+                                error: (NSError * __autoreleasing *)error;
 /**
  * Execute query. See TODO for details of query syntax.
  *

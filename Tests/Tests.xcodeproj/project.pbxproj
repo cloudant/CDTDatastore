@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		009D4E71AED34A54853B7F51 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BBD8D50209E84CD981F3FA7A /* libPods-osx.a */; };
+		270ED44E19D165BB007E08C4 /* CDTQueryBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */; };
 		27389E10185345FD0027A404 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E0F185345FD0027A404 /* SenTestingKit.framework */; };
 		27389E12185345FD0027A404 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E11185345FD0027A404 /* Foundation.framework */; };
 		27389E14185345FD0027A404 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E13185345FD0027A404 /* UIKit.framework */; };
@@ -43,6 +44,7 @@
 		985FF00319D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */; };
 		989E6E22198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
 		989E6E23198799AE00FB8510 /* DatastoreMutableDocumentCrud.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */; };
+		9985C74919AE5D8300636AB6 /* CDTQueryBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
 		9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -113,6 +115,7 @@
 		985FEFFE19CC597400EA5392 /* IndexManagerTestsNewAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerTestsNewAPI.m; sourceTree = "<group>"; };
 		985FF00119D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEventsNewAPIs.m; path = Events/CDTDatastoreEventsNewAPIs.m; sourceTree = "<group>"; };
 		989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreMutableDocumentCrud.m; sourceTree = "<group>"; };
+		9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQueryBuilderTests.m; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
 		9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartWriterTests.m; sourceTree = "<group>"; };
@@ -202,39 +205,40 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */,
-				27ACD1EC193DDDCC00658EC2 /* Events */,
-				27F43D4618E99C31003E8422 /* osx-aws-toolkit */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
-				9F95D60E18CF6A580006D349 /* DBQueryUtils.h */,
-				9F95D60F18CF6A580006D349 /* DBQueryUtils.m */,
-				9F0D2407188E378700D3D04E /* TDCanonicalJSONTests.m */,
-				9F0D24131892E9B800D3D04E /* TDPusherTests.m */,
-				9F0D24161893161000D3D04E /* TDReachabilityTests.m */,
-				9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */,
-				9F0D240D188F01DD00D3D04E /* TDMiscTests.m */,
-				9F0D240A188E3C3A00D3D04E /* TDCollateJSONTests.m */,
-				9F0D23F9188DF36800D3D04E /* TD_DatabaseTests.m */,
-				9F0D23FE188DF96600D3D04E /* TD_DatabaseManagerTests.m */,
-				9F0D2401188DFE8600D3D04E /* TD_RevisionTests.m */,
-				9F0D24101890AD0C00D3D04E /* TDMultipartDownloaderTests.m */,
-				9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */,
-				9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */,
-				9F0D23F6188DF30D00D3D04E /* TDMultiStreamWriterTests.m */,
+				9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */,
+				9FA839CA18FC474F0054512E /* CDTReplicationTests.m */,
 				27389E2D18534E050027A404 /* CloudantSyncTests.h */,
 				27389E2E18534E050027A404 /* CloudantSyncTests.m */,
 				27389E3018534E050027A404 /* DatastoreActions.m */,
-				27389E3218534E050027A404 /* DatastoreCrud.m */,
 				9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */,
 				9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */,
 				985FEFFD19CC597400EA5392 /* IndexManagerTestsNewAPI.h */,
 				985FEFFE19CC597400EA5392 /* IndexManagerTestsNewAPI.m */,
 				9FAAB00018DCEB2C00E70F51 /* DatastoreConflicts.m */,
-				27389E3418534E050027A404 /* SetUpDatastore.m */,
-				9FA839CA18FC474F0054512E /* CDTReplicationTests.m */,
+				27389E3218534E050027A404 /* DatastoreCrud.m */,
+				989E6E21198799AE00FB8510 /* DatastoreMutableDocumentCrud.m */,
+				9F95D60E18CF6A580006D349 /* DBQueryUtils.h */,
+				9F95D60F18CF6A580006D349 /* DBQueryUtils.m */,
+				27ACD1EC193DDDCC00658EC2 /* Events */,
 				27B34A5A18C0B204009F18E6 /* IndexManagerTests.h */,
 				8E3377D418ABF36E003E3D93 /* IndexManagerTests.m */,
+				27F43D4618E99C31003E8422 /* osx-aws-toolkit */,
+				27389E3418534E050027A404 /* SetUpDatastore.m */,
 				27389E16185345FD0027A404 /* Supporting Files */,
+				9F0D23FE188DF96600D3D04E /* TD_DatabaseManagerTests.m */,
+				9F0D23F9188DF36800D3D04E /* TD_DatabaseTests.m */,
+				9F0D2401188DFE8600D3D04E /* TD_RevisionTests.m */,
+				9F0D2407188E378700D3D04E /* TDCanonicalJSONTests.m */,
+				9F0D240A188E3C3A00D3D04E /* TDCollateJSONTests.m */,
+				9F0D240D188F01DD00D3D04E /* TDMiscTests.m */,
+				9F0D24101890AD0C00D3D04E /* TDMultipartDownloaderTests.m */,
+				9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */,
+				9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */,
+				9F0D23F6188DF30D00D3D04E /* TDMultiStreamWriterTests.m */,
+				9F0D24131892E9B800D3D04E /* TDPusherTests.m */,
+				9F0D24161893161000D3D04E /* TDReachabilityTests.m */,
+				9F0D241918932DA700D3D04E /* TDSequenceMapTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -477,6 +481,7 @@
 				985FF00219D03DF600EA5392 /* CDTDatastoreEventsNewAPIs.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27D96E3818E1D93F00DEA006 /* AttachmentCRUD.m in Sources */,
+				9985C74919AE5D8300636AB6 /* CDTQueryBuilderTests.m in Sources */,
 				27389E3618534E050027A404 /* DatastoreActions.m in Sources */,
 				9FAAB00118DCEB2C00E70F51 /* DatastoreConflicts.m in Sources */,
 				27389E3518534E050027A404 /* CloudantSyncTests.m in Sources */,
@@ -504,6 +509,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				270ED44E19D165BB007E08C4 /* CDTQueryBuilderTests.m in Sources */,
 				985F84D5198BDA6D004D8713 /* AttachmentCRUDMutableDocument.m in Sources */,
 				9FA839CC18FC474F0054512E /* CDTReplicationTests.m in Sources */,
 				8E3377D618ABF42A003E3D93 /* IndexManagerTests.m in Sources */,
