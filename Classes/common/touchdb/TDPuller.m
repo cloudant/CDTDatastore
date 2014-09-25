@@ -522,8 +522,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     LogTo(Sync, @"%@ inserted %u revs in %.3f sec (%.1f/sec)",
           self, (unsigned)downloads.count, time, downloads.count/time);
     
-    [self asyncTasksFinished: downloads.count];
     self.changesProcessed += downloads.count;
+    [self asyncTasksFinished: downloads.count];
 }
 
 
