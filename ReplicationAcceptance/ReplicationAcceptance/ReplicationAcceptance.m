@@ -26,6 +26,7 @@
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
 #import "TDReplicatorManager.h"
+#import "TDReplicator.h"
 
 @interface ReplicationAcceptance ()
 
@@ -206,9 +207,8 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
     
     STAssertEquals(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
-    //todo.
-    //STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
-
+    
+    STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 
