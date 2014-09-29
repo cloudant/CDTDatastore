@@ -253,8 +253,9 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 - (void) replicatorStopped: (NSNotification*)n {
     TDReplicator* repl = n.object;
     
-    LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStopped: %@. type: %@ sessionId: %@", n.name,
-          [repl class], repl.sessionID);
+    LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStopped: %@. type: %@ sessionId: %@ CDTstate: %@",
+            n.name, [repl class], repl.sessionID,
+            [CDTReplicator stringForReplicatorState:self.state]);
     
     BOOL progressChanged = [self updateProgress];
     
@@ -285,10 +286,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             stateChanged = YES;
             
         //do nothing if the state is already 'complete' or 'error'.
-        //which should be impossible.
         default:
-            LogWarn(REPLICATION_LOG_CONTEXT,@"CDTReplicator -replicatorStopped was called with unexpected state = %@",
-                 [[self class] stringForReplicatorState:self.state]);
             break;
     }
     
