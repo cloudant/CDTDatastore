@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## 0.8.0
+## 0.8.0 (2014-09-29)
 
 - [FIX] Fix indexes not updating correctly when using new CRUD API, introduced
   in 0.7.0.
