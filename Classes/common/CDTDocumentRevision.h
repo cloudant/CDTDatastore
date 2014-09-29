@@ -60,12 +60,6 @@
  */
 -(NSData*)documentAsDataError:(NSError * __autoreleasing *)error;
 
-/**
- Return document content as an NSDictionary object.
-
- @return document content as an NSDictionary object.
- */
--(NSDictionary*)documentAsDictionary __deprecated;
 
 /**
  Return a mutable copy of this document.
