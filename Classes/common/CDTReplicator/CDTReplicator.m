@@ -27,6 +27,7 @@
 #import "TDPusher.h"
 #import "TDPuller.h"
 #import "TDReplicatorManager.h"
+#import "TDStatus.h"
 
 const NSString *CDTReplicatorLog = @"CDTReplicator";
 static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
@@ -41,6 +42,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 @property (nonatomic, readwrite) CDTReplicatorState state;
 @property (nonatomic, readwrite) NSInteger changesProcessed;
 @property (nonatomic, readwrite) NSInteger changesTotal;
+@property (nonatomic, readwrite) NSError *error;
 
 @property (nonatomic, copy) CDTFilterBlock pushFilter;
 @property (nonatomic) BOOL started;
@@ -121,6 +123,8 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                              code:CDTReplicatorErrorAlreadyStarted
                                          userInfo:userInfo];
             }
+            //do not change self.state or set self.error here. This is a non-fatal error since
+            //the caller has previously called -startWithError.  
         
             return NO;
         }
@@ -351,7 +355,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     BOOL erroringTransition = (stateChanged && self.state == CDTReplicatorStateError &&
                                [self isActiveState:oldState]);
     if (erroringTransition && [delegate respondsToSelector:@selector(replicatorDidError:info:)]) {
-        [delegate replicatorDidError:self info:self.tdReplicator.error];
+        [delegate replicatorDidError:self info:self.error];
     }
 }
 
@@ -383,6 +387,45 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     return state == CDTReplicatorStatePending ||
     state == CDTReplicatorStateStarted ||
     state == CDTReplicatorStateStopping;
+}
+
+-(NSError *)error
+{
+    //this protects against reporting an error if the replication is still ongoing.
+    //according to the TDReplicator documentation, it is possible for TDReplicator to encounter
+    //a non-fatal error, which we do not want to report unless the replicator gives up and quits. 
+    if ([self isActive]) {
+        return nil;
+    }
+    
+    if (!_error && self.tdReplicator.error) {
+        //convert TD-level replication errors to CDT level
+        NSDictionary *userInfo;
+        
+        if ([self.tdReplicator.error.domain isEqualToString:TDInternalErrorDomain]) {
+            switch (self.tdReplicator.error.code) {
+                
+                case TDReplicatorManagerErrorLocalDatabaseDeleted:
+                    userInfo =
+                    @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
+                    self.error = [NSError errorWithDomain:CDTReplicatorErrorDomain
+                                                 code:CDTReplicatorErrorLocalDatabaseDeleted
+                                             userInfo:userInfo];
+                    break;
+                
+                default:
+                    //just point directly to tdReplicator error if we don't have a conversion
+                    self.error = self.tdReplicator.error;
+                    break;
+            }
+            
+        }
+        else {
+            self.error = self.tdReplicator.error;
+        }
+    }
+    
+    return _error;
 }
 
 @end

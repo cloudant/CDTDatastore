@@ -37,7 +37,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorErrors) {
     /**
      Internal error: TDReplicator object of wrong type.
      */
-    CDTReplicatorErrorTDReplicatorWrongType  = 2
+    CDTReplicatorErrorTDReplicatorWrongType  = 3,
+    /**
+     Internal error: TDReplicator reports local database deleted
+     */
+    CDTReplicatorErrorLocalDatabaseDeleted = 4
 };
 
 
@@ -202,5 +206,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * @see CDTReplicatorState
  */
 - (void)stop;
+
+/**
+ If -state is equal to CDTReplicatorStateError, this will contain the error message.
+ This error information is also sent to the delegate object. 
+ */
+@property (nonatomic, readonly) NSError *error;
 
 @end
