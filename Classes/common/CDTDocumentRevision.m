@@ -96,8 +96,7 @@
 {
     NSError *innerError = nil;
     
-    NSDictionary *processed_document = [self documentAsDictionary];
-    NSData *json = [[TDJSON dataWithJSONObject:processed_document options:0 error:&innerError] copy];
+    NSData *json = [[TDJSON dataWithJSONObject:self.body options:0 error:&innerError] copy];
     
     if (!json) {
         Warn(@"CDTDocumentRevision: couldn't convert to JSON");
@@ -108,33 +107,7 @@
     return json;
 }
 
--(NSDictionary*)documentAsDictionary
-{
-    // First remove extra _properties added by TD_Database.m#extraPropertiesForRevision:options:
-    // and put them into attributes
-    NSMutableDictionary *touch_properties = [self.body mutableCopy];
 
-    // _id, _rev, _deleted are already stored outside the dictionary
-    [touch_properties removeObjectForKey:@"_id"];
-    [touch_properties removeObjectForKey:@"_rev"];
-    [touch_properties removeObjectForKey:@"_deleted"];
-
-    _revs = touch_properties[@"_revs"];
-    [touch_properties removeObjectForKey:@"_revs"];
-
-    _revsInfo = touch_properties[@"_revs_info"];
-    [touch_properties removeObjectForKey:@"_revs_info"];
-
-    _conflicts = touch_properties[@"_conflicts"];
-    [touch_properties removeObjectForKey:@"_conflicts"];
-    
-    // Unused properties
-    [touch_properties removeObjectForKey:@"_local_seq"];
-    [touch_properties removeObjectForKey:@"_attachments"];
-
-    // return a non-mutable dictionary
-    return [NSDictionary dictionaryWithDictionary:touch_properties];
-}
 
 -(CDTMutableDocumentRevision*)mutableCopy
 {

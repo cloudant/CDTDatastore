@@ -64,10 +64,12 @@
 - (void)addTodoItem:(NSString*)description {
     CDTTodo *todo = [[CDTTodo alloc] initWithDescription:description
                                                completed:NO];
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:[todo toDict]];
+    
+    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+    revision.body = [todo toDict];
     
     NSError *error;
-    [self.datastore createDocumentWithBody:body error:&error];
+    [self.datastore createDocumentFromRevision:revision error:&error];
     
     if (error != nil) {
         NSLog(@"Error adding item: %@", error);
@@ -80,9 +82,7 @@
 - (void)deleteTodoItem:(CDTDocumentRevision*)revision {
     
     NSError *error;
-    [self.datastore deleteDocumentWithId:revision.docId
-                                     rev:revision.revId
-                                   error:&error];
+    [self.datastore deleteDocumentFromRevision:revision error:&error];
     
     if (error != nil) {
         NSLog(@"Error deleting item: %@", error);
@@ -94,16 +94,16 @@
  */
 - (BOOL)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
 
-    CDTTodo *todo = [CDTTodo fromDict:[revision documentAsDictionary]];
+    CDTTodo *todo = [CDTTodo fromDict:revision.body];
     todo.completed = !todo.completed;
 
-    NSLog(@"Toggling completed status for %@", todo.description);
+    NSLog(@"Toggling completed status for %@", todo.taskDescription);
+    
+    CDTMutableDocumentRevision * mutableRevision = [revision mutableCopy];
+    mutableRevision.body = [todo toDict];
     
     NSError *error;
-    [self.datastore updateDocumentWithId:revision.docId
-                                 prevRev:revision.revId
-                                    body:[[CDTDocumentBody alloc] initWithDictionary:[todo toDict]]
-                                   error:&error];
+    [self.datastore updateDocumentFromRevision:mutableRevision error:&error];
     
     if (error != nil) {
         NSLog(@"Error updating item: %@", error);
@@ -302,9 +302,9 @@
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TodoCell"];
         CDTDocumentRevision *task = [self.taskRevisions objectAtIndex:indexPath.row];
         
-        NSDictionary *body = [task documentAsDictionary];
+        NSDictionary *body = task.body;
         CDTTodo *todo = [CDTTodo fromDict:body];
-        cell.textLabel.text = todo.description;
+        cell.textLabel.text = todo.taskDescription;
         if (todo.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
         } else {

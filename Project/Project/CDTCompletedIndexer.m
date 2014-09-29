@@ -23,7 +23,7 @@
 -(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
                    indexName:(NSString*)indexName
 {
-    CDTTodo *todo = [CDTTodo fromDict:[revision documentAsDictionary]];
+    CDTTodo *todo = [CDTTodo fromDict:revision.body];
     NSNumber *value = @(todo.completed);
 
     if (value != nil) {

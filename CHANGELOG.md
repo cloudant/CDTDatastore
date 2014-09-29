@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## 0.8.0
+
+- Removal of deprecated APIs. See doc/api-migration.md for the list of remove 
+  APIs and how to migrate away from them.
+
 ## 0.7.0 (2014-08-18)
 
 - NEW CRUD and Attachments API. See doc/crud.md for docs on both CRUD and

@@ -12,6 +12,7 @@
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
 #import "CDTDocumentRevision.h"
+#import "CDTMutableDocumentRevision.h"
 
 #import "TD_Revision.h"
 #import "TD_Body.h"
@@ -24,7 +25,7 @@
 - (void)testCreateIndexManager
 {
     NSError *err = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     STAssertNotNil(im, @"indexManager is nil");
 }
@@ -32,9 +33,9 @@
 - (void)testAddFieldIndex
 {
     NSError *err = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-
+    
     BOOL ok = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&err];
     STAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(err, @"error is not nil");
@@ -43,9 +44,9 @@
 - (void)testAddInvalidFieldIndex
 {
     NSError *err = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-
+    
     BOOL ok = [im ensureIndexedWithIndexName:@"abc123^&*^&%^^*^&(; drop table customer;" fieldName:@"name" error:&err];
     STAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
     STAssertNotNil(err, @"error is nil");
@@ -55,14 +56,14 @@
 - (void)testAddSameFieldIndexTwice
 {
     NSError *err = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-
+    
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
-
+    
     NSError *error2 = nil;
     BOOL ok2 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
     STAssertFalse(ok2, @"ensureIndexedWithIndexName did not return false");
@@ -72,9 +73,9 @@
 - (void)testDeleteNonexistantIndex
 {
     NSError *err = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-
+    
     BOOL ok = [im deleteIndexWithIndexName:@"index1" error:&err];
     STAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
     STAssertNotNil(err, @"error is nil");
@@ -83,16 +84,17 @@
 - (void)testIndexSomeDocuments
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     int nDocs = 1000;
     while(nDocs--) {
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"tom"}];
-        [self.datastore createDocumentWithBody:body error:&error];
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"tom"};
+        [self.datastore createDocumentFromRevision:rev error:&error];
     }
-
+    
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
@@ -102,34 +104,36 @@
 - (void)testIndexSomeDocumentsWithUpdate
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     int nDocs = 1000;
     while(nDocs--) {
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"tom"}];
-        [self.datastore createDocumentWithBody:body error:&error];
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"tom"};
+        [self.datastore createDocumentFromRevision:rev error:&error];
     }
-
+    
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
-
+    
     // create some more docs after creating index
     nDocs = 1000;
     while(nDocs--) {
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"bill"}];
-        [self.datastore createDocumentWithBody:body error:&error];
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"bill"};
+        [self.datastore createDocumentFromRevision:rev error:&error];
     }
-
+    
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"index1":@"bill"} error:&error];
-
+    
     unsigned long count1 = [[res1 documentIds] count];
     unsigned long count2 = [[res2 documentIds] count];
-
+    
     STAssertEquals(count1, 1000UL, @"Query should return 1000 documents");
     STAssertEquals(count2, 1000UL, @"Query should return 1000 documents");
 }
@@ -137,25 +141,31 @@
 - (void)testIndexSingleCriteria
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Blench"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"William", @"surname": @"Blench"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Smith"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"David", @"surname": @"Jones"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Jones"}]
-                                     error:&error];
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{@"name": @"Tom", @"surname": @"Blench"};
+    
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"William", @"surname": @"Blench"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"Tom", @"surname": @"Smith"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"David", @"surname": @"Jones"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"Tom", @"surname": @"Jones"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom"} error:&error];
     unsigned long count = [[res documentIds] count];
     STAssertEquals(count, 3UL, @"Query should return 3 documents");
@@ -164,25 +174,31 @@
 - (void)testIndexMultipleCriteria
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Blench"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"William", @"surname": @"Blench"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Smith"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"David", @"surname": @"Jones"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Tom", @"surname": @"Jones"}]
-                                     error:&error];
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{@"name": @"Tom", @"surname": @"Blench"};
+    
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"William", @"surname": @"Blench"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"Tom", @"surname": @"Smith"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"David", @"surname": @"Jones"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"name": @"Tom", @"surname": @"Jones"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom",@"surname":@"Blench"} error:&error];
     STAssertEquals([[res documentIds] count], (NSUInteger)1, @"Query should return 1 document");
 }
@@ -191,9 +207,9 @@
 - (void)ignored_testIndexQueryPerformance
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     int nDocs = 25600;
     while(nDocs--) {
@@ -215,20 +231,22 @@
                     break;
             }
         }
-
-        [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"breakfast": foods[0], @"elevenses": foods[1], @"lunch": foods[2], @"dinner": foods[3]}] error:&error];
+        
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"breakfast": foods[0], @"elevenses": foods[1], @"lunch": foods[2], @"dinner": foods[3]};
+        [self.datastore createDocumentFromRevision:rev error:&error];
     }
-
-//    NSLog(@"start index");
+    
+    //    NSLog(@"start index");
     [im ensureIndexedWithIndexName:@"breakfast" fieldName:@"breakfast" error:&error];
     [im ensureIndexedWithIndexName:@"elevenses" fieldName:@"elevenses" error:&error];
     [im ensureIndexedWithIndexName:@"lunch" fieldName:@"lunch" error:&error];
     [im ensureIndexedWithIndexName:@"dinner" fieldName:@"dinner" error:&error];
-//    NSLog(@"end index");
-
+    //    NSLog(@"end index");
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"breakfast":@"bacon",@"elevenses":@"ham",@"lunch":@"eggs",@"dinner":@"brie"} error:&error];
-
-//    NSLog(@"end query");
+    
+    //    NSLog(@"end query");
     unsigned long count=[[res documentIds] count];
     // NB this is dependent on lrand48 implementation
     STAssertEquals(count, 98UL, @"Query should return 98 documents");
@@ -237,23 +255,24 @@
 - (void)testResultEnumerator
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     int nDocs = 161;
     for(int i=0; i<nDocs; i++) {
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"tom"}];
-        [self.datastore createDocumentWithBody:body error:&error];
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"tom"};
+        [self.datastore createDocumentFromRevision:rev error:&error];
     }
-
+    
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
     STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
     STAssertNil(error1, @"error is not nil");
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
-
+    
     // helper fn countResults is a for loop which tests enumerator
     int count=[self countResults:res];
     STAssertEquals(count, nDocs, @"counts not equal");
@@ -264,12 +283,12 @@
     NSError *error = nil;
     NSError *error1 = nil;
     NSError *error2 = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error1];
     [im deleteIndexWithIndexName:@"name" error:&error2];
-
+    
     STAssertNil(error1, @"ensureIndexedWithIndexName should not return error");
     STAssertNil(error2, @"deleteIndexWithIndexName should not return error");
 }
@@ -277,20 +296,20 @@
 - (void)test2IndexManagers
 {
     NSError *error = nil;
-
+    
     // check that we re-use the existing schema, tables, etc
     {
         CDTIndexManager *im1 = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+        
         NSError *error1 = nil;
         BOOL ok1 = [im1 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
         STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
         STAssertNil(error1, @"error is not nil");
     }
-
+    
     {
         CDTIndexManager *im2 = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+        
         NSError *error2 = nil;
         BOOL ok2 = [im2 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
         STAssertTrue(ok2, @"ensureIndexedWithIndexName did not return true");
@@ -301,74 +320,90 @@
 - (void)testCustomIndexers
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"elephant"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"two-toed sloth"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"aardvark"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"cat"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"dog"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"animal": @"duck-billed platypus"}]
-                                     error:&error];
-
-    CDTTestIndexer1 *indexer = [[CDTTestIndexer1 alloc] init];
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{@"animal": @"elephant"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body =@{@"animal": @"two-toed sloth"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body =@{@"animal": @"aardvark"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body =@{@"animal": @"cat"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body =@{@"animal": @"dog"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"animal": @"duck-billed platypus"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    
+    CDTTestIndexer1NewAPI *indexer = [[CDTTestIndexer1NewAPI alloc] init];
+    
     [im ensureIndexedWithIndexName:@"animal" type:CDTIndexTypeString indexer:indexer error:&error];
-
+    
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"animal":@"du"} error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"animal":@"d"} error:&error];
-
+    
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
-
+    
     STAssertEquals(count1, 1UL, @"Query for prefix 'd' should return 1 document");
-
+    
     STAssertEquals(count2, 2UL, @"Query for prefix 'du' should return 2 documents");
 }
 
 - (void)testNumericIndexers
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"one", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"eins", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"一", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"two", @"numeral": @"2"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"ニ", @"numeral": @"2"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"three", @"numeral": @"3"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"four", @"numeral": @"4"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"five", @"numeral": @"5"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"six", @"numeral": @"6"}]
-                                     error:&error];
-
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    
+    rev.body = @{@"number": @"one", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"eins", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"一", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"two", @"numeral": @"2"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"ニ", @"numeral": @"2"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"three", @"numeral": @"3"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"four", @"numeral": @"4"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"five", @"numeral": @"5"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"six", @"numeral": @"6"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
     [im ensureIndexedWithIndexName:@"numeral" fieldName:@"numeral" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"numeral":@1} error:&error];
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"numeral":@{@"min":@2}} error:&error];
-
+    
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
-
+    
     STAssertEquals(count1, 3UL, @"Didn't get expected number of results");
     STAssertEquals(count2, 6UL, @"Didn't get expected number of results");
 }
@@ -376,39 +411,49 @@
 - (void)testUniqueValues
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"one", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"eins", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"一", @"numeral": @"1"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"two", @"numeral": @"2"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"ニ", @"numeral": @"2"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"three", @"numeral": @"3"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"four", @"numeral": @"4"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"five", @"numeral": @"5"}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"six", @"numeral": @"6"}]
-                                     error:&error];
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    
+    rev.body = @{@"number": @"one", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"eins", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"一", @"numeral": @"1"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"two", @"numeral": @"2"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"ニ", @"numeral": @"2"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"three", @"numeral": @"3"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"four", @"numeral": @"4"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"five", @"numeral": @"5"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"six", @"numeral": @"6"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
     [im ensureIndexedWithIndexName:@"number" fieldName:@"number" type:CDTIndexTypeString error:&error];
     [im ensureIndexedWithIndexName:@"numeral" fieldName:@"numeral" type:CDTIndexTypeInteger error:&error];
-
+    
     NSArray *res1 = [im uniqueValuesForIndex:@"numeral" error:&error];
     NSArray *res2 = [im uniqueValuesForIndex:@"number" error:&error];
-
+    
     unsigned long count1=[res1 count];
     unsigned long count2=[res2 count];
-
+    
     STAssertEquals(count1, 6UL, @"Didn't get expected number of results");
     STAssertEquals(count2, 9UL, @"Didn't get expected number of results");
 }
@@ -416,24 +461,24 @@
 - (void)testComplexQuery
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     [self initLotsOfData];
-
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
     [im ensureIndexedWithIndexName:@"area" fieldName:@"area" type:CDTIndexTypeInteger error:&error];
     [im ensureIndexedWithIndexName:@"elec_consumption" fieldName:@"elec_consumption" type:CDTIndexTypeInteger error:&error];
     [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@[@"Afghanistan", @"Albania", @"Algeria", @"American Samoa"],
-                                                     @"elec_consumption": @{@"min": @(652200000)},
-                                                     @"population": @{@"max": @(3563112)},
-                                                     @"area": @{@"min": @(200), @"max": @(2381740)}
-                                                     }
+                                                    @"elec_consumption": @{@"min": @(652200000)},
+                                                    @"population": @{@"max": @(3563112)},
+                                                    @"area": @{@"min": @(200), @"max": @(2381740)}
+                                                    }
                                             error:&error];
-
+    
     unsigned long count=[[res documentIds] count];
     STAssertEquals(count, 1UL, @"Didn't get expected number of results");
 }
@@ -441,24 +486,24 @@
 - (void)testOrderQuery1
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     [self initLotsOfData];
-
+    
     [im ensureIndexedWithIndexName:@"area" fieldName:@"area" type:CDTIndexTypeInteger error:&error];
     [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"max": @(100000000)}}
                                           options:@{kCDTQueryOptionSortBy: @"area", kCDTQueryOptionDescending: @(YES)}
                                             error:&error];
     int lastVal = 100000000;
-
+    
     STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
-
+    
     for(CDTDocumentRevision *doc in res) {
-        NSNumber *val = [[doc body] objectForKey:@"area"];
+        NSNumber *val = [doc.body objectForKey:@"area"];
         int valInt = [val intValue];
         STAssertTrue(valInt <= lastVal, @"Not sorted");
         lastVal = valInt;
@@ -468,25 +513,25 @@
 - (void)testOrderQuery2
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     [self initLotsOfData];
-
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" type:CDTIndexTypeString error:&error];
     [im ensureIndexedWithIndexName:@"population" fieldName:@"population" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"population": @{@"min": @(10000000)}}
                                           options:@{kCDTQueryOptionSortBy: @"name", kCDTQueryOptionDescending: @(YES)}
                                             error:&error];
     NSString *lastName = @"Zzzzzzzzistan"; // probably the last country in the alphabet
-
+    
     STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
-
+    
     for(CDTDocumentRevision *doc in res) {
-        NSString *val = [[doc body] objectForKey:@"name"];
-
+        NSString *val = [doc.body objectForKey:@"name"];
+        
         STAssertTrue([val compare:lastName] < 0, @"Not sorted correctly");
         lastName = val;
     }
@@ -496,17 +541,17 @@
 - (void)testOffsetLimitQuery
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // create some docs
     [self initLotsOfData];
-
+    
     [im ensureIndexedWithIndexName:@"area" fieldName:@"area" type:CDTIndexTypeInteger error:&error];
-
+    
     // this will give 194 in total
     NSDictionary *query = @{@"area": @{@"min": @(200), @"max": @(2381740)}};
-
+    
     CDTQueryResult *res1 = [im queryWithDictionary:query
                                            options:@{kCDTQueryOptionLimit: @(10)}
                                              error:&error];
@@ -531,7 +576,7 @@
     CDTQueryResult *res8 = [im queryWithDictionary:query
                                            options:@{kCDTQueryOptionLimit: @(-1)}
                                              error:&error];
-
+    
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
     unsigned long count3=[[res3 documentIds] count];
@@ -540,7 +585,7 @@
     unsigned long count6=[[res6 documentIds] count];
     unsigned long count7=[[res7 documentIds] count];
     unsigned long count8=[[res8 documentIds] count];
-
+    
     STAssertEquals(count1, 10UL, @"Didn't get expected number of results");
     STAssertEquals(count2, 4UL, @"Didn't get expected number of results");
     STAssertEquals(count3, 1UL, @"Didn't get expected number of results");
@@ -554,14 +599,14 @@
 - (void)testQueryError1
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"index2": @"value"}
                                             error:&error];
-
+    
     STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
     STAssertNil(res, @"Result was not nil");
 }
@@ -569,14 +614,14 @@
 - (void)testQueryError2
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"abc123^&*^&%^^*^&(; drop table customer": @"value"}
                                             error:&error];
-
+    
     STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
     STAssertNil(res, @"Result was not nil");
 }
@@ -584,15 +629,15 @@
 - (void)testQueryError3
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
                                           options:@{kCDTQueryOptionSortBy: @"index2"}
                                             error:&error];
-
+    
     STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
     STAssertNil(res, @"Result was not nil");
 }
@@ -600,15 +645,15 @@
 - (void)testQueryError4
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     [im ensureIndexedWithIndexName:@"index1" fieldName:@"index1" type:CDTIndexTypeInteger error:&error];
-
+    
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1": @"value"}
                                           options:@{kCDTQueryOptionSortBy: @"abc123^&*^&%^^*^&(; drop table customer"}
                                             error:&error];
-
+    
     STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
     STAssertNil(res, @"Result was not nil");
 }
@@ -616,46 +661,48 @@
 - (void)testIndexerTypes
 {
     NSError *error = nil;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"string": @"Ipsem lorem",
-                                                                                         @"number": @1,
-                                                                                         @"list": @[@"a",@"b",@"c"],
-                                                                                         @"dictionary": @{@"key":@"val"}}]
-                                     error:&error];
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"number": @"2"}]
-                                     error:&error];
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{@"string": @"Ipsem lorem",
+                 @"number": @1,
+                 @"list": @[@"a",@"b",@"c"],
+                 @"dictionary": @{@"key":@"val"}};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
+    rev.body = @{@"number": @"2"};
+    [self.datastore createDocumentFromRevision:rev error:&error];
+    
     [im ensureIndexedWithIndexName:@"string" fieldName:@"string" type:CDTIndexTypeString error:&error];
     [im ensureIndexedWithIndexName:@"number" fieldName:@"number" type:CDTIndexTypeInteger error:&error];
     [im ensureIndexedWithIndexName:@"list" fieldName:@"list" type:CDTIndexTypeString error:&error];
     [im ensureIndexedWithIndexName:@"dictionary" fieldName:@"dictionary" type:CDTIndexTypeString error:&error];
     [im ensureIndexedWithIndexName:@"stringAsInt" fieldName:@"string" type:CDTIndexTypeInteger error:&error];
-
+    
     // standard string query
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"string": @"Ipsem lorem"}
-                                            error:&error];
+                                             error:&error];
     STAssertNil(error, @"Error was not nil");
     STAssertEquals([[res1 documentIds] count], (NSUInteger)1, @"Didn't get expected number of results");
-
+    
     // test that "2" converts to string
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"number": @[@1,@2]}
                                              error:&error];
     STAssertNil(error, @"Error was not nil");
     STAssertEquals([[res2 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
-
+    
     // test that array indexed correctly
     CDTQueryResult *res3 = [im queryWithDictionary:@{@"list": @[@"a",@"b",@"d"]}
                                              error:&error];
     STAssertNil(error, @"Error was not nil");
     STAssertEquals([[res3 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
-
+    
     // nothing should be indexed for a dictionary
     NSArray *res4 = [im uniqueValuesForIndex:@"dictionary" error:&error];
     STAssertNil(error, @"Error was not nil");
     STAssertEquals([res4 count], (NSUInteger)0, @"Didn't get expected number of results");
-
+    
     // nothing should be indexed since we can't convert string to int
     NSArray *res5 = [im uniqueValuesForIndex:@"stringAsInt" error:&error];
     STAssertNil(error, @"Error was not nil");
@@ -666,33 +713,33 @@
 {
     NSError *error = nil;
     int count;
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-
+    
     // A matching result
-    CDTDocumentRevision *rev = [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(752614)}]
-                                                                error:&error];
-
+    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.body = @{@"name": @"Zambia", @"area": @(752614)};
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    
     // A second matching result
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zambia", @"area": @(12345)}]
-                                                                error:&error];
-
+    mutableRev.body = @{@"name": @"Zambia", @"area": @(12345)};
+    [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    
     // A non-matching result
-    [self.datastore createDocumentWithBody:[[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"Zimbabwe", @"area": @(390580)}]
-                                     error:&error];
-
+    mutableRev.body = @{@"name": @"Zimbabwe", @"area": @(390580)};
+    [self.datastore createDocumentFromRevision:mutableRev error:&error];
+    
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
-
+    
     error = nil;
     for (CDTDocumentRevision *rev in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
         // do nothing
     }
-
+    
     // As of 0.0.4, querying for a deleted item crashed during the forin loop
-    [self.datastore deleteDocumentWithId:rev.docId
-                                     rev:rev.revId
-                                   error:&error];
-
+    [self.datastore deleteDocumentFromRevision:rev error:&error];
+    
     count = 0;
     for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
         // Check we don't get a deleted document
@@ -706,10 +753,10 @@
 {
     int nThreads = 5;
     NSMutableArray *threads = [[NSMutableArray alloc] init];
-
+    
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:nil];
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
-
+    
     while(nThreads-- > 0) {
         NSThread *thr = [[NSThread alloc] initWithTarget:self selector:@selector(makeSomeDocuments:) object:[NSNumber numberWithInt:nThreads]];
         [threads addObject:thr];
@@ -732,82 +779,85 @@
     int resultCount = 0;
     NSObject *_;
     CDTDatastore *datastore;
-
+    
     NSString *factoryPath = [self createTemporaryDirectoryAndReturnPath];
     CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:nil];
-
+    
     NSString *name = [@"test_newIndexManagerPicksUpDocumentsAddedBeforeEnsureIndexedDuringQuery" lowercaseString];
     datastore = [factory datastoreNamed:name error:nil];
-
+    
     // Create and index a single document
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
-
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"mike"}];
-    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
-
+    
+    CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{@"name": @"mike"};
+    STAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
+    
     resultCount = 0;
     CDTQueryResult *result = [im queryWithDictionary:@{@"name": @"mike"}
                                                error:nil];
     for (_ in result) { resultCount++; }
     STAssertEquals(resultCount, 1, @"Query didn't find the document");
-
+    
     // Tear down the original datastore objects
     [im shutdown];
-
+    
     // Fire up a new indexManager without the objects
     CDTIndexManager *im2 = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
-
-    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
-
+    
+    STAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
+    
     [im2 ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
-
-    body = [[CDTDocumentBody alloc] initWithDictionary:@{@"name": @"fred"}];
-    STAssertNotNil([datastore createDocumentWithBody:body error:nil], @"Doc not created");
-
+    
+    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.body = @{@"name": @"fred"};
+    STAssertNotNil([datastore createDocumentFromRevision:mutableRev error:nil], @"Doc not created");
+    
     resultCount = 0;
     result = [im2 queryWithDictionary:@{@"name": @"mike"}
                                 error:nil];
     for (_ in result) { resultCount++; }
     STAssertEquals(resultCount, 2, @"Query didn't find the document");
-
+    
     resultCount = 0;
     result = [im2 queryWithDictionary:@{@"name": @"fred"}
                                 error:nil];
     for (_ in result) { resultCount++; }
     STAssertEquals(resultCount, 1, @"Query didn't find the document");
-
+    
     // Still broken even if we updateAllIndexes
     [im2 updateAllIndexes:nil];
-
+    
     resultCount = 0;
     result = [im2 queryWithDictionary:@{@"name": @"mike"}
                                 error:nil];
     for (_ in result) { resultCount++; }
     STAssertEquals(resultCount, 2, @"Query didn't find the document");
-
-
+    
+    
     [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:nil];
 }
 
 #pragma mark Supporting methods
 
 - (void)makeSomeDocuments:(NSNumber*)thread {
-//    NSLog(@"makedocs %d", [thread intValue]);
+    //    NSLog(@"makedocs %d", [thread intValue]);
     int i = 100;
     while (i-- > 0) {
-        [self.datastore createDocumentWithBody:
-         [[CDTDocumentBody alloc] initWithDictionary:
-          @{@"name": @"made in thread",
-            @"myDocumentId":[NSString stringWithFormat:@"%d-%d", [thread intValue], i]}
-          ] error:nil];
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"made in thread",
+                     @"myDocumentId":[NSString stringWithFormat:@"%d-%d", [thread intValue], i]};
+        [self.datastore createDocumentFromRevision:rev error:nil];
     }
 }
 
 - (void)initLotsOfData
 {
     NSError *error = nil;
-
+    
+    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    
     NSArray *array = @[
                        @{@"name": @"Afghanistan", @"area": @(647500), @"elec_consumption": @(652200000),  @"population": @(29928987)},
                        @{@"name": @"Albania",     @"area": @(28748),  @"elec_consumption": @(6760000000), @"population": @(3563112)},
@@ -1027,10 +1077,9 @@
                        ];
     
     for (NSDictionary *doc in array) {
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:doc];
-        [self.datastore createDocumentWithBody:body error:&error];
+        mutableRev.body = doc;
+        [self.datastore createDocumentFromRevision:mutableRev error:&error];
     }
-
 }
 
 - (int)countResults:(CDTQueryResult*)res
@@ -1062,17 +1111,17 @@
 #import "TD_Revision.h"
 #import "TD_Body.h"
 
-@implementation CDTTestIndexer1
+@implementation CDTTestIndexer1NewAPI
 
 -(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
                    indexName:(NSString*)indexName
 
 {
-    NSString *value = [[revision body] valueForKey:indexName];
-
+    NSString *value = [revision.body valueForKey:indexName];
+    
     NSString *prefix1 = [value substringToIndex:1];
     NSString *prefix2 = [value substringToIndex:2];
-
+    
     return @[prefix1, prefix2];
 }
 

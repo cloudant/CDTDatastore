@@ -50,15 +50,12 @@
 -(CDTDocumentRevision *)resolve:(NSString*)docId
                       conflicts:(NSArray*)conflicts
 {
-    TD_Revision *revision = [[TD_Revision alloc] initWithDocID:docId
-                                                         revID:nil
-                                                       deleted:YES];
-    return [[CDTDocumentRevision alloc]initWithDocId:revision.docID
-                                          revisionId:revision.revID
-                                                body:revision.body.properties
-                                             deleted:revision.deleted
-                                         attachments:@{}
-                                            sequence:revision.sequence];
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:@"2-notreallyarevId"
+                                                 body:@{}
+                                              deleted:YES
+                                          attachments:@{}
+                                             sequence:0];
 }
 @end
 
