@@ -257,9 +257,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             n.name, [repl class], repl.sessionID,
             [CDTReplicator stringForReplicatorState:self.state]);
     
-    BOOL progressChanged = [self updateProgress];
-    
-    BOOL stateChanged = NO;
+    CDTReplicatorState oldState = self.state;
 
     switch (self.state) {
         case CDTReplicatorStatePending:
@@ -271,7 +269,6 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             else {
                 self.state = CDTReplicatorStateStopped;
             }
-            stateChanged = YES;
             
             break;
             
@@ -283,22 +280,13 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             else {
                 self.state = CDTReplicatorStateComplete;
             }
-            stateChanged = YES;
             
         //do nothing if the state is already 'complete' or 'error'.
         default:
             break;
     }
     
-    id<CDTReplicatorDelegate> delegate = self.delegate;
-    
-    if (progressChanged && [delegate respondsToSelector:@selector(replicatorDidChangeProgress:)]) {
-        [delegate replicatorDidChangeProgress:self];
-    }
-    
-    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
-        [delegate replicatorDidChangeState:self];
-    }
+    [self recordProgressAndInformDelegateFromOldState:oldState];
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:self.tdReplicator];
     
@@ -327,7 +315,6 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
  */
 -(void) replicatorProgressChanged: (NSNotification *)n
 {
-    BOOL progressChanged = [self updateProgress];
     
     CDTReplicatorState oldState = self.state;
     
@@ -338,6 +325,14 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     else
         self.state = CDTReplicatorStateComplete;
     
+    [self recordProgressAndInformDelegateFromOldState:oldState];
+}
+
+-(void) recordProgressAndInformDelegateFromOldState:(CDTReplicatorState)oldState
+{
+    
+    BOOL progressChanged = [self updateProgress];
+    BOOL stateChanged = (oldState != self.state);
     
     // Lots of possible delegate messages at this point
     id<CDTReplicatorDelegate> delegate = self.delegate;
@@ -346,7 +341,6 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         [delegate replicatorDidChangeProgress:self];
     }
     
-    BOOL stateChanged = (oldState != self.state);
     if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
         [delegate replicatorDidChangeState:self];
     }
