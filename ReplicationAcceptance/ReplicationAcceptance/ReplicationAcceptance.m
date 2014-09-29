@@ -27,6 +27,7 @@
 #import "CDTPushReplication.h"
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
+#import "CDTReplicator.h"
 
 @interface ReplicationAcceptance ()
 
@@ -211,6 +212,88 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
+-(void) testPullErrorsWhenLocalDatabaseIsDeleted
+{
+    
+    [self createRemoteDocs:n_docs];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
+                                            [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
+    mydel.databaseToDelete = self.datastore.name;
+    mydel.dsManager = self.factory;
+    
+    replicator.delegate = mydel;
+    
+    error = nil;
+    STAssertTrue([replicator startWithError:&error], @"CDTReplicator -startWithError: %@", error);
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+
+    
+    STAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 replicator.changesTotal, n_docs);
+    
+    STAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                   replicator.changesProcessed, n_docs);
+    
+    STAssertEquals(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:replicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+
+    STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+    
+}
+
+-(void) testPushErrorsWhenLocalDatabaseIsDeleted
+{
+    
+    [self createLocalDocs:n_docs];
+    
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
+    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
+                                            [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
+    mydel.databaseToDelete = self.datastore.name;
+    mydel.dsManager = self.factory;
+    
+    replicator.delegate = mydel;
+    
+    error = nil;
+    if (![replicator startWithError:&error]) {
+        STFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    
+    STAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 replicator.changesTotal, n_docs);
+    
+    STAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 replicator.changesProcessed, n_docs);
+    
+    STAssertEquals(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:replicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+
+    STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+}
 
 /**
  As per testPullLotsOfOneRevDocuments but ensuring indexes are updated.

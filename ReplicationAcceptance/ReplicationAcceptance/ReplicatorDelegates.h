@@ -14,3 +14,9 @@
 
 @interface CDTTestReplicatorDelegateStopAfterStart :  NSObject <CDTReplicatorDelegate>
 @end
+
+@interface CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart : NSObject <CDTReplicatorDelegate>
+@property (nonatomic, strong) CDTDatastoreManager *dsManager;
+@property (nonatomic, strong) NSString* databaseToDelete;
+@property (nonatomic, strong) NSError *error;
+@end

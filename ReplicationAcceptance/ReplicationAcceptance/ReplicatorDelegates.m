@@ -23,3 +23,29 @@
 
 @end;
 
+#pragma mark CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart
+
+@implementation CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart
+
+-(void) checkAndDelete:(CDTReplicator* )replicator
+{
+    if (replicator.state == CDTReplicatorStateStarted && replicator.changesProcessed > 0) {
+        [self.dsManager deleteDatastoreNamed:self.databaseToDelete error:nil];
+    }
+}
+-(void) replicatorDidChangeState:(CDTReplicator *)replicator
+{
+    [self checkAndDelete:replicator];
+}
+
+-(void) replicatorDidChangeProgress:(CDTReplicator*)replicator
+{
+    [self checkAndDelete:replicator];
+}
+
+-(void) replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info
+{
+    self.error = info;
+}
+
+@end
