@@ -63,21 +63,20 @@
         }
 
         error = nil;
-
-        NSDictionary *dict = @{@"hello": @"world", @"docnum":@(i)};
-        CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
+        CDTMutableDocumentRevision *mdrev = [CDTMutableDocumentRevision revision];
+        mdrev.docId = docId;
+        mdrev.body = @{@"hello": @"world", @"docnum":@(i)};
+        
         if (rev == nil) {  // we need to update an existing rev
-            rev = [self.datastore createDocumentWithId:docId
-                                                  body:body
-                                                 error:&error];
+            rev = [self.datastore createDocumentFromRevision:mdrev
+                                                       error:&error];
             //            NSLog(@"Created %@", docId);
             STAssertNil(error, @"Error creating doc: %@", error);
             STAssertNotNil(rev, @"Error creating doc: rev was nil");
         } else {
-            rev = [self.datastore updateDocumentWithId:docId
-                                               prevRev:rev.revId
-                                                  body:body
-                                                 error:&error];
+            mdrev.sourceRevId = rev.revId;
+            rev = [self.datastore updateDocumentFromRevision:mdrev error:&error];
+
             //            NSLog(@"Updated %@", docId);
             STAssertNil(error, @"Error updating doc: %@", error);
             STAssertNotNil(rev, @"Error updating doc: rev was nil");
@@ -93,12 +92,13 @@
 -(void) createLocalDocWithId:(NSString*)docId revs:(NSInteger)n_revs
 {
     NSError *error;
+    
+    CDTMutableDocumentRevision *mdrev = [CDTMutableDocumentRevision revision];
+    mdrev.docId = docId;
+    mdrev.body = @{@"hello": @"world"};
+    
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mdrev error:&error];
 
-    NSDictionary *dict = @{@"hello": @"world"};
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
-    CDTDocumentRevision *rev = [self.datastore createDocumentWithId:docId
-                                                               body:body
-                                                              error:&error];
     STAssertNil(error, @"Error creating docs: %@", error);
     STAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
 
@@ -112,13 +112,8 @@
 -(CDTDocumentRevision*) addRevsToDocumentRevision:(CDTDocumentRevision*)rev count:(NSInteger)n_revs
 {
     NSError *error;
-    NSDictionary *dict = @{@"hello": @"world"};
-    CDTDocumentBody *body = [[CDTDocumentBody alloc] initWithDictionary:dict];
     for (long i = 0; i < n_revs-1; i++) {
-        rev = [self.datastore updateDocumentWithId:rev.docId
-                                           prevRev:rev.revId
-                                              body:body
-                                             error:&error];
+        rev = [self.datastore updateDocumentFromRevision:[rev mutableCopy] error:&error];
     }
     return rev;
 }

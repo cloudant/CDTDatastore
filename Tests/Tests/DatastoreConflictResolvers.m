@@ -39,7 +39,7 @@
         }
     }
     
-    self.resolvedDocumentAsDictionary = [winningRev documentAsDictionary];
+    self.resolvedDocumentAsDictionary = [winningRev body];
     return winningRev;
 }
 @end
@@ -114,7 +114,7 @@
         }
     }
     
-    self.resolvedDocumentAsDictionary = [winningRev documentAsDictionary];
+    self.resolvedDocumentAsDictionary = [winningRev body];
     return winningRev;
     
 }
@@ -161,7 +161,7 @@
                       conflicts:(NSArray*)conflicts
 {
     for(CDTDocumentRevision *aRev in conflicts){
-        if ([[aRev documentAsDictionary] isEqualToDictionary:self.documentBody]) {
+        if ([[aRev body] isEqualToDictionary:self.documentBody]) {
             return aRev;
         }
     }

@@ -295,7 +295,7 @@ static NSUInteger largeRevTreeSize = 1500;
     [self createLocalDocs:10];
     
     CDTFilterBlock myFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *param){
-        return [[rev documentAsDictionary][@"docnum"] isEqual:param[@"pickme"]];
+        return [[rev body][@"docnum"] isEqual:param[@"pickme"]];
     };
     
     [self pushToRemoteWithFilter:myFilter params:@{@"pickme":@3}];
@@ -323,7 +323,7 @@ static NSUInteger largeRevTreeSize = 1500;
     [self createLocalDocs:10];
     
     CDTFilterBlock myFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *param){
-        NSInteger docNum = [[rev documentAsDictionary][@"docnum"] integerValue];
+        NSInteger docNum = [[rev body][@"docnum"] integerValue];
         NSInteger threshold = [param[@"threshold"] integerValue];
         return docNum > threshold;
     };
@@ -502,9 +502,7 @@ static NSUInteger largeRevTreeSize = 1500;
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
 
-        [self.datastore deleteDocumentWithId:docId
-                                         rev:rev.revId
-                                       error:&error];
+        [self.datastore deleteDocumentFromRevision:rev error:&error];
         STAssertNil(error, @"Couldn't delete document");
     }
 
