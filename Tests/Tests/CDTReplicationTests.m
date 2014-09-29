@@ -267,5 +267,33 @@
     
 }
 
+-(void) testStateAfterStoppingBeforeStarting
+{
+    NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
+    NSError *error;
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
+                                                                  target:[NSURL URLWithString:remoteUrl]];
+ 
+    
+    CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
+                                               initWithDatastoreManager:self.factory];
+    [replicatorFactory start];
+    
+    error = nil;
+    CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
+    STAssertNotNil(replicator, @"%@", push);
+    STAssertNil(error, @"%@", error);
+    
+    STAssertEquals(replicator.state, CDTReplicatorStatePending, @"Unexpected state: %@",
+                   [CDTReplicator stringForReplicatorState:replicator.state ]);
+    
+    [replicator stop];
+    
+    STAssertEquals(replicator.state, CDTReplicatorStateStopped, @"Unexpected state: %@",
+                   [CDTReplicator stringForReplicatorState:replicator.state ]);
+    
+}
+
 
 @end

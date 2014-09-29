@@ -218,8 +218,12 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         
         switch (self.state) {
             case CDTReplicatorStatePending:
-            case CDTReplicatorStateStarted:
+                //immediately set the state to stopped.
                 self.state = CDTReplicatorStateStopped;
+                break;
+                
+            case CDTReplicatorStateStarted:
+                self.state = CDTReplicatorStateStopping;
                 break;
                 
             default:
@@ -233,7 +237,14 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         [delegate replicatorDidChangeState:self];
     }
     
-    [self.tdReplicator stop];
+    //Only call TDReplicator -stop if we had previously started.
+    //TDReplicator -stop returns immediately if it's 'running' property is NO.
+    //And that property is only set after TDReplicator -start is called.
+    //This means without the if-statement here (that is, if TDReplicator -stop were always called),
+    //it would work fine. But adding this if-statement makes the intention clear.
+    if (self.state == CDTReplicatorStateStopping) {
+        [self.tdReplicator stop];
+    }
     
 }
 
