@@ -29,6 +29,7 @@
 #import "TDMisc.h"
 #import "MYBlockUtils.h"
 #import "CDTLogging.h"
+#import "TDStatus.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
@@ -176,8 +177,20 @@
     for (NSString *replicationId in [_replicatorsBySessionID allKeys]) {
         TDReplicator *repl = [_replicatorsBySessionID objectForKey:replicationId];
         if ([repl.db.name isEqualToString:dbName]) {
-            LogInfo(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was stopped", [repl class], replicationId);
+            LogInfo(REPLICATION_LOG_CONTEXT,
+                    @"ReplicatorManager: %@ (%@) stopped because local database was deleted",
+                    [repl class], replicationId);
+
             [_replicatorsBySessionID removeObjectForKey: replicationId];
+            
+            NSString *msg =[NSString stringWithFormat:@"ReplicationManager stopped replication %@ (%@).",
+                            [repl class], replicationId];
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+            
+            repl.error = [NSError errorWithDomain:TDInternalErrorDomain
+                                             code:TDReplicatorManagerErrorLocalDatabaseDeleted
+                                         userInfo:userInfo];
+            
             [repl stop];
         }
     }
