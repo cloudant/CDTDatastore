@@ -2,8 +2,13 @@
 
 ## 0.8.0
 
-- Removal of deprecated APIs. See doc/api-migration.md for the list of remove 
+- [FIX] Fix indexes not updating correctly when using new CRUD API, introduced
+  in 0.7.0.
+- [NEW] Allow using NSPredicates when querying for documents.
+- [NEW] Use CDTMutableDocumentRevision during conflict resolution (breaking change).
+- [NEW] Removal of deprecated APIs. See doc/api-migration.md for the list of remove 
   APIs and how to migrate away from them.
+- [FIX] Several fixes to how CDTReplicator reports state changes.
 
 ## 0.7.0 (2014-08-18)
 
