@@ -358,7 +358,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 if (queue.count == 0)
                     break;  // both queues are empty
             }
-            [self pullRemoteRevision: queue[0] ignoreMissingDocs:FALSE];
+            [self pullRemoteRevision: queue[0] ignoreMissingDocs:NO];
             [queue removeObjectAtIndex: 0];
         }
     }
@@ -559,7 +559,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void) insertClientFilterNewDocIds:(NSArray *)downloads {
     for (TD_Revision *rev in downloads) {
-        [self pullRemoteRevision:rev ignoreMissingDocs:TRUE];
+        [self pullRemoteRevision:rev ignoreMissingDocs:YES];
     }
 }
 
@@ -576,8 +576,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void) addToInbox: (TD_Revision*)rev {
     // if we're filtering client side, and it's not on the list
     // nothing to do
-    if (_clientFilterCurrentSetDocIds != nil &&
-        ![_clientFilterCurrentSetDocIds containsObject:rev.docID])
+    if (_clientFilterCurrentDocIds != nil &&
+        ![_clientFilterCurrentDocIds containsObject:rev.docID])
         return;
     [super addToInbox:rev];
 }
@@ -602,15 +602,19 @@ static NSString* joinQuotedEscaped(NSArray* strings);
             .includeDocs = NO,
             .content = 0
         };        
-        _clientFilterCurrentSetDocIds = [NSMutableSet setWithCapacity:10];
-        for (NSDictionary *doc in [[_db getAllDocs:&query] objectForKey:@"rows"]) {
-            [_clientFilterCurrentSetDocIds addObject:[doc objectForKey:@"id"]];
+        _clientFilterCurrentDocIds = [NSMutableSet setWithCapacity:10];
+        
+        for (NSDictionary *doc in [[_db getDocsWithIDs:_clientFilterDocIds options:&query] objectForKey:@"rows"]) {
+            // this is the list for which we already have these docs
+            NSString *key;
+            if ((key = [doc objectForKey:@"id"]) != nil) {
+                [_clientFilterCurrentDocIds addObject:key];
+            }
         }
-        // this is the list for which we already have these docs
-        [_clientFilterCurrentSetDocIds intersectSet:[NSSet setWithArray:_clientFilterDocIds]];
+
         // and this is the list for which we don't
         _clientFilterNewDocIds = [NSMutableSet setWithArray:_clientFilterDocIds];
-        [_clientFilterNewDocIds minusSet:_clientFilterCurrentSetDocIds];
+        [_clientFilterNewDocIds minusSet:_clientFilterCurrentDocIds];
     }
 
 }

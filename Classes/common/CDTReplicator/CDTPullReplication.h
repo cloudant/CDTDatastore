@@ -151,8 +151,9 @@
  */
 @property (nonatomic, copy) NSDictionary *filterParams;
 
-/**
- TODO doc 
+/** The list of document IDs to pull during a replication.
+
+ All other documents are filtered out and not included in the replication.
  */
 @property (nonatomic, copy) NSArray *clientFilterDocIds;
 

@@ -30,7 +30,7 @@
     NSArray* _clientFilterDocIds;
     
     // this is the set based on what we currently have
-    NSMutableSet *_clientFilterCurrentSetDocIds;
+    NSMutableSet *_clientFilterCurrentDocIds;
     // this is any new ones
     NSMutableSet *_clientFilterNewDocIds;
 
