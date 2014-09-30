@@ -35,7 +35,6 @@
 
 @property (nonatomic,readonly) SequenceNumber sequence;
 
-
 -(id)initWithDocId:(NSString *)docId
         revisionId:(NSString *) revId
               body:(NSDictionary *)body
@@ -48,6 +47,20 @@
        attachments:(NSDictionary *)attachments
           sequence:(SequenceNumber)sequence;
 
+/**
+ Creates an CDTDocumentRevision from JSON Data
+ The json data is expected to come from
+ Cloudant or a CouchDB instance.
+ 
+ @param json JSON data to create an object from
+ @param documentURL the url of the document
+ @param error points to an NSError in case of error
+ 
+ @return new CDTDocumentRevision instance
+*/
++(CDTDocumentRevision*)createRevisionFromJson:(NSDictionary*)jsonDict
+                                  forDocument:(NSURL *)documentURL
+                                        error:(NSError * __autoreleasing *) error;
 
 /** 
  Return document content as an NSData object.
