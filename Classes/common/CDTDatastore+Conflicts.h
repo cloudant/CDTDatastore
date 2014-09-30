@@ -32,8 +32,9 @@
  This method creates an NSArry of CDTDocumentRevision objects representing each of the conflicting
  revisions in a particular document tree and passes that array to the given
  [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method 
- must return the winning revision chosen from the array. This method checks the returned
- CDTDocumentRevision and then deletes all other conflicting revisions in the document tree. This 
+ must return the winning revision either chosen from the array or a new document revision defined
+ with a CDTMutableDocumentRevision. This method will check the returned revision for validity
+ (eg CDTMutableDocumentRevision has a parent revision) and then delete all losing revisions. This
  all happens within a single database transaction in order to ensure atomicity.
 
  It is envisioned that this method will be used in conjunction with getConflictedDocumentIds.

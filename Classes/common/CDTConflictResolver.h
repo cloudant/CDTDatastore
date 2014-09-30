@@ -31,18 +31,21 @@
 /**
  * The implementation of this method should examine the conflicted revisions and return
  * a winning CDTDocumentRevision from the conflicts array. You may not create a new 
- * CDTDocumentRevision.
+ * CDTDocumentRevision. If you wish to merge revisions to create a new winning revision, 
+ * call mutableCopy on a CDTDocumentRevision you wish to be parent revision, and then merge
+ * the data from the conflicted revisions into the new revision.
  *
  * This method will be called by [CDTDatastore resolveConflictsForDocument:resolver:error:]
  * if there are conflicts found for the document ID.
  *
  * When called by [CDTDatastore resolveConflictsForDocument:resolver:error:],
- * the returned CDTDocumentRevision is declared the winner and all other conflicting
- * revisions in the tree will be deleted. This all happens within a single database transaction
- * in order to ensure atomicity.
+ * the returned CDTDocumentRevision or CDTMutableDocumentRevision is declared the winner and all 
+ * other conflicting revisions in the tree will be deleted. This all happens within a single 
+ * database transaction in order to ensure atomicity.
  *
  * The output of this method should be deterministic. That is, for the given docId and
- * conflict set, the same CDTDocumentRevision should be returned for all calls.
+ * conflict set, the same CDTDocumentRevision or CDTMutableDocumentRevision should be returned for
+ * all calls.
  *
  * Additionally, this method should not modify other documents or attempt to query the database
  * (via calls to CDTDatastore methods). Doing so will create a blocking transaction to 
@@ -51,12 +54,6 @@
  * Finally, if `nil` is returned by this method, nothing will be changed in the database and the
  * document will remain conflicted.
  *
- * @warning Note that CDTDocumentRevision is an immutable object. Until the development of
- * CDTMutableDocumentRevision is complete (on the roadmap to be completed soon), implementations 
- * should choose a particular revision in the conflicts array to be the winner and return that 
- * object. Additionally, due to this restriction, documents may not yet be deleted with this 
- * conflict resolution mechanism. The future CDTMutableDocumentRevision will provide a flexible 
- * way of merging conflicts.
  *
  * @param docId id of the document with conflicts
  * @param conflicts array of conflicted CDTDocumentRevision, including the current winner
