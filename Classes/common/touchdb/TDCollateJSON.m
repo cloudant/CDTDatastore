@@ -18,6 +18,7 @@
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDCollateJSON.h"
+#import "CDTLogging.h"
 
 
 static int cmp(int n1, int n2) {
@@ -72,7 +73,7 @@ static ValueType valueTypeOf(char c) {
         case '[':           return kArray;
         case '{':           return kObject;
         default:
-            Warn(@"Unexpected character '%c' parsing JSON", c);
+            LogInfo(TD_JSON_CONTEXT,@"Unexpected character '%c' parsing JSON", c);
             return kIllegal;
     }
 }
@@ -93,7 +94,7 @@ extern char convertEscape(const char **in) {
             int uc = (digittoint(digits[0]) << 12) | (digittoint(digits[1]) << 8) |
                      (digittoint(digits[2]) <<  4) | (digittoint(digits[3]));
             if (uc > 127)
-                Warn(@"TDCollateJSON can't correctly compare \\u%.4s", digits);
+                LogInfo(TD_JSON_CONTEXT,@"TDCollateJSON can't correctly compare \\u%.4s", digits);
             return (char)uc;
         }
         case 'b':   return '\b';

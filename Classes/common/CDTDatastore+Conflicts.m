@@ -29,6 +29,7 @@
 #import "TDInternal.h"
 #import "fmdb.h"
 #import "TD_Body.h"
+#import "CDTLogging.h"
 
 @implementation CDTDatastore (Conflicts)
 
@@ -175,7 +176,7 @@
             
             if (TDStatusIsError(status)) {
                 localError = TDStatusToNSError(status, nil);
-                Warn(@"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
+                LogWarn(DATASTORE_LOG_CONTEXT,@"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
                      @" to delete non-winning revision (%@) for document %@",
                      theRev.revId, docId);
                 return status;

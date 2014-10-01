@@ -28,6 +28,7 @@
 #import "TDInternal.h"
 #import "TDMisc.h"
 #import "MYBlockUtils.h"
+#import "CDTLogging.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
@@ -60,7 +61,7 @@
     _serverThread = [[NSThread alloc] initWithTarget: self
                                             selector: @selector(runServerThread)
                                               object: nil];
-    LogTo(Sync, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
+    LogInfo(REPLICATION_LOG_CONTEXT, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
     [_serverThread start];
 
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(someDbDeleted:)
@@ -70,7 +71,7 @@
 
 
 - (void) stop {
-    LogTo(Sync, @"STOP %@", self);
+    LogInfo(REPLICATION_LOG_CONTEXT, @"STOP %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     _replicatorsBySessionID = nil;
     _stopRunLoop = YES;
@@ -90,7 +91,7 @@
  */
 - (void) runServerThread {
     @autoreleasepool {
-        LogTo(Sync, @"TDReplicatorManager thread starting...");
+        LogInfo(REPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread starting...");
 
         [[NSThread currentThread] setName:@"TDReplicatorManager"];
 #ifndef GNUSTEP
@@ -106,7 +107,7 @@
                                                          beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
 
-        LogTo(Sync, @"TDReplicatorManager thread exiting");
+        LogInfo(REPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread exiting");
     }
 }
 
@@ -126,7 +127,7 @@
         if (error) {
             *error = TDStatusToNSError(outStatus, nil);
         }
-        Warn(@"ReplicatorManager: Can't create replicator for %@", properties);
+        LogWarn(REPLICATION_LOG_CONTEXT,@"ReplicatorManager: Can't create replicator for %@", properties);
         return nil;
     }
     repl.sessionID = TDCreateUUID();
@@ -139,7 +140,7 @@
 - (void) startReplicator: (TDReplicator*) repl
 {
     if (![_replicatorsBySessionID objectForKey:repl.sessionID]) {
-        Warn(@"ReplicatorManager: You must create TDReplicators with "
+        LogWarn(REPLICATION_LOG_CONTEXT,@"ReplicatorManager: You must create TDReplicators with "
              @"TDReplicatorManager -createReplicatorWithProperties. "
              @"Replicator not started");
         return;
@@ -147,7 +148,7 @@
     
     [self queue:^{
         
-        LogTo(Sync, @"ReplicatorManager: %@ (%@) was queued.",
+        LogInfo(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.",
               [repl class], repl.sessionID );
         
         [repl start];
@@ -175,7 +176,7 @@
     for (NSString *replicationId in [_replicatorsBySessionID allKeys]) {
         TDReplicator *repl = [_replicatorsBySessionID objectForKey:replicationId];
         if ([repl.db.name isEqualToString:dbName]) {
-            LogTo(Sync, @"ReplicatorManager: %@ (%@) was stopped", [repl class], replicationId);
+            LogInfo(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was stopped", [repl class], replicationId);
             [_replicatorsBySessionID removeObjectForKey: replicationId];
             [repl stop];
         }

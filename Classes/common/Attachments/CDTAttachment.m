@@ -19,6 +19,7 @@
 #import "GTMNSData+zlib.h"
 #import "TDBase64.h"
 #import "TD_Database.h"
+#import "CDTLogging.h"
 
 @implementation CDTAttachment
 
@@ -78,8 +79,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
-        LogTo(CDTAttachment, 
-              @"When creating stream for saved attachment %@, no file at %@, "
+        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT, @"When creating stream for saved attachment %@, no file at %@, "
               @"-dataFromAttachmentContent failed.",
               self.name,
               self.filePath);
@@ -97,7 +97,7 @@
         NSData *inflatedData = [NSData gtm_dataByInflatingData:gzippedData];
         return inflatedData;
     } else {
-        Warn(@"Unknown attachment encoding %i, returning nil", self.encoding);
+        LogWarn(DOCUMENT_REVISION_LOG_CONTEXT,@"Unknown attachment encoding %i, returning nil", self.encoding);
         return nil;
     }
     
@@ -118,8 +118,7 @@
                         type:(NSString*)type
 {
     if (data ==nil) {
-        LogTo(CDTAttachment, 
-              @"When creating %@, data was nil, init failed.",
+        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT,@"When creating %@, data was nil, init failed.",
               name);
         return nil;
     }
@@ -155,8 +154,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:filePath]) {
-        LogTo(CDTAttachment, 
-              @"When creating %@, no file at %@, init failed.",
+        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT,@"When creating %@, no file at %@, init failed.",
               name,
               filePath);
         return nil;
@@ -175,8 +173,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
-        LogTo(CDTAttachment, 
-              @"When creating stream for %@, no file at %@, -getInputStream failed.",
+        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT,@"When creating stream for %@, no file at %@, -getInputStream failed.",
               self.name,
               self.filePath);
         return nil;

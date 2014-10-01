@@ -27,6 +27,7 @@
 
 #import "FMResultSet.h"
 #import "FMDatabase.h"
+#import "CDTLogging.h"
 
 static NSString* const CDTIndexManagerErrorDomain = @"CDTIndexManagerErrorDomain";
 
@@ -42,7 +43,6 @@ NSString* const kCDTQueryOptionOffset = @"offset";
 NSString* const kCDTQueryOptionLimit = @"limit";
 
 static const int VERSION = 1;
-
 
 @interface CDTIndexManager()
 
@@ -707,7 +707,7 @@ static const int VERSION = 1;
 
             success = success && [db executeUpdate:sqlInsert withParameterDictionary:v];
         } else {
-            NSLog(@"not creating index, it was there already");
+            LogWarn(INDEX_LOG_CONTEXT,@"not creating index, it was there already");
         }
         if (success) {
             [indexFunctionMap setObject:indexer forKey:indexName];

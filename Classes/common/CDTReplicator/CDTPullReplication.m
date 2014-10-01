@@ -15,6 +15,7 @@
 
 #import "CDTPullReplication.h"
 #import "CDTDatastore.h"
+#import  "CDTLogging.h"
 
 
 @implementation CDTPullReplication
@@ -65,7 +66,7 @@
         [doc setObject:self.target.name forKey:@"target"];
     } else {
         if (error) {
-            Warn(@"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
+            LogWarn(REPLICATION_LOG_CONTEXT,@"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
             NSString *msg = @"Cannot sync data. Remote server not specified.";
             NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain
@@ -90,7 +91,7 @@
 {
     if (url == nil) {
         if (error) {
-            Warn(@"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
+            LogWarn(REPLICATION_LOG_CONTEXT,@"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
             NSString *msg = @"Cannot sync data. Local data source not specified.";
             NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain

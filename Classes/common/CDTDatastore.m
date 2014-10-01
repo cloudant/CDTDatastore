@@ -20,6 +20,7 @@
 #import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 #import "CDTDatastore+Attachments.h"
+#import "CDTLogging.h"
 
 #import "TD_Database.h"
 #import "TD_View.h"
@@ -483,8 +484,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
-                    LogTo(CDTDatastore,
-                          @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                    LogWarn(DATASTORE_LOG_CONTEXT, @"Error reading %@ from stream for doc <%@, %@>, rolling back",
                           attachment.name,
                           converted.docID,
                           converted.revID);
@@ -619,8 +619,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
-                    LogTo(CDTDatastore,
-                          @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                    LogWarn(DATASTORE_LOG_CONTEXT, @"Error reading %@ from stream for doc <%@, %@>, rolling back",
                           attachment.name,
                           converted.docID,
                           converted.revID);

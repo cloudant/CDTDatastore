@@ -17,6 +17,7 @@
 #import "TDMisc.h"
 #import "TDBase64.h"
 #import "MYURLUtils.h"
+#import "CDTLogging.h"
 
 
 @implementation TDBasicAuthorizer
@@ -33,7 +34,7 @@
 
 - (id)initWithURL: (NSURL*)url
 {
-    Log(@"TDBasicAuthorizer initWith <%@>", url);//TEMP
+    LogDebug(TD_REMOTE_REQUEST_CONTEXT,@"TDBasicAuthorizer initWith <%@>", url);//TEMP
     NSURLCredential *cred = [url my_credentialForRealm: nil
                                   authenticationMethod: NSURLAuthenticationMethodHTTPBasic];
     if (!cred)

@@ -14,6 +14,7 @@
 
 #import "CDTAbstractReplication.h"
 #import "TD_DatabaseManager.h"
+#import "CDTLogging.h"
 
 NSString* const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
@@ -40,7 +41,7 @@ NSString* const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     NSArray *validSchemes = @[@"http", @"https"];
     if (![validSchemes containsObject:scheme]) {
         if (error) {
-            Warn(@"%@ -validateRemoteDatastoreURL Error. "
+            LogWarn(REPLICATION_LOG_CONTEXT,@"%@ -validateRemoteDatastoreURL Error. "
                   @"Invalid scheme: %@", [self class], url.scheme);
             
             NSString *msg = @"Cannot sync data. Invalid Remote Database URL";
@@ -61,7 +62,7 @@ NSString* const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     if ( (!usernameSupplied && passwordSupplied) ||
          (usernameSupplied && !passwordSupplied)) {
         if (error) {
-            Warn(@"%@ -validateRemoteDatastoreURL Error. "
+            LogWarn(REPLICATION_LOG_CONTEXT,@"%@ -validateRemoteDatastoreURL Error. "
                   @"Must have both username and password, or neither. ", [self class]);
             
             NSString *msg = [NSString stringWithFormat:@"Cannot sync data. Missing %@",

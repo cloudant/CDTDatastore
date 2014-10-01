@@ -29,6 +29,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTDocumentBody.h"
 #import "CDTAttachment.h"
+#import "CDTLogging.h"
 
 #include <CommonCrypto/CommonDigest.h>
 
@@ -101,8 +102,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
             if (attachment != nil) {
                 [attachments addObject:attachment];
             } else {
-                LogTo(CDTDatastore,
-                      @"Error reading an attachment row for attachments on doc <%@, %@>"
+                LogInfo(DATASTORE_LOG_CONTEXT, @"Error reading an attachment row for attachments on doc <%@, %@>"
                       @"Closed connection during read?",
                       rev.docId,
                       rev.revId);
@@ -127,7 +127,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     // we construct the attachment instance.
     NSData* keyData = [r dataNoCopyForColumn: @"key"];
     if (keyData.length != sizeof(TDBlobKey)) {
-        Warn(@"%@: Attachment %lld.'%@' has bogus key size %u",
+        LogWarn(DATASTORE_LOG_CONTEXT,@"%@: Attachment %lld.'%@' has bogus key size %u",
              self, sequence, name, (unsigned)keyData.length);
         //*outStatus = kTDStatusCorruptError;
         return nil;
@@ -166,7 +166,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     NSData *attachmentContent = [attachment dataFromAttachmentContent];
     
     if (nil == attachmentContent) {
-        Warn(@"CDTDatastore: attachment %@ had no data; failing.", attachment.name);
+        LogWarn(DATASTORE_LOG_CONTEXT,@"CDTDatastore: attachment %@ had no data; failing.", attachment.name);
         
         if (error) {
             NSString *desc = NSLocalizedString(@"Attachment has no data.", 
@@ -187,7 +187,7 @@ static NSString* const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     if (!success) {
         // -storeBlob:creatingKey:error: will have filled in error
         
-        Warn(@"CDTDatastore: Couldn't save attachment %@: %@", attachment.name, *error);
+        LogWarn(DATASTORE_LOG_CONTEXT,@"CDTDatastore: Couldn't save attachment %@: %@", attachment.name, *error);
         return nil;
     }
     

@@ -16,7 +16,7 @@
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
 #import "TDMultiStreamWriter.h"
-#import "Logging.h"
+#import "CDTLogging.h"
 #import "Test.h"
 
 
@@ -69,7 +69,7 @@
 }
 
 - (void) addStream: (NSInputStream*)stream {
-    LogTo(TDMultiStreamWriter, @"%@: adding stream of unknown length: %@", self, stream);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT,@"%@: adding stream of unknown length: %@", self, stream);
     [_inputs addObject: stream];
     _length = -1;  // length is now unknown
 }
@@ -123,7 +123,7 @@
     _input = CFBridgingRelease(cfInput);
     _output = CFBridgingRelease(cfOutput);
 #endif
-    LogTo(TDMultiStreamWriter, @"%@: Opened input=%p, output=%p", self, _input, _output);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT,@"%@: Opened input=%p, output=%p", self, _input, _output);
     [self opened];
     return _input;
 }
@@ -139,7 +139,7 @@
 
 
 - (void) close {
-    LogTo(TDMultiStreamWriter, @"%@: Closed", self);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Closed", self);
     [_output close];
     _output.delegate = nil;
     _output = nil;
@@ -187,7 +187,7 @@
 // Set my .error property from 'stream's error.
 - (void) setErrorFrom: (NSStream*)stream {
     NSError* error = stream.streamError;
-    Warn(@"%@: Error on %@: %@", self, stream, error);
+    LogWarn(TD_REMOTE_REQUEST_CONTEXT,@"%@: Error on %@: %@", self, stream, error);
     if (error && !_error)
         self.error = error;
 }
@@ -198,7 +198,7 @@
     NSInteger totalBytesRead = 0;
     while (len > 0 && _currentInput) {
         NSInteger bytesRead = [_currentInput read: buffer maxLength: len];
-        LogTo(TDMultiStreamWriter, @"%@:     read %d bytes from %@", self, (int)bytesRead, _currentInput);
+        LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:     read %d bytes from %@", self, (int)bytesRead, _currentInput);
         if (bytesRead > 0) {
             // Got some data from the stream:
             totalBytesRead += bytesRead;
@@ -219,14 +219,14 @@
 
 // Read enough bytes from the aggregated input to refill my _buffer. Returns success/failure.
 - (BOOL) refillBuffer {
-    LogTo(TDMultiStreamWriter, @"%@:   Refilling buffer", self);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:   Refilling buffer", self);
     NSInteger bytesRead = [self read: _buffer+_bufferLength maxLength: _bufferSize-_bufferLength];
     if (bytesRead <= 0) {
-        LogTo(TDMultiStreamWriter, @"%@:     at end of input, can't refill", self);
+        LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:     at end of input, can't refill", self);
         return NO;
     }
     _bufferLength += bytesRead;
-    LogTo(TDMultiStreamWriter, @"%@:   refilled buffer to %u bytes", self, (unsigned)_bufferLength);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:   refilled buffer to %u bytes", self, (unsigned)_bufferLength);
     //LogTo(TDMultiStreamWriter, @"%@:   buffer is now \"%.*s\"", self, _bufferLength, _buffer);
     return YES;
 }
@@ -236,7 +236,7 @@
 - (BOOL) writeToOutput {
     Assert(_bufferLength > 0);
     NSInteger bytesWritten = [_output write: _buffer maxLength: _bufferLength];
-    LogTo(TDMultiStreamWriter, @"%@:   Wrote %d (of %u) bytes to _output (total %lld of %lld)",
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:   Wrote %d (of %u) bytes to _output (total %lld of %lld)",
           self, (int)bytesWritten, (unsigned)_bufferLength, _totalBytesWritten+bytesWritten, _length);
     if (bytesWritten <= 0) {
         [self setErrorFrom: _output];
@@ -257,7 +257,7 @@
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)event {
     if (stream != _output)
         return;
-    LogTo(TDMultiStreamWriter, @"%@: Received event 0x%x", self, (unsigned)event);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Received event 0x%x", self, (unsigned)event);
     switch (event) {
         case NSStreamEventOpenCompleted:
             if ([self openNextInput])
@@ -267,12 +267,12 @@
         case NSStreamEventHasSpaceAvailable:
             if (_input && _input.streamStatus < NSStreamStatusOpen) {
                 // CFNetwork workaround; see https://github.com/couchbaselabs/TouchDB-iOS/issues/99
-                LogTo(TDMultiStreamWriter, @"%@:   Input isn't open; waiting...", self);
+                LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:   Input isn't open; waiting...", self);
                 [self performSelector: @selector(retryWrite:) withObject: stream afterDelay: 0.1];
             } else if (![self writeToOutput]) {
-                LogTo(TDMultiStreamWriter, @"%@:   At end -- closing _output!", self);
+                LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@:   At end -- closing _output!", self);
                 if (_totalBytesWritten != _length && !_error)
-                    Warn(@"%@ wrote %lld bytes, but expected length was %lld!",
+                    LogWarn(TD_REMOTE_REQUEST_CONTEXT,@"%@ wrote %lld bytes, but expected length was %lld!",
                          self, _totalBytesWritten, _length);
                 [self close];
             }
