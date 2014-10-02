@@ -206,7 +206,8 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 -(void)stop
 {
-
+    
+    CDTReplicatorState oldstate = self.state;
     @synchronized(self) {
         
         //can only stop once. If state == 'stopped', 'stopping', 'complete', or 'error'
@@ -214,7 +215,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         //completion or error.
         
         //only the switch block is within the @synchronized in order to prevent the
-        //delegate's replicatorDidChangeState method from blocking significantly.
+        //delegate callbacks from blocking.
         
         switch (self.state) {
             case CDTReplicatorStatePending:
@@ -232,19 +233,17 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
        
     }
     
-    id<CDTReplicatorDelegate> delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
-        [delegate replicatorDidChangeState:self];
-    }
-    
-    //Only call TDReplicator -stop if we had previously started.
-    //TDReplicator -stop returns immediately if it's 'running' property is NO.
-    //And that property is only set after TDReplicator -start is called.
-    //This means without the if-statement here (that is, if TDReplicator -stop were always called),
-    //it would work fine. But adding this if-statement makes the intention clear.
     if (self.state == CDTReplicatorStateStopping) {
+        //if self.tdReplicator.running == YES, which must be true because self.state was 'started'
+        //self.tdReplicator -stop eventually notifies self.replicatorStopped.
         [self.tdReplicator stop];
     }
+    else {
+        //We never started. Nevertheless, the logic in
+        //recordProgressAndInformDelegateFromOldState sends the appropriate messages.
+        [self recordProgressAndInformDelegateFromOldState:oldstate];
+    }
+    
     
 }
 
@@ -298,6 +297,11 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     
     LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
+    
+    //do we need to protect against possibility of TDReplicator starting AFTER
+    //self.stop was called? It is possible that self.stop could have been called
+    //before TDReplicator was actually started on the replication thread.
+    //Alternatively, we find a way of deactiviting TDReplicator
     
     CDTReplicatorState oldState = self.state;
     self.state = CDTReplicatorStateStarted;
