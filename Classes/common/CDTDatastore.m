@@ -33,6 +33,7 @@
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
 
+#import "Version.h"
 
 NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotification";
 
@@ -50,7 +51,7 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 +(NSString*)versionString
 {
-    return @"0.1.0";
+    return @CLOUDANT_SYNC_VERSION;
 }
 
 
