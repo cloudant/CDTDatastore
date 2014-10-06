@@ -36,5 +36,9 @@ One must -start (-stop) the TDReplicatorManager in order to setup (destroy) the 
 - (TDReplicator* ) createReplicatorWithProperties:(NSDictionary*) properties
                                             error:(NSError *__autoreleasing*)error;
 - (void) startReplicator: (TDReplicator*) repl;
+/** Attempts to cancel the start of a particular TDReplicator before it is started. Returns
+ YES if successful or NO if the TDReplicator has already started.*/
+- (BOOL) cancelIfNotStarted:(TDReplicator *)repl;
+
 
 @end

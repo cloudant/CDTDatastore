@@ -35,6 +35,16 @@
 #import <UIKit/UIApplication.h>
 #endif
 
+@interface TDReplicatorManager()
+//replicator objects in this set will never be started.
+//the queue block on the replication thread will exit immediately
+@property (nonatomic, strong) NSMutableSet* cancelReplicator;
+//replicator objects in this set have been started and
+//cannot be canceled by TDReplicatorManager. (They can, however, still be stopped.)
+@property (nonatomic, strong) NSMutableSet* replicatorStarted;
+
+@end
+
 @implementation TDReplicatorManager
 
 
@@ -44,6 +54,8 @@
         _dbManager = dbManager;
         _thread = [NSThread currentThread];
         _replicatorsBySessionID = [[NSMutableDictionary alloc] init];
+        _cancelReplicator = [[NSMutableSet alloc] init];
+        _replicatorStarted = [[NSMutableSet alloc] init];
     }
     return self;
 }
@@ -147,7 +159,16 @@
         return;
     }
     
+    __weak TDReplicatorManager *weakSelf = self;
+    
     [self queue:^{
+        __strong TDReplicatorManager *strongSelf = weakSelf;
+        @synchronized(strongSelf) {
+            if([strongSelf.cancelReplicator containsObject:repl]){
+                return;
+            }
+            [strongSelf.replicatorStarted addObject:repl];
+        }
         
         LogInfo(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.",
               [repl class], repl.sessionID );
@@ -155,6 +176,17 @@
         [repl start];
     }];
     
+}
+
+- (BOOL) cancelIfNotStarted:(TDReplicator *)repl
+{
+    @synchronized(self) {
+        if ([self.replicatorStarted containsObject:repl]) {
+            return NO;
+        }
+        [self.cancelReplicator addObject:repl];
+        return YES;
+    }
 }
 
 #pragma mark - NOTIFICATIONS:
