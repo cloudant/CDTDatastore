@@ -39,6 +39,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 @property (nonatomic, copy)   CDTAbstractReplication* cdtReplication;
 @property (nonatomic, strong) NSDictionary *replConfig;
 // private readwrite properties
+//the state property should be protected from multiple threads
 @property (nonatomic, readwrite) CDTReplicatorState state;
 @property (nonatomic, readwrite) NSInteger changesProcessed;
 @property (nonatomic, readwrite) NSInteger changesTotal;
@@ -112,9 +113,13 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 - (BOOL)startWithError:(NSError * __autoreleasing*)error;
 {
     @synchronized(self) {
-        if (self.started) {
-            LogInfo(REPLICATION_LOG_CONTEXT, @"start: CDTRepliplicator can only be started once."
-                  @"Current State: %@", [CDTReplicator stringForReplicatorState:self.state]);
+        //check both self.started and self.state. While unlikely, it is possible for -stop to
+        //be called before -startWithError. If -stop is called first on a particular instance,
+        //the resulting state will 'stopped' and the object can no longer be started at that point.
+        if (self.started || self.state != CDTReplicatorStatePending) {
+            LogInfo(REPLICATION_LOG_CONTEXT, @"-startWithError: CDTReplicator can only be started "
+                    @"once and only from its initial state, CDTReplicatorStatePending. "
+                    @"Current State: %@", [CDTReplicator stringForReplicatorState:self.state]);
         
             if (error) {
                 NSDictionary *userInfo =
@@ -130,31 +135,34 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         }
     
         self.started = YES;
-    }
-    
-    //TDReplicator's can't be restarted, so always instantiate a new one.
-    NSError *localError;
-    self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
-                                                                         error:&localError];
-    
-    if (!self.tdReplicator) {
-        self.state = CDTReplicatorStateError;
 
-        //report the error to the Log
-        LogWarn(REPLICATION_LOG_CONTEXT,@"CDTReplicator -start: Unable to instantiate TDReplicator."
-             @"TD Error: %@ Current State: %@",
-             localError, [CDTReplicator stringForReplicatorState:self.state]);
-
-        if (error) {
-            //build a CDT error
-            NSDictionary *userInfo =
-            @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
-            *error = [NSError errorWithDomain:CDTReplicatorErrorDomain
-                                         code:CDTReplicatorErrorTDReplicatorNil
-                                     userInfo:userInfo];
-
+     
+        //doing this inside @synchronized lets us be certain that self.tdReplicator is either
+        //created or nil throughout the rest of the code (especially in -stop)
+        NSError *localError;
+        self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
+                                                                             error:&localError];
+        
+        if (!self.tdReplicator) {
+            self.state = CDTReplicatorStateError;
+            
+            //report the error to the Log
+            LogWarn(REPLICATION_LOG_CONTEXT, @"CDTReplicator -start: Unable to instantiate "
+                    @"TDReplicator. TD Error: %@ Current State: %@", localError,
+                    [CDTReplicator stringForReplicatorState:self.state]);
+            
+            if (error) {
+                //build a CDT error
+                NSDictionary *userInfo =
+                @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
+                *error = [NSError errorWithDomain:CDTReplicatorErrorDomain
+                                             code:CDTReplicatorErrorTDReplicatorNil
+                                         userInfo:userInfo];
+                
+            }
+            return NO;
         }
-        return NO;
+
     }
     
     //create TD_FilterBlock that wraps the CDTFilterBlock and set the TDPusher.filter property.
@@ -204,46 +212,63 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     return YES;
 }
 
--(void)stop
+-(BOOL)stop
 {
     
     CDTReplicatorState oldstate = self.state;
+    BOOL informDelegate = YES;
+    BOOL stopSuccessful = YES;
+    
     @synchronized(self) {
         
         //can only stop once. If state == 'stopped', 'stopping', 'complete', or 'error'
         //then -stop has either already been called, or the replicator stopped due to
-        //completion or error.
-        
-        //only the switch block is within the @synchronized in order to prevent the
-        //delegate callbacks from blocking.
+        //completion or error. This is the default case below.
         
         switch (self.state) {
             case CDTReplicatorStatePending:
-                //immediately set the state to stopped.
-                self.state = CDTReplicatorStateStopped;
+
+                if (self.started) {
+                    //-startWithError was called and self.tdReplicator was successfully
+                    //instantiated (otherwise state == 'error')
+                    
+                    if ([self.replicatorManager cancelIfNotStarted:self.tdReplicator]) {
+                        self.state = CDTReplicatorStateStopped;
+                    }
+                    else {
+                        stopSuccessful = NO;
+                    }
+                }
+                else {
+                    self.state = CDTReplicatorStateStopped;
+                }
                 break;
                 
             case CDTReplicatorStateStarted:
                 self.state = CDTReplicatorStateStopping;
                 break;
                 
-            default:
-                return;
+            //we've already stopped or are about to.
+            case CDTReplicatorStateStopped:
+            case CDTReplicatorStateStopping:
+            case CDTReplicatorStateComplete:
+            case CDTReplicatorStateError:
+                informDelegate = NO;
+                break;
         }
        
     }
     
-    if (self.state == CDTReplicatorStateStopping) {
-        //if self.tdReplicator.running == YES, which must be true because self.state was 'started'
-        //self.tdReplicator -stop eventually notifies self.replicatorStopped.
-        [self.tdReplicator stop];
-    }
-    else {
-        //We never started. Nevertheless, the logic in
-        //recordProgressAndInformDelegateFromOldState sends the appropriate messages.
+    if (informDelegate) {
         [self recordProgressAndInformDelegateFromOldState:oldstate];
     }
     
+    if (oldstate == CDTReplicatorStateStarted && self.state == CDTReplicatorStateStopping) {
+        //self.tdReplicator -stop eventually notifies self.replicatorStopped.
+        [self.tdReplicator stop];
+    }
+    
+    return stopSuccessful;
     
 }
 
@@ -267,31 +292,33 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     
     CDTReplicatorState oldState = strongSelf.state;
 
-    switch (strongSelf.state) {
-        case CDTReplicatorStatePending:
-        case CDTReplicatorStateStopping:
-            
-            if (strongSelf.tdReplicator.error) {
-                strongSelf.state = CDTReplicatorStateError;
-            }
-            else {
-                strongSelf.state = CDTReplicatorStateStopped;
-            }
-            
-            break;
-            
-        case CDTReplicatorStateStarted:
-            
-            if (strongSelf.tdReplicator.error) {
-                strongSelf.state = CDTReplicatorStateError;
-            }
-            else {
-                strongSelf.state = CDTReplicatorStateComplete;
-            }
-            
-        //do nothing if the state is already 'complete' or 'error'.
-        default:
-            break;
+    @synchronized(strongSelf) { //lock out other processes from changing state
+        switch (strongSelf.state) {
+            case CDTReplicatorStatePending:
+            case CDTReplicatorStateStopping:
+                
+                if (strongSelf.tdReplicator.error) {
+                    strongSelf.state = CDTReplicatorStateError;
+                }
+                else {
+                    strongSelf.state = CDTReplicatorStateStopped;
+                }
+                
+                break;
+                
+            case CDTReplicatorStateStarted:
+                
+                if (strongSelf.tdReplicator.error) {
+                    strongSelf.state = CDTReplicatorStateError;
+                }
+                else {
+                    strongSelf.state = CDTReplicatorStateComplete;
+                }
+                
+                //do nothing if the state is already 'complete' or 'error'.
+            default:
+                break;
+        }
     }
     
     [strongSelf recordProgressAndInformDelegateFromOldState:oldState];
@@ -317,13 +344,10 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
     
-    //do we need to protect against possibility of TDReplicator starting AFTER
-    //self.stop was called? It is possible that self.stop could have been called
-    //before TDReplicator was actually started on the replication thread.
-    //Alternatively, we find a way of deactiviting TDReplicator
-    
     CDTReplicatorState oldState = strongSelf.state;
-    strongSelf.state = CDTReplicatorStateStarted;
+    @synchronized(strongSelf) {  //lock out other processes from changing state.
+        strongSelf.state = CDTReplicatorStateStarted;
+    }
     
     id<CDTReplicatorDelegate> delegate = strongSelf.delegate;
 
@@ -348,12 +372,14 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     
     CDTReplicatorState oldState = strongSelf.state;
     
-    if (strongSelf.tdReplicator.running)
-        strongSelf.state = CDTReplicatorStateStarted;
-    else if (self.tdReplicator.error)
-        strongSelf.state = CDTReplicatorStateError;
-    else
-        strongSelf.state = CDTReplicatorStateComplete;
+    @synchronized(strongSelf) {
+        if (strongSelf.tdReplicator.running)
+            strongSelf.state = CDTReplicatorStateStarted;
+        else if (self.tdReplicator.error)
+            strongSelf.state = CDTReplicatorStateError;
+        else
+            strongSelf.state = CDTReplicatorStateComplete;
+    }
     
     [strongSelf recordProgressAndInformDelegateFromOldState:oldState];
 }
