@@ -154,6 +154,18 @@
 /** The list of document IDs to pull during a replication.
 
  All other documents are filtered out and not included in the replication.
+
+ Modifying the example above, in order to replicate a subset of known document IDs,
+ specify:
+ 
+    pull.clientFilterDocIds = @{@"doc-1", @"doc-2", @"doc-12"};
+ 
+ before calling:
+ 
+    CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
+ 
+ Now only the documents with the specified IDs (if present) will be pulled.
+ 
  */
 @property (nonatomic, copy) NSArray *clientFilterDocIds;
 
