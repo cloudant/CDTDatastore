@@ -918,24 +918,25 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
 
-    STAssertTrue(self.datastore.documentCount == 4,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
-
+    STAssertEquals([self.datastore.database lastSequence], 4ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                   @"Incorrect number of documents created");
     
     // 50 more
     [self createRemoteDocs:51 count:ndocs];
 
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
 
-    STAssertTrue(self.datastore.documentCount == 5,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    STAssertEquals([self.datastore.database lastSequence], 5ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 5ul,
+                 @"Incorrect number of documents created");
 
     
     NSArray *localDocs = [self.datastore getAllDocuments];
     
-    STAssertTrue(localDocs.count == filterDocIds.count, @"unexpected number of docs: %@",localDocs.count);
-    STAssertTrue(self.datastore.documentCount == filterDocIds.count,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    STAssertEquals(localDocs.count, filterDocIds.count, @"unexpected number of docs");
+    STAssertEquals(self.datastore.documentCount, filterDocIds.count,
+                 @"Incorrect number of documents created");
 }
 
 -(void) testPullClientFilterLargeRevTree {
@@ -957,8 +958,10 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
 
-    STAssertTrue(self.datastore.documentCount == 4,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    // 50 * 4 docs
+    STAssertEquals([self.datastore.database lastSequence], 200ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents created");
 
     // 50 more
     for(int i=50; i<ndocs+50; i++) {
@@ -969,8 +972,9 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
     
-    STAssertTrue(self.datastore.documentCount == 5,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+    STAssertEquals([self.datastore.database lastSequence], 250ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 5ul,
+                 @"Incorrect number of documents created");
 
 }
 
@@ -992,9 +996,10 @@ static NSUInteger largeRevTreeSize = 1500;
                               [NSString stringWithFormat:@"doc-%i", 70]];
     
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
-    
-    STAssertTrue(self.datastore.documentCount == 4,
-                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+
+    STAssertEquals([self.datastore.database lastSequence], 4ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents created");
     
     // now do some updates
     for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
@@ -1005,12 +1010,14 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    
     for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
         STAssertTrue([rev.revId hasPrefix:@"2-"], @"rev id does not start 2-");
     }
 
-    STAssertTrue(self.datastore.documentCount == 4,
-                 @"Incorrect number of documents updated %lu", self.datastore.documentCount);
+    STAssertEquals([self.datastore.database lastSequence], 8ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents updated");
 }
 
 /**
