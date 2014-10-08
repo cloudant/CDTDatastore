@@ -14,10 +14,9 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"  
 #import "TDMultipartReader.h"
-
+#import "CloudantTests.h"
 
 @interface MyMultipartReaderDelegate : NSObject <TDMultipartReaderDelegate>
 {
@@ -59,7 +58,7 @@
 
 
 
-@interface TDMultipartReaderTests : SenTestCase
+@interface TDMultipartReaderTests : CloudantTests
 
 @end
 

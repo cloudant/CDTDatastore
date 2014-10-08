@@ -14,15 +14,15 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TDCollateJSON.h"
 #import "TDJSON.h"  //I don't understand how the tests in TDCollateJSON compile without this import
+#import "CloudantTests.h"
 
 extern char convertEscape(const char**);
 
 
-@interface TDCollateJSONTests : SenTestCase
+@interface TDCollateJSONTests : CloudantTests
 
 
 @end

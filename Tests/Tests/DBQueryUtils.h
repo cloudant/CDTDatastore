@@ -12,12 +12,12 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import "CloudantTests.h"
 
 @class FMDatabaseQueue;
 @class FMResultSet;
 
-@interface DBQueryUtils : SenTestCase
+@interface DBQueryUtils : CloudantTests
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
 @property (nonatomic, readonly) NSSet *sqlTables;

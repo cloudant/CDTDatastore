@@ -14,12 +14,12 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TD_Revision.h"
 //#import "TDCollateRevIDs.h"
+#import "CloudantTests.h"
 
-@interface TD_RevisionTests : SenTestCase
+@interface TD_RevisionTests : CloudantTests
 
 
 @end

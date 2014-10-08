@@ -36,6 +36,8 @@
 		985FF00019CC597400EA5392 /* IndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985FEFFE19CC597400EA5392 /* IndexManagerTests.m */; };
 		989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
+		98BB740019E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
+		98BB740119E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
 		9985C74919AE5D8300636AB6 /* CDTQueryBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -102,6 +104,8 @@
 		985FEFFD19CC597400EA5392 /* IndexManagerTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexManagerTests.h; sourceTree = "<group>"; };
 		985FEFFE19CC597400EA5392 /* IndexManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerTests.m; sourceTree = "<group>"; };
 		989E6E21198799AE00FB8510 /* DatastoreCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreCRUD.m; sourceTree = "<group>"; };
+		98BB73FE19E5927600C57866 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloudantTests.h; sourceTree = "<group>"; };
+		98BB73FF19E5927600C57866 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantTests.m; sourceTree = "<group>"; };
 		9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQueryBuilderTests.m; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
@@ -192,6 +196,8 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				98BB73FE19E5927600C57866 /* CloudantTests.h */,
+				98BB73FF19E5927600C57866 /* CloudantTests.m */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
 				9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */,
 				27389E2D18534E050027A404 /* CloudantSyncTests.h */,
@@ -310,7 +316,7 @@
 			name = Tests;
 			productName = Tests;
 			productReference = 27389E0C185345FD0027A404 /* Tests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 		27CCEDC5187AD64F006F3C66 /* Tests OSX */ = {
 			isa = PBXNativeTarget;
@@ -329,7 +335,7 @@
 			name = "Tests OSX";
 			productName = "Tests OSX";
 			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -470,6 +476,7 @@
 				9F0D23FA188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
 				985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */,
 				9F4E646B19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
+				98BB740019E5927600C57866 /* CloudantTests.m in Sources */,
 				9F0D2402188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				9F4E646D19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
 				985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
@@ -503,6 +510,7 @@
 				9F0D23FB188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
 				9F0D2403188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				9F4E646C19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
+				98BB740119E5927600C57866 /* CloudantTests.m in Sources */,
 				985A188B19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
 				9F4E646E19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
 				985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,

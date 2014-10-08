@@ -14,12 +14,12 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TDReachability.h"
+#import "CloudantTests.h"
 
 
-@interface TDReachabilityTests : SenTestCase
+@interface TDReachabilityTests : CloudantTests
 
 
 @end

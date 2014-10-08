@@ -14,12 +14,11 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TDCanonicalJSON.h"
+#import "CloudantTests.h"
 
-
-@interface TDCanonicalJSONTests : SenTestCase
+@interface TDCanonicalJSONTests : CloudantTests
 
 
 @end

@@ -13,13 +13,13 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import "CloudantTests.h"
 
 @class CDTDatastoreManager;
 
 #define kDBExtension @"touchdb"  //in TD_DatabaseManager.m. Move it into .h?
 
-@interface CloudantSyncTests : SenTestCase
+@interface CloudantSyncTests : CloudantTests
 
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
