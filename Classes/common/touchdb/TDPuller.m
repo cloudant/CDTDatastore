@@ -604,7 +604,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
         // work out which documents we don't have but want
         _clientFilterNewDocIds = [NSMutableSet set];
         for (NSDictionary *doc in [[_db getDocsWithIDs:_clientFilterDocIds options:&query] objectForKey:@"rows"]) {
-            if ([[doc[@"error"] isEqualToString:@"not_found"]]) {
+            if ([doc[@"error"] isEqualToString:@"not_found"]) {
                 [_clientFilterNewDocIds addObject:[doc objectForKey:@"key"]];
             }
         }
