@@ -417,7 +417,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 
 - (void) addToInbox: (TD_Revision*)rev {
-    Assert(_running);    
+    Assert(_running);
     [_batcher queueObject: rev];
     [self updateActive];
 }
