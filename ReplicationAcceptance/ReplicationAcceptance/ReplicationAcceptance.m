@@ -909,11 +909,15 @@ static NSUInteger largeRevTreeSize = 1500;
     }
   
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
-  
+    
     //5000 local + 5000/2 remote = 7500
     STAssertEquals(self.datastore.documentCount, (unsigned long)(localdocs+remotedocs/2),
                    @"Incorrect number of documents created");
-    
+
+    //5000 local + 5000/2 remote + 5000 remote copies of local (rev-2)
+    STAssertEquals(self.datastore.database.lastSequence, (long long)(localdocs+remotedocs/2+localdocs),
+                   @"Incorrect sequence number");
+
     // document checks:
     // 0..5000 all have 2-rev
     // 5000..10000 are all even numbers and have a 1-rev
