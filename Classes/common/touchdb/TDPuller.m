@@ -29,6 +29,7 @@
 #import "ExceptionUtils.h"
 #import "TDJSON.h"
 #import "CDTLogging.h"
+#import "TDCanonicalJSON.h"
 
 
 // Maximum number of revisions to fetch simultaneously. (CFNetwork will only send about 5
@@ -564,8 +565,11 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 /* over-ride implementation in TDReplicator */
 - (NSString*) remoteCheckpointDocID {
     if (_clientFilterDocIds) {
-        NSString *str = [NSString stringWithFormat:@"%@%@", self.remote, @"cloudantSyncDocIdSubset"];
-        return TDHexSHA1Digest([str dataUsingEncoding:NSUTF8StringEncoding]);
+        NSMutableDictionary* spec = $mdict({@"localUUID", _db.privateUUID},
+                                           {@"remoteURL", _remote.absoluteString},
+                                           {@"push", @(self.isPush)},
+                                           {@"cloudantSyncDocIdSubset", @YES});
+        return TDHexSHA1Digest([TDCanonicalJSON canonicalData: spec]);
     } else {
         return [super remoteCheckpointDocID];
     }
@@ -600,7 +604,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
         // work out which documents we don't have but want
         _clientFilterNewDocIds = [NSMutableSet set];
         for (NSDictionary *doc in [[_db getDocsWithIDs:_clientFilterDocIds options:&query] objectForKey:@"rows"]) {
-            if ([[doc objectForKey:@"error"] isEqual:@"not_found"]) {
+            if ([[doc[@"error"] isEqualToString:@"not_found"]]) {
                 [_clientFilterNewDocIds addObject:[doc objectForKey:@"key"]];
             }
         }

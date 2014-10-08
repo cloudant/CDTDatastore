@@ -25,23 +25,15 @@
     NSMutableArray* _bulkRevsToPull;    // TDPulledRevisions that can be fetched in bulk
     NSUInteger _httpConnectionCount;    // Number of active NSURLConnections
     TDBatcher* _downloadsToInsert;      // Queue of TDPulledRevisions, with bodies, to insert in DB
-    TDBatcher* _clientFilterNewDocsToInsert;  // Queue of missing revisions, specified by client Doc ID filter, but not in database yet
-
-    NSArray* _clientFilterDocIds;
-    
-    // this is any new ones
-    NSMutableSet *_clientFilterNewDocIds;
-
-
+    NSArray* _clientFilterDocIds;       // If set, only pull this subset of doc ids
+    NSMutableSet *_clientFilterNewDocIds; // The set difference: _clientFilterDocIds - all doc ids in DB
 }
 
-// overrides
+// overriden from TDReplicator
 - (NSString*) remoteCheckpointDocID;
+// overriden from TDReplicator
 - (void) addToInbox: (TD_Revision*)rev;
-
-
 - (void) setClientFilterDocIds:(NSArray *)clientFilterDocIds;
-
 @end
 
 
