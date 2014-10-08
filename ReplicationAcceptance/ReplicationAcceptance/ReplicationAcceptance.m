@@ -872,6 +872,63 @@ static NSUInteger largeRevTreeSize = 1500;
     [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 }
 
+
+-(void) testPullClientFilteredLots {
+    // Create large number of documents locally and remotely
+    // ensure all updated documents on remote side are pulled
+    // ensure new documents on remote side matching id list are pulled
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int localdocs = 5000;
+    int remotedocs = 5000;
+    
+    // 0..5000 local
+    // 5001..10000 remote
+    // then upload 2-rev 0..5000 remote
+    
+    [self createLocalDocs:localdocs];
+    [self createRemoteDocs:localdocs+1 count:remotedocs];
+    // now do some updates
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        // 2-rev, with the 1-rev as parent
+        NSMutableDictionary *dict = [rev.body mutableCopy];
+        NSString *localRevId = [rev revId];
+        [dict setValue:localRevId forKey:@"_rev"];
+        [dict setValue:@YES forKey:@"updated"];
+        [self createRemoteDocWithId:rev.docId body:dict];
+    }
+    
+    NSMutableArray *filterDocIds = [NSMutableArray array];
+    int i;
+    for (i=0; i<localdocs+remotedocs; i++) {
+        if (i % 2 == 1) {
+            [filterDocIds addObject:[NSString stringWithFormat:@"doc-%i", i+1]];
+        }
+    }
+  
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+  
+    //5000 local + 5000/2 remote = 7500
+    STAssertEquals(self.datastore.documentCount, (unsigned long)(localdocs+remotedocs/2),
+                   @"Incorrect number of documents created");
+    
+    // document checks:
+    // 0..5000 all have 2-rev
+    // 5000..10000 are all even numbers and have a 1-rev
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        long docNo = [[rev.docId substringFromIndex:4] integerValue];
+        if (docNo <= localdocs+1) {
+            STAssertTrue([rev.revId hasPrefix:@"2-"], @"rev id %@ does not start 2- for doc id %@", rev.revId, rev.docId);
+        }
+        if (docNo > localdocs && docNo <= localdocs+remotedocs+1) {
+            STAssertTrue(docNo %2 == 0, @"document number must be even");
+            STAssertTrue([rev.revId hasPrefix:@"1-"], @"rev id does not start 1-");
+        }
+    }
+}
+
 -(void) testPullClientFiltered {
     // Create n docs and pull a subset of them, filtered by ID
     

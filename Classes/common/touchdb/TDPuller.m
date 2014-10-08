@@ -67,18 +67,11 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     
     // download the missing documents according to the doc id filter
     if (_clientFilterNewDocIds) {
-        // start a batcher and fill it with missing doc ids
-        _clientFilterNewDocsToInsert = [[TDBatcher alloc] initWithCapacity: 200 delay: 1.0
-                                                                 processor: ^(NSArray *downloads) {
-                                                                     [self insertClientFilterNewDocIds: downloads];
-                                                                 }];
         for (NSString *docId in _clientFilterNewDocIds) {
             TD_Revision *rev = [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:FALSE];
             rev.sequence = -1; // fake sequence number means "don't track sequence numbers"
-            [_clientFilterNewDocsToInsert queueObject:rev];
+            [self pullRemoteRevision:rev ignoreMissingDocs:YES immediatelyInsert:YES];
         }
-        // TODO does this tie up the main thread?
-        [_clientFilterNewDocsToInsert flushAll];
     }
     
     if (!_downloadsToInsert) {
@@ -358,7 +351,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 if (queue.count == 0)
                     break;  // both queues are empty
             }
-            [self pullRemoteRevision: queue[0] ignoreMissingDocs:NO];
+            [self pullRemoteRevision: queue[0] ignoreMissingDocs:NO immediatelyInsert:NO];
             [queue removeObjectAtIndex: 0];
         }
     }
@@ -369,6 +362,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 // The contents are stored into rev.properties.
 - (void) pullRemoteRevision: (TD_Revision*)rev
           ignoreMissingDocs:(BOOL)ignoreMissingDocs
+          immediatelyInsert:(BOOL)immediatelyInsert
 {
     [self asyncTaskStarted];
     ++_httpConnectionCount;
@@ -413,7 +407,11 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 TD_Revision* gotRev = [TD_Revision revisionWithProperties: dl.document];
                 gotRev.sequence = rev.sequence;
                 // Add to batcher ... eventually it will be fed to -insertRevisions:.
-                [_downloadsToInsert queueObject: gotRev];
+                if (immediatelyInsert) {
+                    [strongSelf insertDownloads:@[gotRev]];
+                } else {
+                    [_downloadsToInsert queueObject: gotRev];
+                }
                 [strongSelf asyncTaskStarted];
             }
             
@@ -559,7 +557,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void) insertClientFilterNewDocIds:(NSArray *)downloads {
     for (TD_Revision *rev in downloads) {
-        [self pullRemoteRevision:rev ignoreMissingDocs:YES];
+        [self pullRemoteRevision:rev ignoreMissingDocs:YES immediatelyInsert:YES];
     }
 }
 
