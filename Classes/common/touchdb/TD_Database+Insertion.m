@@ -30,6 +30,8 @@
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
 
+#import "CDTLogging.h"
+
 #ifdef GNUSTEP
 #import <openssl/sha.h>
 #else
@@ -184,7 +186,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         if (![key hasPrefix: @"_"]  || [sSpecialKeysToLeave member: key]) {
             properties[key] = origProps[key];
         } else if (![sSpecialKeysToRemove member: key]) {
-            Log(@"TD_Database: Invalid top-level key '%@' in document to be inserted", key);
+            LogInfo(DATASTORE_LOG_CONTEXT,@"TD_Database: Invalid top-level key '%@' in document to be inserted", key);
             return nil;
         }
     }
@@ -305,7 +307,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
 {
 
-    LogTo(TD_Database, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev, previousRevID, allowConflict);
+    LogInfo(DATASTORE_LOG_CONTEXT, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev, previousRevID, allowConflict);
     Assert(outStatus);
     
     BOOL deleted = rev.deleted;
@@ -471,7 +473,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             *outStatus = kTDStatusDBError;
             return nil;
         }
-        LogTo(TD_Database, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
+        LogInfo(DATASTORE_LOG_CONTEXT, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
         *outStatus = kTDStatusOK;
         rev.body = nil;
         return nil;
@@ -719,16 +721,16 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     __weak TD_Database *weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
         TD_Database *strongSelf = weakSelf;
-        Log(@"TD_Database: Deleting JSON of old revisions...");
+        LogInfo(DATASTORE_LOG_CONTEXT,@"TD_Database: Deleting JSON of old revisions...");
         if (![db executeUpdate: @"UPDATE revs SET json=null WHERE current=0"]) {
             result = kTDStatusDBError;
             return;
         }
 
-        Log(@"Deleting old attachments...");
+        LogInfo(DATASTORE_LOG_CONTEXT,@"Deleting old attachments...");
         result = [strongSelf garbageCollectAttachments:db];
 
-        Log(@"Flushing SQLite WAL...");
+        LogInfo(DATASTORE_LOG_CONTEXT,@"Flushing SQLite WAL...");
         FMResultSet *rset = [db executeQuery: @"PRAGMA wal_checkpoint(RESTART)"];
         @try {
             if (!rset || db.hadError) {
@@ -740,7 +742,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             [rset close];
         }
 
-        Log(@"Vacuuming SQLite database...");
+        LogInfo(DATASTORE_LOG_CONTEXT,@"Vacuuming SQLite database...");
         if (![db executeUpdate: @"VACUUM"]) {
             result = kTDStatusDBError;
             return;
@@ -754,13 +756,13 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
     // TODO syncronise the open/close?
 
-    Log(@"Closing and re-opening database...");
+    LogInfo(DATASTORE_LOG_CONTEXT,@"Closing and re-opening database...");
     [_fmdbQueue close];
 
     if (![self openFMDB])
         return kTDStatusDBError;
 
-    Log(@"...Finished database compaction.");
+    LogInfo(DATASTORE_LOG_CONTEXT,@"...Finished database compaction.");
     return result;
 }
 
@@ -830,7 +832,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 [r close];
                 [seqsToPurge minusSet: seqsToKeep];
 
-                LogTo(TD_Database, @"Purging doc '%@' revs (%@); asked for (%@)",
+                LogInfo(DATASTORE_LOG_CONTEXT, @"Purging doc '%@' revs (%@); asked for (%@)",
                       docID, [revsToPurge.allObjects componentsJoinedByString: @", "],
                       [revIDs componentsJoinedByString: @", "]);
 
@@ -841,7 +843,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                     if (![db executeUpdate: sql])
                         return kTDStatusDBError;
                     if ((NSUInteger)db.changes != seqsToPurge.count)
-                        Warn(@"purgeRevisions: Only %i sequences deleted of (%@)",
+                        LogWarn(DATASTORE_LOG_CONTEXT,@"purgeRevisions: Only %i sequences deleted of (%@)",
                              db.changes, [seqsToPurge.allObjects componentsJoinedByString:@","]);
                 }
                 revsPurged = revsToPurge.allObjects;

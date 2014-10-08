@@ -23,6 +23,7 @@
 #import "TDMultipartUploader.h"
 #import "TDInternal.h"
 #import "TDCanonicalJSON.h"
+#import "CDTLogging.h"
 
 
 @interface TDPusher ()
@@ -46,17 +47,17 @@
 - (void) maybeCreateRemoteDB {
     if (!_createTarget)
         return;
-    LogTo(Sync, @"Remote db might not exist; creating it...");
+    LogInfo(REPLICATION_LOG_CONTEXT, @"Remote db might not exist; creating it...");
     _creatingTarget = YES;
     [self asyncTaskStarted];
     [self sendAsyncRequest: @"PUT" path: @"" body: nil onCompletion: ^(id result, NSError* error) {
         _creatingTarget = NO;
         if (error && error.code != kTDStatusDuplicate) {
-            LogTo(Sync, @"Failed to create remote db: %@", error);
+            LogInfo(REPLICATION_LOG_CONTEXT, @"Failed to create remote db: %@", error);
             self.error = error;
             [self stop];
         } else {
-            LogTo(Sync, @"Created remote db");
+            LogInfo(REPLICATION_LOG_CONTEXT, @"Created remote db");
             _createTarget = NO;             // remember that I created the target
             [self beginReplicating];
         }
@@ -145,7 +146,7 @@
     SequenceNumber seq = rev.sequence;
     bool wasFirst = (seq == (SequenceNumber)_pendingSequences.firstIndex);
     if (![_pendingSequences containsIndex: (NSUInteger)seq])
-        Warn(@"%@ removePending: sequence %lld not in set, for rev %@", self, seq, rev);
+        LogWarn(REPLICATION_LOG_CONTEXT,@"%@ removePending: sequence %lld not in set, for rev %@", self, seq, rev);
     [_pendingSequences removeIndex: (NSUInteger)seq];
 
     if (wasFirst) {
@@ -171,7 +172,7 @@
     if (!self.filter || !self.filter(rev, _filterParameters))
         return;
     
-    LogTo(SyncVerbose, @"%@: Queuing #%lld %@", self, rev.sequence, rev);
+    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Queuing #%lld %@", self, rev.sequence, rev);
     [self addToInbox: rev];
 }
 
@@ -218,7 +219,7 @@
                     if (!_dontSendMultipart)
                         options |= kTDBigAttachmentsFollow;
                     if ([_db loadRevisionBody: rev options: options] >= 300) {
-                        Warn(@"%@: Couldn't get local contents of %@", self, rev);
+                        LogWarn(REPLICATION_LOG_CONTEXT,@"%@: Couldn't get local contents of %@", self, rev);
                         [self revisionFailed];
                         return nil;
                     }
@@ -296,8 +297,8 @@
     NSUInteger numDocsToSend = docsToSend.count;
     if (numDocsToSend == 0)
         return;
-    LogTo(Sync, @"%@: Sending %u revisions", self, (unsigned)numDocsToSend);
-    LogTo(SyncVerbose, @"%@: Sending %@", self, changes.allRevisions);
+    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Sending %u revisions", self, (unsigned)numDocsToSend);
+    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sending %@", self, changes.allRevisions);
     self.changesTotal += numDocsToSend;
     [self asyncTaskStarted];
     [self sendAsyncRequest: @"POST"
@@ -321,7 +322,7 @@
                           }
                           
                           // This item (doc) failed to save correctly
-                          Warn(@"%@: _bulk_docs got an error: %@", self, item);
+                          LogWarn(REPLICATION_LOG_CONTEXT,@"%@: _bulk_docs got an error: %@", self, item);
                           
                           NSString *docID;
                           NSURL *url;
@@ -371,7 +372,7 @@
                           }
                       }
                       
-                      LogTo(SyncVerbose, @"%@: Sent %@", self, changes.allRevisions);
+                      LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sent %@", self, changes.allRevisions);
                       
                   } 
                   
@@ -475,7 +476,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item) {
                           [self revisionFailed];
                       }
                   } else {
-                      LogTo(SyncVerbose, @"%@: Sent multipart %@", self, rev);
+                      LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sent multipart %@", self, rev);
                       [self removePending: rev];
                   }
                   self.changesProcessed++;
@@ -488,7 +489,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item) {
      ];
     uploader.authorizer = _authorizer;
     [self addRemoteRequest: uploader];
-    LogTo(SyncVerbose, @"%@: Queuing %@ (multipart, %lldkb)", self, uploader, bodyStream.length/1024);
+    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Queuing %@ (multipart, %lldkb)", self, uploader, bodyStream.length/1024);
     if (!_uploaderQueue)
         _uploaderQueue = [[NSMutableArray alloc] init];
     [_uploaderQueue addObject: uploader];
@@ -518,7 +519,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item) {
                       self.error = error;
                       [self revisionFailed];
                   } else {
-                      LogTo(SyncVerbose, @"%@: Sent %@ (JSON), response=%@", self, rev, response);
+                      LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sent %@ (JSON), response=%@", self, rev, response);
                       [self removePending: rev];
                   }
                   [self asyncTasksFinished: 1];
@@ -530,7 +531,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item) {
     if (!_uploading && _uploaderQueue.count > 0) {
         _uploading = YES;
         TDMultipartUploader* uploader = _uploaderQueue[0];
-        LogTo(SyncVerbose, @"%@: Starting %@", self, uploader);
+        LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Starting %@", self, uploader);
         [uploader start];
         [_uploaderQueue removeObjectAtIndex: 0];
     }

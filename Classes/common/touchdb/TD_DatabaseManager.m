@@ -23,6 +23,7 @@
 #import "TDReplicatorManager.h"
 #import "TDInternal.h"
 #import "TDMisc.h"
+#import "CDTLogging.h"
 
 
 const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
@@ -96,7 +97,7 @@ static NSCharacterSet* kIllegalNameChars;
 
 
 - (void)dealloc {
-    LogTo(TD_Server, @"DEALLOC %@", self);
+    LogInfo(DATASTORE_LOG_CONTEXT,@"DEALLOC %@", self);
     [self close];
 }
 
@@ -186,14 +187,14 @@ static NSCharacterSet* kIllegalNameChars;
 
 
 - (void) close {
-    LogTo(TD_Server, @"CLOSING %@ ...", self);
+    LogInfo(DATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
     [_replicatorManager stop];
     _replicatorManager = nil;
     for (TD_Database* db in _databases.allValues) {
         [db close];
     }
     [_databases removeAllObjects];
-    LogTo(TD_Server, @"CLOSED %@", self);
+    LogInfo(DATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
 }
 
 #pragma mark - REPLICATION:
@@ -355,7 +356,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 
 - (TDReplicatorManager*) replicatorManager {
     if (!_replicatorManager && !_options.noReplicator) {
-        LogTo(TD_Server, @"Starting replicator manager for %@", self);
+        LogInfo(DATASTORE_LOG_CONTEXT,@"Starting replicator manager for %@", self);
         _replicatorManager = [[TDReplicatorManager alloc] initWithDatabaseManager: self];
         [_replicatorManager start];
     }

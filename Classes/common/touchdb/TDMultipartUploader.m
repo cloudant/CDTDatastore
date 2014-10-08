@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import "TDMultipartUploader.h"
+#import "CDTLogging.h"
 
 
 @implementation TDMultipartUploader
@@ -54,7 +55,7 @@
 - (NSInputStream *)connection:(NSURLConnection *)connection
             needNewBodyStream:(NSURLRequest *)request
 {
-    LogTo(TDRemoteRequest, @"%@: Needs new body stream, resetting writer...", self);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT,@"%@: Needs new body stream, resetting writer...", self);
     [_multipartWriter close];
     return [_multipartWriter openForInputStream];
 }

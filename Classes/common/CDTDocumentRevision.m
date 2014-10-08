@@ -20,6 +20,7 @@
 #import "TD_Revision.h"
 #import "TD_Body.h"
 #import "TD_Database.h"
+#import "CDTLogging.h"
 
 @interface CDTDocumentRevision ()
 
@@ -168,7 +169,7 @@
     NSData *json = [[TDJSON dataWithJSONObject:self.body options:0 error:&innerError] copy];
     
     if (!json) {
-        Warn(@"CDTDocumentRevision: couldn't convert to JSON");
+        LogWarn(DOCUMENT_REVISION_LOG_CONTEXT, @"CDTDocumentRevision: couldn't convert to JSON");
         *error = innerError;
         return nil;
     }

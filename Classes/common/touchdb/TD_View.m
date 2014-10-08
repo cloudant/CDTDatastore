@@ -29,6 +29,8 @@
 
 #import "FMDatabase+LongLong.h"
 
+#import "CDTLogging.h"
+
 
 #define kReduceBatchSize 100
 
@@ -144,7 +146,7 @@ static id<TDViewCompiler> sCompiler;
         return NO;
     TDMapBlock mapBlock = [[TD_View compiler] compileMapFunction: mapSource language: language];
     if (!mapBlock) {
-        Warn(@"View %@ has unknown map function: %@", _name, mapSource);
+        LogInfo(TD_VIEW_CONTEXT,@"View %@ has unknown map function: %@", _name, mapSource);
         return NO;
     }
     NSString* reduceSource = viewProps[@"reduce"];
@@ -152,7 +154,7 @@ static id<TDViewCompiler> sCompiler;
     if (reduceSource) {
         reduceBlock =[[TD_View compiler] compileReduceFunction: reduceSource language: language];
         if (!reduceBlock) {
-            Warn(@"View %@ has unknown reduce function: %@", _name, reduceSource);
+            LogWarn(TD_VIEW_CONTEXT,@"View %@ has unknown reduce function: %@", _name, reduceSource);
             return NO;
         }
     }
@@ -219,7 +221,7 @@ static id fromJSON( NSData* json ) {
 
 
 - (TDStatus) updateIndex {
-    LogTo(View, @"Re-indexing view %@ ...", _name);
+    LogInfo(TD_VIEW_CONTEXT, @"Re-indexing view %@ ...", _name);
     Assert(_mapBlock, @"Cannot reindex view '%@' which has no map block set", _name);
 
     int viewID = self.viewID;
@@ -276,7 +278,7 @@ static id fromJSON( NSData* json ) {
                     key = $null;
                 NSString* keyJSON = toJSONString(key);
                 NSString* valueJSON = toJSONString(value);
-                LogTo(View, @"    emit(%@, %@)", keyJSON, valueJSON);
+                LogInfo(TD_VIEW_CONTEXT, @"    emit(%@, %@)", keyJSON, valueJSON);
                 if ([fmdb executeUpdate: @"INSERT INTO maps (view_id, sequence, key, value) VALUES "
                      "(?, ?, ?, ?)",
                      @(viewID), @(sequence), keyJSON, valueJSON])
@@ -369,7 +371,7 @@ static id fromJSON( NSData* json ) {
                                                                        options: _mapContentOptions
                                                                     inDatabase:db];
                     if (!properties) {
-                        Warn(@"Failed to parse JSON of doc %@ rev %@", docID, revID);
+                        LogWarn(TD_VIEW_CONTEXT,@"Failed to parse JSON of doc %@ rev %@", docID, revID);
                         continue;
                     }
 
@@ -381,7 +383,7 @@ static id fromJSON( NSData* json ) {
                     }
 
                     // Call the user-defined map() to emit new key/value pairs from this revision:
-                    LogTo(View, @"  call map for sequence=%lld...", sequence);
+                    LogInfo(TD_VIEW_CONTEXT, @"  call map for sequence=%lld...", sequence);
                     _mapBlock(properties, emit);
                     if (emitFailed) {
                         status = kTDStatusCallbackError;
@@ -397,14 +399,14 @@ static id fromJSON( NSData* json ) {
                 return;
             }
             
-            LogTo(View, @"...Finished re-indexing view %@ to #%lld (deleted %u, added %u)",
+            LogInfo(TD_VIEW_CONTEXT, @"...Finished re-indexing view %@ to #%lld (deleted %u, added %u)",
                   _name, dbMaxSequence, deleted, inserted);
             status = kTDStatusOK;
             
         } @finally {
             [r close];
             if (status >= kTDStatusBadRequest)
-                Warn(@"TouchDB: Failed to rebuild view '%@': %d", _name, status);
+                LogWarn(TD_VIEW_CONTEXT,@"TouchDB: Failed to rebuild view '%@': %d", _name, status);
             *rollback = (status < kTDStatusBadRequest);
         }
     }];
@@ -480,7 +482,7 @@ static id fromJSON( NSData* json ) {
         [args addObject: @(options->skip)];
     }
 
-    LogTo(View, @"Query %@: %@\n\tArguments: %@", _name, sql, args);
+    LogInfo(TD_VIEW_CONTEXT, @"Query %@: %@\n\tArguments: %@", _name, sql, args);
 
     FMResultSet* r = [fmdb executeQuery: sql withArgumentsInArray: args];
     if (!r)
@@ -510,7 +512,7 @@ static id fromJSON( NSData* json ) {
             // Reduced or grouped query:
             // Reduced or grouped query:
             if (!_reduceBlock && !group) {
-                Warn(@"Cannot use reduce option in view %@ which has no reduce block defined", _name);
+                LogWarn(TD_VIEW_CONTEXT,@"Cannot use reduce option in view %@ which has no reduce block defined", _name);
                 *outStatus = kTDStatusBadParam;
                 return;
             }
@@ -547,7 +549,7 @@ static id fromJSON( NSData* json ) {
                                                                inDatabase:db];
                         }
                     }
-                    LogTo(ViewVerbose, @"Query %@: Found row with key=%@, value=%@, id=%@",
+                    LogVerbose(TD_VIEW_CONTEXT, @"Query %@: Found row with key=%@, value=%@, id=%@",
                           _name, toJSONString(key), toJSONString(value), toJSONString(docID));
                     [rows addObject: $dict({@"id",  docID},
                                            {@"key", key},
@@ -559,7 +561,7 @@ static id fromJSON( NSData* json ) {
         
         [r close];
         *outStatus = kTDStatusOK;
-        LogTo(View, @"Query %@: Returning %u rows", _name, (unsigned)rows.count);
+        LogInfo(TD_VIEW_CONTEXT, @"Query %@: Returning %u rows", _name, (unsigned)rows.count);
 
     }];
     return rows;
@@ -628,7 +630,7 @@ static id groupKey(NSData* keyJSON, unsigned groupLevel) {
                 }
                 lastKeyData = [keyData copy];
             }
-            LogTo(ViewVerbose, @"Query %@: Will reduce row with key=%@, value=%@",
+            LogVerbose(TD_VIEW_CONTEXT, @"Query %@: Will reduce row with key=%@, value=%@",
                   _name, [keyData my_UTF8ToString], [valueData my_UTF8ToString]);
             [keysToReduce addObject: keyData];
             [valuesToReduce addObject: valueData ?: $null];
@@ -639,7 +641,7 @@ static id groupKey(NSData* keyJSON, unsigned groupLevel) {
         // Finish the last group (or the entire list, if no grouping):
         id key = group ? groupKey(lastKeyData, groupLevel) : $null;
         id reduced = [self reduceKeys: keysToReduce values: valuesToReduce];
-        LogTo(ViewVerbose, @"Query %@: Reduced to key=%@, value=%@",
+        LogVerbose(TD_VIEW_CONTEXT, @"Query %@: Reduced to key=%@, value=%@",
               _name, toJSONString(key), toJSONString(reduced));
         [rows addObject: $dict({@"key", key}, {@"value", reduced})];
     }

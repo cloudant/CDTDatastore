@@ -21,6 +21,7 @@
 #import "TDMisc.h"
 #import "TDStatus.h"
 #import "TDJSON.h"
+#import "CDTLogging.h"
 
 
 #define kDefaultHeartbeat (5 * 60.0)
@@ -100,7 +101,7 @@
                 value = [TDJSON stringWithJSONObject: value options: TDJSONWritingAllowFragments
                                                error: &error];
                 if (!value) {
-                    Warn(@"Illegal filter parameter %@ = %@", key, _filterParameters[key]);
+                    LogInfo(REPLICATION_LOG_CONTEXT,@"Illegal filter parameter %@ = %@", key, _filterParameters[key]);
                     continue;
                 }
             }
@@ -112,13 +113,13 @@
     if (_docIDs) {
         
         if (_filterName) {
-            Warn(@"You can't set both a replication filter and doc_ids, since doc_ids uses the internal _doc_ids filter.");
+            LogInfo(REPLICATION_LOG_CONTEXT,@"You can't set both a replication filter and doc_ids, since doc_ids uses the internal _doc_ids filter.");
         } else {        
             NSError *error;
             NSString *docIDsParam = [TDJSON stringWithJSONObject: _docIDs options: TDJSONWritingAllowFragments
                                                            error: &error];
             if (!docIDsParam || error) {
-                Warn(@"Illegal doc IDs %@, %@", [_docIDs description], [error localizedDescription]);
+                LogInfo(REPLICATION_LOG_CONTEXT,@"Illegal doc IDs %@, %@", [_docIDs description], [error localizedDescription]);
             }
             [path appendFormat:@"&filter=_doc_ids&doc_ids=%@", TDEscapeURLParam(docIDsParam)];
         }
@@ -140,7 +141,7 @@
 }
 
 - (void) setUpstreamError: (NSString*)message {
-    Warn(@"%@: Server error: %@", self, message);
+    LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Server error: %@", self, message);
     self.error = [NSError errorWithDomain: @"TDChangeTracker" code: kTDStatusUpstreamError userInfo: nil];
 }
 
@@ -171,11 +172,11 @@
         NSTimeInterval retryDelay = kInitialRetryDelay * (1 << MIN(_retryCount, 16U));
         retryDelay = MIN(retryDelay, kMaxRetryDelay);
         ++_retryCount;
-        Log(@"%@: Connection error, retrying in %.1f sec: %@",
+        LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Connection error, retrying in %.1f sec: %@",
             self, retryDelay, error.localizedDescription);
         [self performSelector: @selector(retry) withObject: nil afterDelay: retryDelay];
     } else {
-        Warn(@"%@: Can't connect, giving up: %@", self, error);
+        LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Can't connect, giving up: %@", self, error);
         self.error = error;
         [self stopped];
     }

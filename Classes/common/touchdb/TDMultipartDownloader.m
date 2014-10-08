@@ -21,6 +21,7 @@
 #import "TDInternal.h"
 #import "TDMisc.h"
 #import "CollectionUtils.h"
+#import "CDTLogging.h"
 
 
 @implementation TDMultipartDownloader
@@ -74,7 +75,7 @@
         if ([contentType hasPrefix: @"text/plain"])
             contentType = nil;      // Workaround for CouchDB returning JSON docs with text/plain type
         if (![_reader setContentType: contentType]) {
-            LogTo(RemoteRequest, @"%@ got invalid Content-Type '%@'", self, contentType);
+            LogInfo(TD_REMOTE_REQUEST_CONTEXT,  @"%@ got invalid Content-Type '%@'", self, contentType);
             [self cancelWithStatus: _reader.status];
             return;
         }
@@ -92,7 +93,7 @@
 
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    LogTo(SyncVerbose, @"%@: Finished loading (%u attachments)",
+    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)",
           self, (unsigned)_reader.attachmentCount);
     if (![_reader finish]) {
         [self cancelWithStatus: _reader.status];

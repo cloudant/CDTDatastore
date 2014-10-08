@@ -376,6 +376,9 @@
                location = "group:TDStatus.m">
             </FileRef>
          </Group>
+         <FileRef
+            location = "group:CDTLogging.h">
+         </FileRef>
       </Group>
       <Group
          location = "group:Classes/ios"

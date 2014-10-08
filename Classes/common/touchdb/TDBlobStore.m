@@ -16,6 +16,7 @@
 #import "TDBlobStore.h"
 #import "TDBase64.h"
 #import "TDMisc.h"
+#import "CDTLogging.h"
 #import <ctype.h>
 
 #import "TDStatus.h"
@@ -145,7 +146,7 @@
           | NSDataWritingFileProtectionCompleteUnlessOpen
 #endif
                      error: outError]) {
-        Warn(@"TDBlobStore: Couldn't write to %@: %@", path, *outError);
+        LogDebug(DATASTORE_LOG_CONTEXT,@"TDBlobStore: Couldn't write to %@: %@", path, *outError);
         return NO;
     }
     return YES;
@@ -210,7 +211,7 @@
                     ++numDeleted;
                 else {
                     errors = YES;
-                    Warn(@"%@: Failed to delete '%@': %@", self, filename, error);
+                    LogDebug(DATASTORE_LOG_CONTEXT,@"%@: Failed to delete '%@': %@", self, filename, error);
                 }
             }
         }
@@ -233,9 +234,9 @@
                                                  appropriateForURL: parentURL
                                                  create: YES error: &error];
         _tempDir = [tempDirURL.path copy];
-        Log(@"TDBlobStore %@ created tempDir %@", _path, _tempDir);
+        LogInfo(DATASTORE_LOG_CONTEXT,@"TDBlobStore %@ created tempDir %@", _path, _tempDir);
         if (!_tempDir)
-            Warn(@"TDBlobStore: Unable to create temp dir: %@", error);
+            LogDebug(DATASTORE_LOG_CONTEXT,@"TDBlobStore: Unable to create temp dir: %@", error);
 #endif
     }
     return _tempDir;

@@ -19,6 +19,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
+#import "CDTLogging.h"
 
 #import "TD_Revision.h"
 #import "TD_Database.h"
@@ -110,7 +111,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 {
     @synchronized(self) {
         if (self.started) {
-            LogTo(CDTReplicatorLog, @"start: CDTRepliplicator can only be started once."
+            LogInfo(REPLICATION_LOG_CONTEXT, @"start: CDTRepliplicator can only be started once."
                   @"Current State: %@", [CDTReplicator stringForReplicatorState:self.state]);
         
             if (error) {
@@ -136,7 +137,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         self.state = CDTReplicatorStateError;
 
         //report the error to the Log
-        Warn(@"CDTReplicator -start: Unable to instantiate TDReplicator."
+        LogWarn(REPLICATION_LOG_CONTEXT,@"CDTReplicator -start: Unable to instantiate TDReplicator."
              @"TD Error: %@ Current State: %@",
              localError, [CDTReplicator stringForReplicatorState:self.state]);
 
@@ -193,7 +194,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     // queues the replication on the TDReplicatorManager's replication thread
     [self.replicatorManager startReplicator:self.tdReplicator];
     
-    LogTo(CDTReplicatorLog, @"start: ReplicationManager starting %@, sessionID %@",
+    LogInfo(REPLICATION_LOG_CONTEXT, @"start: ReplicationManager starting %@, sessionID %@",
           [self.tdReplicator class], self.tdReplicator.sessionID);
 
     return YES;
@@ -237,7 +238,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 - (void) replicatorStopped: (NSNotification*)n {
     TDReplicator* repl = n.object;
     
-    LogTo(CDTReplicatorLog, @"replicatorStopped: %@. type: %@ sessionId: %@", n.name,
+    LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStopped: %@. type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
     
     BOOL progressChanged = [self updateProgress];
@@ -271,7 +272,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         //do nothing if the state is already 'complete' or 'error'.
         //which should be impossible.
         default:
-            Warn(@"CDTReplicator -replicatorStopped was called with unexpected state = %@",
+            LogWarn(REPLICATION_LOG_CONTEXT,@"CDTReplicator -replicatorStopped was called with unexpected state = %@",
                  [[self class] stringForReplicatorState:self.state]);
             break;
     }
@@ -294,7 +295,7 @@ static NSString* const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 - (void) replicatorStarted: (NSNotification*)n {
     TDReplicator* repl = n.object;
     
-    LogTo(CDTReplicatorLog, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
+    LogInfo(REPLICATION_LOG_CONTEXT, @"replicatorStarted: %@ type: %@ sessionId: %@", n.name,
           [repl class], repl.sessionID);
     
     CDTReplicatorState oldState = self.state;
