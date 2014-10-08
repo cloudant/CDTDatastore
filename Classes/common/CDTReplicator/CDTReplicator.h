@@ -37,7 +37,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorErrors) {
     /**
      Internal error: TDReplicator object of wrong type.
      */
-    CDTReplicatorErrorTDReplicatorWrongType  = 2
+    CDTReplicatorErrorTDReplicatorWrongType  = 3,
+    /**
+     Internal error: TDReplicator reports local database deleted
+     */
+    CDTReplicatorErrorLocalDatabaseDeleted = 4
 };
 
 
@@ -175,32 +179,49 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 - (void)start __deprecated;
 
 /**
- * Stop an in-progress replication.
+ * Stop an in-progress replication or attempt to stop a replication that has not yet started.
+ *
+ * Replications are queued on a separate thread. If the replication is already running, 
+ * this method, which can be called from any thread, is guaranteed to initiate the shutdown 
+ * process and will return YES immediately.
  *
  * Already replicated changes will remain in the datastore.
  *
- * -stop can be called from any thread. It will initiate a
- * shutdown process and return immediately.
- *
  * The shutdown process may take time as we need to wait for in-flight
  * network requests to complete before background threads can be safely
- * stopped. However, no modifications to the database will be made
- * after -stop is called, including checkpoint related
- * operations.
+ * stopped.
  *
  * Consumers should check -state if they need
  * to know when the replicator has fully stopped. After -stop is
  * called, the replicator will be in the `CDTReplicatorStateStopping`
  * state while operations complete and will move to the
  * `CDTReplicatorStateStopped` state when the replicator has fully
- * shutdown.
+ * shutdown. The delegate will be informed for these changes in state
+ * via -replicatorDidChangeState.
  *
  * It is also possible the replicator moves to the
  * `CDTReplicatorStateError` state if an error happened during the
  * shutdown process.
  *
+ * If the replication has not yet begun on the separate thread, this method will attempt
+ * to stop the replication before it starts. If it cannot stop the replication, this method 
+ * will return NO and replication will start and progress as normal.
+ *
+ * If -startWithError was never called, this method will move the state from 
+ * CDTRelicatorStatePending to CDTReplicatorStateStopped, inform the delegate and return YES.
+ * 
+ * 
+ * @return YES or NO depending on success.
+ *
+ *
  * @see CDTReplicatorState
  */
-- (void)stop;
+- (BOOL)stop;
+
+/**
+ If -state is equal to CDTReplicatorStateError, this will contain the error message.
+ This error information is also sent to the delegate object. 
+ */
+@property (nonatomic, readonly) NSError *error;
 
 @end
