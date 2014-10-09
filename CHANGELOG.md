@@ -1,12 +1,21 @@
 # CDTDatastore CHANGELOG
 
+## 0.9.0 (2014-10-09)
+
+- [NEW] Logging now uses Cocoa Lumberjack.
+- [FIX] Pushing resurrected documents.
+- [FIX] Ensure replication callbacks are called.
+- [FIX] Significant improvements to replication state machine management.
+- [FIX] Issues building example app with newer cocoapods versions.
+- [FIX] CDTReplicator object getting deallocated during callback to itself.
+
 ## 0.8.0 (2014-09-29)
 
 - [FIX] Fix indexes not updating correctly when using new CRUD API, introduced
   in 0.7.0.
 - [NEW] Allow using NSPredicates when querying for documents.
 - [NEW] Use CDTMutableDocumentRevision during conflict resolution (breaking change).
-- [NEW] Removal of deprecated APIs. See doc/api-migration.md for the list of remove 
+- [NEW] Removal of deprecated APIs. See doc/api-migration.md for the list of remove
   APIs and how to migrate away from them.
 - [FIX] Several fixes to how CDTReplicator reports state changes.
 
