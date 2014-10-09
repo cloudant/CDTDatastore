@@ -748,7 +748,9 @@ NSString* const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                     allowConflict:NO
                                            status:&status];
     if (TDStatusIsError(status)) {
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
