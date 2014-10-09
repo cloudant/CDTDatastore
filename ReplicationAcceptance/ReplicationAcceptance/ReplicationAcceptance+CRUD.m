@@ -118,12 +118,21 @@
     return rev;
 }
 
--(void) createRemoteDocs:(NSInteger)count
+- (void)createRemoteDocs:(NSInteger)count
+{
+    [self createRemoteDocs:count suffixFrom:1];
+}
+
+-(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start
 {
     NSMutableArray *docs = [NSMutableArray array];
+    NSUInteger currentIndex = start;
     for (long i = 1; i < count+1; i++) {
-        NSString *docId = [NSString stringWithFormat:@"doc-%li", i];
-        NSDictionary *dict = @{@"_id": docId, @"hello": @"world", @"docnum":[NSNumber numberWithLong:i]};
+        currentIndex++;
+        NSString *docId = [NSString stringWithFormat:@"doc-%li", currentIndex];
+        NSDictionary *dict = @{@"_id": docId, 
+                               @"hello": @"world", 
+                               @"docnum":[NSNumber numberWithLong:currentIndex]};
         [docs addObject:dict];
     }
 
@@ -187,6 +196,28 @@
                                                            error:nil]];
     }] asJson];
     STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
+    return [response.body.object objectForKey:@"rev"];
+}
+
+-(NSString*) deleteRemoteDocWithId:(NSString *)docId
+{
+    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
+    
+    // Get the doc to find its rev
+    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];;
+    }] asJson].body.object;
+    NSString *revId = json[@"_rev"];
+    
+    // Delete
+    UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        NSDictionary* headers = @{@"accept": @"application/json", @"If-Match": revId};
+        [request setHeaders:headers];
+    }] asJson];
+    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Delete document failed");
     return [response.body.object objectForKey:@"rev"];
 }
 

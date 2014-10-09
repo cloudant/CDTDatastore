@@ -24,8 +24,11 @@
 -(CDTDocumentRevision*) addRevsToDocumentRevision:(CDTDocumentRevision*)rev count:(NSInteger)n_revs;
 
 -(void) createRemoteDocs:(NSInteger)count;
+-(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start;
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs;
 -(NSString*) createRemoteDocWithId:(NSString *)ddocid body:(NSDictionary*)ddocbody;
+
+-(NSString*) deleteRemoteDocWithId:(NSString *)docId;
 
 -(NSDictionary*) remoteDbMetadata;
 

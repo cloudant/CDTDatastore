@@ -398,6 +398,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             } else {
                 // Doc ID exists; check whether current winning revision is deleted:
                 if (oldWinnerWasDeletion) {
+                    previousRevID = oldWinningRevID;
                     parentSequence = [self getSequenceOfDocument: docNumericID
                                                         revision: oldWinningRevID
                                                      onlyCurrent: NO

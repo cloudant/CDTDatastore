@@ -859,4 +859,78 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+/**
+ Reproduce reported issue:
+ 
+ 1. Create remote database
+ 2. Add 250 docs of type A to remote database, 10 docs of type B.
+ 3. Remove all type A documents from remote database.
+ 4. Launch application. (test doesn't need to do this)
+ 5. Create new local database.
+ 6. Pull and push replicate from remote database to local database; wait until complete.
+ 7. Add 100 documents to local database of type A.
+ 8. Push replicate local to remote -> push replication fails
+ 
+ I was able to reduce a couple of things:
+ 
+  - The different "types" of documents was not important.
+  - Number of removed documents doesn't matter.
+  - Important thing is resurrecting deleted documents and pushing.
+ */
+-(void) test_CreateRemoteDeleteRemotePullPushCreateLocalPush
+{
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    NSInteger startSuffix = 0;
+    NSInteger remoteTotal = 10;
+    NSInteger remoteDeleteCount = 5;
+    NSInteger localTotal = 1;
+    
+    [self createRemoteDocs:remoteTotal suffixFrom:startSuffix];
+    
+    // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
+    for (NSInteger i = startSuffix+1; i < remoteDeleteCount+1; i++) {
+        NSString *docId = [NSString stringWithFormat:@"doc-%li", (long)i];
+        [self deleteRemoteDocWithId:docId];
+    }
+    
+    [self pullFromRemote];
+    [self pushToRemote];
+    
+    // These will have the same name as the replicated deleted docs.
+    [self createLocalDocs:localTotal suffixFrom:startSuffix];
+    
+    // This should no longer fail
+    [self pushToRemote];
+    
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+}
+
+
+/**
+ Test that we can replicate resurrected documents. 
+ 
+ This is a minimal example of the bug in test_CreateRemoteDeleteRemotePullPushCreateLocalPush.
+ */
+-(void) test_PushResurectedDocument
+{
+    [self createLocalDocs:1 suffixFrom:0];
+    
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:@"doc-1" error:nil];
+    [self.datastore deleteDocumentFromRevision:rev error:nil];
+    
+    [self createLocalDocs:1 suffixFrom:0];
+    
+    // This should fail
+    [self pushToRemote];
+    
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    STAssertTrue(same, @"Remote and local databases differ");
+}
+
+
 @end
