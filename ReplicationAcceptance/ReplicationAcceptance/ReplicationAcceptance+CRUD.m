@@ -120,7 +120,7 @@
 
 - (void)createRemoteDocs:(NSInteger)count
 {
-    [self createRemoteDocs:count suffixFrom:1];
+    [self createRemoteDocs:count suffixFrom:0];
 }
 
 -(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start
