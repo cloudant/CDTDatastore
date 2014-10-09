@@ -949,7 +949,6 @@ static NSUInteger largeRevTreeSize = 1500;
                         [NSString stringWithFormat:@"doc-%i", 23]];
 
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
-    int count = [self.datastore documentCount];
     STAssertTrue(filterDocIds.count == [self.datastore documentCount], @"unexpected number of docs: %@",[self.datastore documentCount]);
     
     NSArray *localDocs = [self.datastore getDocumentsWithIds:filterDocIds];
