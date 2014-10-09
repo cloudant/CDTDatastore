@@ -22,6 +22,8 @@
 #import "FMDatabaseQueue.h"
 #import "FMResultSet.h"
 
+#import "CDTLogging.h"
+#import "DDTTYLogger.h"
 @implementation CloudantSyncTests
 
 - (NSString*)createTemporaryDirectoryAndReturnPath

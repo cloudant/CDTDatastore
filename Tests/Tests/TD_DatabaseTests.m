@@ -14,14 +14,14 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TD_Database.h"
 #import "TD_Revision.h"
+#import "CloudantTests.h"
 
 extern NSDictionary* makeRevisionHistoryDict(NSArray* history);
 
-@interface TD_DatabaseTests : SenTestCase
+@interface TD_DatabaseTests : CloudantTests
 
 
 @end

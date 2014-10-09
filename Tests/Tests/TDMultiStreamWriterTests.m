@@ -14,10 +14,9 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"  //needed for the class extenstion to NSData found in the CollectionUtils. although that class extension to NSData is easy to reproduce
 #import "TDMultiStreamWriter.h"
-
+#import "CloudantTests.h"
 
 @interface MyMultiStreamWriterTester : NSObject <NSStreamDelegate>
 {
@@ -68,7 +67,7 @@
 @end
 
 
-@interface TDMultiStreamWriterTests : SenTestCase
+@interface TDMultiStreamWriterTests : CloudantTests
 
 @property NSString *expectedOutputString;
 @property NSString *expectedOutputStringFirstPart;

@@ -14,14 +14,14 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
-#import <SenTestingKit/SenTestingKit.h>
 #import "CollectionUtils.h"
 #import "TDPusher.h"
 #import "TDInternal.h"
+#import "CloudantTests.h"
 
 extern int findCommonAncestor(TD_Revision* rev, NSArray* possibleRevIDs);
 
-@interface TDPusherTests : SenTestCase
+@interface TDPusherTests : CloudantTests
 
 
 @end
