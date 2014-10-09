@@ -133,7 +133,7 @@
     
     if(self){
         
-        if(!docId || !revId || !body){
+        if(!docId || !revId){
             return nil;
         }
         _docId = docId;
@@ -141,7 +141,7 @@
         _deleted = deleted;
         _private_attachments = attachments;
         _sequence = sequence;
-        if(!deleted){
+        if(!deleted && body){  
             NSMutableDictionary *mutableCopy = [body mutableCopy];
             
             NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
