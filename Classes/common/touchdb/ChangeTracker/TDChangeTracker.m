@@ -5,6 +5,8 @@
 //  Created by Jens Alfke on 6/20/11.
 //  Copyright 2011 Couchbase, Inc.
 //
+//  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -14,6 +16,7 @@
 //  and limitations under the License.
 //
 // <http://wiki.apache.org/couchdb/HTTP_database_API#Changes>
+
 
 #import "TDChangeTracker.h"
 #import "TDSocketChangeTracker.h"
