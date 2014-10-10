@@ -72,7 +72,7 @@ run on a background thread.
 
 The `ensureIndexedWithIndexName` function must be run every time a `CDTIndexManager` is
 created so that the manager object recognises that index. The indexes 
-themselves are persisted to disk and updated incrementally -- the 
+themselves are persisted to disk and updated incrementally at query time -- the 
 `CDTIndexManager` just needs to be told about them at startup time.
 
 `ensureIndexedWithIndexName:fieldName:error` is a convienience method to
@@ -99,6 +99,21 @@ To redefine an index, you need to delete and recreate the index:
 [indexManager ensureIndexedWithIndexName:@"default"
                                fieldName:@"lastname" error:nil];
 ```
+
+### Updating Indexes
+
+As previously stated, index values are updated incrementally at query
+time. This normally ensures the most appropriate balance of
+performance and usability. After performing a large number of updates
+to the datastore (for example, a pull replication), this may cause a
+delay before the first query completes.
+
+In such cases, it may be desirable to call `-updateAllIndexes` when
+replication completes. This can be achieved by setting the
+`CDTReplicator`s `delegate` property to a class conforming to the
+`CDReplicatorDelegate` protocol. This class should implement
+`-replicatorDidComplete` and call `-updateAllIndexes` inside this
+method.
 
 ### Querying
 
