@@ -60,8 +60,6 @@ static const int VERSION = 1;
 
 -(BOOL)updateSchema:(int)currentVersion;
 
--(void)dbChanged:(NSNotification*)n;
-
 @end
 
 
@@ -109,10 +107,6 @@ static const int VERSION = 1;
             }
             return nil;
         }
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(dbChanged:)
-                                                     name: CDTDatastoreChangeNotification
-                                                   object: datastore];
     }
     return self;
 }
@@ -246,6 +240,11 @@ static const int VERSION = 1;
                                options:(NSDictionary*)options
                                  error:(NSError * __autoreleasing *)error
 {
+    // always update indexes at query time
+    if (![self updateAllIndexes:error]) {
+        return nil;
+    }
+    
     // TODO support empty query body for just ordering without where clause
     BOOL first = TRUE;
     
@@ -813,13 +812,6 @@ static const int VERSION = 1;
         return NO;
     }
     return YES;
-}
-
--(void)dbChanged:(NSNotification*)n
-{
-    // we received a CDTDatastoreChangeNotification, so a document has been created, updated,
-    // or deleted. So we should update all the indexes.
-    [self updateAllIndexes:nil];
 }
 
 @end
