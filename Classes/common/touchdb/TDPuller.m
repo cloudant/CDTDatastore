@@ -402,8 +402,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 if (!(ignoreMissingDocs && error.code == 404)) {
                     strongSelf.error = error;
                     [strongSelf revisionFailed];
-                    strongSelf.changesProcessed++;
                 }
+                strongSelf.changesProcessed++;
             } else {
                 TD_Revision* gotRev = [TD_Revision revisionWithProperties: dl.document];
                 gotRev.sequence = rev.sequence;
@@ -556,12 +556,6 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     [self asyncTasksFinished: downloads.count];
 }
 
-- (void) insertClientFilterNewDocIds:(NSArray *)downloads {
-    for (TD_Revision *rev in downloads) {
-        [self pullRemoteRevision:rev ignoreMissingDocs:YES immediatelyInsert:YES];
-    }
-}
-
 /* over-ride implementation in TDReplicator */
 - (NSString*) remoteCheckpointDocID {
     if (_clientFilterDocIds) {
@@ -575,6 +569,9 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     }
 }
 
+/* over-ride implementation in TDReplicator,
+   to allow filtering by doc id if needed
+ */
 - (void) addToInbox: (TD_Revision*)rev {
     if (_clientFilterDocIds != nil) {
         // if we're client filtering, only pull revisions for doc ids we already have
