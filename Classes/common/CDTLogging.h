@@ -39,7 +39,7 @@ static int CDTLoggingLevels[] = {[0 ... END_CONTEXT - START_CONTEXT ] = LOG_LEVE
 #define LogInfo(context, frmt, ...) ASYNC_LOG_OBJC_MAYBE(CDTLoggingLevels[context - START_CONTEXT], LOG_FLAG_INFO, context, frmt, ##__VA_ARGS__)
 #define LogDebug(context, frmt, ...) ASYNC_LOG_OBJC_MAYBE(CDTLoggingLevels[context - START_CONTEXT], LOG_FLAG_DEBUG, context, frmt, ##__VA_ARGS__)
 #define LogVerbose(context, frmt, ...) ASYNC_LOG_OBJC_MAYBE(CDTLoggingLevels[context - START_CONTEXT], LOG_FLAG_VERBOSE, context, frmt, ##__VA_ARGS__)
-#define ChangeLogLevel(context, logLevel) levels[context- START_CONTEXT]=logLevel
+#define ChangeLogLevel(context, logLevel) CDTLoggingLevels[context- START_CONTEXT]=logLevel
 
 #endif
 
