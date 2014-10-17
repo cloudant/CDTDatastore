@@ -28,6 +28,7 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
+#import "CDTDatastoreFromQuery.h"
 
 @interface ReplicationAcceptance ()
 
@@ -1080,6 +1081,7 @@ static NSUInteger largeRevTreeSize = 1500;
                  @"Incorrect number of documents updated");
 }
 
+<<<<<<< HEAD
 /**
  Reproduce reported issue:
  
@@ -1154,4 +1156,55 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+- (void)testPullFromQuery {
+    CDTDatastoreQuery *query;
+    
+    _datastoreFromQuery = [[CDTDatastoreFromQuery alloc] initWithQuery:query
+                                                             localDirectory:self.factoryPath
+                                                                     remote:self.primaryRemoteDatabaseURL];
+    /*
+    CDTDatastoreFromQuery *q = [[CDTDatastoreFromQuery alloc] initWithQuery:query
+                                                           datastoreManager:
+                                                                     remote:self.primaryRemoteDatabaseURL];*/
+    // Create n docs and pull a subset of them, filtered by ID
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23]];
+    
+    _datastoreFromQuery.docIds = filterDocIds;
+    _filteredPull = [_datastoreFromQuery pull];
+    NSError *error;
+    if (![_filteredPull startWithError:&error]) {
+        NSLog(@"eek");
+    }
+    while([_filteredPull isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    // create some more docs, outside the filter list
+    [self createLocalDocs:50 suffixFrom:51];
+    STAssertEquals(_datastoreFromQuery.datastore.documentCount, 54ul,
+                   @"Incorrect number of documents in store");
+    _filteredPush = [_datastoreFromQuery push];
+    [_filteredPush startWithError:nil];
+    while([_filteredPush isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    [NSThread sleepForTimeInterval:1.0f];
+    
+    // now our extra docs should have been purged
+    STAssertEquals(_datastoreFromQuery.datastore.documentCount, 4ul,
+                   @"Incorrect number of documents in store");
+
+    
+}
 @end

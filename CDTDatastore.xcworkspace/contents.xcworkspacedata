@@ -104,6 +104,12 @@
             location = "group:CDTDatastore.m">
          </FileRef>
          <FileRef
+            location = "group:CDTDatastoreFromQuery.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastoreFromQuery.m">
+         </FileRef>
+         <FileRef
             location = "group:CDTDatastore+Conflicts.h">
          </FileRef>
          <FileRef

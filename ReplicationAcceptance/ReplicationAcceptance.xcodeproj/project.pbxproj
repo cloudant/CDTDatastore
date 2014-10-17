@@ -44,6 +44,7 @@
 		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		86A30343408047EEBBF8EC4C /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
+		8EA6E3B819F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA6E3B719F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.m */; };
 		9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
 		9F1F14EE19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
 /* End PBXBuildFile section */
@@ -96,6 +97,8 @@
 		27ED1097192CF8DB00F75E95 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		27ED109F192CF8DB00F75E95 /* ReplicationAcceptanceAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReplicationAcceptanceAppTests-Info.plist"; sourceTree = "<group>"; };
 		27ED10A1192CF8DB00F75E95 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		8EA6E3B619F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTDatastoreFromQueryAcceptance.h; sourceTree = "<group>"; };
+		8EA6E3B719F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTDatastoreFromQueryAcceptance.m; sourceTree = "<group>"; };
 		97F72706FFD44D88B6E5E667 /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorDelegates.h; sourceTree = "<group>"; };
 		9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorDelegates.m; sourceTree = "<group>"; };
@@ -154,7 +157,6 @@
 			children = (
 				27A7E6B31899785B007FAF1C /* README.md */,
 				27A7E679189973EE007FAF1C /* ReplicationAcceptance */,
-				27A7E68D18997412007FAF1C /* RA_Tests_iOS */,
 				27A7E69F1899741C007FAF1C /* RA_Tests_OSX */,
 				27ED1084192CF8DB00F75E95 /* ReplicationAcceptanceApp */,
 				27ED109D192CF8DB00F75E95 /* ReplicationAcceptanceAppTests */,
@@ -198,6 +200,7 @@
 				27DFEEB618DB4A0D0052D487 /* Attachments.m */,
 				27A7E67A189973EE007FAF1C /* Supporting Files */,
 				27A7E6AD189975B2007FAF1C /* CloudantReplicationBase.h */,
+				27A7E68D18997412007FAF1C /* RA_Tests_iOS */,
 				27A7E6AE189975B2007FAF1C /* CloudantReplicationBase.m */,
 				27BE3CED189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.h */,
 				27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */,
@@ -205,6 +208,8 @@
 				277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */,
 				9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */,
 				9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */,
+				8EA6E3B619F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.h */,
+				8EA6E3B719F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.m */,
 			);
 			path = ReplicationAcceptance;
 			sourceTree = "<group>";
@@ -224,7 +229,8 @@
 			children = (
 				27A7E68E18997412007FAF1C /* Supporting Files */,
 			);
-			path = RA_Tests_iOS;
+			name = RA_Tests_iOS;
+			path = ../RA_Tests_iOS;
 			sourceTree = "<group>";
 		};
 		27A7E68E18997412007FAF1C /* Supporting Files */ = {
@@ -314,7 +320,7 @@
 			name = RA_Tests_iOS;
 			productName = RA_Tests_iOS;
 			productReference = 27A7E68918997412007FAF1C /* RA_Tests_iOS.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 		27A7E69C1899741C007FAF1C /* RA_Tests_OSX */ = {
 			isa = PBXNativeTarget;
@@ -333,7 +339,7 @@
 			name = RA_Tests_OSX;
 			productName = RA_Tests_OSX;
 			productReference = 27A7E69D1899741C007FAF1C /* RA_Tests_OSX.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 		27ED107E192CF8DB00F75E95 /* ReplicationAcceptanceApp */ = {
 			isa = PBXNativeTarget;
@@ -545,6 +551,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
+				8EA6E3B819F00B70001528E1 /* CDTDatastoreFromQueryAcceptance.m in Sources */,
 				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
 				9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */,

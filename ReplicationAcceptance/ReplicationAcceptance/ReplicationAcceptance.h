@@ -12,7 +12,8 @@
 
 @class CDTDatastore;
 @class CDTReplicatorFactory;
-
+@class CDTReplicator;
+@class CDTDatastoreFromQuery;
 
 @interface ReplicationAcceptance : CloudantReplicationBase
 
@@ -20,5 +21,9 @@
 @property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 
 @property (nonatomic, strong) NSURL *primaryRemoteDatabaseURL;
+
+@property (nonatomic, strong) CDTReplicator *filteredPull;
+@property (nonatomic, strong) CDTReplicator *filteredPush;
+@property (nonatomic, strong) CDTDatastoreFromQuery *datastoreFromQuery;
 
 @end
