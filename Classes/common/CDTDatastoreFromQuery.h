@@ -14,12 +14,19 @@
 #import "CDTReplicator.h"
 #import "CDTReplicatorFactory.h"
 
+@class CDTDatastoreFromQuery;
+
 // TODO - this is just for prototyping, represent query as opaque object
 @interface CDTDatastoreQuery : NSObject
 @end
 
 @interface CDTDatastoreFromQueryPushDelegate : NSObject<CDTReplicatorDelegate>
+
+- (id)initWithDatastore:(CDTDatastoreFromQuery*)datastore;
 - (void)replicatorDidComplete:(CDTReplicator*)replicator;
+
+@property (readonly,strong) CDTDatastoreFromQuery *datastore;
+
 @end
 
 @interface CDTDatastoreFromQuery : NSObject

@@ -22,8 +22,4 @@
 
 @property (nonatomic, strong) NSURL *primaryRemoteDatabaseURL;
 
-@property (nonatomic, strong) CDTReplicator *filteredPull;
-@property (nonatomic, strong) CDTReplicator *filteredPush;
-@property (nonatomic, strong) CDTDatastoreFromQuery *datastoreFromQuery;
-
 @end

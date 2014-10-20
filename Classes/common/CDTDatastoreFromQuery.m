@@ -12,20 +12,40 @@
 #import "CDTReplicatorFactory.h"
 #import "CDTDatastoreManager.h"
 #import "CDTReplicatorDelegate.h"
-
-
-@interface CDTDatastoreFromQuery ()
-
-
-@end
-
-
+#import "CDTDocumentRevision.h"
+#import "TD_Database.h"
+#import "TD_Database+Insertion.h"
 
 @implementation CDTDatastoreFromQueryPushDelegate
-- (void)replicatorDidComplete:(CDTReplicator*)replicator
+
+- (id)initWithDatastore:(CDTDatastoreFromQuery*)datastore
 {
-    NSLog(@"done, would now purge");
+    if (self = [super init])
+    {
+        _datastore = datastore;
+    }
+    return self;
 }
+
+- (void)replicatorDidComplete:(CDTDatastoreFromQuery*)replicator
+{
+    NSLog(@"done, now purging");
+    NSMutableDictionary *revsToPurge = [NSMutableDictionary dictionary];
+    NSDictionary *result;
+    // purge every revision of every docid not in the filter list
+    // TODO whatever the optimisation is to only get the doc ids
+    for (CDTDocumentRevision *rev in [[_datastore datastore] getAllDocuments]) {
+        if (![[_datastore docIds] containsObject:[rev docId]]) {
+            NSMutableArray *revIds = [NSMutableArray array];
+            for (CDTDocumentRevision *revObj in [[_datastore datastore] getRevisionHistory:rev]) {
+                [revIds addObject:[revObj revId]];
+            }
+            [revsToPurge setObject:revIds forKey:[rev docId]];
+        }
+    }
+    [[[_datastore datastore] database] purgeRevisions:revsToPurge result:&result];
+}
+
 @end
 
 @implementation CDTDatastoreFromQuery
@@ -39,9 +59,11 @@
         _query = query;
         _docIds = [self queryToDocIds:_query];
         _remote = remote;
-        _pushDelegate = [[CDTDatastoreFromQueryPushDelegate alloc] init];
         // TODO datastore name to be derived from query
         _datastore = [manager datastoreNamed:[self queryToDatastoreName:query] error:nil];
+        _factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.datastoreManager];
+        [_factory start];
+        _pushDelegate = [[CDTDatastoreFromQueryPushDelegate alloc] initWithDatastore:self];
     }
     return self;
 }
@@ -57,9 +79,9 @@
         _query = query;
         _docIds = [self queryToDocIds:_query];
         _remote = remote;
-        _pushDelegate = [[CDTDatastoreFromQueryPushDelegate alloc] init];
         // TODO datastore name to be derived from query
         _datastore = [_datastoreManager datastoreNamed:[self queryToDatastoreName:query] error:nil];
+        _pushDelegate = [[CDTDatastoreFromQueryPushDelegate alloc] initWithDatastore:self];
         _factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.datastoreManager];
         [_factory start];
 
@@ -70,6 +92,7 @@
 -(NSArray*)queryToDocIds:(CDTDatastoreQuery*)query
 {
     // dummy implementation
+    // TODO
     return @[@"doc-1",@"doc-2",@"doc-3"];
 }
 
@@ -83,7 +106,6 @@
 {
     // standard pull by doc id
     // could purge before / after?
-    
     
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.remote
                                                                   target:self.datastore];
