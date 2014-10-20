@@ -278,6 +278,32 @@
     STAssertEquals(count, nDocs, @"counts not equal");
 }
 
+
+- (void)testResultEnumeratorBlock
+{
+    NSError *error = nil;
+    
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
+    
+    // create some docs
+    int nDocs = 161;
+    for(int i=0; i<nDocs; i++) {
+        CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
+        rev.body = @{@"name": @"tom"};
+        [self.datastore createDocumentFromRevision:rev error:&error];
+    }
+    
+    NSError *error1 = nil;
+    BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
+    STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+    STAssertNil(error1, @"error is not nil");
+    
+    CDTQueryResult *res = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
+    
+    // helper fn countResults is a for loop which tests enumerator
+    
+}
+
 - (void)testCreateAndDeleteIndex
 {
     NSError *error = nil;

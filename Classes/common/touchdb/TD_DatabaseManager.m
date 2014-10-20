@@ -20,6 +20,7 @@
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
 #import "TDPusher.h"
+#import "TDPuller.h"
 #import "TDReplicatorManager.h"
 #import "TDInternal.h"
 #import "TDMisc.h"
@@ -304,7 +305,6 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                                 authorizer: NULL];
 }
 
-
 - (TDReplicator*) replicatorWithProperties: (NSDictionary*)properties
                                     status: (TDStatus*)outStatus
 {
@@ -345,8 +345,11 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     repl.options = properties;
     repl.requestHeaders = headers;
     repl.authorizer = authorizer;
+
     if (push)
         ((TDPusher*)repl).createTarget = createTarget;
+    if (!push)
+        [(TDPuller*)repl setClientFilterDocIds:$castIf(NSArray, properties[@"client_filter_doc_ids"])];
     
     if (outStatus)
         *outStatus = kTDStatusOK;

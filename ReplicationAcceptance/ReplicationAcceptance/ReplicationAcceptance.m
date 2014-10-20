@@ -28,6 +28,7 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
+#import "CDTDatastoreFromQuery.h"
 
 @interface ReplicationAcceptance ()
 
@@ -94,16 +95,25 @@ static NSUInteger largeRevTreeSize = 1500;
  Create a new replicator, and wait for replication from the remote database to complete.
  */
 -(CDTReplicator *) pullFromRemote {
-    return [self pullFromRemoteWithFilter:nil params:nil];
+    return [self pullFromRemoteWithFilter:nil params:nil clientFilterDocIds:nil];
 }
 
--(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName
+                                     params:(NSDictionary*)params
+{
+    return [self pullFromRemoteWithFilter:filterName params:params clientFilterDocIds:nil];
+}
+
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName
+                                     params:(NSDictionary*)params
+                         clientFilterDocIds:(NSArray*)filterDocIds
 {
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
     
     pull.filter = filterName;
     pull.filterParams = params;
+    pull.clientFilterDocIds = filterDocIds;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
@@ -122,6 +132,11 @@ static NSUInteger largeRevTreeSize = 1500;
     
     return replicator;
 }
+
+-(CDTReplicator *) pullFromRemoteWithClientFilterDocIds:(NSArray*)clientFilterDocIds {
+    return [self pullFromRemoteWithFilter:nil params:nil clientFilterDocIds:clientFilterDocIds];
+}
+
 
 
 /**
@@ -859,6 +874,213 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+-(void) testPullClientFilteredLots {
+    // Create large number of documents locally and remotely
+    // ensure all updated documents on remote side are pulled
+    // ensure new documents on remote side matching id list are pulled
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int localdocs = 5000;
+    int remotedocs = 5000;
+    
+    // 0..5000 local
+    // 5001..10000 remote
+    // then upload 2-rev 0..5000 remote
+    
+    [self createLocalDocs:localdocs];
+    [self createRemoteDocs:remotedocs suffixFrom:localdocs+1];
+    // now do some updates
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        // 2-rev, with the 1-rev as parent
+        NSMutableDictionary *dict = [rev.body mutableCopy];
+        NSString *localRevId = [rev revId];
+        [dict setValue:localRevId forKey:@"_rev"];
+        [dict setValue:@YES forKey:@"updated"];
+        [self createRemoteDocWithId:rev.docId body:dict];
+    }
+    
+    NSMutableArray *filterDocIds = [NSMutableArray array];
+    int i;
+    for (i=0; i<localdocs+remotedocs; i++) {
+        if (i % 2 == 1) {
+            [filterDocIds addObject:[NSString stringWithFormat:@"doc-%i", i+1]];
+        }
+    }
+  
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    
+    //5000 local + 5000/2 remote = 7500
+    STAssertEquals(self.datastore.documentCount, (unsigned long)(localdocs+remotedocs/2),
+                   @"Incorrect number of documents created");
+
+    //5000 local + 5000/2 remote + 5000 remote copies of local (rev-2)
+    STAssertEquals(self.datastore.database.lastSequence, (long long)(localdocs+remotedocs/2+localdocs),
+                   @"Incorrect sequence number");
+
+    // document checks:
+    // 0..5000 all have 2-rev
+    // 5000..10000 are all even numbers and have a 1-rev
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        long docNo = [[rev.docId substringFromIndex:4] integerValue];
+        if (docNo <= localdocs+1) {
+            STAssertTrue([rev.revId hasPrefix:@"2-"], @"rev id %@ does not start 2- for doc id %@", rev.revId, rev.docId);
+        }
+        if (docNo > localdocs && docNo <= localdocs+remotedocs+1) {
+            STAssertTrue(docNo %2 == 0, @"document number must be even");
+            STAssertTrue([rev.revId hasPrefix:@"1-"], @"rev id does not start 1-");
+        }
+    }
+}
+
+-(void) testPullClientFiltered {
+    // Create n docs and pull a subset of them, filtered by ID
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                        [NSString stringWithFormat:@"doc-%i", 3],
+                        [NSString stringWithFormat:@"doc-%i", 13],
+                        [NSString stringWithFormat:@"doc-%i", 23]];
+
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    STAssertTrue(filterDocIds.count == [self.datastore documentCount], @"unexpected number of docs: %@",[self.datastore documentCount]);
+    
+    NSArray *localDocs = [self.datastore getDocumentsWithIds:filterDocIds];
+    
+    STAssertNotNil(localDocs, @"nil");
+    STAssertTrue(localDocs.count == filterDocIds.count, @"unexpected number of docs: %@",localDocs.count);
+    STAssertTrue(self.datastore.documentCount == filterDocIds.count,
+                 @"Incorrect number of documents created %lu", self.datastore.documentCount);
+}
+
+-(void) testPullClientFilteredNewDocsAppear {
+    // Create n docs and pull a subset of them, filtered by ID
+    // then create another n docs, some of which are also included in the filter
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23],
+                              [NSString stringWithFormat:@"doc-%i", 70]];
+    
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    STAssertEquals([self.datastore.database lastSequence], 4ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                   @"Incorrect number of documents created");
+    
+    // 50 more
+    [self createRemoteDocs:ndocs suffixFrom:51];
+
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    STAssertEquals([self.datastore.database lastSequence], 5ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 5ul,
+                 @"Incorrect number of documents created");
+
+    
+    NSArray *localDocs = [self.datastore getAllDocuments];
+    
+    STAssertEquals(localDocs.count, filterDocIds.count, @"unexpected number of docs");
+    STAssertEquals(self.datastore.documentCount, filterDocIds.count,
+                 @"Incorrect number of documents created");
+}
+
+-(void) testPullClientFilterLargeRevTree {
+    // create n docs with m revisions and pull a subset of them, filtered by ID
+    
+    int ndocs = 50;
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23],
+                              [NSString stringWithFormat:@"doc-%i", 70]];
+    
+    for(int i=0; i<ndocs; i++) {
+        // Create the initial rev in remote datastore
+        NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
+        [self createRemoteDocWithId:docId revs:50];
+    }
+    
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    // 50 * 4 docs
+    STAssertEquals([self.datastore.database lastSequence], 200ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents created");
+
+    // 50 more
+    for(int i=50; i<ndocs+50; i++) {
+        // Create the initial rev in remote datastore
+        NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
+        [self createRemoteDocWithId:docId revs:50];
+    }
+    
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    
+    STAssertEquals([self.datastore.database lastSequence], 250ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 5ul,
+                 @"Incorrect number of documents created");
+
+}
+
+-(void) testPullClientFilterUpdates {
+    // create n docs and pull a subset of them, filtered by ID
+    // update them and pull the same subset, filtered by ID
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50; //don't need 100k docs
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23],
+                              [NSString stringWithFormat:@"doc-%i", 70]];
+    
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+
+    STAssertEquals([self.datastore.database lastSequence], 4ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents created");
+    
+    // now do some updates
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        NSMutableDictionary *dict = [rev.body mutableCopy];
+        [dict setValue:rev.revId forKey:@"_rev"];
+        [dict setValue:@YES forKey:@"updated"];
+        [self createRemoteDocWithId:rev.docId body:dict];
+    }
+
+    [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
+    
+    for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
+        STAssertTrue([rev.revId hasPrefix:@"2-"], @"rev id does not start 2-");
+    }
+
+    STAssertEquals([self.datastore.database lastSequence], 8ll, @"Incorrect sequence number");
+    STAssertEquals(self.datastore.documentCount, 4ul,
+                 @"Incorrect number of documents updated");
+}
+
 /**
  Reproduce reported issue:
  
@@ -933,4 +1155,61 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+- (void)testPullFromQuery {
+    // TODO this query is a dummy object for now rather than a real query
+    CDTDatastoreQuery *query;
+    
+    CDTDatastoreFromQuery *datastoreFromQuery = [[CDTDatastoreFromQuery alloc] initWithQuery:query
+                                                             localDirectory:self.factoryPath
+                                                                     remote:self.primaryRemoteDatabaseURL];
+    
+    CDTReplicator *filteredPull;
+    CDTReplicator *filteredPush;
+
+    NSError *error;
+    
+    // Create n docs and pull a subset of them, filtered by ID
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50;
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23]];
+    
+    // TODO in the real implementation these IDs would be derived from the query
+    datastoreFromQuery.docIds = filterDocIds;
+    
+    filteredPull = [datastoreFromQuery pull];
+    if (![filteredPull startWithError:&error]) {
+        STFail(@"Failed to start pull %@", error);
+    }
+    
+    while([filteredPull isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    // create some more docs, outside the filter list
+    [self createLocalDocs:50 suffixFrom:51];
+    STAssertEquals(datastoreFromQuery.datastore.documentCount, 54ul,
+                   @"Incorrect number of documents in store");
+    
+    filteredPush = [datastoreFromQuery push];
+    if (![filteredPush startWithError:nil]) {
+        STFail(@"Failed to start push %@", error);
+    }
+    while([filteredPush isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    [NSThread sleepForTimeInterval:1.0f];
+    
+    // now our extra docs should have been purged
+    STAssertEquals(datastoreFromQuery.datastore.documentCount, 4ul,
+                   @"Incorrect number of documents in store");
+}
 @end

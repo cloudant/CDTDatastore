@@ -29,6 +29,7 @@
 #import "ExceptionUtils.h"
 #import "TDJSON.h"
 #import "CDTLogging.h"
+#import "TDCanonicalJSON.h"
 
 
 // Maximum number of revisions to fetch simultaneously. (CFNetwork will only send about 5
@@ -64,6 +65,16 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 
 - (void) beginReplicating {
+    
+    // download the missing documents according to the doc id filter
+    if (_clientFilterNewDocIds) {
+        for (NSString *docId in _clientFilterNewDocIds) {
+            TD_Revision *rev = [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:FALSE];
+            rev.sequence = -1; // fake sequence number means "don't track sequence numbers"
+            [self pullRemoteRevision:rev ignoreMissingDocs:YES immediatelyInsert:YES];
+        }
+    }
+    
     if (!_downloadsToInsert) {
         // Note: This is a ref cycle, because the block has a (retained) reference to 'self',
         // and _downloadsToInsert retains the block, and of course I retain _downloadsToInsert.
@@ -341,7 +352,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 if (queue.count == 0)
                     break;  // both queues are empty
             }
-            [self pullRemoteRevision: queue[0]];
+            [self pullRemoteRevision: queue[0] ignoreMissingDocs:NO immediatelyInsert:NO];
             [queue removeObjectAtIndex: 0];
         }
     }
@@ -351,6 +362,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 // Fetches the contents of a revision from the remote db, including its parent revision ID.
 // The contents are stored into rev.properties.
 - (void) pullRemoteRevision: (TD_Revision*)rev
+          ignoreMissingDocs:(BOOL)ignoreMissingDocs
+          immediatelyInsert:(BOOL)immediatelyInsert
 {
     [self asyncTaskStarted];
     ++_httpConnectionCount;
@@ -359,8 +372,15 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // been added since the latest revisions we have locally.
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#GET
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#Getting_Attachments_With_a_Document
-    NSString* path = $sprintf(@"%@?rev=%@&revs=true&attachments=true",
+    NSString* path;
+    // if revID isn't supplied, get the latest revision
+    if (rev.revID) {
+        path = $sprintf(@"%@?rev=%@&revs=true&attachments=true",
                               TDEscapeID(rev.docID), TDEscapeID(rev.revID));
+    } else {
+        path = $sprintf(@"%@?revs=true&attachments=true",
+                        TDEscapeID(rev.docID));
+    }
     NSArray* knownRevs = [_db getPossibleAncestorRevisionIDs: rev limit: kMaxNumberOfAttsSince];
     if (knownRevs.count > 0)
         path = [path stringByAppendingFormat: @"&atts_since=%@", joinQuotedEscaped(knownRevs)];
@@ -378,14 +398,21 @@ static NSString* joinQuotedEscaped(NSArray* strings);
             __strong TDPuller *strongSelf = weakSelf;
             // OK, now we've got the response revision:
             if (error) {
-                strongSelf.error = error;
-                [strongSelf revisionFailed];
+                // if ignoreMissingDocs is true, we know that some requests might 404
+                if (!(ignoreMissingDocs && error.code == 404)) {
+                    strongSelf.error = error;
+                    [strongSelf revisionFailed];
+                }
                 strongSelf.changesProcessed++;
             } else {
                 TD_Revision* gotRev = [TD_Revision revisionWithProperties: dl.document];
                 gotRev.sequence = rev.sequence;
                 // Add to batcher ... eventually it will be fed to -insertRevisions:.
-                [_downloadsToInsert queueObject: gotRev];
+                if (immediatelyInsert) {
+                    [strongSelf insertDownloads:@[gotRev]];
+                } else {
+                    [_downloadsToInsert queueObject: gotRev];
+                }
                 [strongSelf asyncTaskStarted];
             }
             
@@ -501,7 +528,9 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 }
                 
                 // Mark this revision's fake sequence as processed:
-                [_pendingSequences removeSequence: fakeSequence];
+                if (fakeSequence != -1) {
+                    [_pendingSequences removeSequence: fakeSequence];
+                }
             }
         }
         
@@ -525,6 +554,59 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     
     self.changesProcessed += downloads.count;
     [self asyncTasksFinished: downloads.count];
+}
+
+/* over-ride implementation in TDReplicator */
+- (NSString*) remoteCheckpointDocID {
+    if (_clientFilterDocIds) {
+        NSMutableDictionary* spec = $mdict({@"localUUID", _db.privateUUID},
+                                           {@"remoteURL", _remote.absoluteString},
+                                           {@"push", @(self.isPush)},
+                                           {@"cloudantSyncDocIdSubset", @YES});
+        return TDHexSHA1Digest([TDCanonicalJSON canonicalData: spec]);
+    } else {
+        return [super remoteCheckpointDocID];
+    }
+}
+
+/* over-ride implementation in TDReplicator,
+   to allow filtering by doc id if needed
+ */
+- (void) addToInbox: (TD_Revision*)rev {
+    if (_clientFilterDocIds != nil) {
+        // if we're client filtering, only pull revisions for doc ids we already have
+        TDStatus status;
+        [self.db getDocumentWithID:rev.docID revisionID:nil options:kTDNoBody status:&status];
+        if (status == kTDStatusNotFound)
+            return;
+    }
+    [super addToInbox:rev];
+}
+
+- (void) setClientFilterDocIds:(NSArray *)clientFilterDocIds
+{
+    if (clientFilterDocIds != nil) {
+        
+        _clientFilterDocIds = clientFilterDocIds;
+        
+        struct TDQueryOptions query = {
+            .limit = (unsigned int)_db.documentCount,
+            .inclusiveEnd = YES,
+            .skip = 0,
+            .descending = NO,
+            .includeDocs = NO,
+            .content = 0
+        };
+
+        // work out which documents we don't have but want
+        _clientFilterNewDocIds = [NSMutableSet set];
+        for (NSDictionary *doc in [[_db getDocsWithIDs:_clientFilterDocIds options:&query] objectForKey:@"rows"]) {
+            if ([doc[@"error"] isEqualToString:@"not_found"]) {
+                [_clientFilterNewDocIds addObject:[doc objectForKey:@"key"]];
+            }
+        }
+    }
+
 }
 
 

@@ -12,7 +12,8 @@
 
 @class CDTDatastore;
 @class CDTReplicatorFactory;
-
+@class CDTReplicator;
+@class CDTDatastoreFromQuery;
 
 @interface ReplicationAcceptance : CloudantReplicationBase
 

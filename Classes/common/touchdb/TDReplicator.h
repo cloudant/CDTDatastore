@@ -89,6 +89,9 @@ extern NSString* TDReplicatorStoppedNotification;
     TDReplicatorStoppedNotification will be posted when it finally stops. */
 - (void) stop;
 
+/** Internal method, declared for sub-classes to over-ride */
+- (NSString*) remoteCheckpointDocID;
+
 /** Is the replicator running? (Observable) */
 @property (readonly, nonatomic) BOOL running;
 
