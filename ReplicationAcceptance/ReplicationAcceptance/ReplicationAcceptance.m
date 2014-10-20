@@ -28,6 +28,7 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
+#import "CDTDatastoreFromQuery.h"
 
 @interface ReplicationAcceptance ()
 
@@ -889,7 +890,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // then upload 2-rev 0..5000 remote
     
     [self createLocalDocs:localdocs];
-    [self createRemoteDocs:localdocs+1 count:remotedocs];
+    [self createRemoteDocs:remotedocs suffixFrom:localdocs+1];
     // now do some updates
     for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
         // 2-rev, with the 1-rev as parent
@@ -983,7 +984,7 @@ static NSUInteger largeRevTreeSize = 1500;
                    @"Incorrect number of documents created");
     
     // 50 more
-    [self createRemoteDocs:51 count:ndocs];
+    [self createRemoteDocs:ndocs suffixFrom:51];
 
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
 
@@ -1154,4 +1155,61 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 
+- (void)testPullFromQuery {
+    // TODO this query is a dummy object for now rather than a real query
+    CDTDatastoreQuery *query;
+    
+    CDTDatastoreFromQuery *datastoreFromQuery = [[CDTDatastoreFromQuery alloc] initWithQuery:query
+                                                             localDirectory:self.factoryPath
+                                                                     remote:self.primaryRemoteDatabaseURL];
+    
+    CDTReplicator *filteredPull;
+    CDTReplicator *filteredPush;
+
+    NSError *error;
+    
+    // Create n docs and pull a subset of them, filtered by ID
+    
+    // Create docs in remote database
+    NSLog(@"Creating documents...");
+    
+    int ndocs = 50;
+    
+    [self createRemoteDocs:ndocs];
+    
+    NSArray *filterDocIds = @[[NSString stringWithFormat:@"doc-%i", 1],
+                              [NSString stringWithFormat:@"doc-%i", 3],
+                              [NSString stringWithFormat:@"doc-%i", 13],
+                              [NSString stringWithFormat:@"doc-%i", 23]];
+    
+    // TODO in the real implementation these IDs would be derived from the query
+    datastoreFromQuery.docIds = filterDocIds;
+    
+    filteredPull = [datastoreFromQuery pull];
+    if (![filteredPull startWithError:&error]) {
+        STFail(@"Failed to start pull %@", error);
+    }
+    
+    while([filteredPull isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    // create some more docs, outside the filter list
+    [self createLocalDocs:50 suffixFrom:51];
+    STAssertEquals(datastoreFromQuery.datastore.documentCount, 54ul,
+                   @"Incorrect number of documents in store");
+    
+    filteredPush = [datastoreFromQuery push];
+    if (![filteredPush startWithError:nil]) {
+        STFail(@"Failed to start push %@", error);
+    }
+    while([filteredPush isActive]) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    [NSThread sleepForTimeInterval:1.0f];
+    
+    // now our extra docs should have been purged
+    STAssertEquals(datastoreFromQuery.datastore.documentCount, 4ul,
+                   @"Incorrect number of documents in store");
+}
 @end
