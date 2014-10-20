@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## 0.10.0 (2014-10-20)
+
+- [CHANGE] Index updates are deferred until query time. This avoids excessive
+  indexing load during replication.
+
 ## 0.9.0 (2014-10-09)
 
 - [NEW] Logging now uses Cocoa Lumberjack.
