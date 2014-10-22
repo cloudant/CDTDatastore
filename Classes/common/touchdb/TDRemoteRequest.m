@@ -42,12 +42,20 @@
 
 
 + (NSString*) userAgentHeader {
-    return $sprintf(@"CloudantSync/%@", [CDTDatastore versionString]);
+    NSProcessInfo *pInfo = [NSProcessInfo processInfo];
+    NSString *version = [pInfo operatingSystemVersionString];
+    NSString *platform = @"Unknown";
+#if TARGET_OS_IPHONE
+    platform = @"iOS";
+#elif TARGET_OS_MAC
+    platform = @"Mac OS X";
+#endif
+    return $sprintf(@"CloudantSync/%@ (%@ %@)", [CDTDatastore versionString], platform, version);
 }
 
 
 - (id) initWithMethod: (NSString*)method 
-                  URL: (NSURL*)url 
+                  URL: (NSURL*)url
                  body: (id)body
        requestHeaders: (NSDictionary *)requestHeaders
          onCompletion: (TDRemoteRequestCompletionBlock)onCompletion
