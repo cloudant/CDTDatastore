@@ -16,8 +16,19 @@
 
 @class CDTDatastoreFromQuery;
 
+@interface CDTCustomDelegateReplicator: CDTReplicator
+- (void) setDelegate:(NSObject<CDTReplicatorDelegate>*)delegate;
+
+@property (readonly,strong) NSObject<CDTReplicatorDelegate> *userDelegate;
+@property (readonly,strong) NSObject<CDTReplicatorDelegate> *privateDelegate;
+
+@end
+
 // TODO - this is just for prototyping, represent query as opaque object
 @interface CDTDatastoreQuery : NSObject
+
+@property (strong) NSDictionary *queryDictionary;
+
 @end
 
 @interface CDTDatastoreFromQueryPushDelegate : NSObject<CDTReplicatorDelegate>
@@ -49,6 +60,8 @@
 
 @property (readonly,strong) CDTReplicatorFactory *factory;
 
+// TODO - private?
+-(NSString*)queryToDatastoreName:(CDTDatastoreQuery*)query;
 
 -(id)initWithQuery:(CDTDatastoreQuery*)query
     localDirectory:(NSString*)local

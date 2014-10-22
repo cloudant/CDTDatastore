@@ -15,6 +15,12 @@
 #import "CDTDocumentRevision.h"
 #import "TD_Database.h"
 #import "TD_Database+Insertion.h"
+#import "TDCanonicalJSON.h"
+
+@implementation CDTDatastoreQuery : NSObject
+
+
+@end
 
 @implementation CDTDatastoreFromQueryPushDelegate
 
@@ -27,6 +33,7 @@
     return self;
 }
 
+// TODO call all of the user delegates
 - (void)replicatorDidComplete:(CDTDatastoreFromQuery*)replicator
 {
     NSLog(@"done, now purging");
@@ -98,8 +105,8 @@
 
 -(NSString*)queryToDatastoreName:(CDTDatastoreQuery*)query
 {
-    // TODO
-    return @"test";
+    NSLog(@"%@",[TDCanonicalJSON canonicalString: query.queryDictionary]);
+    return TDHexSHA1Digest([TDCanonicalJSON canonicalData: query.queryDictionary]);
 }
 
 -(CDTReplicator*)pull
