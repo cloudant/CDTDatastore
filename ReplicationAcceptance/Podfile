@@ -1,3 +1,5 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
 def import_pods
     pod "CDTDatastore", :path => "../"
     pod "Unirest", :git => 'https://github.com/mikerhodes/unirest-obj-c.git'
