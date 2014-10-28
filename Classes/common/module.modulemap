@@ -1,4 +1,0 @@
-module CloudantSync {
-     header "CloudantSync.h"
-     export *
-}
