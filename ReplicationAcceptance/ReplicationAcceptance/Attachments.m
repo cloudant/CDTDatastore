@@ -35,7 +35,6 @@
     STAssertNotNil(self.datastore, @"datastore is nil");
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
-    [self.replicatorFactory start];
     
 //    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
 }
@@ -45,8 +44,6 @@
     // Tear-down code here.
 
     self.datastore = nil;
-
-    [self.replicatorFactory stop];
 
     self.replicatorFactory = nil;
     

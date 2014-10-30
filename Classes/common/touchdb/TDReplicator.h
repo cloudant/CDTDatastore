@@ -84,6 +84,9 @@ extern NSString* TDReplicatorStoppedNotification;
     TDReplicatorStoppedNotification will be posted when it finally stops. */
 - (void)stop;
 
+/** Attempt to cancel the replicator before it is executed on its thread */
+- (BOOL) cancelIfNotStarted;
+
 /** Is the replicator running? (Observable) */
 @property (readonly, nonatomic) BOOL running;
 

@@ -35,7 +35,6 @@ Replicating a local datastore to a remote database:
 // Create and start the replicator -- -start is essential!
 CDTReplicatorFactory *replicatorFactory =
 [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
-[self.replicatorFactory start];
 
 // username/password can be Cloudant API keys
 NSString *s = @"https://username:password@username.cloudant.com/my_database";
@@ -67,7 +66,6 @@ And getting data from a remote database to a local one:
 // Create and start the replicator -- start is essential!
 CDTReplicatorFactory *replicatorFactory =
 [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
-[self.replicatorFactory start];
 
 // username/password can be Cloudant API keys
 NSString *s = @"https://username:password@username.cloudant.com/my_database";

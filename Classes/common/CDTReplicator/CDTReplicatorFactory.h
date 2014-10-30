@@ -27,18 +27,14 @@
  CDTPushReplication or CDTPullReplication object. The CDTPush/PullReplication objects
  configure the replication, while the CDTReplicator starts the process.
 
- Note that you must call [CDTReplicatorFactory -start] before [CDTReplicator -start].
-
  Example usage:
 
     CDTDatastoreManager *manager = [...];
     CDTDatastore *datastore = [...];
     NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
-
-    CDTReplicatorFactory *replicatorFactory = [CDTReplicatorFactory
- initWithDatastoreManager:manager];
-    [replicatorFactory start];
-
+    
+    CDTReplicatorFactory *replicatorFactory = [CDTReplicatorFactory initWithDatastoreManager:manager];
+ 
     CDTPullReplication* pull = [CDTPullReplication replicationWithSource:remote target:datastore];
 
     NSError *error;
@@ -65,19 +61,6 @@
  */
 - (id)initWithDatastoreManager:(CDTDatastoreManager *)dsManager;
 
-/**
- Start the background thread for replications.
-
- No replications will progress until -start is called.
- */
-- (void)start;
-
-/**
- Stop the background thread for replications.
-
- This will stop all in progress replications.
- */
-- (void)stop;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating replication jobs

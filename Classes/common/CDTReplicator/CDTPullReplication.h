@@ -26,7 +26,6 @@
     CDTDatastoreManager *manager = [...];
     CDTDatastore *datastore = [...];
     CDTReplicatorFactory *replicatorFactory = [...];
-    [replicatorFactory start];
 
     NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
 

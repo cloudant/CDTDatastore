@@ -73,7 +73,7 @@ static NSUInteger largeRevTreeSize = 1500;
     [self createRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
-    [self.replicatorFactory start];
+
 }
 
 - (void)tearDown
@@ -84,8 +84,6 @@ static NSUInteger largeRevTreeSize = 1500;
     [self deleteRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.datastore = nil;
-
-    [self.replicatorFactory stop];
 
     self.replicatorFactory = nil;
 
