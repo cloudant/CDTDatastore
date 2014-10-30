@@ -117,15 +117,18 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [self clearDbRef];
 }
 
-- (NSString*)description { return $sprintf(@"%@[%@]", [self class], _remote.absoluteString); }
+- (NSString*) description {
+    return $sprintf(@"%@ [%@://%@:****@%@\%@]", [self class], _remote.scheme, _remote.user,
+                    _remote.host, _remote.path);
+}
 
-@synthesize db = _db, remote = _remote, filterName = _filterName,
-            filterParameters = _filterParameters, docIDs = _docIDs;
-@synthesize running = _running, online = _online, active = _active, continuous = _continuous;
-@synthesize error = _error, sessionID = _sessionID, options = _options;
-@synthesize changesProcessed = _changesProcessed, changesTotal = _changesTotal;
-@synthesize remoteCheckpoint = _remoteCheckpoint;
-@synthesize authorizer = _authorizer;
+
+@synthesize db=_db, remote=_remote, filterName=_filterName, filterParameters=_filterParameters, docIDs = _docIDs;
+@synthesize running=_running, online=_online, active=_active, continuous=_continuous;
+@synthesize error=_error, sessionID=_sessionID, options=_options;
+@synthesize changesProcessed=_changesProcessed, changesTotal=_changesTotal;
+@synthesize remoteCheckpoint=_remoteCheckpoint;
+@synthesize authorizer=_authorizer;
 @synthesize requestHeaders = _requestHeaders;
 
 - (BOOL)isPush
