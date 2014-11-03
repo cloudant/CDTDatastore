@@ -39,7 +39,8 @@ sudo gem install xcpretty
 
 ## Coding guidelines
 
-The house style is [documented](doc/style-guide.md).
+The house style is [documented](doc/style-guide.md). There's information there on using
+`clang-format` to automatically use the right format.
 
 ## Getting started with the project
 
