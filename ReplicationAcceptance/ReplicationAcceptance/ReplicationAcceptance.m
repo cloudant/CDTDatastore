@@ -987,4 +987,42 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 }
 
+-(void) testMultiThreadedReplication
+{
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
+    
+    CDTDatastore *secondDatastore = [self.factory datastoreNamed:@"test2" error:nil];
+    CDTPullReplication *secondPull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:secondDatastore];
+    CDTReplicator *secondReplicator =  [self.replicatorFactory oneWay:secondPull error:nil];
+    
+    [self createRemoteDocs:2000];
+    
+    CDTTestReplicatorMultiThreaded *tester = [[CDTTestReplicatorMultiThreaded alloc] init];
+    tester.firstReplicator = replicator;
+    tester.secondReplicator = secondReplicator;
+    replicator.delegate = tester;
+    secondReplicator.delegate = tester;
+    
+    NSError *error;
+    STAssertTrue([replicator startWithError:&error],
+                @"First replicator started with error: %@", error);
+    error = nil;
+    STAssertTrue([secondReplicator startWithError:&error],
+                @"Second replicator started with error: %@", error);
+    
+    while (replicator.isActive || secondReplicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" 1st replicator -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+        NSLog(@"    changes Processed: %ld", replicator.changesProcessed);
+        NSLog(@" 2nd replicator -> %@", [CDTReplicator stringForReplicatorState:secondReplicator.state]);
+        NSLog(@"    changes Processed: %ld", secondReplicator.changesProcessed);
+    }
+    
+    STAssertTrue(tester.multiThreaded, @"Delegate didn't find multithreading evidence.");
+
+}
+
 @end

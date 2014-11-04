@@ -20,3 +20,9 @@
 @property (nonatomic, strong) NSString* databaseToDelete;
 @property (nonatomic, strong) NSError *error;
 @end
+
+@interface CDTTestReplicatorMultiThreaded :  NSObject <CDTReplicatorDelegate>
+@property (nonatomic, weak) CDTReplicator* firstReplicator;
+@property (nonatomic, weak) CDTReplicator* secondReplicator;
+@property (nonatomic) BOOL multiThreaded;
+@end
