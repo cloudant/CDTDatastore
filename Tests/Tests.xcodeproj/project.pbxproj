@@ -77,6 +77,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
 		27389E0C185345FD0027A404 /* Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27389E0F185345FD0027A404 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		27389E11185345FD0027A404 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -96,7 +97,7 @@
 		27D96E4218E1E0D400DEA006 /* lorem.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lorem.txt; path = Assets/lorem.txt; sourceTree = "<group>"; };
 		27F43D4718E99C31003E8422 /* AmazonMD5Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AmazonMD5Util.h; sourceTree = "<group>"; };
 		27F43D4818E99C31003E8422 /* AmazonMD5Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AmazonMD5Util.m; sourceTree = "<group>"; };
-		2996853CB13542679108F845 /* Pods-osx.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.xcconfig"; path = "Pods/Pods-osx.xcconfig"; sourceTree = "<group>"; };
+		5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		985A188919D2CCEB000283E9 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
@@ -107,6 +108,8 @@
 		98BB73FE19E5927600C57866 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloudantTests.h; sourceTree = "<group>"; };
 		98BB73FF19E5927600C57866 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantTests.m; sourceTree = "<group>"; };
 		9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQueryBuilderTests.m; sourceTree = "<group>"; };
+		9A7D07FED5506284BDC1ACC8 /* Pods-osx.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.debug.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.debug.xcconfig"; sourceTree = "<group>"; };
+		9E965C9FF72A8429FFFF4E1F /* Pods-ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.debug.xcconfig"; sourceTree = "<group>"; };
 		9F0D23E818888C6C00D3D04E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartReaderTests.m; sourceTree = "<group>"; };
 		9F0D23F3188B4FFF00D3D04E /* TDMultipartWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDMultipartWriterTests.m; sourceTree = "<group>"; };
@@ -127,7 +130,6 @@
 		9F95D60F18CF6A580006D349 /* DBQueryUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryUtils.m; sourceTree = "<group>"; };
 		9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatastoreConflictResolvers.h; sourceTree = "<group>"; };
 		9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflictResolvers.m; sourceTree = "<group>"; };
-		B8C5CE07530A44358897106E /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -165,8 +167,7 @@
 				27CCEDC8187AD64F006F3C66 /* Tests OSX */,
 				27389E0E185345FD0027A404 /* Frameworks */,
 				27389E0D185345FD0027A404 /* Products */,
-				B8C5CE07530A44358897106E /* Pods-ios.xcconfig */,
-				2996853CB13542679108F845 /* Pods-osx.xcconfig */,
+				6774D9B5AE9A96CD5CB62909 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -296,6 +297,17 @@
 			path = "osx-aws-toolkit";
 			sourceTree = "<group>";
 		};
+		6774D9B5AE9A96CD5CB62909 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9E965C9FF72A8429FFFF4E1F /* Pods-ios.debug.xcconfig */,
+				5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */,
+				9A7D07FED5506284BDC1ACC8 /* Pods-osx.debug.xcconfig */,
+				03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -405,7 +417,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-ios-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		095CA0EFFBC84C0EB3464C5A /* Check Pods Manifest.lock */ = {
@@ -450,7 +462,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Pods-osx-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-osx/Pods-osx-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -562,7 +574,7 @@
 		};
 		27389E1F185345FD0027A404 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B8C5CE07530A44358897106E /* Pods-ios.xcconfig */;
+			baseConfigurationReference = 9E965C9FF72A8429FFFF4E1F /* Pods-ios.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
@@ -612,7 +624,7 @@
 		};
 		27389E20185345FD0027A404 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B8C5CE07530A44358897106E /* Pods-ios.xcconfig */;
+			baseConfigurationReference = 5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
@@ -656,7 +668,7 @@
 		};
 		27CCEDD4187AD64F006F3C66 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2996853CB13542679108F845 /* Pods-osx.xcconfig */;
+			baseConfigurationReference = 9A7D07FED5506284BDC1ACC8 /* Pods-osx.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -703,7 +715,7 @@
 		};
 		27CCEDD5187AD64F006F3C66 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2996853CB13542679108F845 /* Pods-osx.xcconfig */;
+			baseConfigurationReference = 03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
