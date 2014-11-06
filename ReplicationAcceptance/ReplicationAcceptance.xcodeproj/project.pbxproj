@@ -46,6 +46,10 @@
 		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
 		9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
 		9F1F14EE19870B88003E9F0B /* ReplicatorDelegates.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */; };
+		9FC2F12C19F070710032A074 /* ReplicatorURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2F12B19F070710032A074 /* ReplicatorURLProtocol.m */; };
+		9FC2F12D19F070710032A074 /* ReplicatorURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2F12B19F070710032A074 /* ReplicatorURLProtocol.m */; };
+		9FC2F13119F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2F13019F72B710032A074 /* ReplicatorURLProtocolTester.m */; };
+		9FC2F13219F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC2F13019F72B710032A074 /* ReplicatorURLProtocolTester.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +103,10 @@
 		97F72706FFD44D88B6E5E667 /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorDelegates.h; sourceTree = "<group>"; };
 		9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorDelegates.m; sourceTree = "<group>"; };
+		9FC2F12B19F070710032A074 /* ReplicatorURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorURLProtocol.m; sourceTree = "<group>"; };
+		9FC2F12E19F070950032A074 /* ReplicatorURLProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ReplicatorURLProtocol.h; sourceTree = "<group>"; };
+		9FC2F12F19F72B710032A074 /* ReplicatorURLProtocolTester.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorURLProtocolTester.h; sourceTree = "<group>"; };
+		9FC2F13019F72B710032A074 /* ReplicatorURLProtocolTester.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorURLProtocolTester.m; sourceTree = "<group>"; };
 		C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3EA8C0BBBD34854B2975F77 /* Pods-ios.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.xcconfig"; path = "Pods/Pods-ios.xcconfig"; sourceTree = "<group>"; };
 		ED591AE84EE34971AD9AAB01 /* Pods-osx.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.xcconfig"; path = "Pods/Pods-osx.xcconfig"; sourceTree = "<group>"; };
@@ -205,6 +213,10 @@
 				277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */,
 				9F1F14EB19870B88003E9F0B /* ReplicatorDelegates.h */,
 				9F1F14EC19870B88003E9F0B /* ReplicatorDelegates.m */,
+				9FC2F12E19F070950032A074 /* ReplicatorURLProtocol.h */,
+				9FC2F12B19F070710032A074 /* ReplicatorURLProtocol.m */,
+				9FC2F12F19F72B710032A074 /* ReplicatorURLProtocolTester.h */,
+				9FC2F13019F72B710032A074 /* ReplicatorURLProtocolTester.m */,
 			);
 			path = ReplicationAcceptance;
 			sourceTree = "<group>";
@@ -545,9 +557,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
+				9FC2F13119F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */,
 				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
 				9F1F14ED19870B88003E9F0B /* ReplicatorDelegates.m in Sources */,
+				9FC2F12C19F070710032A074 /* ReplicatorURLProtocol.m in Sources */,
 				27A7E6AF189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 			);
@@ -558,9 +572,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */,
+				9FC2F13219F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */,
 				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
 				9F1F14EE19870B88003E9F0B /* ReplicatorDelegates.m in Sources */,
+				9FC2F12D19F070710032A074 /* ReplicatorURLProtocol.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
 				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 			);

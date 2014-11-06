@@ -9,6 +9,7 @@
 #import <SenTestingKit/SenTestingKit.h>
 
 #import "CloudantReplicationBase.h"
+#import "ReplicatorURLProtocol.h"
 
 @class CDTDatastore;
 @class CDTReplicatorFactory;

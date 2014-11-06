@@ -18,6 +18,8 @@
 #import "CloudantReplicationBase+CompareDb.h"
 #import "ReplicationAcceptance+CRUD.h"
 #import "ReplicatorDelegates.h"
+#import "ReplicatorURLProtocol.h"
+#import "ReplicatorURLProtocolTester.h"
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
@@ -46,7 +48,7 @@
  as all these documents are read from both local and remote databases
  during the check phase.
  */
-static NSUInteger n_docs = 1000;
+static NSUInteger n_docs = 10000;
 /**
  Rev tree size for "large rev tree" tests.
  */
@@ -932,5 +934,58 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertTrue(same, @"Remote and local databases differ");
 }
 
+/**
+ Test that we can successfully add extra headers to HTTP requests. 
+ */
+-(void)testCreateReplicationWithExtraHeaders
+{
+    
+    [self createRemoteDocs:100];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+
+    
+    NSString *userAgent = [NSString stringWithFormat:@"%@/testCreateReplicationWithExtraHeaders",
+                           [CDTAbstractReplication defaultUserAgentHTTPHeader]];
+    NSDictionary *extraHeaders = @{@"SpecialHeader": @"foo", @"user-agent":userAgent};
+    pull.optionalHeaders = extraHeaders;
+    
+    NSDictionary *pullDoc = [pull dictionaryForReplicatorDocument:nil];
+    STAssertEqualObjects(pullDoc[@"headers"][@"SpecialHeader"], @"foo", @"Bad headers: %@",
+                         pullDoc[@"headers"]);
+    
+    STAssertEqualObjects(pullDoc[@"headers"][@"user-agent"], userAgent, @"Bad headers: %@",
+                         pullDoc[@"headers"]);
+
+    
+    ReplicatorURLProtocolTester* tester = [[ReplicatorURLProtocolTester alloc] init];
+
+    tester.expectedHeaders = extraHeaders;
+    [ReplicatorURLProtocol setTestDelegate:tester];
+
+    [NSURLProtocol registerClass:[ReplicatorURLProtocol class]];
+
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
+    
+    [replicator startWithError:nil];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:0.5f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    [NSURLProtocol unregisterClass:[ReplicatorURLProtocol class]];
+    [ReplicatorURLProtocol setTestDelegate:nil];
+    
+    STAssertNotNil(tester.headerFailures, @"Expect to contain failure with header: baz");
+    
+    for (NSString *headerName in tester.headerFailures) {
+        
+        STAssertTrue([tester.headerFailures[headerName] integerValue] != [@0 integerValue],
+                     @"Expected to find failures with the header \"%@\"", headerName);
+        
+    }
+}
 
 @end

@@ -262,7 +262,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     if (outRemote)
         *outRemote = remote;
     if (outHeaders)
-        *outHeaders = $castIf(NSDictionary, remoteDict[@"headers"]);
+        *outHeaders = $castIf(NSDictionary, properties[@"headers"]);
     
 //    if (outAuthorizer) {
 //        *outAuthorizer = nil;
