@@ -978,12 +978,13 @@ static NSUInteger largeRevTreeSize = 1500;
     [NSURLProtocol unregisterClass:[ReplicatorURLProtocol class]];
     [ReplicatorURLProtocol setTestDelegate:nil];
     
-    STAssertNotNil(tester.headerFailures, @"Expect to contain failure with header: baz");
+    STAssertNil(tester.headerFailures, @"Errors found in headers.");
     
     for (NSString *headerName in tester.headerFailures) {
         
-        STAssertTrue([tester.headerFailures[headerName] integerValue] != [@0 integerValue],
-                     @"Expected to find failures with the header \"%@\"", headerName);
+        STAssertTrue([tester.headerFailures[headerName] integerValue] == [@0 integerValue],
+                     @"Found %ld failures with the header \"%@\"", 
+                     [tester.headerFailures[headerName] integerValue], headerName);
         
     }
 }
