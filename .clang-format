@@ -1,0 +1,17 @@
+BasedOnStyle: Google
+ColumnLimit: 100
+IndentWidth: 4
+UseTab: Never
+BreakBeforeBraces: Linux
+BreakBeforeBinaryOperators: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+PointerBindsToType: false
+SpacesBeforeTrailingComments: 2
+SpaceBeforeParens: ControlStatements
+TabWidth: 4
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+AllowShortBlocksOnASingleLine: false
+MaxEmptyLinesToKeep: 1
+ObjCSpaceAfterProperty: true
