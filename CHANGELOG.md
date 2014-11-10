@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## 0.10.1 (2014-11-10)
+
+- Pin CocoaLumberjack to 2.0.0-beta3 as our logging macros depend on deprecated
+  macros. This should fix builds for anyone running pod install/update.
+
 ## 0.10.0 (2014-10-20)
 
 - [CHANGE] Index updates are deferred until query time. This avoids excessive
