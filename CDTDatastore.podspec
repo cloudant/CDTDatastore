@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Classes/common/CloudantSync.h'
 
   s.dependency 'FMDB', '= 2.3'
-  s.dependency 'CocoaLumberjack'
+  s.dependency 'CocoaLumberjack', '= 2.0.0-beta3'
 
   s.frameworks = 'SystemConfiguration'
   s.library = 'sqlite3', 'z'
