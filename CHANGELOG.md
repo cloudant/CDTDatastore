@@ -1,5 +1,21 @@
 # CDTDatastore CHANGELOG
 
+## 0.11.0 (2014-11-11)
+
+- [FIX] Incompatibility with CocoaLumberjack 2.0.0-beta4. Also pin to beta4.
+- [FIX] Downloading attachments from HTTP endpoints in CDTSavedHTTPAttachment,
+  where only the first one in a run of the app would be downloaded.
+
+The following were actually released but not documented in the 0.10.1 release,
+overlooked in getting out a release to fix builds:
+
+- [NEW] Allow setting custom HTTP headers for replications. Use the
+  CDTAbstractReplication's `optionalHeaders` property to add headers. See
+  the help note for headers which can't be set (because the library
+  overwrites them).
+- [FIX] Some build issues created in an attempt to have the library version
+  defined in a single place.
+
 ## 0.10.1 (2014-11-10)
 
 - Pin CocoaLumberjack to 2.0.0-beta3 as our logging macros depend on deprecated
