@@ -1,8 +1,525 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <Group
+      location = "container:"
+      name = "CDTDatastore">
+      <Group
+         location = "group:Classes/common"
+         name = "common">
+         <Group
+            location = "container:"
+            name = "Attachments">
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTDatastore+Attachments.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTDatastore+Attachments.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTAttachment.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTAttachment.m">
+            </FileRef>
+         </Group>
+         <Group
+            location = "container:"
+            name = "Indexing">
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTFieldIndexer.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTFieldIndexer.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTIndex.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTIndex.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTIndexer.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTIndexManager.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTIndexManager.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTQueryBuilder.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Indexing/CDTQueryBuilder.m">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:CDTSQLiteHelpers.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTSQLiteHelpers.m">
+         </FileRef>
+         <Group
+            location = "group:CDTReplicator"
+            name = "CDTReplicator">
+            <FileRef
+               location = "group:CDTAbstractReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTAbstractReplication.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPullReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPullReplication.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPushReplication.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTPushReplication.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicator.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicator.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorFactory.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorFactory.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTReplicatorDelegate.h">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:CDTDatastore.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Conflicts.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Conflicts.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Internal.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastore+Internal.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTConflictResolver.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastoreManager.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDatastoreManager.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDocumentBody.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDocumentBody.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDocumentRevision.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTDocumentRevision.m">
+         </FileRef>
+         <FileRef
+            location = "group:CDTMutableDocumentRevision.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTMutableDocumentRevision.m">
+         </FileRef>
+         <FileRef
+            location = "group:CloudantSync.h">
+         </FileRef>
+         <Group
+            location = "group:fmdb"
+            name = "fmdb">
+            <FileRef
+               location = "group:FMDatabase+LongLong.h">
+            </FileRef>
+            <FileRef
+               location = "group:FMDatabase+LongLong.m">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:touchdb"
+            name = "touchdb">
+            <FileRef
+               location = "group:TD_Attachment.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Attachment.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Body.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Body.m">
+            </FileRef>
+            <Group
+               location = "group:ChangeTracker"
+               name = "ChangeTracker">
+               <FileRef
+                  location = "group:TDChangeTracker.h">
+               </FileRef>
+               <FileRef
+                  location = "group:TDChangeTracker.m">
+               </FileRef>
+               <FileRef
+                  location = "group:TDSocketChangeTracker.m">
+               </FileRef>
+               <FileRef
+                  location = "group:TDSocketChangeTracker.h">
+               </FileRef>
+            </Group>
+            <FileRef
+               location = "group:TD_Database+Attachments.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Attachments.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Insertion.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Insertion.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+LocalDocs.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+LocalDocs.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Replication.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Replication.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Conflicts.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+Conflicts.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_DatabaseManager.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_DatabaseManager.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Revision.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Revision.m">
+            </FileRef>
+            <FileRef
+               location = "group:TD_View.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_View.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDAuthorizer.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDAuthorizer.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDBase64.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDBase64.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDBatcher.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDBatcher.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDBlobStore.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDBlobStore.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDCanonicalJSON.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDCanonicalJSON.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDCollateJSON.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDCollateJSON.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDInternal.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDJSON.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDJSON.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMisc.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMisc.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartDocumentReader.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartDocumentReader.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartDownloader.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartDownloader.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartReader.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartReader.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartUploader.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartUploader.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultipartWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultiStreamWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDMultiStreamWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDPuller.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDPuller.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDPusher.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDPusher.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDReachability.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDReachability.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDRemoteRequest.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDRemoteRequest.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDReplicator.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDReplicator.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDReplicatorManager.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDReplicatorManager.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDSequenceMap.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDSequenceMap.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDStatus.h">
+            </FileRef>
+            <FileRef
+               location = "group:TDStatus.m">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:CDTLogging.h">
+         </FileRef>
+      </Group>
+      <Group
+         location = "group:Classes/ios"
+         name = "ios">
+      </Group>
+      <Group
+         location = "group:Classes/osx"
+         name = "osx">
+      </Group>
+      <Group
+         location = "group:Classes/vendor"
+         name = "vendor">
+         <Group
+            location = "group:google-toolbox-for-mac"
+            name = "google-toolbox-for-mac">
+            <FileRef
+               location = "group:GTMDefines.h">
+            </FileRef>
+            <FileRef
+               location = "group:GTMNSData+zlib.h">
+            </FileRef>
+            <FileRef
+               location = "group:GTMNSData+zlib.m">
+            </FileRef>
+            <FileRef
+               location = "group:README">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:MYUtilities"
+            name = "MYUtilities">
+            <FileRef
+               location = "group:CollectionUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:CollectionUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:ConcurrentOperation.h">
+            </FileRef>
+            <FileRef
+               location = "group:ConcurrentOperation.m">
+            </FileRef>
+            <FileRef
+               location = "group:ExceptionUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:ExceptionUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:Logging.h">
+            </FileRef>
+            <FileRef
+               location = "group:Logging.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYBlockUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYBlockUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYDynamicObject.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYDynamicObject.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYErrorUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYErrorUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYRegexUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYRegexUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYStreamUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYStreamUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYURLHandler.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYURLHandler.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYURLUtils.h">
+            </FileRef>
+            <FileRef
+               location = "group:MYURLUtils.m">
+            </FileRef>
+            <FileRef
+               location = "group:MYUtilities.xcconfig">
+            </FileRef>
+            <FileRef
+               location = "group:MYUtilities_Debug.xcconfig">
+            </FileRef>
+            <FileRef
+               location = "group:MYUtilities_Prefix.pch">
+            </FileRef>
+            <FileRef
+               location = "group:MYUtilities_Release.xcconfig">
+            </FileRef>
+            <FileRef
+               location = "group:README.md">
+            </FileRef>
+            <FileRef
+               location = "group:Target.h">
+            </FileRef>
+            <FileRef
+               location = "group:Target.m">
+            </FileRef>
+            <FileRef
+               location = "group:Test.h">
+            </FileRef>
+            <FileRef
+               location = "group:Test.m">
+            </FileRef>
+         </Group>
+      </Group>
+   </Group>
+   <FileRef
+      location = "group:Rakefile">
+   </FileRef>
+   <FileRef
+      location = "group:CHANGELOG.md">
+   </FileRef>
+   <FileRef
+      location = "group:CDTDatastore.podspec">
+   </FileRef>
    <FileRef
       location = "group:Tests/Tests.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Project/Project.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Tests/Pods/Pods.xcodeproj">
