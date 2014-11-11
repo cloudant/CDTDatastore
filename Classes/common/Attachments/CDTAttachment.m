@@ -173,10 +173,13 @@
 
 @property (nonatomic) NSData *attachmentData;
 @property (readonly, nonatomic) NSURL *attachmentURL;
+@property (nonatomic) dispatch_queue_t queue;
 
 @end
 
-@implementation CDTSavedHTTPAttachment
+@implementation CDTSavedHTTPAttachment {
+    dispatch_queue_t _queue;
+}
 
 + (CDTSavedHTTPAttachment *)createAttachmentWithName:(NSString *)name
                                             JSONData:(NSDictionary *)jsonData
@@ -215,6 +218,8 @@
 {
     self = [super initWithName:name type:type size:size];
 
+    _queue = dispatch_queue_create("com.cloudant.sync.attachments.http.queue", NULL);
+
     if (self) {
         _attachmentData = data;
         _attachmentURL = attachmentURL;
@@ -225,9 +230,12 @@
 
 - (NSData *)dataFromAttachmentContent
 {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken,
-                  ^{ self.attachmentData = [NSData dataWithContentsOfURL:self.attachmentURL]; });
+    // download attachment once to save battery, to do is perform op in a serial queue
+    dispatch_sync(_queue, ^{
+        if (!self.attachmentData) {
+            self.attachmentData = [NSData dataWithContentsOfURL:self.attachmentURL];
+        }
+    });
 
     return self.attachmentData;
 }
