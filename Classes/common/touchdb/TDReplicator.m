@@ -383,6 +383,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [NSObject cancelPreviousPerformRequestsWithTarget: self
                                              selector: @selector(retryIfReady) object: nil];
 
+    //this just sets the isCanceled BOOL on the object. It's
+    //our responsibility to actually stop the thread.
+    [_replicatorThread cancel];
+    
     [self stopped];
 }
 
@@ -406,7 +410,19 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     _stopRunLoop = YES;
-    _replicatorThread = nil;
+}
+
+-(BOOL) threadExecuting
+{
+    return [self.replicatorThread isExecuting];
+}
+-(BOOL) threadFinished
+{
+    return [self.replicatorThread isFinished];
+}
+-(BOOL) threadCanceled
+{
+    return [self.replicatorThread isCancelled];
 }
 
 // Called after a continuous replication has gone idle, but it failed to transfer some revisions

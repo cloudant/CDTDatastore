@@ -469,4 +469,18 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     return _error;
 }
 
+
+-(BOOL) threadExecuting;
+{
+    return self.tdReplicator.threadExecuting;
+}
+-(BOOL) threadFinished
+{
+    return self.tdReplicator.threadFinished;
+}
+-(BOOL) threadCanceled
+{
+    return self.tdReplicator.threadCanceled;
+}
+
 @end

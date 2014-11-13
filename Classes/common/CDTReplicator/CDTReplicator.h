@@ -140,9 +140,20 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /*
  Private so no docs
  */
-- (id)initWithTDReplicatorManager:(TDReplicatorManager *)replicatorManager
-                      replication:(CDTAbstractReplication *)replication
-                            error:(NSError *__autoreleasing *)error;
+-(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
+                     replication:(CDTAbstractReplication*)replication
+                           error:(NSError * __autoreleasing*)error;
+
+/*
+ Access the underlying NSThread execution state.
+ See NSThread Class Reference
+ 
+ These methods are private (no docs) and are used for testing. They may 
+ be removed without warning.
+ */
+-(BOOL) threadExecuting;
+-(BOOL) threadFinished;
+-(BOOL) threadCanceled;
 
 /**---------------------------------------------------------------------------------------
  * @name Controlling replication
