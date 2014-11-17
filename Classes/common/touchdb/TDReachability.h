@@ -16,15 +16,16 @@ typedef void* CFRunLoopRef;
 #import <SystemConfiguration/SCNetworkReachability.h>
 #endif
 
-
 typedef void (^TDReachabilityOnChangeBlock)(void);
 
-
-/** Asynchronously tracks the reachability of an Internet host, using the SystemConfiguration framework's reachability API.
-    You can get called when reachability changes by either KV-observing the properties, or setting an "onChange" block.
-    "Reachable" means simply that the local IP stack has resolved the host's DNS name and knows how to route packets toward its IP address. It does NOT guarantee that you can successfully connect. Generally it just means that you have an Internet connection. */
-@interface TDReachability : NSObject
-{
+/** Asynchronously tracks the reachability of an Internet host, using the SystemConfiguration
+   framework's reachability API.
+    You can get called when reachability changes by either KV-observing the properties, or setting
+   an "onChange" block.
+    "Reachable" means simply that the local IP stack has resolved the host's DNS name and knows how
+   to route packets toward its IP address. It does NOT guarantee that you can successfully connect.
+   Generally it just means that you have an Internet connection. */
+@interface TDReachability : NSObject {
     NSString* _hostName;
     SCNetworkReachabilityRef _ref;
     CFRunLoopRef _runLoop;
@@ -33,20 +34,23 @@ typedef void (^TDReachabilityOnChangeBlock)(void);
     TDReachabilityOnChangeBlock _onChange;
 }
 
-- (id) initWithHostName: (NSString*)hostName;
+- (id)initWithHostName:(NSString*)hostName;
 
 @property (readonly, nonatomic) NSString* hostName;
 
 /** Starts tracking reachability.
-    You have to call this after creating the object, or none of its properties will change. The current thread must have a runloop.
+    You have to call this after creating the object, or none of its properties will change. The
+   current thread must have a runloop.
     @return  YES if tracking started, or NO if there was an error. */
-- (BOOL) start;
+- (BOOL)start;
 
 /** Stops tracking reachability.
-    This is called automatically by -dealloc, but to be safe you can call it when you release your TDReachability instance, to make sure that in case of a leak it isn't left running forever. */
-- (void) stop;
+    This is called automatically by -dealloc, but to be safe you can call it when you release your
+   TDReachability instance, to make sure that in case of a leak it isn't left running forever. */
+- (void)stop;
 
-/** YES if the host's reachability has been determined, NO if it hasn't yet or if there was an error. */
+/** YES if the host's reachability has been determined, NO if it hasn't yet or if there was an
+ * error. */
 @property (readonly, nonatomic) BOOL reachabilityKnown;
 
 /** The exact reachability flags; see Apple docs for the meanings of the bits. */
@@ -58,7 +62,8 @@ typedef void (^TDReachabilityOnChangeBlock)(void);
 /** Is this host reachable by WiFi (or wired Ethernet)? */
 @property (readonly) BOOL reachableByWiFi;
 
-/** If you set this, the block will be called whenever the reachability related properties change. */
+/** If you set this, the block will be called whenever the reachability related properties change.
+ */
 @property (copy) TDReachabilityOnChangeBlock onChange;
 
 @end

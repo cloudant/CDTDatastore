@@ -11,15 +11,14 @@
 #import "TD_Database.h"
 @class TDReplicator;
 
-
 @interface TD_Database (Replication)
 
 @property (readonly) NSArray* activeReplicators;
 
-- (TDReplicator*) activeReplicatorLike: (TDReplicator*)repl;
+- (TDReplicator*)activeReplicatorLike:(TDReplicator*)repl;
 
-- (void) addActiveReplicator: (TDReplicator*)repl;
+- (void)addActiveReplicator:(TDReplicator*)repl;
 
-- (BOOL) findMissingRevisions: (TD_RevisionList*)revs;
+- (BOOL)findMissingRevisions:(TD_RevisionList*)revs;
 
 @end

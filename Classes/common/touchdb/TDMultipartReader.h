@@ -7,15 +7,12 @@
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
 
-
 #import <Foundation/Foundation.h>
 @protocol TDMultipartReaderDelegate;
 
-
 /** Streaming MIME multipart reader. */
-@interface TDMultipartReader : NSObject
-{
-    @private
+@interface TDMultipartReader : NSObject {
+   @private
     __weak id<TDMultipartReaderDelegate> _delegate;
     NSData* _boundary;
     NSMutableData* _buffer;
@@ -25,14 +22,14 @@
 }
 
 /** Initializes the reader.
-    Returns nil if the content type isn't a valid multipart type, or doesn't contain a "boundary" parameter.
+    Returns nil if the content type isn't a valid multipart type, or doesn't contain a "boundary"
+   parameter.
     @param contentType the entire MIME Content-Type string, with parameters.
     @param delegate  The delegate object that will be called as parts are parsed. */
-- (id) initWithContentType: (NSString*)contentType
-                  delegate: (id<TDMultipartReaderDelegate>)delegate;
+- (id)initWithContentType:(NSString*)contentType delegate:(id<TDMultipartReaderDelegate>)delegate;
 
 /** Call this when more data is available. */
-- (void) appendData: (NSData*)data;
+- (void)appendData:(NSData*)data;
 
 /** Has the reader successfully finished reading the entire multipart body? */
 @property (readonly) BOOL finished;
@@ -45,22 +42,21 @@
 @property (readonly) NSDictionary* headers;
 
 #if DEBUG
-- (NSData*) boundary;  //made public to be used in external test framework. Adam Cox (Cloudant) 2014-1-17
+- (NSData*)
+    boundary;  // made public to be used in external test framework. Adam Cox (Cloudant) 2014-1-17
 #endif
 
 @end
 
-
-
 @protocol TDMultipartReaderDelegate <NSObject>
 
 /** This method is called when a part's headers have been parsed, before its data is parsed. */
-- (void) startedPart: (NSDictionary*)headers;
+- (void)startedPart:(NSDictionary*)headers;
 
 /** This method is called to append data to a part's body. */
-- (void) appendToPart: (NSData*)data;
+- (void)appendToPart:(NSData*)data;
 
 /** This method is called when a part is complete. */
-- (void) finishedPart;
+- (void)finishedPart;
 
 @end

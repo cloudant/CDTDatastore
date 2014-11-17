@@ -1,6 +1,6 @@
 //
 //  CDTSQLiteHelpers.h
-//  
+//
 //
 //  Created by Thomas Blench on 28/01/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -18,8 +18,7 @@
 
 @interface CDTSQLiteHelpers : NSObject
 
-+(NSString*)makeUpdatePlaceholders:(NSDictionary*)dict;
-+(NSString*)makeInsertPlaceholders:(NSDictionary*)dict;
++ (NSString *)makeUpdatePlaceholders:(NSDictionary *)dict;
++ (NSString *)makeInsertPlaceholders:(NSDictionary *)dict;
 
 @end
-

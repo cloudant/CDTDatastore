@@ -26,7 +26,7 @@
   - @"source": NSURL of remote db pulled from,
   - @"winner": new winning CDTDocumentRevision, _if_ it changed (often same as rev).
  */
-extern NSString* const CDTDatastoreChangeNotification;
+extern NSString *const CDTDatastoreChangeNotification;
 
 @class TD_Database;
 
@@ -66,11 +66,11 @@ extern NSString* const CDTDatastoreChangeNotification;
  */
 @interface CDTDatastore : NSObject
 
-@property (nonatomic,strong,readonly) TD_Database *database;
+@property (nonatomic, strong, readonly) TD_Database *database;
 
-+(NSString*)versionString;
++ (NSString *)versionString;
 
--(id)initWithDatabase:(TD_Database*)database;
+- (id)initWithDatabase:(TD_Database *)database;
 
 /**
  * The number of document in the datastore.
@@ -95,9 +95,8 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return current revision as CDTDocumentRevision of given document
  */
--(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
-                                     error:(NSError * __autoreleasing *)error;
-
+- (CDTDocumentRevision *)getDocumentWithId:(NSString *)docId
+                                     error:(NSError *__autoreleasing *)error;
 
 /**
  * Return a specific revision of a document.
@@ -113,9 +112,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @return specified CDTDocumentRevision of the document for given
  *     document id or nil if it doesn't exist
  */
--(CDTDocumentRevision *) getDocumentWithId:(NSString*)docId
-                                       rev:(NSString*)rev
-                                     error:(NSError * __autoreleasing *)error;
+- (CDTDocumentRevision *)getDocumentWithId:(NSString *)docId
+                                       rev:(NSString *)rev
+                                     error:(NSError *__autoreleasing *)error;
 
 /**
  * Unpaginated read of all documents.
@@ -126,8 +125,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return NSArray of CDTDocumentRevisions
  */
--(NSArray*) getAllDocuments;
-
+- (NSArray *)getAllDocuments;
 
 /**
  * Enumerate the current winning revisions for all documents in the
@@ -146,10 +144,9 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @param descending ordered descending if true, otherwise ascendingly
  * @return NSArray containing CDTDocumentRevision objects
  */
--(NSArray*) getAllDocumentsOffset:(NSUInteger)offset
-                            limit:(NSUInteger)limit
-                       descending:(BOOL)descending;
-
+- (NSArray *)getAllDocumentsOffset:(NSUInteger)offset
+                             limit:(NSUInteger)limit
+                        descending:(BOOL)descending;
 
 /**
  * Return the winning revisions for a set of document IDs.
@@ -158,7 +155,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return NSArray containing CDTDocumentRevision objects
  */
--(NSArray*) getDocumentsWithIds:(NSArray*)docIds;
+- (NSArray *)getDocumentsWithIds:(NSArray *)docIds;
 
 /**
  * Returns the history of revisions for the passed revision.
@@ -169,7 +166,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  * Older revisions will not contain the document data as it will have
  * been compacted away.
  */
--(NSArray*) getRevisionHistory:(CDTDocumentRevision*)revision;
+- (NSArray *)getRevisionHistory:(CDTDocumentRevision *)revision;
 
 /**
  * Return a directory for an extension to store its data for this CDTDatastore.
@@ -178,7 +175,7 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return the directory for specified extensionName
  */
--(NSString*) extensionDataFolder:(NSString*)extensionName;
+- (NSString *)extensionDataFolder:(NSString *)extensionName;
 
 #pragma mark API V2
 /**
@@ -189,20 +186,20 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return document revision created
  */
--(CDTDocumentRevision*) createDocumentFromRevision: (CDTMutableDocumentRevision*)revision
-                                             error:(NSError * __autoreleasing *)error;
+- (CDTDocumentRevision *)createDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+                                              error:(NSError *__autoreleasing *)error;
 
 /**
- * Updates a document in the datastore with a new revision 
+ * Updates a document in the datastore with a new revision
  *
  *  @parm revision updated document revision
  *  @param error will point to an NSError object in the case of an error
  *
- *  @return the updated document 
+ *  @return the updated document
  *
  */
--(CDTDocumentRevision*) updateDocumentFromRevision: (CDTMutableDocumentRevision*)revision
-                                             error:(NSError * __autoreleasing *)error;
+- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+                                              error:(NSError *__autoreleasing *)error;
 /**
  * Deletes a document from the datastore.
  *
@@ -211,8 +208,8 @@ extern NSString* const CDTDatastoreChangeNotification;
  *
  * @return the deleted document
  */
--(CDTDocumentRevision*) deleteDocumentFromRevision:(CDTDocumentRevision*)revision
-                                             error:(NSError * __autoreleasing *)error;
+- (CDTDocumentRevision *)deleteDocumentFromRevision:(CDTDocumentRevision *)revision
+                                              error:(NSError *__autoreleasing *)error;
 
 /**
  *
@@ -224,7 +221,5 @@ extern NSString* const CDTDatastoreChangeNotification;
  * @return an array of deleted documents
  *
  */
--(NSArray*)deleteDocumentWithId:(NSString *)docId
-                                      error:(NSError * __autoreleasing *) error;
+- (NSArray *)deleteDocumentWithId:(NSString *)docId error:(NSError *__autoreleasing *)error;
 @end
-

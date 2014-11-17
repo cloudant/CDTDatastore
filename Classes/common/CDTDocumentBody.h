@@ -23,18 +23,18 @@
  *
  * Can return the JSON as an NSData object or a NSDictionary.
  */
-__deprecated
-@interface CDTDocumentBody : NSObject
+__deprecated @interface CDTDocumentBody : NSObject
 
-/**
- Create a new CDTDocumentBody with a dictionary.
- 
- @param dict the document's body
- */
--(instancetype)initWithDictionary:(NSDictionary*)dict;
+                                          /**
+                                           Create a new CDTDocumentBody with a dictionary.
 
-@property (nonatomic,strong,readonly) TD_Body *td_body;
+                                           @param dict the document's body
+                                           */
+                                          -
+                                          (instancetype)initWithDictionary : (NSDictionary *)dict;
 
--(TD_Revision*)TD_RevisionValue;
+@property (nonatomic, strong, readonly) TD_Body *td_body;
+
+- (TD_Revision *)TD_RevisionValue;
 
 @end

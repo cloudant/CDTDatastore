@@ -10,11 +10,9 @@
 
 #import <Foundation/Foundation.h>
 
-
 /** Utility that queues up objects until the queue fills up or a time interval elapses,
     then passes objects, in groups of its capacity, to a client-supplied processor block. */
-@interface TDBatcher : NSObject
-{
+@interface TDBatcher : NSObject {
     NSUInteger _capacity;
     NSTimeInterval _delay;
     NSMutableArray* _inbox;
@@ -23,20 +21,20 @@
     void (^_processor)(NSArray*);
 }
 
-- (id) initWithCapacity: (NSUInteger)capacity
-                  delay: (NSTimeInterval)delay
-              processor: (void (^)(NSArray*))block;
+- (id)initWithCapacity:(NSUInteger)capacity
+                 delay:(NSTimeInterval)delay
+             processor:(void (^)(NSArray*))block;
 
 @property (readonly) NSUInteger count;
 
-- (void) queueObject: (id)object;
-- (void) queueObjects: (NSArray*)objects;
+- (void)queueObject:(id)object;
+- (void)queueObjects:(NSArray*)objects;
 
 /** Sends queued objects to the processor block (up to the capacity). */
-- (void) flush;
+- (void)flush;
 
 /** Sends _all_ the queued objects at once to the processor block.
     After this method returns, all the queued objects will have been processed.*/
-- (void) flushAll;
+- (void)flushAll;
 
 @end

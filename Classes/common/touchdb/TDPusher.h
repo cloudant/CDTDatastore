@@ -12,8 +12,7 @@
 #import "TDMisc.h"
 
 /** Replicator that pushes to a remote CouchDB. */
-@interface TDPusher : TDReplicator
-{
+@interface TDPusher : TDReplicator {
     BOOL _createTarget;
     BOOL _creatingTarget;
     BOOL _observing;
@@ -22,7 +21,7 @@
     BOOL _dontSendMultipart;
     NSMutableIndexSet* _pendingSequences;
     SequenceNumber _maxPendingSequence;
-    
+
     /** YES if all further documents with attachments should:
        * Be sent via multipart/related
        * Have all attachment data sent (not just stubs)
@@ -33,7 +32,6 @@
 @property BOOL createTarget;
 
 /** Block called to filter document revisions that are pushed to the remote server. */
-@property (nonatomic,copy) TD_FilterBlock filter;
-
+@property (nonatomic, copy) TD_FilterBlock filter;
 
 @end

@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, CDTIndexType) {
      * Supports any NSNumber type.
      * Additionally NSStrings are supported, if they can be successfully converted to an NSNumber.
      * Strings which fail conversion are returned as nil and are not indexed.
-     * 
+     *
      */
     CDTIndexTypeInteger,
     /**
@@ -50,11 +50,11 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
 
 @interface CDTIndex : NSObject
 
-@property (nonatomic,strong,readonly) NSString *indexName;
-@property (nonatomic,readonly) long lastSequence;
-@property (nonatomic,readonly) CDTIndexType fieldType;
+@property (nonatomic, strong, readonly) NSString *indexName;
+@property (nonatomic, readonly) long lastSequence;
+@property (nonatomic, readonly) CDTIndexType fieldType;
 
-- (id)initWithIndexName:(NSString*)indexName
+- (id)initWithIndexName:(NSString *)indexName
            lastSequence:(long)lastSequence
               fieldType:(CDTIndexType)fieldType;
 
@@ -78,7 +78,7 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
  *
  * @param object object to convert
  */
--(NSObject*)convertIndexValue:(NSObject*)object;
+- (NSObject *)convertIndexValue:(NSObject *)object;
 
 /*
  * Returns the SQL string for generating the index table in the database.
@@ -86,8 +86,7 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
  * @param tablePrefix prefix to use for table names in SQL
  * @param indexName the name of the index to create SQL for
  */
--(NSString*)createSQLTemplateWithPrefix:(NSString*)tablePrefix
-                              indexName:(NSString*)indexName;
+- (NSString *)createSQLTemplateWithPrefix:(NSString *)tablePrefix indexName:(NSString *)indexName;
 
 @end
 
@@ -95,7 +94,7 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
  * Interface implemented by classes to help indexers deal with issues arising from use of different
  * data types.
  */
- @interface CDTIndexHelperBase : NSObject
+@interface CDTIndexHelperBase : NSObject
 
 /*
  * Return the correct CDTIndexHelper subclass (CDTIntegerIndexHelper, CDTStringIndexHelper, etc)
@@ -108,20 +107,22 @@ typedef CDTIndexHelperBase<CDTIndexHelperDelegate> CDTIndexHelper;
  *
  * @return the appropriate helper subclass, or nil if no subclass could be found.
  */
-+(CDTIndexHelper*)indexHelperForType:(CDTIndexType)type;
++ (CDTIndexHelper *)indexHelperForType:(CDTIndexType)type;
 
 @end
 
 /*
  * Default helper for integer types
  */
-@interface CDTIntegerIndexHelper : CDTIndexHelper;
+@interface CDTIntegerIndexHelper : CDTIndexHelper
+;
 
 @end
 
 /*
  * Default helper for string types
  */
-@interface CDTStringIndexHelper : CDTIndexHelper;
+@interface CDTStringIndexHelper : CDTIndexHelper
+;
 
 @end

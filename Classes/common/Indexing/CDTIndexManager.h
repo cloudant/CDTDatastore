@@ -16,13 +16,13 @@
 
 #import <Foundation/Foundation.h>
 #import "FMDatabaseQueue.h"
-#import "CDTIndex.h" // needed for CDTIndexType - can't forward declare enums
+#import "CDTIndex.h"  // needed for CDTIndexType - can't forward declare enums
 
-extern NSString* const kCDTQueryOptionSortBy;
-extern NSString* const kCDTQueryOptionAscending;
-extern NSString* const kCDTQueryOptionDescending;
-extern NSString* const kCDTQueryOptionOffset;
-extern NSString* const kCDTQueryOptionLimit;
+extern NSString *const kCDTQueryOptionSortBy;
+extern NSString *const kCDTQueryOptionAscending;
+extern NSString *const kCDTQueryOptionDescending;
+extern NSString *const kCDTQueryOptionOffset;
+extern NSString *const kCDTQueryOptionLimit;
 
 /**
  * Indexing and query erors.
@@ -40,7 +40,7 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
      */
     CDTIndexErrorSqlError = 2,
     /**
-     * An index with this name is already registered. 
+     * An index with this name is already registered.
      * To create an index with the same name, delete the existing one first.
      */
     CDTIndexErrorIndexAlreadyRegistered = 3,
@@ -57,32 +57,29 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  Enumerator over documents resulting from query.
 
  Use a forin query to loop over this object:
- 
+
      for (DocumentRevision revision : queryResultObject) {
          // do something
      }
  */
-@interface CDTQueryResult : NSObject<NSFastEnumeration>
-{
+@interface CDTQueryResult : NSObject <NSFastEnumeration> {
     CDTDatastore *_datastore;
 }
 
--(id)initWithDocIds:(NSArray*)docIds
-          datastore:(CDTDatastore*)datastore;
+- (id)initWithDocIds:(NSArray *)docIds datastore:(CDTDatastore *)datastore;
 
--(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state 
-                                 objects:(id __unsafe_unretained*)buffer
-                                   count:(NSUInteger)len;
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state
+                                  objects:(id __unsafe_unretained *)buffer
+                                    count:(NSUInteger)len;
 
-@property (nonatomic,strong,readonly) NSArray *documentIds; // of type NSString*
+@property (nonatomic, strong, readonly) NSArray *documentIds;  // of type NSString*
 
 @end
 
 /**
  * Index manager for creating/deleting indexes, ensuring they are up to date, and querying them.
  */
-@interface CDTIndexManager : NSObject
-{
+@interface CDTIndexManager : NSObject {
     CDTDatastore *_datastore;
     FMDatabaseQueue *_database;
     NSMutableDictionary *_indexFunctionMap;
@@ -96,8 +93,7 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @param datastore datastore to manage indexes for
  * @param error will point to an NSError object in case of error.
  */
--(id)initWithDatastore:(CDTDatastore*)datastore
-                 error:(NSError * __autoreleasing *)error;
+- (id)initWithDatastore:(CDTDatastore *)datastore error:(NSError *__autoreleasing *)error;
 
 - (BOOL)shutdown;
 
@@ -120,9 +116,9 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @see CDTFieldIndexer
  * @see CDTIndexType
  */
--(BOOL)ensureIndexedWithIndexName:(NSString*)indexName
-                        fieldName:(NSString*)fieldName
-                            error:(NSError * __autoreleasing *)error;
+- (BOOL)ensureIndexedWithIndexName:(NSString *)indexName
+                         fieldName:(NSString *)fieldName
+                             error:(NSError *__autoreleasing *)error;
 
 /**
  * Registers a new index with a given type that indexes
@@ -139,10 +135,10 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @see CDTFieldIndexer
  * @see CDTIndexType
  */
--(BOOL)ensureIndexedWithIndexName:(NSString*)indexName
-                        fieldName:(NSString*)fieldName
-                             type:(CDTIndexType)type
-                            error:(NSError * __autoreleasing *)error;
+- (BOOL)ensureIndexedWithIndexName:(NSString *)indexName
+                         fieldName:(NSString *)fieldName
+                              type:(CDTIndexType)type
+                             error:(NSError *__autoreleasing *)error;
 
 /**
  * Registers an index with the datastore and make it available for
@@ -156,8 +152,8 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @param indexName case-sensitive name of the index. Can only contain letters, digits and
  *        underscores. It must not start with a digit.
  * @param type type of the index.
- * @param indexer an object conforming to the CDTIndexer protocol. The method 
- *        [CDTIndexer valuesForRevision:indexName:] is used to map between a document 
+ * @param indexer an object conforming to the CDTIndexer protocol. The method
+ *        [CDTIndexer valuesForRevision:indexName:] is used to map between a document
  *        and indexed value(s).
  * @param error will point to an NSError object in case of error.
  *
@@ -166,10 +162,10 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @see CDTIndexer
  * @see CDTIndexType
  */
--(BOOL)ensureIndexedWithIndexName:(NSString*)indexName
-                             type:(CDTIndexType)type
-                          indexer:(NSObject<CDTIndexer>*)indexer
-                            error:(NSError * __autoreleasing *)error;
+- (BOOL)ensureIndexedWithIndexName:(NSString *)indexName
+                              type:(CDTIndexType)type
+                           indexer:(NSObject<CDTIndexer> *)indexer
+                             error:(NSError *__autoreleasing *)error;
 
 /**---------------------------------------------------------------------------------------
  * @name Maintaining indexes
@@ -189,7 +185,7 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  *
  * @return YES if successful; NO in case of error.
  */
--(BOOL)updateAllIndexes:(NSError * __autoreleasing *)error;
+- (BOOL)updateAllIndexes:(NSError *__autoreleasing *)error;
 
 /**
  * Deletes an index.
@@ -202,8 +198,7 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @return YES if successful; NO in case of error.
  */
 
--(BOOL)deleteIndexWithIndexName:(NSString*)indexName
-                          error:(NSError * __autoreleasing *)error;
+- (BOOL)deleteIndexWithIndexName:(NSString *)indexName error:(NSError *__autoreleasing *)error;
 
 /**---------------------------------------------------------------------------------------
  * @name Querying
@@ -223,8 +218,8 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  *         error.
  *
  */
--(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
-                                error: (NSError * __autoreleasing *)error;
+- (CDTQueryResult *)queryWithPredicate:(NSPredicate *)predicate
+                                 error:(NSError *__autoreleasing *)error;
 
 /**
  * Execute query with NSPredicate.
@@ -240,9 +235,9 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  *         error.
  *
  */
--(CDTQueryResult*) queryWithPredicate: (NSPredicate*)predicate
-                              options: (NSDictionary*)options
-                                error: (NSError * __autoreleasing *)error;
+- (CDTQueryResult *)queryWithPredicate:(NSPredicate *)predicate
+                               options:(NSDictionary *)options
+                                 error:(NSError *__autoreleasing *)error;
 /**
  * Execute query. See TODO for details of query syntax.
  *
@@ -256,8 +251,8 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  *         error.
  *
  */
--(CDTQueryResult*) queryWithDictionary:(NSDictionary*)query
-                                 error:(NSError * __autoreleasing *)error;
+- (CDTQueryResult *)queryWithDictionary:(NSDictionary *)query
+                                  error:(NSError *__autoreleasing *)error;
 
 /**
  * Execute query with additional options. See TODO for details of query syntax.
@@ -272,9 +267,9 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @return CDTQueryResult object for enumeration or retrieving Document IDs; or nil in case of
  *         error.
  */
--(CDTQueryResult*) queryWithDictionary:(NSDictionary*)query
-                               options:(NSDictionary*)options
-                                 error:(NSError * __autoreleasing *)error;
+- (CDTQueryResult *)queryWithDictionary:(NSDictionary *)query
+                                options:(NSDictionary *)options
+                                  error:(NSError *__autoreleasing *)error;
 
 /**
  * Return an array of unique values for the given index.
@@ -285,11 +280,9 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
  * @param indexName the index to fetch the unique values for.
  * @param error will point to an NSError object in case of error.
  *
- * @return an NSArray of unique values. The type of the array members will be determined by the 
+ * @return an NSArray of unique values. The type of the array members will be determined by the
  *         Indexer's implementation of [CDTIndexer valuesForRevision:indexName:].
  */
--(NSArray*) uniqueValuesForIndex:(NSString*)indexName
-                           error:(NSError * __autoreleasing *)error;
-
+- (NSArray *)uniqueValuesForIndex:(NSString *)indexName error:(NSError *__autoreleasing *)error;
 
 @end

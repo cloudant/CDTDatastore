@@ -15,14 +15,12 @@
 
 #import "TD_Attachment.h"
 
-
 @implementation TD_Attachment
 
+@synthesize name = _name, contentType = _contentType;
 
-@synthesize name=_name, contentType=_contentType;
-
-
-- (id) initWithName: (NSString*)name contentType: (NSString*)contentType {
+- (id)initWithName:(NSString *)name contentType:(NSString *)contentType
+{
     Assert(name);
     self = [super init];
     if (self) {
@@ -32,28 +30,22 @@
     return self;
 }
 
-
-
-
-- (bool) isValid {
+- (bool)isValid
+{
     if (encoding) {
-        if (encodedLength == 0 && length > 0)
-            return false;
+        if (encodedLength == 0 && length > 0) return false;
     } else if (encodedLength > 0) {
         return false;
     }
-    if (revpos == 0)
-        return false;
+    if (revpos == 0) return false;
 #if DEBUG
     size_t i;
-    for (i=0; i<sizeof(TDBlobKey); i++)
-        if (blobKey.bytes[i])
-            return true;
+    for (i = 0; i < sizeof(TDBlobKey); i++)
+        if (blobKey.bytes[i]) return true;
     return false;
 #else
     return true;
 #endif
 }
-
 
 @end

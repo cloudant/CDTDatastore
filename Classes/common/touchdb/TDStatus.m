@@ -15,11 +15,10 @@
 
 #import "TDStatus.h"
 
-
 NSString* const TDHTTPErrorDomain = @"TDHTTP";
 
-
-struct StatusMapEntry {
+struct StatusMapEntry
+{
     TDStatus status;
     int httpStatus;
     const char* message;
@@ -27,59 +26,55 @@ struct StatusMapEntry {
 
 static const struct StatusMapEntry kStatusMap[] = {
     // For compatibility with CouchDB, return the same strings it does (see couch_httpd.erl)
-    {kTDStatusBadRequest,           400, "bad_request"},
-    {kTDStatusUnauthorized,         401, "unauthorized"},
-    {kTDStatusNotFound,             404, "not_found"},
-    {kTDStatusForbidden,            403, "forbidden"},
-    {kTDStatusNotAcceptable,        406, "not_acceptable"},
-    {kTDStatusConflict,             409, "conflict"},
-    {kTDStatusDuplicate,            412, "file_exists"},      // really 'Precondition Failed'
-    {kTDStatusUnsupportedType,      415, "bad_content_type"},
+    {kTDStatusBadRequest, 400, "bad_request"},
+    {kTDStatusUnauthorized, 401, "unauthorized"},
+    {kTDStatusNotFound, 404, "not_found"},
+    {kTDStatusForbidden, 403, "forbidden"},
+    {kTDStatusNotAcceptable, 406, "not_acceptable"},
+    {kTDStatusConflict, 409, "conflict"},
+    {kTDStatusDuplicate, 412, "file_exists"},  // really 'Precondition Failed'
+    {kTDStatusUnsupportedType, 415, "bad_content_type"},
 
     // These are nonstandard status codes; map them to closest HTTP equivalents:
-    {kTDStatusBadEncoding,          400, "Bad data encoding"},
-    {kTDStatusBadAttachment,        400, "Invalid attachment"},
-    {kTDStatusAttachmentNotFound,   404, "Attachment not found"},
-    {kTDStatusBadJSON,              400, "Invalid JSON"},
-    {kTDStatusBadID,                400, "Invalid database/document/revision ID"},
-    {kTDStatusBadParam,             400, "Invalid parameter in JSON body"},
-    {kTDStatusDeleted,              404, "deleted"},
-
-    {kTDStatusUpstreamError,        502, "Invalid response from remote replication server"},
-    {kTDStatusDBError,              500, "Database error!"},
-    {kTDStatusCorruptError,         500, "Invalid data in database"},
-    {kTDStatusAttachmentError,      500, "Attachment store error"},
-    {kTDStatusCallbackError,        500, "Application callback block failed"},
-    {kTDStatusException,            500, "Internal error"},
+    {kTDStatusBadEncoding, 400, "Bad data encoding"},
+    {kTDStatusBadAttachment, 400, "Invalid attachment"},
+    {kTDStatusAttachmentNotFound, 404, "Attachment not found"},
+    {kTDStatusBadJSON, 400, "Invalid JSON"},
+    {kTDStatusBadID, 400, "Invalid database/document/revision ID"},
+    {kTDStatusBadParam, 400, "Invalid parameter in JSON body"},
+    {kTDStatusDeleted, 404, "deleted"},
+    {kTDStatusUpstreamError, 502, "Invalid response from remote replication server"},
+    {kTDStatusDBError, 500, "Database error!"},
+    {kTDStatusCorruptError, 500, "Invalid data in database"},
+    {kTDStatusAttachmentError, 500, "Attachment store error"},
+    {kTDStatusCallbackError, 500, "Application callback block failed"},
+    {kTDStatusException, 500, "Internal error"},
 };
 
-
-int TDStatusToHTTPStatus( TDStatus status, NSString** outMessage ) {
-    for (unsigned i=0; i < sizeof(kStatusMap)/sizeof(kStatusMap[0]); ++i) {
+int TDStatusToHTTPStatus(TDStatus status, NSString** outMessage)
+{
+    for (unsigned i = 0; i < sizeof(kStatusMap) / sizeof(kStatusMap[0]); ++i) {
         if (kStatusMap[i].status == status) {
-            if (outMessage)
-                *outMessage = [NSString stringWithUTF8String: kStatusMap[i].message];
+            if (outMessage) *outMessage = [NSString stringWithUTF8String:kStatusMap[i].message];
             return kStatusMap[i].httpStatus;
         }
     }
-    if (outMessage)
-        *outMessage = [NSHTTPURLResponse localizedStringForStatusCode: status];
+    if (outMessage) *outMessage = [NSHTTPURLResponse localizedStringForStatusCode:status];
     return status;
 }
 
-
-NSError* TDStatusToNSErrorWithInfo( TDStatus status, NSURL* url, NSDictionary* extraInfo ) {
+NSError* TDStatusToNSErrorWithInfo(TDStatus status, NSURL* url, NSDictionary* extraInfo)
+{
     NSString* reason;
     status = TDStatusToHTTPStatus(status, &reason);
-    NSMutableDictionary* info = $mdict({NSURLErrorKey, url},
-                               {NSLocalizedFailureReasonErrorKey, reason},
-                               {NSLocalizedDescriptionKey, $sprintf(@"%i %@", status, reason)});
-    if (extraInfo)
-        [info addEntriesFromDictionary: extraInfo];
-    return [NSError errorWithDomain: TDHTTPErrorDomain code: status userInfo: [info copy]];
+    NSMutableDictionary* info =
+        $mdict({NSURLErrorKey, url}, {NSLocalizedFailureReasonErrorKey, reason},
+               { NSLocalizedDescriptionKey, $sprintf(@"%i %@", status, reason) });
+    if (extraInfo) [info addEntriesFromDictionary:extraInfo];
+    return [NSError errorWithDomain:TDHTTPErrorDomain code:status userInfo:[info copy]];
 }
 
-
-NSError* TDStatusToNSError( TDStatus status, NSURL* url ) {
+NSError* TDStatusToNSError(TDStatus status, NSURL* url)
+{
     return TDStatusToNSErrorWithInfo(status, url, nil);
 }

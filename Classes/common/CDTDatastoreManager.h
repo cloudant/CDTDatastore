@@ -15,7 +15,7 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString* const CDTDatastoreErrorDomain;
+extern NSString *const CDTDatastoreErrorDomain;
 
 @class CDTDatastore;
 @class TD_DatabaseManager;
@@ -24,12 +24,12 @@ extern NSString* const CDTDatastoreErrorDomain;
  A CDTDatastoreManager manages a group of CDTDatastores. It also manages
  the behind the scenes threading details to ensure the underlying SQLite
  database is accessed safely.
- 
+
  @see CDTDatastore
  */
 @interface CDTDatastoreManager : NSObject
 
-@property (nonatomic,strong,readonly) TD_DatabaseManager *manager;
+@property (nonatomic, strong, readonly) TD_DatabaseManager *manager;
 
 /**
  Initialises the datastore manager with a directory where the files
@@ -38,35 +38,30 @@ extern NSString* const CDTDatastoreErrorDomain;
  @param directoryPath  directory for files. This must exist.
  @param outError will point to an NSError object in case of error.
  */
--(id)initWithDirectory:(NSString*)directoryPath
-                 error:(NSError**)outError;
+- (id)initWithDirectory:(NSString *)directoryPath error:(NSError **)outError;
 
 /**
  Returns a datastore for the given name.
- 
+
  @param name datastore name
  @param error will point to an NSError object in case of error.
 
  @see CDTDatastore
  */
--(CDTDatastore *)datastoreNamed:(NSString*)name
-                          error:(NSError * __autoreleasing *)error;
-
+- (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error;
 
 /**
  Deletes a datastore for the given name.
- 
+
  All datastore files, including attachments and extensions, are deleted.
- 
+
  Currently it is the responsibility of the caller to ensure that extensions should be shutdown (and
  their underlying databases closed) before calling this method.
- 
+
  @param name datastore name
  @param error will point to an NSError object in case of error.
 
  */
--(BOOL)deleteDatastoreNamed:(NSString*)name
-                      error:(NSError * __autoreleasing *)error;
-
+- (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error;
 
 @end

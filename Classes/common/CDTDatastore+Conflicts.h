@@ -23,25 +23,25 @@
  *
  * @return an array of NSString* document ids.
  */
--(NSArray*) getConflictedDocumentIds;
+- (NSArray *)getConflictedDocumentIds;
 
-/** 
+/**
  Resolve conflicts for a specific document using an object that conforms to the
  CDTConflictResolver protocol
- 
+
  This method creates an NSArry of CDTDocumentRevision objects representing each of the conflicting
  revisions in a particular document tree and passes that array to the given
- [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method 
+ [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method
  must return the winning revision either chosen from the array or a new document revision defined
  with a CDTMutableDocumentRevision. This method will check the returned revision for validity
  (eg CDTMutableDocumentRevision has a parent revision) and then delete all losing revisions. This
  all happens within a single database transaction in order to ensure atomicity.
 
  It is envisioned that this method will be used in conjunction with getConflictedDocumentIds.
- 
+
     CDTDatastore *datastore = ...;
     MyConflictResolver *myResolver = ...;
- 
+
     for (NSString *docId in [datastore getConflictedDocumentIds]) {
         NSError *error;
         BOOL didResolve = [datastore resolveConflictsForDocument:docId
@@ -49,16 +49,16 @@
                                                            error:&error];
         //check error, didResolve
     }
- 
+
  @param docId id of Document to resolve conflicts
  @param resolver the CDTConflictResolver-conforming object used to resolve conflicts
  @param error error reporting
  @return YES/NO depending on success.
- 
+
  @see CDTConflictResolver
  */
--(BOOL) resolveConflictsForDocument:(NSString*)docId
-                           resolver:(NSObject<CDTConflictResolver>*)resolver
-                              error:(NSError * __autoreleasing *)error;
+- (BOOL)resolveConflictsForDocument:(NSString *)docId
+                           resolver:(NSObject<CDTConflictResolver> *)resolver
+                              error:(NSError *__autoreleasing *)error;
 
 @end

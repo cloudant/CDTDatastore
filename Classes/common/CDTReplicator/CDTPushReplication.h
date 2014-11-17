@@ -1,6 +1,6 @@
 //
 //  CDTPushReplication.h
-//  
+//
 //
 //  Created by Adam Cox on 4/8/14.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -16,30 +16,30 @@
 #import "CDTAbstractReplication.h"
 @class CDTDocumentRevision;
 
-typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* params);
+typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *params);
 
 /**
  CDTPushReplication objects are used to configure a replication of a local
  CDTDatastore to a remote Cloudant/CouchDB datastore. At minimum, source and
  target must be specified.
- 
+
  Example usage:
 
     CDTDatastoreManager *manager = [...];
     CDTDatastore *datastore = [...];
     CDTReplicatorFactory *replicatorFactory = [...];
     [replicatorFactory start];
-    
+
     NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
-    
+
     CDTPushReplication* push = [CDTPushReplication replicationWithSource:datastore
                                                                   target:remote];
- 
+
     NSError *error;
     CDTReplicator *myrep = [replicatorFactory oneWay:push error:&error];
- 
+
     //check for error
- 
+
     [myrep start];
 
  @see CDTAbstractReplication
@@ -52,30 +52,29 @@ typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* par
  */
 
 /** All CDTPushReplication objects must have a source and target.
- 
+
  @param source the local datastore from which the data is replicated.
  @param target the remote server URL to which the data is replicated.
  @return a CDTPushReplication object.
- 
+
  */
-+(instancetype) replicationWithSource:(CDTDatastore *)source
-                               target:(NSURL *)target;
++ (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target;
 
 /**
  @name Accessing the replication source and target
  */
 
 /** The NSURL for the target remote datastore
- 
+
      protocol://[user:password@]host[:port]/remoteDatabaseName
- 
+
  Only _http_ and _https_ are valid protocols.
- 
+
  Consider using NSURLComponents if you need to set each component individually.
- 
+
  @see CDTAbstractReplication.
  */
-@property (nonatomic, strong, readonly) NSURL* target;
+@property (nonatomic, strong, readonly) NSURL *target;
 
 /**
  The CDTDatastore from which the data is replicated.
@@ -88,19 +87,19 @@ typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* par
 
 /**
  The block function used to filter local documents during a push replication.
- 
+
  If this property is nil, the default, then no filter is used in the replication.
- 
- One may require to push only a subset of documents found in the local source 
- database to the remote target. In order to select that subset of documents, 
- a filter is used. A CDTDocumentRevision in the local source database, along with 
+
+ One may require to push only a subset of documents found in the local source
+ database to the remote target. In order to select that subset of documents,
+ a filter is used. A CDTDocumentRevision in the local source database, along with
  the NSDictionary filterParams, is passed to the CDTDFilterBlock. The CDTFilterBlock
- must return either YES or NO to specifiy if the CDTDocumentRevision is to be 
- pushed to the remote target. 
- 
+ must return either YES or NO to specifiy if the CDTDocumentRevision is to be
+ pushed to the remote target.
+
  For example (compare to the documentation for CDTPullReplication),
  consider a local database with documents that contain the following JSON bodies:
- 
+
     {
         '_id':'foo',
         '_rev': '1-x',
@@ -109,41 +108,40 @@ typedef BOOL (^CDTFilterBlock) (CDTDocumentRevision* revision, NSDictionary* par
                 }
         ...
     }
- 
- In order to push replicate a subset of the documents in this database to the 
+
+ In order to push replicate a subset of the documents in this database to the
  remote database using a filter, first define the CDTFilterBlock
- 
+
     CDTFilterBlock myFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *param){
         NSInteger age = [[rev documentAsDictionary][@"user"][@"age"] integerValue];
         NSInteger min = [param[@"min"] integerValue];
         NSInteger max = [param[@"max"] integerValue];
- 
+
         return age >= min && age < max;
     };
- 
+
  Set the properties
- 
+
     CDTPushReplication* push = ...
- 
+
     push.filter = myFilter;
     push.filterParams = @{@"min":@23, @"max":@43};
- 
+
  Then create and start the replication process as usual
- 
+
     NSError *error;
     CDTReplicator *myrep = [replicatorFactory oneWay:push error:&error];
     //check for error
- 
+
     [myrep start];
- 
+
  */
 @property (nonatomic, copy) CDTFilterBlock filter;
 
 /** The filter function query parameters
- 
+
  @see -filter
  */
 @property (nonatomic, copy) NSDictionary *filterParams;
-
 
 @end

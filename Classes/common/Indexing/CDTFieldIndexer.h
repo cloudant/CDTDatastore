@@ -1,6 +1,6 @@
 //
 //  CDTFieldIndexer.h
-//  
+//
 //
 //  Created by Thomas Blench on 06/02/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -22,14 +22,11 @@
  * A class for indexing top-level document fields.
  */
 
-@interface CDTFieldIndexer : NSObject<CDTIndexer>
-
-{
+@interface CDTFieldIndexer : NSObject <CDTIndexer> {
     NSString *_fieldName;
     CDTIndexType _type;
 }
 
--(id)initWithFieldName:(NSString*)fieldName
-                  type:(CDTIndexType)type;
+- (id)initWithFieldName:(NSString *)fieldName type:(CDTIndexType)type;
 
 @end

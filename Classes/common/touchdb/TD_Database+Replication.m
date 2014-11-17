@@ -24,121 +24,117 @@
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
 
-
 #define kActiveReplicatorCleanupDelay 10.0
-
 
 @implementation TD_Database (Replication)
 
+- (NSArray *)activeReplicators { return _activeReplicators; }
 
-- (NSArray*) activeReplicators {
-    return _activeReplicators;
-}
-
-- (void) addActiveReplicator: (TDReplicator*)repl {
+- (void)addActiveReplicator:(TDReplicator *)repl
+{
     if (!_activeReplicators) {
         _activeReplicators = [[NSMutableArray alloc] init];
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(replicatorDidStop:)
-                                                     name: TDReplicatorStoppedNotification
-                                                   object: nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(replicatorDidStop:)
+                                                     name:TDReplicatorStoppedNotification
+                                                   object:nil];
     }
-    if (![_activeReplicators containsObject: repl])
-        [_activeReplicators addObject: repl];
+    if (![_activeReplicators containsObject:repl]) [_activeReplicators addObject:repl];
 }
 
-
-- (TDReplicator*) activeReplicatorLike: (TDReplicator*)repl {
-    for (TDReplicator* activeRepl in _activeReplicators) {
-        if ([activeRepl hasSameSettingsAs: repl])
-            return activeRepl;
+- (TDReplicator *)activeReplicatorLike:(TDReplicator *)repl
+{
+    for (TDReplicator *activeRepl in _activeReplicators) {
+        if ([activeRepl hasSameSettingsAs:repl]) return activeRepl;
     }
     return nil;
 }
 
-
-- (void) stopAndForgetReplicator: (TDReplicator*)repl {
+- (void)stopAndForgetReplicator:(TDReplicator *)repl
+{
     [repl databaseClosing];
-    [_activeReplicators removeObjectIdenticalTo: repl];
+    [_activeReplicators removeObjectIdenticalTo:repl];
 }
 
-
-- (void) replicatorDidStop: (NSNotification*)n {
-    TDReplicator* repl = n.object;
-    if (repl.error)     // Leave it around a while so clients can see the error
+- (void)replicatorDidStop:(NSNotification *)n
+{
+    TDReplicator *repl = n.object;
+    if (repl.error)  // Leave it around a while so clients can see the error
         MYAfterDelay(kActiveReplicatorCleanupDelay,
-                     ^{[_activeReplicators removeObjectIdenticalTo: repl];});
+                     ^{ [_activeReplicators removeObjectIdenticalTo:repl]; });
     else
-        [_activeReplicators removeObjectIdenticalTo: repl];
+        [_activeReplicators removeObjectIdenticalTo:repl];
 }
 
-
-- (NSString*) lastSequenceWithCheckpointID: (NSString*)checkpointID {
+- (NSString *)lastSequenceWithCheckpointID:(NSString *)checkpointID
+{
     // This table schema is out of date but I'm keeping it the way it is for compatibility.
     // The 'remote' column now stores the opaque checkpoint IDs, and 'push' is ignored.
     __block NSString *result = nil;
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
-        result = [db stringForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?",
-                                    checkpointID];
+        result = [db
+            stringForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?", checkpointID];
     }];
     return result;
 }
 
-- (BOOL) setLastSequence: (NSString*)lastSequence withCheckpointID: (NSString*)checkpointID {
+- (BOOL)setLastSequence:(NSString *)lastSequence withCheckpointID:(NSString *)checkpointID
+{
     __block BOOL result;
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:
-                @"INSERT OR REPLACE INTO replicators (remote, push, last_sequence) VALUES (?, -1, ?)",
-                checkpointID, lastSequence];
+        result = [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
+                                   @"last_sequence) VALUES (?, -1, ?)",
+                                   checkpointID, lastSequence];
     }];
     return result;
 }
 
-
-+ (NSString*) joinQuotedStrings: (NSArray*)strings {
-    if (strings.count == 0)
-        return @"";
-    NSMutableString* result = [NSMutableString stringWithString: @"'"];
++ (NSString *)joinQuotedStrings:(NSArray *)strings
+{
+    if (strings.count == 0) return @"";
+    NSMutableString *result = [NSMutableString stringWithString:@"'"];
     BOOL first = YES;
-    for (NSString* str in strings) {
+    for (NSString *str in strings) {
         if (first)
             first = NO;
         else
-            [result appendString: @"','"];
+            [result appendString:@"','"];
         NSRange range = NSMakeRange(result.length, str.length);
-        [result appendString: str];
-        [result replaceOccurrencesOfString: @"'" withString: @"''"
-                                   options: NSLiteralSearch range: range];
+        [result appendString:str];
+        [result replaceOccurrencesOfString:@"'"
+                                withString:@"''"
+                                   options:NSLiteralSearch
+                                     range:range];
     }
-    [result appendString: @"'"];
+    [result appendString:@"'"];
     return result;
 }
 
-
-- (BOOL) findMissingRevisions: (TD_RevisionList*)revs {
-    if (revs.count == 0)
-        return YES;
+- (BOOL)findMissingRevisions:(TD_RevisionList *)revs
+{
+    if (revs.count == 0) return YES;
 
     __block BOOL result = YES;
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
-        NSString* sql = $sprintf(@"SELECT docid, revid FROM revs, docs "
-                                 "WHERE revid in (%@) AND docid IN (%@) "
-                                 "AND revs.doc_id == docs.doc_id",
-                                 [TD_Database joinQuotedStrings: revs.allRevIDs],
-                                 [TD_Database joinQuotedStrings: revs.allDocIDs]);
+        NSString *sql = $sprintf(@"SELECT docid, revid FROM revs, docs "
+                                  "WHERE revid in (%@) AND docid IN (%@) "
+                                  "AND revs.doc_id == docs.doc_id",
+                                 [TD_Database joinQuotedStrings:revs.allRevIDs],
+                                 [TD_Database joinQuotedStrings:revs.allDocIDs]);
         // ?? Not sure sqlite will optimize this fully. May need a first query that looks up all
         // the numeric doc_ids from the docids.
-        FMResultSet* r = [db executeQuery: sql];
+        FMResultSet *r = [db executeQuery:sql];
         if (!r) {
             result = NO;
             return;
         }
         while ([r next]) {
-            @autoreleasepool {
-                TD_Revision* rev = [revs revWithDocID: [r stringForColumnIndex: 0]
-                                                revID: [r stringForColumnIndex: 1]];
+            @autoreleasepool
+            {
+                TD_Revision *rev =
+                    [revs revWithDocID:[r stringForColumnIndex:0] revID:[r stringForColumnIndex:1]];
                 if (rev) {
-                    [revs removeRev: rev];
+                    [revs removeRev:rev];
                 }
             }
         }
@@ -146,6 +142,5 @@
     }];
     return result;
 }
-
 
 @end

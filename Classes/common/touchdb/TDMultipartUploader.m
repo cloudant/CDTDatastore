@@ -18,20 +18,19 @@
 #import "TDMultipartUploader.h"
 #import "CDTLogging.h"
 
-
 @implementation TDMultipartUploader
 
-- (id) initWithURL: (NSURL *)url
-          streamer: (TDMultipartWriter*)writer
-    requestHeaders: (NSDictionary *) requestHeaders
-      onCompletion: (TDRemoteRequestCompletionBlock)onCompletion
+- (id)initWithURL:(NSURL *)url
+          streamer:(TDMultipartWriter *)writer
+    requestHeaders:(NSDictionary *)requestHeaders
+      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
     Assert(writer);
-    self = [super initWithMethod: @"PUT" 
-                             URL: url 
-                            body: writer
-                  requestHeaders: requestHeaders 
-                    onCompletion: onCompletion];
+    self = [super initWithMethod:@"PUT"
+                             URL:url
+                            body:writer
+                  requestHeaders:requestHeaders
+                    onCompletion:onCompletion];
     if (self) {
         _multipartWriter = writer;
         // It's important to set a Content-Length header -- without this, CFNetwork won't know the
@@ -40,38 +39,35 @@
         // https://issues.apache.org/jira/browse/COUCHDB-1403
         SInt64 length = _multipartWriter.length;
         Assert(length >= 0, @"HTTP multipart upload body has indeterminate length");
-        [_request setValue: $sprintf(@"%lld", length) forHTTPHeaderField: @"Content-Length"];
+        [_request setValue:$sprintf(@"%lld", length) forHTTPHeaderField:@"Content-Length"];
     }
     return self;
 }
 
-
-
-
-- (void) start {
-    [_multipartWriter openForURLRequest: _request];
+- (void)start
+{
+    [_multipartWriter openForURLRequest:_request];
     [super start];
 }
-
 
 - (NSInputStream *)connection:(NSURLConnection *)connection
             needNewBodyStream:(NSURLRequest *)request
 {
-    LogInfo(TD_REMOTE_REQUEST_CONTEXT,@"%@: Needs new body stream, resetting writer...", self);
+    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Needs new body stream, resetting writer...", self);
     [_multipartWriter close];
     return [_multipartWriter openForInputStream];
 }
 
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    if ($equal(error.domain, NSURLErrorDomain) && error.code == NSURLErrorRequestBodyStreamExhausted) {
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    if ($equal(error.domain, NSURLErrorDomain) &&
+        error.code == NSURLErrorRequestBodyStreamExhausted) {
         // The connection is complaining that the body input stream closed prematurely.
         // Check whether this is because the multipart writer got an error on _its_ input stream:
-        NSError* writerError = _multipartWriter.error;
-        if (writerError)
-            error = writerError;
+        NSError *writerError = _multipartWriter.error;
+        if (writerError) error = writerError;
     }
-    [super connection: connection didFailWithError: error];
+    [super connection:connection didFailWithError:error];
 }
 
 @end

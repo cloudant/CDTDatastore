@@ -17,164 +17,164 @@
 #import "CDTLogging.h"
 #import "TDRemoteRequest.h"
 
-NSString* const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
+NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
 @implementation CDTAbstractReplication
 
-+(NSString*) defaultUserAgentHTTPHeader
-{
-    return [TDRemoteRequest userAgentHeader];
-}
++ (NSString *)defaultUserAgentHTTPHeader { return [TDRemoteRequest userAgentHeader]; }
 
--(instancetype) copyWithZone:(NSZone *)zone
+- (instancetype)copyWithZone:(NSZone *)zone
 {
     CDTAbstractReplication *copy = [[[self class] allocWithZone:zone] init];
     if (copy) {
         copy.optionalHeaders = self.optionalHeaders;
     }
-    
+
     return copy;
 }
 
 /**
  This method sets all of the common replication parameters. The subclasses,
- CDTPushReplication and CDTPullReplication add source, target and filter. 
- 
+ CDTPushReplication and CDTPullReplication add source, target and filter.
+
  */
--(NSDictionary*) dictionaryForReplicatorDocument:(NSError * __autoreleasing*)error
+- (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
 {
     NSMutableDictionary *doc = [[NSMutableDictionary alloc] init];
-    
+
     if (self.optionalHeaders) {
-        
         NSMutableArray *lowercaseOptionalHeaders = [[NSMutableArray alloc] init];
-        
-        //check for strings
+
+        // check for strings
         for (id key in self.optionalHeaders) {
-            
             if (![key isKindOfClass:[NSString class]]) {
-                LogWarn(REPLICATION_LOG_CONTEXT, @"CDTAbstractReplication "
-                        @"-dictionaryForReplicatorDocument Error: "
+                LogWarn(REPLICATION_LOG_CONTEXT,
+                        @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
                         @"Replication HTTP header key is invalid (%@).\n It must be NSString. "
-                        @"Found type %@", key, [key class]);
+                        @"Found type %@",
+                        key, [key class]);
 
                 if (error) {
                     NSString *msg = @"Cannot sync data. Bad optional HTTP header.";
-                    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+                    NSDictionary *userInfo =
+                        @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
                     *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                                  code:CDTReplicationErrorBadOptionalHttpHeaderType
                                              userInfo:userInfo];
-
                 }
                 return nil;
             }
-            
+
             if (![self.optionalHeaders[key] isKindOfClass:[NSString class]]) {
-                LogWarn(REPLICATION_LOG_CONTEXT, @"CDTAbstractReplication "
-                        @"-dictionaryForReplicatorDocument Error: "
+                LogWarn(REPLICATION_LOG_CONTEXT,
+                        @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
                         @"Value for replication HTTP header %@ is invalid (%@).\n"
                         @"It must be NSString. Found type %@.",
                         key, self.optionalHeaders[key], [self.optionalHeaders[key] class]);
-                
+
                 if (error) {
                     NSString *msg = @"Cannot sync data. Bad optional HTTP header.";
-                    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+                    NSDictionary *userInfo =
+                        @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
                     *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                                  code:CDTReplicationErrorBadOptionalHttpHeaderType
                                              userInfo:userInfo];
-                    
                 }
                 return nil;
             }
-            
+
             [lowercaseOptionalHeaders addObject:[(NSString *)key lowercaseString]];
         }
-        
-        NSArray *prohibitedHeaders = @[@"authorization", @"www-authenticate", @"host",
-                                      @"connection", @"content-type", @"accept",
-                                      @"content-length"];
-        
+
+        NSArray *prohibitedHeaders = @[
+            @"authorization",
+            @"www-authenticate",
+            @"host",
+            @"connection",
+            @"content-type",
+            @"accept",
+            @"content-length"
+        ];
+
         NSMutableArray *badHeaders = [[NSMutableArray alloc] init];
-        
+
         for (NSString *header in prohibitedHeaders) {
             if ([lowercaseOptionalHeaders indexOfObject:header] != NSNotFound) {
                 [badHeaders addObject:header];
             }
         }
-        
+
         if ([badHeaders count] > 0) {
-            LogWarn(REPLICATION_LOG_CONTEXT, @"CDTAbstractionReplication "
-                    @"-dictionaryForReplicatorDocument Error: "
-                    @"You may not use these prohibited headers: %@", badHeaders);
-            
+            LogWarn(REPLICATION_LOG_CONTEXT,
+                    @"CDTAbstractionReplication " @"-dictionaryForReplicatorDocument Error: "
+                    @"You may not use these prohibited headers: %@",
+                    badHeaders);
+
             if (error) {
                 NSString *msg = @"Cannot sync data. Bad optional HTTP header.";
-                NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+                NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
                 *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                              code:CDTReplicationErrorProhibitedOptionalHttpHeader
                                          userInfo:userInfo];
             }
 
             return nil;
-
         }
-        
-        doc[@"headers"]= self.optionalHeaders;
-        
+
+        doc[@"headers"] = self.optionalHeaders;
     }
-    
+
     return [NSDictionary dictionaryWithDictionary:doc];
 }
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"Replicator Doc: %@",
-            [self dictionaryForReplicatorDocument:nil]];
+    return [NSString
+        stringWithFormat:@"Replicator Doc: %@", [self dictionaryForReplicatorDocument:nil]];
 }
 
--(BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError * __autoreleasing*)error
+- (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error
 {
     NSString *scheme = [url.scheme lowercaseString];
-    NSArray *validSchemes = @[@"http", @"https"];
+    NSArray *validSchemes = @[ @"http", @"https" ];
     if (![validSchemes containsObject:scheme]) {
-        LogWarn(REPLICATION_LOG_CONTEXT,@"%@ -validateRemoteDatastoreURL Error. "
-                @"Invalid scheme: %@", [self class], url.scheme);
+        LogWarn(REPLICATION_LOG_CONTEXT,
+                @"%@ -validateRemoteDatastoreURL Error. " @"Invalid scheme: %@", [self class],
+                url.scheme);
 
         if (error) {
             NSString *msg = @"Cannot sync data. Invalid Remote Database URL";
-            
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                          code:CDTReplicationErrorInvalidScheme
                                      userInfo:userInfo];
         }
         return NO;
-
     }
-    
+
     // username and password must be supplied together
     BOOL usernameSupplied = url.user != nil && ![url.user isEqualToString:@""];
     BOOL passwordSupplied = url.password != nil && ![url.password isEqualToString:@""];
-    
-    if ( (!usernameSupplied && passwordSupplied) ||
-         (usernameSupplied && !passwordSupplied)) {
-        LogWarn(REPLICATION_LOG_CONTEXT,@"%@ -validateRemoteDatastoreURL Error. "
-                @"Must have both username and password, or neither. ", [self class]);
-        
+
+    if ((!usernameSupplied && passwordSupplied) || (usernameSupplied && !passwordSupplied)) {
+        LogWarn(REPLICATION_LOG_CONTEXT, @"%@ -validateRemoteDatastoreURL Error. "
+                @"Must have both username and password, or neither. ",
+                [self class]);
 
         if (error) {
-            NSString *msg = [NSString stringWithFormat:@"Cannot sync data. Missing %@",
-                             usernameSupplied ? @"password" : @"username"];
-            
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+            NSString *msg =
+                [NSString stringWithFormat:@"Cannot sync data. Missing %@",
+                                           usernameSupplied ? @"password" : @"username"];
+
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                          code:CDTReplicationErrorIncompleteCredentials
                                      userInfo:userInfo];
         }
         return NO;
     }
-    
-    
+
     return YES;
 }
 

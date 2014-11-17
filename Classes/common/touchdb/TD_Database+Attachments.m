@@ -20,7 +20,7 @@
 /*
     Here's what an actual _attachments object from CouchDB 1.2 looks like.
     The "revpos" and "digest" attributes aren't documented in the wiki (yet).
- 
+
     "_attachments":{
         "index.txt":{"content_type":"text/plain", "revpos":1,
                      "digest":"md5-muNoTiLXyJYP9QkvPukNng==", "length":9, "stub":true}}
@@ -45,48 +45,44 @@
 
 #import "CDTLogging.h"
 
-
 // Length that constitutes a 'big' attachment
-#define kBigAttachmentLength (16*1024)
-
-
+#define kBigAttachmentLength (16 * 1024)
 
 @implementation TD_Database (Attachments)
 
-
-- (TDBlobStoreWriter*) attachmentWriter {
-    return [[TDBlobStoreWriter alloc] initWithStore: _attachments];
+- (TDBlobStoreWriter*)attachmentWriter
+{
+    return [[TDBlobStoreWriter alloc] initWithStore:_attachments];
 }
 
-
-- (void) rememberAttachmentWritersForDigests: (NSDictionary*)blobsByDigests {
+- (void)rememberAttachmentWritersForDigests:(NSDictionary*)blobsByDigests
+{
     if (!_pendingAttachmentsByDigest)
         _pendingAttachmentsByDigest = [[NSMutableDictionary alloc] init];
-    [_pendingAttachmentsByDigest addEntriesFromDictionary: blobsByDigests];
+    [_pendingAttachmentsByDigest addEntriesFromDictionary:blobsByDigests];
 }
 
-
-- (void) rememberPendingKey: (TDBlobKey)key forDigest: (NSString*)digest {
+- (void)rememberPendingKey:(TDBlobKey)key forDigest:(NSString*)digest
+{
     if (!_pendingAttachmentsByDigest)
         _pendingAttachmentsByDigest = [[NSMutableDictionary alloc] init];
-    NSData* keyData = [NSData dataWithBytes: &key length: sizeof(TDBlobKey)];
+    NSData* keyData = [NSData dataWithBytes:&key length:sizeof(TDBlobKey)];
     _pendingAttachmentsByDigest[digest] = keyData;
 }
 
-
-- (void) rememberAttachmentWriter: (TDBlobStoreWriter*)writer forDigest:(NSString*)digest {
+- (void)rememberAttachmentWriter:(TDBlobStoreWriter*)writer forDigest:(NSString*)digest
+{
     if (!_pendingAttachmentsByDigest)
         _pendingAttachmentsByDigest = [[NSMutableDictionary alloc] init];
     _pendingAttachmentsByDigest[digest] = writer;
 }
 
-
 // This is ONLY FOR TESTS (see TDMultipartDownloader.m)
 #if DEBUG
-- (id) attachmentWriterForAttachment: (NSDictionary*)attachment {
+- (id)attachmentWriterForAttachment:(NSDictionary*)attachment
+{
     NSString* digest = $castIf(NSString, attachment[@"digest"]);
-    if (!digest)
-        return nil;
+    if (!digest) return nil;
     return _pendingAttachmentsByDigest[digest];
 }
 #endif
@@ -97,40 +93,37 @@
  in the store, in which case we just fill in the attachment's
  data.
  */
-- (TDStatus) installAttachment: (TD_Attachment*)attachment
-                       forInfo: (NSDictionary*)attachInfo {
+- (TDStatus)installAttachment:(TD_Attachment*)attachment forInfo:(NSDictionary*)attachInfo
+{
     NSString* digest = $castIf(NSString, attachInfo[@"digest"]);
-    if (!digest)
-        return kTDStatusBadAttachment;
+    if (!digest) return kTDStatusBadAttachment;
     id writer = _pendingAttachmentsByDigest[digest];
 
-    if ([writer isKindOfClass: [TDBlobStoreWriter class]]) {
+    if ([writer isKindOfClass:[TDBlobStoreWriter class]]) {
         // Found a blob writer, so install the blob:
-        if (![writer install])
-            return kTDStatusAttachmentError;
+        if (![writer install]) return kTDStatusAttachmentError;
         attachment->blobKey = [writer blobKey];
         attachment->length = [writer length];
         // Remove the writer but leave the blob-key behind for future use:
-        [self rememberPendingKey: attachment->blobKey forDigest: digest];
+        [self rememberPendingKey:attachment->blobKey forDigest:digest];
         return kTDStatusOK;
-        
-    } else if ([writer isKindOfClass: [NSData class]]) {
+
+    } else if ([writer isKindOfClass:[NSData class]]) {
         // This attachment was already added, but the key was left behind in the dictionary:
         attachment->blobKey = *(TDBlobKey*)[writer bytes];
         NSNumber* lengthObj = $castIf(NSNumber, attachInfo[@"length"]);
-        if (!lengthObj)
-            return kTDStatusBadAttachment;
+        if (!lengthObj) return kTDStatusBadAttachment;
         attachment->length = lengthObj.unsignedLongLongValue;
         return kTDStatusOK;
-        
+
     } else {
         return kTDStatusBadAttachment;
     }
 }
 
-
-- (BOOL) storeBlob: (NSData*)blob creatingKey: (TDBlobKey*)outKey {
-    return [_attachments storeBlob: blob creatingKey: outKey];
+- (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
+{
+    return [_attachments storeBlob:blob creatingKey:outKey];
 }
 
 /**
@@ -138,23 +131,23 @@
  attachment. It should be called when the attachment isn't already
  present for a previous revision.
  */
-- (TDStatus) insertAttachment: (TD_Attachment*)attachment
-                  forSequence: (SequenceNumber)sequence
-                   inDatabase: (FMDatabase*)db
+- (TDStatus)insertAttachment:(TD_Attachment*)attachment
+                 forSequence:(SequenceNumber)sequence
+                  inDatabase:(FMDatabase*)db
 {
     Assert(sequence > 0);
     Assert(attachment.isValid);
-    NSData* keyData = [NSData dataWithBytes: &attachment->blobKey length: sizeof(TDBlobKey)];
+    NSData* keyData = [NSData dataWithBytes:&attachment->blobKey length:sizeof(TDBlobKey)];
     id encodedLengthObj = attachment->encoding ? @(attachment->encodedLength) : nil;
 
     bool success;
-    success = [db executeUpdate: @"INSERT INTO attachments "
-               "(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
-               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-               @(sequence), attachment.name, keyData,
-               attachment.contentType, @(attachment->encoding),
-               @(attachment->length), encodedLengthObj,
-               @(attachment->revpos)];
+    success = [db
+        executeUpdate:@"INSERT INTO attachments "
+                       "(sequence, filename, key, type, encoding, length, encoded_length, revpos) "
+                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                      @(sequence), attachment.name, keyData, attachment.contentType,
+                      @(attachment->encoding), @(attachment->length), encodedLengthObj,
+                      @(attachment->revpos)];
 
     if (!success) {
         return kTDStatusDBError;
@@ -166,36 +159,36 @@
  For an attachment that hasn't changed between revisions, we need to
  copy an existing row into one for this sequence to associate the
  attachment with this new revision/seq.
- 
+
  This method will return kTDStatusNotFound if there isn't an attachment
  with the same name for the previous rev/seq.
  */
-- (TDStatus) copyAttachmentNamed: (NSString*)name
-                    fromSequence: (SequenceNumber)fromSequence
-                      toSequence: (SequenceNumber)toSequence
-                      inDatabase: (FMDatabase*)db
+- (TDStatus)copyAttachmentNamed:(NSString*)name
+                   fromSequence:(SequenceNumber)fromSequence
+                     toSequence:(SequenceNumber)toSequence
+                     inDatabase:(FMDatabase*)db
 {
     Assert(name);
     Assert(toSequence > 0);
     Assert(toSequence > fromSequence);
-    if (fromSequence <= 0)
-        return kTDStatusNotFound;
+    if (fromSequence <= 0) return kTDStatusNotFound;
 
     TDStatus result = kTDStatusOK;
 
-    if (![db executeUpdate: @"INSERT INTO attachments "
-          "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
-          "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
-          "FROM attachments WHERE sequence=? AND filename=?",
-          @(toSequence), name,
-          @(fromSequence), name]) {
+    if (![db executeUpdate:
+                 @"INSERT INTO attachments "
+                  "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
+                  "SELECT ?, ?, key, type, encoding, encoded_Length, length, revpos "
+                  "FROM attachments WHERE sequence=? AND filename=?",
+                 @(toSequence), name, @(fromSequence), name]) {
         result = kTDStatusDBError;
     }
     if (db.changes == 0) {
         // Oops. This means a glitch in our attachment-management or pull code,
         // or else a bug in the upstream server.
-        LogWarn(DATASTORE_LOG_CONTEXT,@"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld",
-             name, fromSequence, toSequence);
+        LogWarn(DATASTORE_LOG_CONTEXT,
+                @"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld", name,
+                fromSequence, toSequence);
         result = kTDStatusNotFound;  // Fail if there is no such attachment on fromSequence
     }
 
@@ -205,25 +198,25 @@
 /**
  Copy all attachments from the old sequence to the new sequence.
  */
-- (TDStatus) copyAttachmentsFromSequence: (SequenceNumber)fromSequence
-                              toSequence: (SequenceNumber)toSequence
-                              inDatabase: (FMDatabase*)db
+- (TDStatus)copyAttachmentsFromSequence:(SequenceNumber)fromSequence
+                             toSequence:(SequenceNumber)toSequence
+                             inDatabase:(FMDatabase*)db
 {
     Assert(toSequence > 0);
     Assert(toSequence > fromSequence);
-    if (fromSequence <= 0)
-        return kTDStatusNotFound;
-    
+    if (fromSequence <= 0) return kTDStatusNotFound;
+
     TDStatus result = kTDStatusOK;
-    
-    if (![db executeUpdate: @"INSERT INTO attachments "
-          "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
-          "SELECT ?, filename, key, type, encoding, encoded_Length, length, revpos "
-          "FROM attachments WHERE sequence=?",
-          @(toSequence), @(fromSequence)]) {
+
+    if (![db executeUpdate:
+                 @"INSERT INTO attachments "
+                  "(sequence, filename, key, type, encoding, encoded_Length, length, revpos) "
+                  "SELECT ?, filename, key, type, encoding, encoded_Length, length, revpos "
+                  "FROM attachments WHERE sequence=?",
+                 @(toSequence), @(fromSequence)]) {
         result = kTDStatusDBError;
     }
-    
+
     return result;
 }
 
@@ -231,40 +224,39 @@
  Unzips an attachment data if required (may extend with different
  encoding possiblities in future.
  */
-- (NSData*) decodeAttachment: (NSData*)attachment encoding: (TDAttachmentEncoding)encoding {
+- (NSData*)decodeAttachment:(NSData*)attachment encoding:(TDAttachmentEncoding)encoding
+{
     switch (encoding) {
         case kTDAttachmentEncodingNone:
             break;
         case kTDAttachmentEncodingGZIP:
-            attachment = [NSData gtm_dataByInflatingData: attachment];
+            attachment = [NSData gtm_dataByInflatingData:attachment];
     }
-    if (!attachment)
-        LogWarn(DATASTORE_LOG_CONTEXT,@"Unable to decode attachment!");
+    if (!attachment) LogWarn(DATASTORE_LOG_CONTEXT, @"Unable to decode attachment!");
     return attachment;
 }
 
+/**
+ Returns the path to an attachment's file in the blob store.
 
-/** 
- Returns the path to an attachment's file in the blob store. 
- 
  The encoding type kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP
  is set as an out parameter
  */
-- (NSString*) getAttachmentPathForSequence: (SequenceNumber)sequence
-                                     named: (NSString*)filename
-                                      type: (NSString**)outType
-                                  encoding: (TDAttachmentEncoding*)outEncoding
-                                    status: (TDStatus*)outStatus
+- (NSString*)getAttachmentPathForSequence:(SequenceNumber)sequence
+                                    named:(NSString*)filename
+                                     type:(NSString**)outType
+                                 encoding:(TDAttachmentEncoding*)outEncoding
+                                   status:(TDStatus*)outStatus
 {
     Assert(sequence > 0);
     Assert(filename);
     __block NSString* filePath = nil;
 
-
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        FMResultSet* r = [db executeQuery:
-                          @"SELECT key, type, encoding FROM attachments WHERE sequence=? AND filename=?",
-                          @(sequence), filename];
+        FMResultSet* r =
+            [db executeQuery:
+                    @"SELECT key, type, encoding FROM attachments WHERE sequence=? AND filename=?",
+                    @(sequence), filename];
         if (!r) {
             *outStatus = kTDStatusDBError;
             return;
@@ -274,81 +266,76 @@
                 *outStatus = kTDStatusNotFound;
                 return;
             }
-            NSData* keyData = [r dataNoCopyForColumnIndex: 0];
+            NSData* keyData = [r dataNoCopyForColumnIndex:0];
             if (keyData.length != sizeof(TDBlobKey)) {
-                LogWarn(DATASTORE_LOG_CONTEXT,@"%@: Attachment %lld.'%@' has bogus key size %u",
-                     self, sequence, filename, (unsigned)keyData.length);
+                LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Attachment %lld.'%@' has bogus key size %u",
+                        self, sequence, filename, (unsigned)keyData.length);
                 *outStatus = kTDStatusCorruptError;
                 return;
             }
-            filePath = [_attachments pathForKey: *(TDBlobKey*)keyData.bytes];
+            filePath = [_attachments pathForKey:*(TDBlobKey*)keyData.bytes];
             *outStatus = kTDStatusOK;
-            if (outType)
-                *outType = [r stringForColumnIndex: 1];
+            if (outType) *outType = [r stringForColumnIndex:1];
 
-            *outEncoding = [r intForColumnIndex: 2];
-        } @finally {
-            [r close];
+            *outEncoding = [r intForColumnIndex:2];
         }
+        @finally { [r close]; }
     }];
 
     return filePath;
 }
 
-
-/** 
- Returns the content and MIME type of an attachment 
+/**
+ Returns the content and MIME type of an attachment
  */
-- (NSData*) getAttachmentForSequence: (SequenceNumber)sequence
-                               named: (NSString*)filename
-                                type: (NSString**)outType
-                            encoding: (TDAttachmentEncoding*)outEncoding
-                              status: (TDStatus*)outStatus
+- (NSData*)getAttachmentForSequence:(SequenceNumber)sequence
+                              named:(NSString*)filename
+                               type:(NSString**)outType
+                           encoding:(TDAttachmentEncoding*)outEncoding
+                             status:(TDStatus*)outStatus
 {
     TDAttachmentEncoding encoding;
-    NSString* filePath = [self getAttachmentPathForSequence: sequence
-                                                      named: filename
-                                                       type: outType
-                                                   encoding: &encoding
-                                                     status: outStatus];
-    if (!filePath)
-        return nil;
+    NSString* filePath = [self getAttachmentPathForSequence:sequence
+                                                      named:filename
+                                                       type:outType
+                                                   encoding:&encoding
+                                                     status:outStatus];
+    if (!filePath) return nil;
     NSError* error;
-    NSData* contents = [NSData dataWithContentsOfFile: filePath options: NSDataReadingMappedIfSafe
-                                                error: &error];
+    NSData* contents =
+        [NSData dataWithContentsOfFile:filePath options:NSDataReadingMappedIfSafe error:&error];
     if (!contents) {
-        LogWarn(DATASTORE_LOG_CONTEXT,@"%@: Failed to load attachment %lld.'%@' -- %@", self, sequence, filename, error);
+        LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
+                sequence, filename, error);
         *outStatus = kTDStatusCorruptError;
         return nil;
     }
     if (outEncoding)
         *outEncoding = encoding;
     else
-        contents = [self decodeAttachment: contents encoding: encoding];
+        contents = [self decodeAttachment:contents encoding:encoding];
     return contents;
 }
 
+/**
+ Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body.
 
-/** 
- Constructs an "_attachments" dictionary for a revision, to be inserted in its JSON body. 
- 
  This generates the dict for a seq because a seq is the autoincrement key
  in the revs table. So it's basically a quick way to get a given rev. It's
  a foreign key in the attachments table.
  */
-- (NSDictionary*) getAttachmentDictForSequence: (SequenceNumber)sequence
-                                       options: (TDContentOptions)options
-                                    inDatabase: (FMDatabase*)db
+- (NSDictionary*)getAttachmentDictForSequence:(SequenceNumber)sequence
+                                      options:(TDContentOptions)options
+                                   inDatabase:(FMDatabase*)db
 {
     Assert(sequence > 0);
     __block NSMutableDictionary* attachments;
 
-    FMResultSet* r = [db executeQuery:
-                      @"SELECT filename, key, type, encoding, length, encoded_length, revpos "
-                      "FROM attachments WHERE sequence=?",
-                      @(sequence)];
-    if (!r)
-        return nil;
+    FMResultSet* r =
+        [db executeQuery:@"SELECT filename, key, type, encoding, length, encoded_length, revpos "
+                          "FROM attachments WHERE sequence=?",
+                         @(sequence)];
+    if (!r) return nil;
     if (![r next]) {
         [r close];
         return nil;
@@ -356,11 +343,11 @@
     BOOL decodeAttachments = !(options & kTDLeaveAttachmentsEncoded);
     attachments = $mdict();
     do {
-        NSData* keyData = [r dataNoCopyForColumnIndex: 1];
-        NSString* digestStr = [@"sha1-" stringByAppendingString: [TDBase64 encode: keyData]];
-        TDAttachmentEncoding encoding = [r intForColumnIndex: 3];
-        UInt64 length = [r longLongIntForColumnIndex: 4];
-        UInt64 encodedLength = [r longLongIntForColumnIndex: 5];
+        NSData* keyData = [r dataNoCopyForColumnIndex:1];
+        NSString* digestStr = [@"sha1-" stringByAppendingString:[TDBase64 encode:keyData]];
+        TDAttachmentEncoding encoding = [r intForColumnIndex:3];
+        UInt64 length = [r longLongIntForColumnIndex:4];
+        UInt64 encodedLength = [r longLongIntForColumnIndex:5];
 
         // Get the attachment contents if asked to:
         NSData* data = nil;
@@ -370,9 +357,10 @@
             if ((options & kTDBigAttachmentsFollow) && effectiveLength >= kBigAttachmentLength) {
                 dataSuppressed = YES;
             } else {
-                data = [_attachments blobForKey: *(TDBlobKey*)keyData.bytes];
+                data = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
                 if (!data)
-                    LogWarn(DATASTORE_LOG_CONTEXT,@"TD_Database: Failed to get attachment for key %@", keyData);
+                    LogWarn(DATASTORE_LOG_CONTEXT,
+                            @"TD_Database: Failed to get attachment for key %@", keyData);
             }
         }
 
@@ -381,22 +369,20 @@
         if (encoding != kTDAttachmentEncodingNone) {
             // Decode the attachment if it's included in the dict:
             if (data && decodeAttachments) {
-                data = [self decodeAttachment: data encoding: encoding];
+                data = [self decodeAttachment:data encoding:encoding];
             } else {
                 encodingStr = @"gzip";  // the only encoding I know
                 encodedLengthObj = @(encodedLength);
             }
         }
 
-        attachments[[r stringForColumnIndex: 0]] = $dict({@"stub", ((data || dataSuppressed) ? nil : $true)},
-                                                         {@"data", (data ? [TDBase64 encode: data] : nil)},
-                                                         {@"follows", (dataSuppressed ? $true : nil)},
-                                                         {@"digest", digestStr},
-                                                         {@"content_type", [r stringForColumnIndex: 2]},
-                                                         {@"encoding", encodingStr},
-                                                         {@"length", @(length)},
-                                                         {@"encoded_length", encodedLengthObj},
-                                                         {@"revpos", @([r intForColumnIndex: 6])});
+        attachments[[r stringForColumnIndex:0]] =
+            $dict({ @"stub", ((data || dataSuppressed) ? nil : $true) },
+                  { @"data", (data ? [TDBase64 encode:data] : nil) },
+                  { @"follows", (dataSuppressed ? $true : nil) }, { @"digest", digestStr },
+                  { @"content_type", [r stringForColumnIndex:2] }, { @"encoding", encodingStr },
+                  { @"length", @(length) }, { @"encoded_length", encodedLengthObj },
+                  { @"revpos", @([r intForColumnIndex:6]) });
     } while ([r next]);
     [r close];
 
@@ -407,30 +393,28 @@
  Return the URL for the location of the file in the blob store for an
  attachments dict.
  */
-- (NSURL*) fileForAttachmentDict: (NSDictionary*)attachmentDict
+- (NSURL*)fileForAttachmentDict:(NSDictionary*)attachmentDict
 {
     NSString* digest = attachmentDict[@"digest"];
-    if (![digest hasPrefix: @"sha1-"])
-        return nil;
-    NSData* keyData = [TDBase64 decode: [digest substringFromIndex: 5]];
-    if (!keyData)
-        return nil;
-    return [NSURL fileURLWithPath: [_attachments pathForKey: *(TDBlobKey*)keyData.bytes]];
+    if (![digest hasPrefix:@"sha1-"]) return nil;
+    NSData* keyData = [TDBase64 decode:[digest substringFromIndex:5]];
+    if (!keyData) return nil;
+    return [NSURL fileURLWithPath:[_attachments pathForKey:*(TDBlobKey*)keyData.bytes]];
 }
-
 
 // Calls the block on every attachment dictionary. The block can return a different dictionary,
 // which will be replaced in the rev's properties. If it returns nil, the operation aborts.
 // Returns YES if any changes were made.
-+ (BOOL) mutateAttachmentsIn: (TD_Revision*)rev
-                   withBlock: (NSDictionary*(^)(NSString*, NSDictionary*))block
++ (BOOL)mutateAttachmentsIn:(TD_Revision*)rev
+                  withBlock:(NSDictionary* (^)(NSString*, NSDictionary*))block
 {
     NSDictionary* properties = rev.properties;
     NSMutableDictionary* editedProperties = nil;
     NSDictionary* attachments = (id)properties[@"_attachments"];
     NSMutableDictionary* editedAttachments = nil;
     for (NSString* name in attachments) {
-        @autoreleasepool {
+        @autoreleasepool
+        {
             NSDictionary* attachment = attachments[name];
             NSDictionary* editedAttachment = block(name, attachment);
             if (!editedAttachment) {
@@ -454,66 +438,61 @@
     return NO;
 }
 
-
 // Replaces attachment data whose revpos is < minRevPos with stubs.
 // If attachmentsFollow==YES, replaces data for remaining attachments with "follows" key.
-+ (void) stubOutAttachmentsIn: (TD_Revision*)rev
-                 beforeRevPos: (int)minRevPos
-            attachmentsFollow: (BOOL)attachmentsFollow
++ (void)stubOutAttachmentsIn:(TD_Revision*)rev
+                beforeRevPos:(int)minRevPos
+           attachmentsFollow:(BOOL)attachmentsFollow
 {
-    if (minRevPos <= 1 && !attachmentsFollow)
-        return;
-    [self mutateAttachmentsIn: rev
-                    withBlock: ^NSDictionary *(NSString *name, NSDictionary *attachment) {
-        int revPos = [attachment[@"revpos"] intValue];
-        bool includeAttachment = (revPos == 0 || revPos >= minRevPos);
-        bool stubItOut = !includeAttachment && !attachment[@"stub"];
-        bool addFollows = includeAttachment && attachmentsFollow
-                                            && !attachment[@"follows"];
-        if (!stubItOut && !addFollows)
-            return attachment;  // no change
-        // Need to modify attachment entry:
-        NSMutableDictionary* editedAttachment = [attachment mutableCopy];
-        [editedAttachment removeObjectForKey: @"data"];
-        if (stubItOut) {
-            // ...then remove the 'data' and 'follows' key:
-            [editedAttachment removeObjectForKey: @"follows"];
-            editedAttachment[@"stub"] = $true;
-            LogVerbose(DATASTORE_LOG_CONTEXT, @"Stubbed out attachment %@/'%@': revpos %d < %d",
-                  rev, name, revPos, minRevPos);
-        } else if (addFollows) {
-            [editedAttachment removeObjectForKey: @"stub"];
-            editedAttachment[@"follows"] = $true;
-            LogVerbose(DATASTORE_LOG_CONTEXT, @"Added 'follows' for attachment %@/'%@': revpos %d >= %d",
-                  rev, name, revPos, minRevPos);
-        }
-        return editedAttachment;
-    }];
+    if (minRevPos <= 1 && !attachmentsFollow) return;
+    [self mutateAttachmentsIn:rev
+                    withBlock:^NSDictionary * (NSString * name, NSDictionary * attachment) {
+                        int revPos = [attachment[@"revpos"] intValue];
+                        bool includeAttachment = (revPos == 0 || revPos >= minRevPos);
+                        bool stubItOut = !includeAttachment && !attachment[@"stub"];
+                        bool addFollows =
+                            includeAttachment && attachmentsFollow && !attachment[@"follows"];
+                        if (!stubItOut && !addFollows) return attachment;  // no change
+                        // Need to modify attachment entry:
+                        NSMutableDictionary* editedAttachment = [attachment mutableCopy];
+                        [editedAttachment removeObjectForKey:@"data"];
+                        if (stubItOut) {
+                            // ...then remove the 'data' and 'follows' key:
+                            [editedAttachment removeObjectForKey:@"follows"];
+                            editedAttachment[@"stub"] = $true;
+                            LogVerbose(DATASTORE_LOG_CONTEXT,
+                                       @"Stubbed out attachment %@/'%@': revpos %d < %d", rev, name,
+                                       revPos, minRevPos);
+                        } else if (addFollows) {
+                            [editedAttachment removeObjectForKey:@"stub"];
+                            editedAttachment[@"follows"] = $true;
+                            LogVerbose(DATASTORE_LOG_CONTEXT,
+                                       @"Added 'follows' for attachment %@/'%@': revpos %d >= %d",
+                                       rev, name, revPos, minRevPos);
+                        }
+                        return editedAttachment;
+                    }];
 }
 
-
 // Replaces the "follows" key with the real attachment data in all attachments to 'doc'.
-- (BOOL) inlineFollowingAttachmentsIn: (TD_Revision*)rev error: (NSError**)outError {
-    __block NSError *error = nil;
-    [[self class] mutateAttachmentsIn: rev
-                            withBlock:
-        ^NSDictionary *(NSString *name, NSDictionary *attachment) {
-            if (!attachment[@"follows"])
-                return attachment;
-            NSURL* fileURL = [self fileForAttachmentDict: attachment];
-            NSData* fileData = [NSData dataWithContentsOfURL: fileURL
-                                                     options: NSDataReadingMappedIfSafe
-                                                       error: &error];
-            if (!fileData)
-                return nil;
-            NSMutableDictionary* editedAttachment = [attachment mutableCopy];
-            [editedAttachment removeObjectForKey: @"follows"];
-            editedAttachment[@"data"] = [TDBase64 encode: fileData];
-            return editedAttachment;
-        }
-     ];
-    if (outError)
-        *outError = error;
+- (BOOL)inlineFollowingAttachmentsIn:(TD_Revision*)rev error:(NSError**)outError
+{
+    __block NSError* error = nil;
+    [[self class] mutateAttachmentsIn:rev
+                            withBlock:^NSDictionary * (NSString * name, NSDictionary * attachment) {
+                                if (!attachment[@"follows"]) return attachment;
+                                NSURL* fileURL = [self fileForAttachmentDict:attachment];
+                                NSData* fileData =
+                                    [NSData dataWithContentsOfURL:fileURL
+                                                          options:NSDataReadingMappedIfSafe
+                                                            error:&error];
+                                if (!fileData) return nil;
+                                NSMutableDictionary* editedAttachment = [attachment mutableCopy];
+                                [editedAttachment removeObjectForKey:@"follows"];
+                                editedAttachment[@"data"] = [TDBase64 encode:fileData];
+                                return editedAttachment;
+                            }];
+    if (outError) *outError = error;
     return (error == nil);
 }
 
@@ -524,11 +503,10 @@
   - inline attachments are saved to the store
   - follow attachments are given a placeholder TD_Attachment
   - stubs are given a placeholder TD_Attachment
- 
+
  Returns the list of TD_Attachments derived from the revision.
  */
-- (NSDictionary*) attachmentsFromRevision: (TD_Revision*)rev
-                                   status: (TDStatus*)outStatus
+- (NSDictionary*)attachmentsFromRevision:(TD_Revision*)rev status:(TDStatus*)outStatus
 {
     // If there are no attachments in the new rev, there's nothing to do:
     NSDictionary* revAttachments = rev[@"_attachments"];
@@ -536,43 +514,43 @@
         *outStatus = kTDStatusOK;
         return @{};
     }
-    
+
     TDStatus status = kTDStatusOK;
     NSMutableDictionary* attachments = $mdict();
     for (NSString* name in revAttachments) {
         // Create a TD_Attachment object:
         NSDictionary* attachInfo = revAttachments[name];
         NSString* contentType = $castIf(NSString, attachInfo[@"content_type"]);
-        TD_Attachment* attachment = [[TD_Attachment alloc] initWithName: name
-                                                           contentType: contentType];
+        TD_Attachment* attachment =
+            [[TD_Attachment alloc] initWithName:name contentType:contentType];
 
         NSString* newContentsBase64 = $castIf(NSString, attachInfo[@"data"]);
         if (newContentsBase64) {
             // If there's inline attachment data, decode and store it:
-            @autoreleasepool {
-                NSData* newContents = [TDBase64 decode: newContentsBase64];
+            @autoreleasepool
+            {
+                NSData* newContents = [TDBase64 decode:newContentsBase64];
                 if (!newContents) {
                     status = kTDStatusBadEncoding;
                     break;
                 }
                 attachment->length = newContents.length;
-                if (![self storeBlob: newContents creatingKey: &attachment->blobKey]) {
+                if (![self storeBlob:newContents creatingKey:&attachment->blobKey]) {
                     status = kTDStatusAttachmentError;
                     break;
                 }
             }
-        } else if ([attachInfo[@"follows"] isEqual: $true]) {
+        } else if ([attachInfo[@"follows"] isEqual:$true]) {
             // "follows" means the uploader provided the attachment in a separate MIME part.
             // This means it's already been registered in _pendingAttachmentsByDigest;
             // I just need to look it up by its "digest" property and install it into the store:
-            status = [self installAttachment: attachment forInfo: attachInfo];
-            if (TDStatusIsError(status))
-                break;
+            status = [self installAttachment:attachment forInfo:attachInfo];
+            if (TDStatusIsError(status)) break;
         } else {
             // This item is just a stub; skip it
             continue;
         }
-        
+
         // Handle encoded attachment:
         NSString* encodingStr = attachInfo[@"encoding"];
         if (encodingStr) {
@@ -582,39 +560,38 @@
                 status = kTDStatusBadEncoding;
                 break;
             }
-            
+
             attachment->encodedLength = attachment->length;
             attachment->length = $castIf(NSNumber, attachInfo[@"length"]).unsignedLongLongValue;
         }
-        
+
         attachment->revpos = $castIf(NSNumber, attachInfo[@"revpos"]).unsignedIntValue;
         attachments[name] = attachment;
     }
 
     *outStatus = status;
-    return status<300 ? attachments : nil;
+    return status < 300 ? attachments : nil;
 }
 
 /**
- Creates and updates rows in the attachments table for the 
+ Creates and updates rows in the attachments table for the
  given list of attachments, generated for the revision using
  the -attachmentsFromRevision:status: method in this file.
- 
+
  This is called when the rev has been saved to the revs table,
  as, of course, the seq number must be from the new rev.
  */
-- (TDStatus) processAttachments: (NSDictionary*)attachments
-                    forRevision: (TD_Revision*)rev
-             withParentSequence: (SequenceNumber)parentSequence
-                     inDatabase: (FMDatabase*)db
+- (TDStatus)processAttachments:(NSDictionary*)attachments
+                   forRevision:(TD_Revision*)rev
+            withParentSequence:(SequenceNumber)parentSequence
+                    inDatabase:(FMDatabase*)db
 {
     Assert(rev);
-    
+
     // If there are no attachments in the new rev, there's nothing to do:
     NSDictionary* revAttachments = rev[@"_attachments"];
-    if (revAttachments.count == 0 || rev.deleted)
-        return kTDStatusOK;
-    
+    if (revAttachments.count == 0 || rev.deleted) return kTDStatusOK;
+
     SequenceNumber newSequence = rev.sequence;
     Assert(newSequence > 0);
     Assert(newSequence > parentSequence);
@@ -630,140 +607,132 @@
             if (attachment->revpos == 0)
                 attachment->revpos = generation;
             else if (attachment->revpos > generation) {
-                LogWarn(DATASTORE_LOG_CONTEXT,@"Attachment %@ . '%@' has weird revpos %u; setting to %u",
-                     rev, name, attachment->revpos, generation);
+                LogWarn(DATASTORE_LOG_CONTEXT,
+                        @"Attachment %@ . '%@' has weird revpos %u; setting to %u", rev, name,
+                        attachment->revpos, generation);
                 attachment->revpos = generation;
             }
-            
+
             // Finally insert the attachment:
-            status = [self insertAttachment: attachment
-                                forSequence: newSequence
-                                 inDatabase: db];
+            status = [self insertAttachment:attachment forSequence:newSequence inDatabase:db];
         } else {
             // It's just a stub, so copy the previous revision's attachment entry:
             //? Should I enforce that the type and digest (if any) match?
-            status = [self copyAttachmentNamed: name
-                                  fromSequence: parentSequence
-                                    toSequence: newSequence
+            status = [self copyAttachmentNamed:name
+                                  fromSequence:parentSequence
+                                    toSequence:newSequence
                                     inDatabase:db];
         }
-        if (TDStatusIsError(status))
-            return status;
+        if (TDStatusIsError(status)) return status;
     }
     return kTDStatusOK;
 }
 
-
-- (TDMultipartWriter*) multipartWriterForRevision: (TD_Revision*)rev
-                                      contentType: (NSString*)contentType
+- (TDMultipartWriter*)multipartWriterForRevision:(TD_Revision*)rev
+                                     contentType:(NSString*)contentType
 {
-    TDMultipartWriter* writer = [[TDMultipartWriter alloc] initWithContentType: contentType 
-                                                                      boundary: nil];
-    [writer setNextPartsHeaders: @{@"Content-Type": @"application/json"}];
-    [writer addData: rev.asJSON];
+    TDMultipartWriter* writer =
+        [[TDMultipartWriter alloc] initWithContentType:contentType boundary:nil];
+    [writer setNextPartsHeaders:@{ @"Content-Type" : @"application/json" }];
+    [writer addData:rev.asJSON];
     NSDictionary* attachments = rev[@"_attachments"];
     for (NSString* attachmentName in attachments) {
         NSDictionary* attachment = attachments[attachmentName];
         if (attachment[@"follows"]) {
-            NSString* disposition = $sprintf(@"attachment; filename=%@", TDQuoteString(attachmentName));
-            [writer setNextPartsHeaders: $dict({@"Content-Disposition", disposition})];
-            [writer addFileURL: [self fileForAttachmentDict: attachment]];
+            NSString* disposition =
+                $sprintf(@"attachment; filename=%@", TDQuoteString(attachmentName));
+            [writer setNextPartsHeaders:$dict({ @"Content-Disposition", disposition })];
+            [writer addFileURL:[self fileForAttachmentDict:attachment]];
         }
     }
     return writer;
 }
 
-
-- (TD_Revision*) updateAttachment: (NSString*)filename
-                             body: (TDBlobStoreWriter*)body
-                             type: (NSString*)contentType
-                         encoding: (TDAttachmentEncoding)encoding
-                          ofDocID: (NSString*)docID
-                            revID: (NSString*)oldRevID
-                           status: (TDStatus*)outStatus
-                       inDatabase: (FMDatabase*)db
+- (TD_Revision*)updateAttachment:(NSString*)filename
+                            body:(TDBlobStoreWriter*)body
+                            type:(NSString*)contentType
+                        encoding:(TDAttachmentEncoding)encoding
+                         ofDocID:(NSString*)docID
+                           revID:(NSString*)oldRevID
+                          status:(TDStatus*)outStatus
+                      inDatabase:(FMDatabase*)db
 {
     *outStatus = kTDStatusBadAttachment;
     if (filename.length == 0 || (body && !contentType) || (oldRevID && !docID) || (body && !docID))
         return nil;
 
-    TD_Revision* oldRev = [[TD_Revision alloc] initWithDocID: docID
-                                                      revID: oldRevID
-                                                    deleted: NO];
+    TD_Revision* oldRev = [[TD_Revision alloc] initWithDocID:docID revID:oldRevID deleted:NO];
     if (oldRevID) {
         // Load existing revision if this is a replacement:
-        *outStatus = [self loadRevisionBody: oldRev options: 0 database:db];
+        *outStatus = [self loadRevisionBody:oldRev options:0 database:db];
         if (TDStatusIsError(*outStatus)) {
-            if (*outStatus == kTDStatusNotFound && [self existsDocumentWithID: docID revisionID: nil database:db])
-                *outStatus = kTDStatusConflict;   // if some other revision exists, it's a conflict
+            if (*outStatus == kTDStatusNotFound &&
+                [self existsDocumentWithID:docID revisionID:nil database:db])
+                *outStatus = kTDStatusConflict;  // if some other revision exists, it's a conflict
             return nil;
         }
     } else {
         // If this creates a new doc, it needs a body:
-        oldRev.body = [TD_Body bodyWithProperties: @{}];
+        oldRev.body = [TD_Body bodyWithProperties:@{}];
     }
 
     // Update the _attachments dictionary:
     NSMutableDictionary* attachments = [oldRev[@"_attachments"] mutableCopy];
-    if (!attachments)
-        attachments = $mdict();
+    if (!attachments) attachments = $mdict();
     if (body) {
         TDBlobKey key = body.blobKey;
-        NSString* digest = [@"sha1-" stringByAppendingString: [TDBase64 encode: &key
-                                                                        length: sizeof(key)]];
-        [self rememberAttachmentWriter: body forDigest: digest];
+        NSString* digest =
+            [@"sha1-" stringByAppendingString:[TDBase64 encode:&key length:sizeof(key)]];
+        [self rememberAttachmentWriter:body forDigest:digest];
         NSString* encodingName = (encoding == kTDAttachmentEncodingGZIP) ? @"gzip" : nil;
-        attachments[filename] = $dict({@"digest", digest},
-                                      {@"length", @(body.length)},
-                                      {@"follows", $true},
-                                      {@"content_type", contentType},
-                                      {@"encoding", encodingName});
+        attachments[filename] =
+            $dict({ @"digest", digest }, { @"length", @(body.length) }, { @"follows", $true },
+                  { @"content_type", contentType }, { @"encoding", encodingName });
     } else {
         if (!attachments[filename]) {
             *outStatus = kTDStatusAttachmentNotFound;
             return nil;
         }
-        [attachments removeObjectForKey: filename];
+        [attachments removeObjectForKey:filename];
     }
     NSMutableDictionary* properties = [oldRev.properties mutableCopy];
     properties[@"_attachments"] = attachments;
     oldRev.properties = properties;
 
     // Store a new revision with the updated _attachments:
-    TD_Revision* newRev = [self putRevision: oldRev prevRevisionID: oldRevID
-                             allowConflict: NO status: outStatus];
-    if (!body && *outStatus == kTDStatusCreated)
-        *outStatus = kTDStatusOK;
+    TD_Revision* newRev =
+        [self putRevision:oldRev prevRevisionID:oldRevID allowConflict:NO status:outStatus];
+    if (!body && *outStatus == kTDStatusCreated) *outStatus = kTDStatusOK;
     return newRev;
 }
 
 /**
  * db argument must be from inside _fmdbQueue inDatabase
  */
-- (TDStatus) garbageCollectAttachments:(FMDatabase*)db {
+- (TDStatus)garbageCollectAttachments:(FMDatabase*)db
+{
     // First delete attachment rows for already-cleared revisions:
     // OPT: Could start after last sequence# we GC'd up to
 
-    [db executeUpdate:  @"DELETE FROM attachments WHERE sequence IN "
-     "(SELECT sequence from revs WHERE json IS null)"];
+    [db executeUpdate:@"DELETE FROM attachments WHERE sequence IN "
+                       "(SELECT sequence from revs WHERE json IS null)"];
 
     // Now collect all remaining attachment IDs and tell the store to delete all but these:
-    FMResultSet* r = [db executeQuery: @"SELECT DISTINCT key FROM attachments"];
+    FMResultSet* r = [db executeQuery:@"SELECT DISTINCT key FROM attachments"];
     if (!r) {
         return kTDStatusDBError;
     }
     NSMutableSet* allKeys = [NSMutableSet set];
     while ([r next]) {
-        [allKeys addObject: [r dataForColumnIndex: 0]];
+        [allKeys addObject:[r dataForColumnIndex:0]];
     }
     [r close];
-    NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys: allKeys];
+    NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys:allKeys];
     if (numDeleted < 0) {
         return kTDStatusAttachmentError;
     }
-    LogInfo(DATASTORE_LOG_CONTEXT,@"Deleted %d attachments", (int)numDeleted);
+    LogInfo(DATASTORE_LOG_CONTEXT, @"Deleted %d attachments", (int)numDeleted);
     return kTDStatusOK;
 }
-
 
 @end

@@ -9,16 +9,14 @@
 #import "TDRemoteRequest.h"
 #import "TDMultipartWriter.h"
 
-
-@interface TDMultipartUploader : TDRemoteRequest
-{
-    @private
-    TDMultipartWriter* _multipartWriter;
+@interface TDMultipartUploader : TDRemoteRequest {
+   @private
+    TDMultipartWriter *_multipartWriter;
 }
 
-- (id) initWithURL: (NSURL *)url
-          streamer: (TDMultipartWriter*)streamer
-    requestHeaders: (NSDictionary *) requestHeaders
-      onCompletion: (TDRemoteRequestCompletionBlock)onCompletion;
+- (id)initWithURL:(NSURL *)url
+          streamer:(TDMultipartWriter *)streamer
+    requestHeaders:(NSDictionary *)requestHeaders
+      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
 
 @end

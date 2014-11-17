@@ -19,8 +19,8 @@
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
 
-NSString* const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
-NSString* const CDTExtensionsDirName = @"_extensions";
+NSString *const CDTDatastoreErrorDomain = @"CDTDatastoreErrorDomain";
+NSString *const CDTExtensionsDirName = @"_extensions";
 
 @interface CDTDatastoreManager ()
 
@@ -28,26 +28,22 @@ NSString* const CDTExtensionsDirName = @"_extensions";
 
 @implementation CDTDatastoreManager
 
--(id)initWithDirectory:(NSString*)directoryPath
-                 error:(NSError**)outError
+- (id)initWithDirectory:(NSString *)directoryPath error:(NSError **)outError
 {
     self = [super init];
     if (self) {
-        _manager = [[TD_DatabaseManager alloc] initWithDirectory:directoryPath
-                                                         options:nil
-                                                           error:outError];
-        if(!_manager)
-            return nil;
+        _manager =
+            [[TD_DatabaseManager alloc] initWithDirectory:directoryPath options:nil error:outError];
+        if (!_manager) return nil;
     }
     return self;
 }
 
--(CDTDatastore *)datastoreNamed:(NSString*)name
-                          error:(NSError * __autoreleasing *)error
+- (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-//    if (![TD_Database isValidDatabaseName:name]) {
-//      Not a public method yet
-//    }
+    //    if (![TD_Database isValidDatabaseName:name]) {
+    //      Not a public method yet
+    //    }
 
     TD_Database *db = [self.manager databaseNamed:name];
 
@@ -56,43 +52,39 @@ NSString* const CDTExtensionsDirName = @"_extensions";
     } else {
         if (error) {
             NSDictionary *userInfo = @{
-                                       NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't create database.", nil),
-                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid name?", nil),
-                                       NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Invalid name?", nil)
-                                       };
-            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain
-                                         code:400
-                                     userInfo:userInfo];
+                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't create database.", nil),
+                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+            };
+            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:400 userInfo:userInfo];
         }
         return nil;
     }
 }
 
--(BOOL)deleteDatastoreNamed:(NSString*)name
-                      error:(NSError * __autoreleasing *)error
+- (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
     TD_Database *db = [self.manager databaseNamed:name];
 
     if (!db) {
         NSDictionary *userInfo = @{
-                                   NSLocalizedDescriptionKey: NSLocalizedString(@"Couldn't delete database.", nil),
-                                   NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"Invalid name?", nil),
-                                   NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Invalid name?", nil)
-                                   };
-        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain
-                                     code:404
-                                 userInfo:userInfo];
+            NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
+            NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+            NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+        };
+        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
         return NO;
     }
-    
+
     // first delete the SQLite database and any attachments
     if (![db deleteDatabase:error]) {
         return NO;
     }
-    
+
     // delete any cloudant extensions
     NSString *path = [[db path] stringByDeletingLastPathComponent];
-    path = [path stringByAppendingPathComponent:[[db name] stringByAppendingString:CDTExtensionsDirName]];
+    path = [path
+        stringByAppendingPathComponent:[[db name] stringByAppendingString:CDTExtensionsDirName]];
     NSFileManager *fm = [NSFileManager defaultManager];
     BOOL isDirectory;
     BOOL extenstionsExists = [fm fileExistsAtPath:path isDirectory:&isDirectory];
@@ -105,4 +97,3 @@ NSString* const CDTExtensionsDirName = @"_extensions";
 }
 
 @end
-

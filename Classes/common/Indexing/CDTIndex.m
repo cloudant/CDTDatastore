@@ -18,7 +18,7 @@
 
 @implementation CDTIndex
 
-- (id)initWithIndexName:(NSString*)indexName
+- (id)initWithIndexName:(NSString *)indexName
            lastSequence:(long)lastSequence
               fieldType:(CDTIndexType)fieldType
 {
@@ -35,11 +35,10 @@
 
 @implementation CDTIndexHelperBase
 
-+(CDTIndexHelperBase*)indexHelperForType:(CDTIndexType)type;
++ (CDTIndexHelperBase *)indexHelperForType:(CDTIndexType)type;
 {
     // TODO smarter way of dispatching depending on the type
-    switch(type)
-    {
+    switch (type) {
         case CDTIndexTypeInteger:
             return [[CDTIntegerIndexHelper alloc] init];
             break;
@@ -54,37 +53,28 @@
 
 @implementation CDTIntegerIndexHelper
 
--(BOOL)valueSupported:(NSObject*)value
-{
-    return ([value isKindOfClass: [NSNumber class]]);
-}
+- (BOOL)valueSupported:(NSObject *)value { return ([value isKindOfClass:[NSNumber class]]); }
 
--(NSString*)createSQLTemplateWithPrefix:(NSString*)tablePrefix
-                              indexName:(NSString*)indexName
+- (NSString *)createSQLTemplateWithPrefix:(NSString *)tablePrefix indexName:(NSString *)indexName
 {
     NSString *tableName = [tablePrefix stringByAppendingString:indexName];
-    NSString *SQL_INTEGER_INDEX = @"CREATE TABLE %@ ( "
-    @"docid TEXT NOT NULL, "
-    @"value INTEGER NOT NULL, "
-    @"UNIQUE(docid, value) ON CONFLICT IGNORE ); "
-    @"CREATE INDEX %@_value_docid ON %@(value, docid);";
-    return [NSString stringWithFormat:SQL_INTEGER_INDEX,
-            tableName,
-            tableName,
-            tableName];
+    NSString *SQL_INTEGER_INDEX = @"CREATE TABLE %@ ( " @"docid TEXT NOT NULL, "
+        @"value INTEGER NOT NULL, " @"UNIQUE(docid, value) ON CONFLICT IGNORE ); "
+        @"CREATE INDEX %@_value_docid ON %@(value, docid);";
+    return [NSString stringWithFormat:SQL_INTEGER_INDEX, tableName, tableName, tableName];
 }
 
--(NSObject*)convertIndexValue:(NSObject*)object;
+- (NSObject *)convertIndexValue:(NSObject *)object;
 {
-    if ([object isKindOfClass: [NSString class]]) {
-        NSScanner* scan = [NSScanner scannerWithString:(NSString*)object];
+    if ([object isKindOfClass:[NSString class]]) {
+        NSScanner *scan = [NSScanner scannerWithString:(NSString *)object];
         int val;
         [scan scanInt:&val];
         if ([scan isAtEnd]) {
             return [NSNumber numberWithInt:val];
         }
     }
-    if ([object isKindOfClass: [NSNumber class]]) {
+    if ([object isKindOfClass:[NSNumber class]]) {
         return object;
     }
     return nil;
@@ -94,29 +84,22 @@
 
 @implementation CDTStringIndexHelper
 
--(NSString*)createSQLTemplateWithPrefix:(NSString*)tablePrefix
-                              indexName:(NSString*)indexName
+- (NSString *)createSQLTemplateWithPrefix:(NSString *)tablePrefix indexName:(NSString *)indexName
 {
     NSString *tableName = [tablePrefix stringByAppendingString:indexName];
-    NSString *SQL_INTEGER_INDEX = @"CREATE TABLE %@ ( "
-    @"docid TEXT NOT NULL, "
-    @"value TEXT NOT NULL, "
-    @"UNIQUE(docid, value) ON CONFLICT IGNORE ); "
-    @"CREATE INDEX %@_value_docid ON %@(value, docid);";
-    
-    return [NSString stringWithFormat:SQL_INTEGER_INDEX,
-            tableName,
-            tableName,
-            tableName];
+    NSString *SQL_INTEGER_INDEX = @"CREATE TABLE %@ ( " @"docid TEXT NOT NULL, "
+        @"value TEXT NOT NULL, " @"UNIQUE(docid, value) ON CONFLICT IGNORE ); "
+        @"CREATE INDEX %@_value_docid ON %@(value, docid);";
+
+    return [NSString stringWithFormat:SQL_INTEGER_INDEX, tableName, tableName, tableName];
 }
 
--(NSObject*)convertIndexValue:(NSObject*)object;
+- (NSObject *)convertIndexValue:(NSObject *)object;
 {
-    if ([object isKindOfClass: [NSString class]]) {
+    if ([object isKindOfClass:[NSString class]]) {
         return object;
     }
     return nil;
 }
 
 @end
-

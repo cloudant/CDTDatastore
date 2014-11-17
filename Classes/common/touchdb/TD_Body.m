@@ -19,10 +19,10 @@
 #import "TDJSON.h"
 #import "CDTLogging.h"
 
-
 @implementation TD_Body
 
-- (id) initWithProperties: (NSDictionary*)properties {
+- (id)initWithProperties:(NSDictionary*)properties
+{
     NSParameterAssert(properties);
     self = [super init];
     if (self) {
@@ -31,11 +31,10 @@
     return self;
 }
 
-- (id) initWithArray: (NSArray*)array {
-    return [self initWithProperties: (id)array];
-}
+- (id)initWithArray:(NSArray*)array { return [self initWithProperties:(id)array]; }
 
-- (id) initWithJSON: (NSData*)json {
+- (id)initWithJSON:(NSData*)json
+{
     self = [super init];
     if (self) {
         _json = json ? [json copy] : [[NSData alloc] init];
@@ -43,19 +42,19 @@
     return self;
 }
 
-+ (TD_Body*) bodyWithProperties: (NSDictionary*)properties {
-    return [[self alloc] initWithProperties: properties];
++ (TD_Body*)bodyWithProperties:(NSDictionary*)properties
+{
+    return [[self alloc] initWithProperties:properties];
 }
-+ (TD_Body*) bodyWithJSON: (NSData*)json {
-    return [[self alloc] initWithJSON: json];
-}
++ (TD_Body*)bodyWithJSON:(NSData*)json { return [[self alloc] initWithJSON:json]; }
 
-@synthesize error=_error;
+@synthesize error = _error;
 
-- (BOOL) isValidJSON {
+- (BOOL)isValidJSON
+{
     // Yes, this is just like asObject except it doesn't warn.
     if (!_object && !_error) {
-        _object = [[TDJSON JSONObjectWithData: _json options: 0 error: NULL] copy];
+        _object = [[TDJSON JSONObjectWithData:_json options:0 error:NULL] copy];
         if (!_object) {
             _error = YES;
         }
@@ -63,58 +62,59 @@
     return _object != nil;
 }
 
-- (NSData*) asJSON {
+- (NSData*)asJSON
+{
     if (!_json && !_error) {
-        _json = [[TDJSON dataWithJSONObject: _object options: 0 error: NULL] copy];
+        _json = [[TDJSON dataWithJSONObject:_object options:0 error:NULL] copy];
         if (!_json) {
-            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT,@"TD_Body: couldn't convert to JSON");
+            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT, @"TD_Body: couldn't convert to JSON");
             _error = YES;
         }
     }
     return _json;
 }
 
-- (NSData*) asPrettyJSON {
+- (NSData*)asPrettyJSON
+{
     id props = self.asObject;
     if (props) {
-        NSData* json = [TDJSON dataWithJSONObject: props
-                                          options: TDJSONWritingPrettyPrinted
-                                            error: NULL];
+        NSData* json =
+            [TDJSON dataWithJSONObject:props options:TDJSONWritingPrettyPrinted error:NULL];
         if (json) {
             NSMutableData* mjson = [json mutableCopy];
-            [mjson appendBytes: "\n" length: 1];
+            [mjson appendBytes:"\n" length:1];
             return mjson;
         }
     }
     return self.asJSON;
 }
 
-- (NSString*) asJSONString {
-    return self.asJSON.my_UTF8ToString;
-}
+- (NSString*)asJSONString { return self.asJSON.my_UTF8ToString; }
 
-- (id) asObject {
+- (id)asObject
+{
     if (!_object && !_error) {
         NSError* error = nil;
-        _object = [[TDJSON JSONObjectWithData: _json options: 0 error: &error] copy];
+        _object = [[TDJSON JSONObjectWithData:_json options:0 error:&error] copy];
         if (!_object) {
-            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT,@"TD_Body: couldn't parse JSON: %@ (error=%@)", [_json my_UTF8ToString], error);
+            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT,
+                       @"TD_Body: couldn't parse JSON: %@ (error=%@)", [_json my_UTF8ToString],
+                       error);
             _error = YES;
         }
     }
     return _object;
 }
 
-- (NSDictionary*) properties {
+- (NSDictionary*)properties
+{
     id object = self.asObject;
-    if ([object isKindOfClass: [NSDictionary class]])
+    if ([object isKindOfClass:[NSDictionary class]])
         return object;
     else
         return nil;
 }
 
-- (id) objectForKeyedSubscript: (NSString*)key {
-    return (self.properties)[key];
-}
+- (id)objectForKeyedSubscript:(NSString*)key { return (self.properties)[key]; }
 
 @end

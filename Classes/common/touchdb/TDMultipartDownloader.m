@@ -23,86 +23,74 @@
 #import "CollectionUtils.h"
 #import "CDTLogging.h"
 
-
 @implementation TDMultipartDownloader
 
-
-- (id) initWithURL: (NSURL*)url
-          database: (TD_Database*)database
-    requestHeaders: (NSDictionary *) requestHeaders
-      onCompletion: (TDRemoteRequestCompletionBlock)onCompletion
+- (id)initWithURL:(NSURL *)url
+          database:(TD_Database *)database
+    requestHeaders:(NSDictionary *)requestHeaders
+      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
-    self = [super initWithMethod: @"GET" 
-                             URL: url 
-                            body: nil
-                  requestHeaders: requestHeaders
-                    onCompletion: onCompletion];
+    self = [super initWithMethod:@"GET"
+                             URL:url
+                            body:nil
+                  requestHeaders:requestHeaders
+                    onCompletion:onCompletion];
     if (self) {
         _db = database;
     }
     return self;
 }
 
+- (NSString *)description { return $sprintf(@"%@[%@]", [self class], _request.URL.path); }
 
-- (NSString*) description {
-    return $sprintf(@"%@[%@]", [self class], _request.URL.path);
-}
-
-
-- (void) setupRequest: (NSMutableURLRequest*)request withBody: (id)body {
-    [request setValue: @"multipart/related, application/json" forHTTPHeaderField: @"Accept"];
+- (void)setupRequest:(NSMutableURLRequest *)request withBody:(id)body
+{
+    [request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
     request.HTTPBody = body;
 }
 
-
-
-
-- (NSDictionary*) document {
-    return _reader.document;
-}
-
+- (NSDictionary *)document { return _reader.document; }
 
 #pragma mark - URL CONNECTION CALLBACKS:
 
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-    _reader = [[TDMultipartDocumentReader alloc] initWithDatabase: _db];
-    TDStatus status = (TDStatus) ((NSHTTPURLResponse*)response).statusCode;
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    _reader = [[TDMultipartDocumentReader alloc] initWithDatabase:_db];
+    TDStatus status = (TDStatus)((NSHTTPURLResponse *)response).statusCode;
     if (status < 300) {
         // Check the content type to see whether it's a multipart response:
-        NSDictionary* headers = [(NSHTTPURLResponse*)response allHeaderFields];
-        NSString* contentType = headers[@"Content-Type"];
-        if ([contentType hasPrefix: @"text/plain"])
-            contentType = nil;      // Workaround for CouchDB returning JSON docs with text/plain type
-        if (![_reader setContentType: contentType]) {
-            LogInfo(TD_REMOTE_REQUEST_CONTEXT,  @"%@ got invalid Content-Type '%@'", self, contentType);
-            [self cancelWithStatus: _reader.status];
+        NSDictionary *headers = [(NSHTTPURLResponse *)response allHeaderFields];
+        NSString *contentType = headers[@"Content-Type"];
+        if ([contentType hasPrefix:@"text/plain"])
+            contentType = nil;  // Workaround for CouchDB returning JSON docs with text/plain type
+        if (![_reader setContentType:contentType]) {
+            LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@ got invalid Content-Type '%@'", self,
+                    contentType);
+            [self cancelWithStatus:_reader.status];
             return;
         }
     }
-    
-    [super connection: connection didReceiveResponse: response];
+
+    [super connection:connection didReceiveResponse:response];
 }
 
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    [super connection: connection didReceiveData: data];
-    if (![_reader appendData: data])
-        [self cancelWithStatus: _reader.status];
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    [super connection:connection didReceiveData:data];
+    if (![_reader appendData:data]) [self cancelWithStatus:_reader.status];
 }
 
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)",
-          self, (unsigned)_reader.attachmentCount);
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
+               (unsigned)_reader.attachmentCount);
     if (![_reader finish]) {
-        [self cancelWithStatus: _reader.status];
+        [self cancelWithStatus:_reader.status];
         return;
     }
-    
-    [self clearConnection];
-    [self respondWithResult: self error: nil];
-}
 
+    [self clearConnection];
+    [self respondWithResult:self error:nil];
+}
 
 @end

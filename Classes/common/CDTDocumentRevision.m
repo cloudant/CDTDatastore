@@ -24,13 +24,12 @@
 
 @interface CDTDocumentRevision ()
 
-
-@property (nonatomic,strong,readonly) TD_RevisionList *revs;
-@property (nonatomic,strong,readonly) NSArray *revsInfo;
-@property (nonatomic,strong,readonly) NSArray *conflicts;
-@property (nonatomic,strong,readonly) TD_Body *td_body;
-@property (nonatomic,strong,readonly) NSDictionary *private_body;
-@property (nonatomic,strong,readonly) NSDictionary *private_attachments;
+@property (nonatomic, strong, readonly) TD_RevisionList *revs;
+@property (nonatomic, strong, readonly) NSArray *revsInfo;
+@property (nonatomic, strong, readonly) NSArray *conflicts;
+@property (nonatomic, strong, readonly) TD_Body *td_body;
+@property (nonatomic, strong, readonly) NSDictionary *private_body;
+@property (nonatomic, strong, readonly) NSDictionary *private_attachments;
 
 @end
 
@@ -41,64 +40,61 @@
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
 
-+(CDTDocumentRevision*)createRevisionFromJson:(NSDictionary*)jsonDict forDocument:(NSURL *)documentURL error:(NSError * __autoreleasing *) error
++ (CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
+                                    forDocument:(NSURL *)documentURL
+                                          error:(NSError *__autoreleasing *)error
 {
-    
-    //these values are defined http://docs.couchdb.org/en/latest/api/document/common.html
-    
-    NSArray* allowed_prefixedValues = @[@"_id",
-                                        @"_rev",
-                                        @"_deleted",
-                                        @"_attachments",
-                                        @"_conflicts",
-                                        @"_deleted_conflicts",
-                                        @"_local_seq",
-                                        @"_revs_info",
-                                        @"_revisions"
-                                        ];
-    if(*error)
-        return nil;
-    
+    // these values are defined http://docs.couchdb.org/en/latest/api/document/common.html
+
+    NSArray *allowed_prefixedValues = @[
+        @"_id",
+        @"_rev",
+        @"_deleted",
+        @"_attachments",
+        @"_conflicts",
+        @"_deleted_conflicts",
+        @"_local_seq",
+        @"_revs_info",
+        @"_revisions"
+    ];
+    if (*error) return nil;
+
     NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_' \
                                                                         && NOT (self IN %@)",
-                                                                     allowed_prefixedValues
-                                                                    ];
-    
-    NSArray * invalidKeys = [[jsonDict allKeys] filteredArrayUsingPredicate:_prefixPredicate];
-    
-    if([invalidKeys count] != 0){
-        *error = TDStatusToNSError(kTDStatusBadJSON,nil);
+                                                                     allowed_prefixedValues];
+
+    NSArray *invalidKeys = [[jsonDict allKeys] filteredArrayUsingPredicate:_prefixPredicate];
+
+    if ([invalidKeys count] != 0) {
+        *error = TDStatusToNSError(kTDStatusBadJSON, nil);
         return nil;
     }
-    
-    NSString * docId = [jsonDict objectForKey:@"_id"];
-    NSString * revId = [jsonDict objectForKey:@"_rev"];
+
+    NSString *docId = [jsonDict objectForKey:@"_id"];
+    NSString *revId = [jsonDict objectForKey:@"_rev"];
     BOOL deleted = [[jsonDict objectForKey:@"_deleted"] boolValue];
-    NSDictionary * attachmentData = [jsonDict objectForKey:@"_attachments"];
-    
-    NSMutableDictionary * attachments = [NSMutableDictionary dictionary];
-    
-    
-    //build the attachment objects
-    for(NSString * key in [attachmentData allKeys]){
-        NSURL * url = [NSURL URLWithString:key relativeToURL:documentURL];
-        CDTSavedHTTPAttachment * attachment = [CDTSavedHTTPAttachment createAttachmentWithName:key
-                                                                                      JSONData:[attachmentData
-                                                                                         objectForKey:key]
-                                                                                 attachmentURL:url
-                                                                                         error:error];
-        if(*error){
+    NSDictionary *attachmentData = [jsonDict objectForKey:@"_attachments"];
+
+    NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
+
+    // build the attachment objects
+    for (NSString *key in [attachmentData allKeys]) {
+        NSURL *url = [NSURL URLWithString:key relativeToURL:documentURL];
+        CDTSavedHTTPAttachment *attachment =
+            [CDTSavedHTTPAttachment createAttachmentWithName:key
+                                                    JSONData:[attachmentData objectForKey:key]
+                                               attachmentURL:url
+                                                       error:error];
+        if (*error) {
             return nil;
         }
-        
+
         [attachments setObject:attachment forKey:key];
     }
-    
-    
-    NSMutableDictionary * body = [jsonDict mutableCopy];
+
+    NSMutableDictionary *body = [jsonDict mutableCopy];
     [body removeObjectsForKeys:allowed_prefixedValues];
-    
-    
+
     return [[CDTDocumentRevision alloc] initWithDocId:docId
                                            revisionId:revId
                                                  body:body
@@ -107,12 +103,11 @@
                                              sequence:0];
 }
 
--(id)initWithDocId:(NSString *)docId
-        revisionId:(NSString *) revId
-              body:(NSDictionary *)body
-       attachments:(NSDictionary *) attachments
+- (id)initWithDocId:(NSString *)docId
+         revisionId:(NSString *)revId
+               body:(NSDictionary *)body
+        attachments:(NSDictionary *)attachments
 {
-    
     return [self initWithDocId:docId
                     revisionId:revId
                           body:body
@@ -121,19 +116,17 @@
                       sequence:0];
 }
 
--(id)initWithDocId:(NSString *)docId
-        revisionId:(NSString *)revId
-              body:(NSDictionary *)body
-           deleted:(BOOL)deleted
-       attachments:(NSDictionary *)attachments
-          sequence:(SequenceNumber)sequence
+- (id)initWithDocId:(NSString *)docId
+         revisionId:(NSString *)revId
+               body:(NSDictionary *)body
+            deleted:(BOOL)deleted
+        attachments:(NSDictionary *)attachments
+           sequence:(SequenceNumber)sequence
 {
- 
     self = [super init];
-    
-    if(self){
-        
-        if(!docId || !revId){
+
+    if (self) {
+        if (!docId || !revId) {
             return nil;
         }
         _docId = docId;
@@ -141,62 +134,52 @@
         _deleted = deleted;
         _private_attachments = attachments;
         _sequence = sequence;
-        if(!deleted && body){  
+        if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
-            
-            NSPredicate *_prefixPredicate = [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
-            
-            NSArray * keysToRemove = [[body allKeys]
-                                      filteredArrayUsingPredicate: _prefixPredicate];
-            
+
+            NSPredicate *_prefixPredicate =
+                [NSPredicate predicateWithFormat:@" self BEGINSWITH '_'"];
+
+            NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
+
             [mutableCopy removeObjectsForKeys:keysToRemove];
             _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        }
-        else
+        } else
             _private_body = [NSDictionary dictionary];
     }
     return self;
-    
-    
 }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
--(NSData*)documentAsDataError:(NSError * __autoreleasing *)error
+- (NSData *)documentAsDataError:(NSError *__autoreleasing *)error
 {
     NSError *innerError = nil;
-    
+
     NSData *json = [[TDJSON dataWithJSONObject:self.body options:0 error:&innerError] copy];
-    
+
     if (!json) {
         LogWarn(DOCUMENT_REVISION_LOG_CONTEXT, @"CDTDocumentRevision: couldn't convert to JSON");
         *error = innerError;
         return nil;
     }
-    
+
     return json;
 }
 
-
-
--(CDTMutableDocumentRevision*)mutableCopy
+- (CDTMutableDocumentRevision *)mutableCopy
 {
-    CDTMutableDocumentRevision *mutableCopy = [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
+    CDTMutableDocumentRevision *mutableCopy =
+        [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
     mutableCopy.docId = self.docId;
     mutableCopy.attachments = self.attachments;
     mutableCopy.body = self.private_body;
-    
+
     return mutableCopy;
 }
 
--(NSDictionary*)body
-{
-    return self.private_body;
-}
+- (NSDictionary *)body { return self.private_body; }
 
--(NSDictionary*)attachments
-{
-    return self.private_attachments;
-}
+- (NSDictionary *)attachments { return self.private_attachments; }
 
 @end

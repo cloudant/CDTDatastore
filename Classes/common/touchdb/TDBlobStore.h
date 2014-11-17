@@ -16,59 +16,54 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
-
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
-typedef struct TDBlobKey {
+typedef struct TDBlobKey
+{
     uint8_t bytes[SHA_DIGEST_LENGTH];
 } TDBlobKey;
 
-
 /** A persistent content-addressable store for arbitrary-size data blobs.
     Each blob is stored as a file named by its SHA-1 digest. */
-@interface TDBlobStore : NSObject
-{
+@interface TDBlobStore : NSObject {
     NSString* _path;
     NSString* _tempDir;
 }
 
-- (id) initWithPath: (NSString*)dir error: (NSError**)outError;
+- (id)initWithPath:(NSString*)dir error:(NSError**)outError;
 
-- (NSData*) blobForKey: (TDBlobKey)key;
-- (NSInputStream*) blobInputStreamForKey: (TDBlobKey)key
-                                  length: (UInt64*)outLength;
+- (NSData*)blobForKey:(TDBlobKey)key;
+- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength;
 
-- (BOOL) storeBlob: (NSData*)blob
-       creatingKey: (TDBlobKey*)outKey;
-- (BOOL) storeBlob:(NSData *)blob 
-       creatingKey:(TDBlobKey *)outKey
-             error:(NSError * __autoreleasing *)outError;
+- (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;
+- (BOOL)storeBlob:(NSData*)blob
+      creatingKey:(TDBlobKey*)outKey
+            error:(NSError* __autoreleasing*)outError;
 
 @property (readonly) NSString* path;
 @property (readonly) NSUInteger count;
 @property (readonly) NSArray* allKeys;
 @property (readonly) UInt64 totalDataSize;
 
-- (NSInteger) deleteBlobsExceptWithKeys: (NSSet*)keysToKeep;
+- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
 
-+ (TDBlobKey) keyForBlob: (NSData*)blob;
-+ (NSData*) keyDataForBlob: (NSData*)blob;
++ (TDBlobKey)keyForBlob:(NSData*)blob;
++ (NSData*)keyDataForBlob:(NSData*)blob;
 
 /** Returns the path of the file storing the attachment with the given key, or nil.
     DO NOT MODIFY THIS FILE! */
-- (NSString*) pathForKey: (TDBlobKey)key;
+- (NSString*)pathForKey:(TDBlobKey)key;
 
 @end
 
-
-
-typedef struct {
+typedef struct
+{
     uint8_t bytes[MD5_DIGEST_LENGTH];
 } TDMD5Key;
 
-
-/** Lets you stream a large attachment to a TDBlobStore asynchronously, e.g. from a network download. */
+/** Lets you stream a large attachment to a TDBlobStore asynchronously, e.g. from a network
+ * download. */
 @interface TDBlobStoreWriter : NSObject {
-@private
+   @private
     TDBlobStore* _store;
     NSString* _tempPath;
     NSFileHandle* _out;
@@ -79,19 +74,19 @@ typedef struct {
     TDMD5Key _MD5Digest;
 }
 
-- (id) initWithStore: (TDBlobStore*)store;
+- (id)initWithStore:(TDBlobStore*)store;
 
 /** Appends data to the blob. Call this when new data is available. */
-- (void) appendData: (NSData*)data;
+- (void)appendData:(NSData*)data;
 
 /** Call this after all the data has been added. */
-- (void) finish;
+- (void)finish;
 
 /** Call this to cancel before finishing the data. */
-- (void) cancel;
+- (void)cancel;
 
 /** Installs a finished blob into the store. */
-- (BOOL) install;
+- (BOOL)install;
 
 /** The number of bytes in the blob. */
 @property (readonly) UInt64 length;

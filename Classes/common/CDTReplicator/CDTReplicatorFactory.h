@@ -1,6 +1,6 @@
 //
 //  CDTReplicatorFactory.h
-//  
+//
 //
 //  Created by Michael Rhodes on 10/12/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
@@ -23,29 +23,30 @@
 /**
  Factory for CDTReplicator objects.
 
- Use CDTReplicatorFactory to create CDTReplicator objects based on the parameters set in a 
+ Use CDTReplicatorFactory to create CDTReplicator objects based on the parameters set in a
  CDTPushReplication or CDTPullReplication object. The CDTPush/PullReplication objects
  configure the replication, while the CDTReplicator starts the process.
- 
+
  Note that you must call [CDTReplicatorFactory -start] before [CDTReplicator -start].
- 
+
  Example usage:
- 
+
     CDTDatastoreManager *manager = [...];
     CDTDatastore *datastore = [...];
     NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
- 
-    CDTReplicatorFactory *replicatorFactory = [CDTReplicatorFactory initWithDatastoreManager:manager];
+
+    CDTReplicatorFactory *replicatorFactory = [CDTReplicatorFactory
+ initWithDatastoreManager:manager];
     [replicatorFactory start];
- 
+
     CDTPullReplication* pull = [CDTPullReplication replicationWithSource:remote target:datastore];
- 
+
     NSError *error;
     CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
- 
+
     //check for error
     [rep start];
- 
+
 */
 @interface CDTReplicatorFactory : NSObject
 
@@ -56,28 +57,27 @@
 
 /**
  Initialise with a datastore manager object.
- 
+
  This manager is used for the `_replicator` database used to manage
  replications internally.
- 
+
  @param dsManager the manager of the datastores that this factory will replicate to and from.
  */
-- (id) initWithDatastoreManager: (CDTDatastoreManager*)dsManager;
+- (id)initWithDatastoreManager:(CDTDatastoreManager *)dsManager;
 
 /**
  Start the background thread for replications.
- 
+
  No replications will progress until -start is called.
  */
-- (void) start;
+- (void)start;
 
 /**
  Stop the background thread for replications.
- 
+
  This will stop all in progress replications.
  */
-- (void) stop;
-
+- (void)stop;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating replication jobs
@@ -97,9 +97,8 @@
  * @return a CDTReplicator instance which can be used to start and
  *  stop the replication itself.
  */
-- (CDTReplicator*)oneWay:(CDTAbstractReplication*)replication
-                   error:(NSError * __autoreleasing *)error;
-
+- (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
+                    error:(NSError *__autoreleasing *)error;
 
 /**
  @name Deprecated
@@ -116,8 +115,7 @@
  *  stop the replication itself.
  * @warning This will soon be deprecated. Use -oneWay:error:.
  */
-- (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
-                              targetURI:(NSURL*)target;
+- (CDTReplicator *)onewaySourceDatastore:(CDTDatastore *)source targetURI:(NSURL *)target;
 
 /**
  * Create a CDTReplicator object set up to replicate changes from a
@@ -130,7 +128,6 @@
  *  stop the replication itself.
  * @warning This will soon be deprecated. Use -oneWay:error:.
  */
-- (CDTReplicator*)onewaySourceURI:(NSURL*)source
-                  targetDatastore:(CDTDatastore*)target;
+- (CDTReplicator *)onewaySourceURI:(NSURL *)source targetDatastore:(CDTDatastore *)target;
 
 @end

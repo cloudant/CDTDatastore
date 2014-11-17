@@ -21,7 +21,7 @@
 
 @implementation CDTDocumentBody
 
--(id)init
+- (id)init
 {
     self = [super init];
     if (self) {
@@ -30,21 +30,18 @@
     return self;
 }
 
--(id)initWithDictionary:(NSDictionary*)dict
+- (id)initWithDictionary:(NSDictionary *)dict
 {
     self = [super init];
     if (self) {
-        
-        if(![TDJSON isValidJSONObject: dict])
-            return nil;
-        
-        _td_body = [[TD_Body alloc] initWithProperties:dict];
+        if (![TDJSON isValidJSONObject:dict]) return nil;
 
+        _td_body = [[TD_Body alloc] initWithProperties:dict];
     }
     return self;
 }
 
--(id)initWithTDRevision:(TD_Revision*)rev
+- (id)initWithTDRevision:(TD_Revision *)rev
 {
     self = [super init];
     if (self) {
@@ -53,9 +50,6 @@
     return self;
 }
 
--(TD_Revision*)TD_RevisionValue
-{
-    return [[TD_Revision alloc] initWithBody:self.td_body];
-}
+- (TD_Revision *)TD_RevisionValue { return [[TD_Revision alloc] initWithBody:self.td_body]; }
 
 @end
