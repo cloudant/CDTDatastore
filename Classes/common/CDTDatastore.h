@@ -222,4 +222,13 @@ extern NSString *const CDTDatastoreChangeNotification;
  *
  */
 - (NSArray *)deleteDocumentWithId:(NSString *)docId error:(NSError *__autoreleasing *)error;
+
+/**
+ *
+ * Compact local database, deleting document bodies, keeping only the metadata of
+ * previous revisions
+ *
+ * @param error will point to an NSError object in the case of an error
+ */
+- (BOOL)compactWithError:(NSError *__autoreleasing *)error;
 @end
