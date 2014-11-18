@@ -66,7 +66,7 @@
 {
     if ([contentType hasPrefix:@"multipart/"]) {
         // Multipart, so initialize the parser:
-        LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: has attachments, %@", self, contentType);
+        CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: has attachments, %@", self, contentType);
         _multipartReader =
             [[TDMultipartReader alloc] initWithContentType:contentType delegate:self];
         if (_multipartReader) {
@@ -89,9 +89,9 @@
     if (_multipartReader) {
         [_multipartReader appendData:data];
         if (_multipartReader.error) {
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                    @"%@: received unparseable MIME multipart response: %@", self,
-                    _multipartReader.error);
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                       @"%@: received unparseable MIME multipart response: %@", self,
+                       _multipartReader.error);
             _status = kTDStatusUpstreamError;
             return NO;
         }
@@ -103,12 +103,12 @@
 
 - (BOOL)finish
 {
-    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
-            (unsigned)_attachmentsByDigest.count);
+    CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
+               (unsigned)_attachmentsByDigest.count);
     if (_multipartReader) {
         if (!_multipartReader.finished) {
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: received incomplete MIME multipart response",
-                    self);
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                       @"%@: received incomplete MIME multipart response", self);
             _status = kTDStatusUpstreamError;
             return NO;
         }
@@ -140,7 +140,7 @@
                   then:(TDMultipartDocumentReaderCompletionBlock)completionBlock
 {
     if ([self setContentType:contentType]) {
-        LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Reading from input stream...", self);
+        CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Reading from input stream...", self);
         // balanced by release in -finishAsync:
         _completionBlock = [completionBlock copy];
         [stream open];
@@ -161,8 +161,8 @@
             finish = YES;
             break;
         case NSStreamEventErrorOccurred:
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: error reading from stream: %@", self,
-                    stream.streamError);
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: error reading from stream: %@", self,
+                       stream.streamError);
             _status = kTDStatusUpstreamError;
             finish = YES;
             break;
@@ -176,8 +176,8 @@
 {
     BOOL readOK = [stream my_readData:^(NSData* data) { [self appendData:data]; }];
     if (!readOK) {
-        LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: error reading from stream: %@", self,
-                stream.streamError);
+        CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: error reading from stream: %@", self,
+                   stream.streamError);
         _status = kTDStatusUpstreamError;
     }
     return !TDStatusIsError(_status);
@@ -202,8 +202,8 @@
     if (!_document)
         _jsonBuffer = [[NSMutableData alloc] initWithCapacity:1024];
     else {
-        LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Starting attachment #%u...", self,
-                (unsigned)_attachmentsByDigest.count + 1);
+        CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting attachment #%u...", self,
+                   (unsigned)_attachmentsByDigest.count + 1);
         _curAttachment = [_database attachmentWriter];
 
         // See whether the attachment name is in the headers.
@@ -240,10 +240,10 @@
 #ifndef MY_DISABLE_LOGGING
         TDBlobKey key = _curAttachment.blobKey;
         NSData* keyData = [NSData dataWithBytes:&key length:sizeof(key)];
-        LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                @"%@: Finished attachment #%u: len=%uk, digest=%@, SHA1=%@", self,
-                (unsigned)_attachmentsByDigest.count + 1, (unsigned)_curAttachment.length / 1024,
-                md5Str, keyData);
+        CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                   @"%@: Finished attachment #%u: len=%uk, digest=%@, SHA1=%@", self,
+                   (unsigned)_attachmentsByDigest.count + 1, (unsigned)_curAttachment.length / 1024,
+                   md5Str, keyData);
 
 #endif
         _attachmentsByDigest[md5Str] = _curAttachment;
@@ -258,8 +258,8 @@
     id document =
         [TDJSON JSONObjectWithData:_jsonBuffer options:TDJSONReadingMutableContainers error:NULL];
     if (![document isKindOfClass:[NSDictionary class]]) {
-        LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: received unparseable JSON data '%@'", self,
-                [_jsonBuffer my_UTF8ToString]);
+        CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: received unparseable JSON data '%@'", self,
+                   [_jsonBuffer my_UTF8ToString]);
         _jsonBuffer = nil;
         _status = kTDStatusUpstreamError;
         return NO;
@@ -273,7 +273,8 @@
 {
     NSDictionary* attachments = _document[@"_attachments"];
     if (attachments && ![attachments isKindOfClass:[NSDictionary class]]) {
-        LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: _attachments property is not a dictionary", self);
+        CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: _attachments property is not a dictionary",
+                   self);
         return NO;
     }
     NSUInteger nAttachmentsInDoc = 0;
@@ -289,9 +290,9 @@
                 NSString* actualDigest = writer.MD5DigestString;
                 if (digest && !$equal(digest, actualDigest) &&
                     !$equal(digest, writer.SHA1DigestString)) {
-                    LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                            @"%@: Attachment '%@' has incorrect MD5 digest (%@; should be %@)",
-                            self, attachmentName, digest, actualDigest);
+                    CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                               @"%@: Attachment '%@' has incorrect MD5 digest (%@; should be %@)",
+                               self, attachmentName, digest, actualDigest);
                     return NO;
                 }
                 attachment[@"digest"] = actualDigest;
@@ -299,9 +300,9 @@
                 // Else look up the MIME body by its computed digest:
                 writer = _attachmentsByDigest[digest];
                 if (!writer) {
-                    LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                            @"%@: Attachment '%@' does not appear in a MIME body", self,
-                            attachmentName);
+                    CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                               @"%@: Attachment '%@' does not appear in a MIME body", self,
+                               attachmentName);
                     return NO;
                 }
             } else if (attachments.count == 1 && _attachmentsByDigest.count == 1) {
@@ -310,9 +311,9 @@
                 attachment[@"digest"] = writer.MD5DigestString;
             } else {
                 // No digest metatata, no filename in MIME body; give up:
-                LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                        @"%@: Attachment '%@' has no digest metadata; cannot identify MIME body",
-                        self, attachmentName);
+                CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                           @"%@: Attachment '%@' has no digest metadata; cannot identify MIME body",
+                           self, attachmentName);
                 return NO;
             }
 
@@ -320,9 +321,9 @@
             NSNumber* lengthObj = attachment[@"encoded_length"] ?: attachment[@"length"];
             if (!lengthObj ||
                 writer.length != [$castIf(NSNumber, lengthObj) unsignedLongLongValue]) {
-                LogWarn(TD_REMOTE_REQUEST_CONTEXT,
-                        @"%@: Attachment '%@' has invalid length %@ (should be %llu)", self,
-                        attachmentName, lengthObj, writer.length);
+                CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT,
+                           @"%@: Attachment '%@' has invalid length %@ (should be %llu)", self,
+                           attachmentName, lengthObj, writer.length);
                 return NO;
             }
 
@@ -330,8 +331,8 @@
         }
     }
     if (nAttachmentsInDoc < _attachmentsByDigest.count) {
-        LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: More MIME bodies (%u) than attachments (%u)", self,
-                (unsigned)_attachmentsByDigest.count, (unsigned)nAttachmentsInDoc);
+        CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: More MIME bodies (%u) than attachments (%u)",
+                   self, (unsigned)_attachmentsByDigest.count, (unsigned)nAttachmentsInDoc);
         return NO;
     }
 

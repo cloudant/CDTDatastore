@@ -707,7 +707,7 @@ static const int VERSION = 1;
 
             success = success && [db executeUpdate:sqlInsert withParameterDictionary:v];
         } else {
-            LogWarn(INDEX_LOG_CONTEXT, @"not creating index, it was there already");
+            CDTLogWarn(CDTINDEX_LOG_CONTEXT, @"not creating index, it was there already");
         }
         if (success) {
             [indexFunctionMap setObject:indexer forKey:indexName];

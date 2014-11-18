@@ -135,7 +135,7 @@
                            | NSDataWritingFileProtectionCompleteUnlessOpen
 #endif
                      error:outError]) {
-        LogDebug(DATASTORE_LOG_CONTEXT, @"TDBlobStore: Couldn't write to %@: %@", path, *outError);
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore: Couldn't write to %@: %@", path, *outError);
         return NO;
     }
     return YES;
@@ -195,7 +195,7 @@
                     ++numDeleted;
                 else {
                     errors = YES;
-                    LogDebug(DATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
+                    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
                              filename, error);
                 }
             }
@@ -220,9 +220,9 @@
                                                      create:YES
                                                       error:&error];
         _tempDir = [tempDirURL.path copy];
-        LogInfo(DATASTORE_LOG_CONTEXT, @"TDBlobStore %@ created tempDir %@", _path, _tempDir);
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore %@ created tempDir %@", _path, _tempDir);
         if (!_tempDir)
-            LogDebug(DATASTORE_LOG_CONTEXT, @"TDBlobStore: Unable to create temp dir: %@", error);
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore: Unable to create temp dir: %@", error);
 #endif
     }
     return _tempDir;

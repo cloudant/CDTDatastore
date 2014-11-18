@@ -84,7 +84,7 @@ static NSString *const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
                                                      error:&localError];
 
     if (replicator == nil) {
-        LogWarn(REPLICATION_LOG_CONTEXT,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                 @"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
                 @"%@\n %@",
                 [replication class], replication);

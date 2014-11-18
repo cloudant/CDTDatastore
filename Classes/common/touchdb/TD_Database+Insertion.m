@@ -169,7 +169,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         if (![key hasPrefix:@"_"] || [sSpecialKeysToLeave member:key]) {
             properties[key] = origProps[key];
         } else if (![sSpecialKeysToRemove member:key]) {
-            LogInfo(DATASTORE_LOG_CONTEXT,
+            CDTLogInfo(CDTDATASTORE_LOG_CONTEXT,
                     @"TD_Database: Invalid top-level key '%@' in document to be inserted", key);
             return nil;
         }
@@ -281,7 +281,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
              withWinningRev:(TD_Revision**)winningRev
 
 {
-    LogInfo(DATASTORE_LOG_CONTEXT, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev,
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"PUT rev=%@, prevRevID=%@, allowConflict=%d", rev,
             previousRevID, allowConflict);
     Assert(outStatus);
 
@@ -448,7 +448,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             *outStatus = kTDStatusDBError;
             return nil;
         }
-        LogInfo(DATASTORE_LOG_CONTEXT, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
         *outStatus = kTDStatusOK;
         rev.body = nil;
         return nil;
@@ -692,16 +692,16 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
         TD_Database* strongSelf = weakSelf;
-        LogInfo(DATASTORE_LOG_CONTEXT, @"TD_Database: Deleting JSON of old revisions...");
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Deleting JSON of old revisions...");
         if (![db executeUpdate:@"UPDATE revs SET json=null WHERE current=0"]) {
             result = kTDStatusDBError;
             return;
         }
 
-        LogInfo(DATASTORE_LOG_CONTEXT, @"Deleting old attachments...");
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleting old attachments...");
         result = [strongSelf garbageCollectAttachments:db];
 
-        LogInfo(DATASTORE_LOG_CONTEXT, @"Flushing SQLite WAL...");
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Flushing SQLite WAL...");
         FMResultSet* rset = [db executeQuery:@"PRAGMA wal_checkpoint(RESTART)"];
         @try {
             if (!rset || db.hadError) {
@@ -711,7 +711,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         }
         @finally { [rset close]; }
 
-        LogInfo(DATASTORE_LOG_CONTEXT, @"Vacuuming SQLite database...");
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Vacuuming SQLite database...");
         if (![db executeUpdate:@"VACUUM"]) {
             result = kTDStatusDBError;
             return;
@@ -724,12 +724,12 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
     // TODO syncronise the open/close?
 
-    LogInfo(DATASTORE_LOG_CONTEXT, @"Closing and re-opening database...");
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Closing and re-opening database...");
     [_fmdbQueue close];
 
     if (![self openFMDB]) return kTDStatusDBError;
 
-    LogInfo(DATASTORE_LOG_CONTEXT, @"...Finished database compaction.");
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"...Finished database compaction.");
     return result;
 }
 
@@ -792,7 +792,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                 [r close];
                 [seqsToPurge minusSet:seqsToKeep];
 
-                LogInfo(DATASTORE_LOG_CONTEXT, @"Purging doc '%@' revs (%@); asked for (%@)", docID,
+                CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Purging doc '%@' revs (%@); asked for (%@)", docID,
                         [revsToPurge.allObjects componentsJoinedByString:@", "],
                         [revIDs componentsJoinedByString:@", "]);
 
@@ -803,7 +803,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                                  [seqsToPurge.allObjects componentsJoinedByString:@","]);
                     if (![db executeUpdate:sql]) return kTDStatusDBError;
                     if ((NSUInteger)db.changes != seqsToPurge.count)
-                        LogWarn(DATASTORE_LOG_CONTEXT,
+                        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                                 @"purgeRevisions: Only %i sequences deleted of (%@)", db.changes,
                                 [seqsToPurge.allObjects componentsJoinedByString:@","]);
                 }

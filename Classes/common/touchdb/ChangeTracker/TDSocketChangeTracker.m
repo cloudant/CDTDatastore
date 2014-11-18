@@ -39,7 +39,7 @@
 {
     if (_trackingInput) return NO;
 
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Starting...", self);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting...", self);
     [super start];
 
     NSURL* url = self.changesFeedURL;
@@ -68,7 +68,7 @@
             // For some reason the password sometimes isn't accessible, even though we checked
             // .hasPassword when setting _credential earlier. (See #195.) Keychain bug??
             // If this happens, try looking up the credential again:
-            LogInfo(REPLICATION_LOG_CONTEXT, @"Huh, couldn't get password of %@; trying again",
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Huh, couldn't get password of %@; trying again",
                     _credential);
             _credential =
                 [self credentialForAuthHeader:[self authHeaderForResponse:_unauthResponse]];
@@ -81,7 +81,7 @@
                 (__bridge CFStringRef)password, kCFHTTPAuthenticationSchemeBasic,
                 unauthStatus == 407));
         } else {
-            LogWarn(REPLICATION_LOG_CONTEXT, @"%@: Unable to get password of credential %@", self,
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Unable to get password of credential %@", self,
                     _credential);
             _credential = nil;
             CFRelease(_unauthResponse);
@@ -95,7 +95,7 @@
     }
 
     // Now open the connection:
-    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: GET %@", self, url.resourceSpecifier);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@", self, url.resourceSpecifier);
     CFReadStreamRef cfInputStream = CFReadStreamCreateForHTTPRequest(NULL, request);
     CFRelease(request);
     if (!cfInputStream) return NO;
@@ -108,7 +108,7 @@
         CFArrayRef proxies = CFNetworkCopyProxiesForURL((__bridge CFURLRef)url, proxySettings);
         if (CFArrayGetCount(proxies) > 0) {
             CFTypeRef proxy = CFArrayGetValueAtIndex(proxies, 0);
-            LogInfo(REPLICATION_LOG_CONTEXT, @"Changes feed using proxy %@", proxy);
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Changes feed using proxy %@", proxy);
             bool ok = CFReadStreamSetProperty(cfInputStream, kCFStreamPropertyHTTPProxy, proxy);
             Assert(ok);
             CFRelease(proxies);
@@ -135,7 +135,7 @@
     [_trackingInput scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [_trackingInput open];
     _startTime = CFAbsoluteTimeGetCurrent();
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, self.changesFeedURL);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, self.changesFeedURL);
     return YES;
 }
 
@@ -155,7 +155,7 @@
                                              selector:@selector(start)
                                                object:nil];  // cancel pending retries
     if (_trackingInput) {
-        LogInfo(REPLICATION_LOG_CONTEXT, @"%@: stop", self);
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: stop", self);
         [self clearConnection];
     }
     [super stop];
@@ -237,13 +237,13 @@
 
     // Handle authentication failure (401 or 407 status):
     CFIndex status = CFHTTPMessageGetResponseStatusCode(response);
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@ got status %ld", self, status);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ got status %ld", self, status);
     if (status == 401 || status == 407) {
         NSString* authorization = [_requestHeaders objectForKey:@"Authorization"];
         NSString* authResponse = [self authHeaderForResponse:response];
         if (!_credential && !authorization) {
             _credential = [self credentialForAuthHeader:authResponse];
-            LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Auth challenge; credential = %@", self,
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Auth challenge; credential = %@", self,
                     _credential);
             if (_credential) {
                 // Recoverable auth failure -- close socket but try again with _credential:
@@ -252,7 +252,7 @@
                 return NO;
             }
         }
-        LogInfo(REPLICATION_LOG_CONTEXT,
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
                 @"%@: HTTP auth failed; sent Authorization: %@  ;  got WWW-Authenticate: %@", self,
                 authorization, authResponse);
         errorInfo = $dict({ @"HTTPAuthorization", authorization },
@@ -275,7 +275,7 @@
 {
     // After one-shot or longpoll response is complete, parse it as a single JSON document:
     NSData* input = _inputBuffer;
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Got entire body, %u bytes", self,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Got entire body, %u bytes", self,
             (unsigned)input.length);
     BOOL restart = NO;
     NSString* errorMessage = nil;
@@ -309,14 +309,14 @@
         [bodyStr stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
     if (_mode != kLongPoll || ![bodyStr hasPrefix:@"{\"results\":["]) {
-        LogWarn(REPLICATION_LOG_CONTEXT, @"%@: Unparseable response:\n%@", self, bodyStr);
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Unparseable response:\n%@", self, bodyStr);
         return NO;
     }
 
     // The response at least starts out as what we'd expect, so it looks like the connection was
     // closed unexpectedly before the full response was sent.
     NSTimeInterval elapsed = CFAbsoluteTimeGetCurrent() - _startTime;
-    LogWarn(REPLICATION_LOG_CONTEXT, @"%@: Longpoll connection closed (by proxy?) after %.1f sec",
+    CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Longpoll connection closed (by proxy?) after %.1f sec",
             self, elapsed);
     if (elapsed >= 30.0 && $equal(bodyStr, @"{\"results\":[")) {
         // Looks like the connection got closed by a proxy (like AWS' load balancer) while the
@@ -364,7 +364,7 @@
     static NSOperationQueue* sParseQueue;
     if (!sParseQueue) sParseQueue = [[NSOperationQueue alloc] init];
 
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Async parsing %u changes...", self,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Async parsing %u changes...", self,
             (unsigned)lines.count);
     Assert(!_parsing);
     _parsing = true;
@@ -375,7 +375,7 @@
         for (NSData* line in lines) {
             id change = [TDJSON JSONObjectWithData:line options:0 error:NULL];
             if (!change) {
-                LogWarn(REPLICATION_LOG_CONTEXT,
+                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                         @"TDSocketChangeTracker received unparseable change line from server: %@",
                         [line my_UTF8ToString]);
                 break;
@@ -387,7 +387,7 @@
             Assert(_parsing);
             _parsing = false;
             if (!_trackingInput) return;
-            LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Notifying %u changes...", self,
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Notifying %u changes...", self,
                     (unsigned)parsedChanges.count);
             if (![self receivedChanges:parsedChanges errorMessage:NULL]) {
                 [self setUpstreamError:@"Unparseable change line"];
@@ -405,7 +405,7 @@
 
 - (BOOL)failUnparseable:(NSString*)line
 {
-    LogWarn(REPLICATION_LOG_CONTEXT, @"Couldn't parse line from _changes: %@", line);
+    CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"Couldn't parse line from _changes: %@", line);
     [self setUpstreamError:@"Unparseable change line"];
     [self stop];
     return NO;
@@ -424,22 +424,22 @@
     if (bytesRead > 0)
         [_inputBuffer appendBytes:buffer length:bytesRead];
     else
-        LogWarn(REPLICATION_LOG_CONTEXT, @"%@: input stream read returned %ld", self,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: input stream read returned %ld", self,
                 (long)bytesRead);  // should never happen
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: read %ld bytes", self, (long)bytesRead);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: read %ld bytes", self, (long)bytesRead);
 
     if (_mode == kContinuous) [self readLines];
 }
 
 - (void)errorOccurred:(NSError*)error
 {
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: ErrorOccurred: %@", self, error);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: ErrorOccurred: %@", self, error);
     if (++_retryCount <= kMaxRetries) {
         [self clearConnection];
         NSTimeInterval retryDelay = kInitialRetryDelay * (1 << (_retryCount - 1));
         [self performSelector:@selector(start) withObject:nil afterDelay:retryDelay];
     } else {
-        LogWarn(REPLICATION_LOG_CONTEXT, @"%@: Can't connect, giving up: %@", self, error);
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Can't connect, giving up: %@", self, error);
 
         // Map lower-level errors from CFStream to higher-level NSURLError ones:
         if ($equal(error.domain, NSPOSIXErrorDomain)) {
@@ -459,7 +459,7 @@
     __unused id keepMeAround = self;  // retain myself so I can't be dealloced during this method
     switch (eventCode) {
         case NSStreamEventHasBytesAvailable: {
-            LogInfo(REPLICATION_LOG_CONTEXT, @"%@: HasBytesAvailable %@", self, stream);
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: HasBytesAvailable %@", self, stream);
             if (!_gotResponseHeaders) {
                 if (![self checkSSLCert] || ![self readResponseHeader]) return;
             }
@@ -470,7 +470,7 @@
         }
 
         case NSStreamEventEndEncountered:
-            LogInfo(REPLICATION_LOG_CONTEXT, @"%@: EndEncountered %@", self, stream);
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: EndEncountered %@", self, stream);
             _atEOF = true;
             if (!_gotResponseHeaders || (_mode == kContinuous && _inputBuffer.length > 0)) {
                 [self errorOccurred:[NSError errorWithDomain:NSURLErrorDomain
@@ -490,7 +490,7 @@
             break;
 
         default:
-            LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Event %lx on %@", self, (long)eventCode, stream);
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Event %lx on %@", self, (long)eventCode, stream);
             break;
     }
 }

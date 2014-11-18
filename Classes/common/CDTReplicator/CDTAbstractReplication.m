@@ -48,7 +48,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
         // check for strings
         for (id key in self.optionalHeaders) {
             if (![key isKindOfClass:[NSString class]]) {
-                LogWarn(REPLICATION_LOG_CONTEXT,
+                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                         @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
                         @"Replication HTTP header key is invalid (%@).\n It must be NSString. "
                         @"Found type %@",
@@ -66,7 +66,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
             }
 
             if (![self.optionalHeaders[key] isKindOfClass:[NSString class]]) {
-                LogWarn(REPLICATION_LOG_CONTEXT,
+                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                         @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
                         @"Value for replication HTTP header %@ is invalid (%@).\n"
                         @"It must be NSString. Found type %@.",
@@ -105,7 +105,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
         }
 
         if ([badHeaders count] > 0) {
-            LogWarn(REPLICATION_LOG_CONTEXT,
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                     @"CDTAbstractionReplication " @"-dictionaryForReplicatorDocument Error: "
                     @"You may not use these prohibited headers: %@",
                     badHeaders);
@@ -138,7 +138,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     NSString *scheme = [url.scheme lowercaseString];
     NSArray *validSchemes = @[ @"http", @"https" ];
     if (![validSchemes containsObject:scheme]) {
-        LogWarn(REPLICATION_LOG_CONTEXT,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                 @"%@ -validateRemoteDatastoreURL Error. " @"Invalid scheme: %@", [self class],
                 url.scheme);
 
@@ -158,7 +158,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     BOOL passwordSupplied = url.password != nil && ![url.password isEqualToString:@""];
 
     if ((!usernameSupplied && passwordSupplied) || (usernameSupplied && !passwordSupplied)) {
-        LogWarn(REPLICATION_LOG_CONTEXT, @"%@ -validateRemoteDatastoreURL Error. "
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ -validateRemoteDatastoreURL Error. "
                 @"Must have both username and password, or neither. ",
                 [self class]);
 

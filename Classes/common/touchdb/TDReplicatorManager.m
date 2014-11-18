@@ -68,7 +68,7 @@
 
     _serverThread =
         [[NSThread alloc] initWithTarget:self selector:@selector(runServerThread) object:nil];
-    LogInfo(REPLICATION_LOG_CONTEXT, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Starting TDReplicatorManager thread %@ ...", _serverThread);
     [_serverThread start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -79,7 +79,7 @@
 
 - (void)stop
 {
-    LogInfo(REPLICATION_LOG_CONTEXT, @"STOP %@", self);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     _replicatorsBySessionID = nil;
     _stopRunLoop = YES;
@@ -101,7 +101,7 @@
 {
     @autoreleasepool
     {
-        LogInfo(REPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread starting...");
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread starting...");
 
         [[NSThread currentThread] setName:@"TDReplicatorManager"];
 #ifndef GNUSTEP
@@ -118,7 +118,7 @@
                                         beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
 
-        LogInfo(REPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread exiting");
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicatorManager thread exiting");
     }
 }
 
@@ -138,7 +138,7 @@
         if (error) {
             *error = TDStatusToNSError(outStatus, nil);
         }
-        LogWarn(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: Can't create replicator for %@",
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"ReplicatorManager: Can't create replicator for %@",
                 properties);
         return nil;
     }
@@ -152,7 +152,7 @@
 - (void)startReplicator:(TDReplicator *)repl
 {
     if (![_replicatorsBySessionID objectForKey:repl.sessionID]) {
-        LogWarn(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: You must create TDReplicators with "
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"ReplicatorManager: You must create TDReplicators with "
                 @"TDReplicatorManager -createReplicatorWithProperties. " @"Replicator not started");
         return;
     }
@@ -169,7 +169,7 @@
             [strongSelf.replicatorStarted addObject:repl];
         }
 
-        LogInfo(REPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.", [repl class],
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.", [repl class],
                 repl.sessionID);
 
         [repl start];
@@ -207,7 +207,7 @@
     for (NSString *replicationId in [_replicatorsBySessionID allKeys]) {
         TDReplicator *repl = [_replicatorsBySessionID objectForKey:replicationId];
         if ([repl.db.name isEqualToString:dbName]) {
-            LogInfo(REPLICATION_LOG_CONTEXT,
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
                     @"ReplicatorManager: %@ (%@) stopped because local database was deleted",
                     [repl class], replicationId);
 

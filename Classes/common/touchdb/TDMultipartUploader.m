@@ -53,7 +53,7 @@
 - (NSInputStream *)connection:(NSURLConnection *)connection
             needNewBodyStream:(NSURLRequest *)request
 {
-    LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@: Needs new body stream, resetting writer...", self);
+    CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Needs new body stream, resetting writer...", self);
     [_multipartWriter close];
     return [_multipartWriter openForInputStream];
 }

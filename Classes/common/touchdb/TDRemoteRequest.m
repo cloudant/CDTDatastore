@@ -96,7 +96,7 @@
 - (void)start
 {
     if (!_request) return;  // -clearConnection already called
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
     Assert(!_connection);
     _connection = [NSURLConnection connectionWithRequest:_request delegate:self];
 
@@ -150,7 +150,7 @@
 - (void)stop
 {
     if (_connection) {
-        LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Stopped", self);
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Stopped", self);
         [_connection cancel];
     }
     [self clearConnection];
@@ -177,7 +177,7 @@
     if (_retryCount >= kMaxRetries) return NO;
     NSTimeInterval delay = RetryDelay(_retryCount);
     ++_retryCount;
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Will retry in %g sec", self, delay);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Will retry in %g sec", self, delay);
     [self startAfterDelay:delay];
     return YES;
 }
@@ -189,14 +189,14 @@
     NSURLCredential *cred = [_request.URL my_credentialForRealm:nil
                                            authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
     if (!cred) {
-        LogVerbose(TD_REMOTE_REQUEST_CONTEXT,
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT,
                    @"Got 401 but no stored credential found (with nil realm)");
         return false;
     }
 
     [_connection cancel];
     self.authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@ retrying with %@", self, _authorizer);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ retrying with %@", self, _authorizer);
     [self startAfterDelay:0.0];
     return true;
 }
@@ -209,7 +209,7 @@
     id<NSURLAuthenticationChallengeSender> sender = challenge.sender;
     NSURLProtectionSpace *space = challenge.protectionSpace;
     NSString *authMethod = space.authenticationMethod;
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
                self, authMethod, challenge.proposedCredential, challenge.error);
     if ($equal(authMethod, NSURLAuthenticationMethodHTTPBasic)) {
         _challenged = true;
@@ -223,27 +223,27 @@
                                       authenticationMethod:authMethod];
             }
             if (cred) {
-                LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"    challenge: useCredential: %@", cred);
+                CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: useCredential: %@", cred);
                 [sender useCredential:cred forAuthenticationChallenge:challenge];
                 // Update my authorizer so my owner (the replicator) can pick it up when I'm done
                 _authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
                 return;
             }
         }
-        LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"    challenge: continueWithoutCredential");
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: continueWithoutCredential");
         [sender continueWithoutCredentialForAuthenticationChallenge:challenge];
     } else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
         SecTrustRef trust = space.serverTrust;
         if ([[self class] checkTrust:trust forHost:space.host]) {
-            LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"    useCredential for trust: %@", trust);
+            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    useCredential for trust: %@", trust);
             [sender useCredential:[NSURLCredential credentialForTrust:trust]
                 forAuthenticationChallenge:challenge];
         } else {
-            LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"    challenge: cancel");
+            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: cancel");
             [sender cancelAuthenticationChallenge:challenge];
         }
     } else {
-        LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"    challenge: performDefaultHandling");
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: performDefaultHandling");
         [sender performDefaultHandlingForAuthenticationChallenge:challenge];
     }
 }
@@ -256,15 +256,15 @@
         (trustResult == kSecTrustResultProceed || trustResult == kSecTrustResultUnspecified)) {
         return YES;
     } else {
-        LogWarn(
-            TD_REMOTE_REQUEST_CONTEXT,
+        CDTLogWarn(
+            CDTTD_REMOTE_REQUEST_CONTEXT,
             @"TouchDB: SSL server <%@> not trusted (err=%d, trustResult=%u); cert chain follows:",
             host, (int)err, (unsigned)trustResult);
 #if TARGET_OS_IPHONE
         for (CFIndex i = 0; i < SecTrustGetCertificateCount(trust); ++i) {
             SecCertificateRef cert = SecTrustGetCertificateAtIndex(trust, i);
             CFStringRef subject = SecCertificateCopySubjectSummary(cert);
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"    %@", subject);
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"    %@", subject);
             CFRelease(subject);
         }
 #else
@@ -274,7 +274,7 @@
         NSArray *trustProperties = (__bridge_transfer NSArray *)SecTrustCopyProperties(trust);
 #endif
         for (NSDictionary *property in trustProperties) {
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"    %@: error = %@",
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"    %@: error = %@",
                     property[(__bridge id)kSecPropertyTypeTitle],
                     property[(__bridge id)kSecPropertyTypeError]);
         }
@@ -286,7 +286,7 @@
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     _status = (int)((NSHTTPURLResponse *)response).statusCode;
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Got response, status %d", self, _status);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got response, status %d", self, _status);
     if (_status == 401) {
         // CouchDB says we're unauthorized but it didn't present a 'WWW-Authenticate' header
         // (it actually does this on purpose...) Let's see if we have a credential we can try:
@@ -301,7 +301,7 @@
         NSUserDefaults *dflts = [NSUserDefaults standardUserDefaults];
         float fakeFailureRate = [dflts floatForKey:@"TDFakeFailureRate"];
         if (fakeFailureRate > 0.0 && random() < fakeFailureRate * 0x7FFFFFFF) {
-            LogError(TD_REMOTE_REQUEST_CONTEXT, @"***FAKE FAILURE: %@", self);
+            CDTLogError(CDTTD_REMOTE_REQUEST_CONTEXT, @"***FAKE FAILURE: %@", self);
             _status = (int)[dflts integerForKey:@"TDFakeFailureStatus"] ?: 567;
         }
     }
@@ -330,14 +330,14 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
 {
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Got %lu bytes", self, (unsigned long)data.length);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got %lu bytes", self, (unsigned long)data.length);
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
     if (!(_dontLog404 && error.code == kTDStatusNotFound &&
           $equal(error.domain, TDHTTPErrorDomain)))
-        LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Got error %@", self, error);
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got error %@", self, error);
 
     // If the error is likely transient, retry:
     if (TDMayBeTransientError(error) && [self retry]) return;
@@ -348,7 +348,7 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
     [self clearConnection];
     [self respondWithResult:self error:nil];
 }
@@ -388,13 +388,13 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
     id result = nil;
     NSError *error = nil;
     if (_jsonBuffer.length > 0) {
         result = [TDJSON JSONObjectWithData:_jsonBuffer options:0 error:NULL];
         if (!result) {
-            LogWarn(TD_REMOTE_REQUEST_CONTEXT, @"%@: %@ %@ returned unparseable data '%@'", self,
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: %@ %@ returned unparseable data '%@'", self,
                     _request.HTTPMethod, _request.URL, [_jsonBuffer my_UTF8ToString]);
             error = TDStatusToNSError(kTDStatusUpstreamError, _request.URL);
         }

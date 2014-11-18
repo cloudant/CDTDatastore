@@ -132,7 +132,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     if (nil != updates) {
         for (NSString* statement in [updates componentsSeparatedByString:@";"]) {
             if (statement.length && ![db executeUpdate:statement]) {
-                LogWarn(DATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
                                                @"May be an old/incompatible format. "
                                                 "SQLite error: %@",
                         _path, db.lastErrorMessage);
@@ -148,7 +148,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             // problem in which case it's nil.
             FMResultSet* results = [db executeQuery:statement];
             if (statement.length && results == nil) {
-                LogWarn(DATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
                                                @"May be an old/incompatible format. "
                                                 "SQLite error: %@",
                         _path, db.lastErrorMessage);
@@ -161,8 +161,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     // at the end, update user_version
     NSString* statement = [NSString stringWithFormat:@"PRAGMA user_version = %li", (long)version];
     if (statement.length && ![db executeUpdate:statement]) {
-        LogWarn(
-            DATASTORE_LOG_CONTEXT,
+        CDTLogWarn(
+            CDTDATASTORE_LOG_CONTEXT,
             @"TD_Database: Could not initialize schema of %@ -- May be an old/incompatible format. "
              "SQLite error: %@",
             _path, db.lastErrorMessage);
@@ -179,7 +179,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     if (nil != updates) {
         for (NSString* statement in [updates componentsSeparatedByString:@";"]) {
             if (statement.length && ![db executeUpdate:statement]) {
-                LogWarn(DATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
                                                @"May be an old/incompatible format. "
                                                 "SQLite error: %@",
                         _path, db.lastErrorMessage);
@@ -200,7 +200,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         flags |= SQLITE_OPEN_READONLY;
     else
         flags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-    LogInfo(DATASTORE_LOG_CONTEXT, @"Open %@ (flags=%X)", _path, flags);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Open %@ (flags=%X)", _path, flags);
     _fmdbQueue = [FMDatabaseQueue databaseQueueWithPath:_path flags:flags];
     if (!_fmdbQueue) return NO;
 
@@ -245,7 +245,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
         // Incompatible version changes increment the hundreds' place:
         if (dbVersion >= 100) {
-            LogWarn(DATASTORE_LOG_CONTEXT,
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                     @"TD_Database: Database version (%d) is newer than I know how to work with",
                     dbVersion);
             [db close];
@@ -379,7 +379,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         NSError* error;
         _attachments = [[TDBlobStore alloc] initWithPath:attachmentsPath error:&error];
         if (!_attachments) {
-            LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
                     attachmentsPath);
             [db close];
             result = NO;
@@ -401,7 +401,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
     if (!_open) return NO;
 
-    LogInfo(DATASTORE_LOG_CONTEXT, @"Close %@", _path);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Close %@", _path);
     [[NSNotificationCenter defaultCenter] postNotificationName:TD_DatabaseWillCloseNotification
                                                         object:self];
     for (TD_View* view in _views.allValues) [view databaseClosing];
@@ -420,7 +420,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (BOOL)deleteDatabase:(NSError**)outError
 {
-    LogInfo(DATASTORE_LOG_CONTEXT, @"Deleting %@", _path);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleting %@", _path);
     [[NSNotificationCenter defaultCenter] postNotificationName:TD_DatabaseWillBeDeletedNotification
                                                         object:self];
     if (_open) {
@@ -460,7 +460,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         }
         @catch (NSException* x)
         {
-            LogWarn(DATASTORE_LOG_CONTEXT, @"Exception raised during -inTransaction: %@", x);
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Exception raised during -inTransaction: %@", x);
             status = kTDStatusException;
         }
         @finally { *rollback = TDStatusIsError(status); }
@@ -601,7 +601,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     NSMutableDictionary* docProperties =
         [TDJSON JSONObjectWithData:json options:TDJSONReadingMutableContainers error:NULL];
     if (!docProperties) {
-        LogWarn(DATASTORE_LOG_CONTEXT, @"Unparseable JSON for doc=%@, rev=%@: %@", docID, revID,
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Unparseable JSON for doc=%@, rev=%@: %@", docID, revID,
                 [json my_UTF8ToString]);
         return extra;
     }

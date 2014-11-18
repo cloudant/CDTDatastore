@@ -35,7 +35,7 @@
 
 - (id)initWithURL:(NSURL*)url
 {
-    LogDebug(TD_REMOTE_REQUEST_CONTEXT, @"TDBasicAuthorizer initWith <%@>", url);  // TEMP
+    CDTLogDebug(CDTTD_REMOTE_REQUEST_CONTEXT, @"TDBasicAuthorizer initWith <%@>", url);  // TEMP
     NSURLCredential* cred =
         [url my_credentialForRealm:nil authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
     if (!cred) return nil;

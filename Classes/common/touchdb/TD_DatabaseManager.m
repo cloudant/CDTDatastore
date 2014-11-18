@@ -92,7 +92,7 @@ static NSCharacterSet* kIllegalNameChars;
 
 - (void)dealloc
 {
-    LogInfo(DATASTORE_LOG_CONTEXT, @"DEALLOC %@", self);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"DEALLOC %@", self);
     [self close];
 }
 
@@ -167,14 +167,14 @@ static NSCharacterSet* kIllegalNameChars;
 
 - (void)close
 {
-    LogInfo(DATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
     [_replicatorManager stop];
     _replicatorManager = nil;
     for (TD_Database* db in _databases.allValues) {
         [db close];
     }
     [_databases removeAllObjects];
-    LogInfo(DATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
 }
 
 #pragma mark - REPLICATION:
@@ -325,7 +325,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 - (TDReplicatorManager*)replicatorManager
 {
     if (!_replicatorManager && !_options.noReplicator) {
-        LogInfo(DATASTORE_LOG_CONTEXT, @"Starting replicator manager for %@", self);
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Starting replicator manager for %@", self);
         _replicatorManager = [[TDReplicatorManager alloc] initWithDatabaseManager:self];
         [_replicatorManager start];
     }

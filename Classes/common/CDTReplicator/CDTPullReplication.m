@@ -76,7 +76,7 @@
     if (self.target) {
         [doc setObject:self.target.name forKey:@"target"];
     } else {
-        LogWarn(REPLICATION_LOG_CONTEXT,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                 @"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
 
         if (error) {
@@ -103,7 +103,7 @@
 - (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error
 {
     if (url == nil) {
-        LogWarn(REPLICATION_LOG_CONTEXT,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                 @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
 
         if (error) {

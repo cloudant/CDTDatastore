@@ -75,7 +75,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
-        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT,
+        CDTLogInfo(CDTDOCUMENT_REVISION_LOG_CONTEXT,
                 @"When creating stream for saved attachment %@, no file at %@, "
                 @"-dataFromAttachmentContent failed.",
                 self.name, self.filePath);
@@ -93,7 +93,7 @@
         NSData *inflatedData = [NSData gtm_dataByInflatingData:gzippedData];
         return inflatedData;
     } else {
-        LogWarn(DOCUMENT_REVISION_LOG_CONTEXT, @"Unknown attachment encoding %i, returning nil",
+        CDTLogWarn(CDTDOCUMENT_REVISION_LOG_CONTEXT, @"Unknown attachment encoding %i, returning nil",
                 self.encoding);
         return nil;
     }
@@ -112,7 +112,7 @@
 - (instancetype)initWithData:(NSData *)data name:(NSString *)name type:(NSString *)type
 {
     if (data == nil) {
-        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT, @"When creating %@, data was nil, init failed.",
+        CDTLogInfo(CDTDOCUMENT_REVISION_LOG_CONTEXT, @"When creating %@, data was nil, init failed.",
                 name);
         return nil;
     }
@@ -141,7 +141,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:filePath]) {
-        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT, @"When creating %@, no file at %@, init failed.",
+        CDTLogInfo(CDTDOCUMENT_REVISION_LOG_CONTEXT, @"When creating %@, no file at %@, init failed.",
                 name, filePath);
         return nil;
     }
@@ -157,7 +157,7 @@
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:self.filePath]) {
-        LogInfo(DOCUMENT_REVISION_LOG_CONTEXT,
+        CDTLogInfo(CDTDOCUMENT_REVISION_LOG_CONTEXT,
                 @"When creating stream for %@, no file at %@, -getInputStream failed.", self.name,
                 self.filePath);
         return nil;

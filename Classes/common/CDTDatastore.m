@@ -452,7 +452,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
-                    LogWarn(DATASTORE_LOG_CONTEXT,
+                    CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"Error reading %@ from stream for doc <%@, %@>, rolling back",
                             attachment.name, converted.docID, converted.revID);
                     return nil;
@@ -578,7 +578,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
-                    LogWarn(DATASTORE_LOG_CONTEXT,
+                    CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"Error reading %@ from stream for doc <%@, %@>, rolling back",
                             attachment.name, converted.docID, converted.revID);
                     return nil;

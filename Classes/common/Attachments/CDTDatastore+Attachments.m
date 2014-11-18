@@ -98,7 +98,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
             if (attachment != nil) {
                 [attachments addObject:attachment];
             } else {
-                LogInfo(DATASTORE_LOG_CONTEXT,
+                CDTLogInfo(CDTDATASTORE_LOG_CONTEXT,
                         @"Error reading an attachment row for attachments on doc <%@, %@>"
                         @"Closed connection during read?",
                         rev.docId, rev.revId);
@@ -120,7 +120,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     // we construct the attachment instance.
     NSData *keyData = [r dataNoCopyForColumn:@"key"];
     if (keyData.length != sizeof(TDBlobKey)) {
-        LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Attachment %lld.'%@' has bogus key size %u", self,
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Attachment %lld.'%@' has bogus key size %u", self,
                 sequence, name, (unsigned)keyData.length);
         //*outStatus = kTDStatusCorruptError;
         return nil;
@@ -159,7 +159,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     NSData *attachmentContent = [attachment dataFromAttachmentContent];
 
     if (nil == attachmentContent) {
-        LogWarn(DATASTORE_LOG_CONTEXT, @"CDTDatastore: attachment %@ had no data; failing.",
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"CDTDatastore: attachment %@ had no data; failing.",
                 attachment.name);
 
         if (error) {
@@ -179,7 +179,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     if (!success) {
         // -storeBlob:creatingKey:error: will have filled in error
 
-        LogWarn(DATASTORE_LOG_CONTEXT, @"CDTDatastore: Couldn't save attachment %@: %@",
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"CDTDatastore: Couldn't save attachment %@: %@",
                 attachment.name, *error);
         return nil;
     }

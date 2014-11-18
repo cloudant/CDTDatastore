@@ -173,7 +173,7 @@
 
             if (TDStatusIsError(status)) {
                 localError = TDStatusToNSError(status, nil);
-                LogWarn(DATASTORE_LOG_CONTEXT,
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                         @"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
                         @" to delete non-winning revision (%@) for document %@",
                         theRev.revId, docId);

@@ -186,7 +186,7 @@
     if (db.changes == 0) {
         // Oops. This means a glitch in our attachment-management or pull code,
         // or else a bug in the upstream server.
-        LogWarn(DATASTORE_LOG_CONTEXT,
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                 @"Can't find inherited attachment '%@' from seq#%lld to copy to #%lld", name,
                 fromSequence, toSequence);
         result = kTDStatusNotFound;  // Fail if there is no such attachment on fromSequence
@@ -232,7 +232,7 @@
         case kTDAttachmentEncodingGZIP:
             attachment = [NSData gtm_dataByInflatingData:attachment];
     }
-    if (!attachment) LogWarn(DATASTORE_LOG_CONTEXT, @"Unable to decode attachment!");
+    if (!attachment) CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Unable to decode attachment!");
     return attachment;
 }
 
@@ -268,7 +268,7 @@
             }
             NSData* keyData = [r dataNoCopyForColumnIndex:0];
             if (keyData.length != sizeof(TDBlobKey)) {
-                LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Attachment %lld.'%@' has bogus key size %u",
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Attachment %lld.'%@' has bogus key size %u",
                         self, sequence, filename, (unsigned)keyData.length);
                 *outStatus = kTDStatusCorruptError;
                 return;
@@ -305,7 +305,7 @@
     NSData* contents =
         [NSData dataWithContentsOfFile:filePath options:NSDataReadingMappedIfSafe error:&error];
     if (!contents) {
-        LogWarn(DATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
                 sequence, filename, error);
         *outStatus = kTDStatusCorruptError;
         return nil;
@@ -359,7 +359,7 @@
             } else {
                 data = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
                 if (!data)
-                    LogWarn(DATASTORE_LOG_CONTEXT,
+                    CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"TD_Database: Failed to get attachment for key %@", keyData);
             }
         }
@@ -460,13 +460,13 @@
                             // ...then remove the 'data' and 'follows' key:
                             [editedAttachment removeObjectForKey:@"follows"];
                             editedAttachment[@"stub"] = $true;
-                            LogVerbose(DATASTORE_LOG_CONTEXT,
+                            CDTLogVerbose(CDTDATASTORE_LOG_CONTEXT,
                                        @"Stubbed out attachment %@/'%@': revpos %d < %d", rev, name,
                                        revPos, minRevPos);
                         } else if (addFollows) {
                             [editedAttachment removeObjectForKey:@"stub"];
                             editedAttachment[@"follows"] = $true;
-                            LogVerbose(DATASTORE_LOG_CONTEXT,
+                            CDTLogVerbose(CDTDATASTORE_LOG_CONTEXT,
                                        @"Added 'follows' for attachment %@/'%@': revpos %d >= %d",
                                        rev, name, revPos, minRevPos);
                         }
@@ -607,7 +607,7 @@
             if (attachment->revpos == 0)
                 attachment->revpos = generation;
             else if (attachment->revpos > generation) {
-                LogWarn(DATASTORE_LOG_CONTEXT,
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                         @"Attachment %@ . '%@' has weird revpos %u; setting to %u", rev, name,
                         attachment->revpos, generation);
                 attachment->revpos = generation;
@@ -731,7 +731,7 @@
     if (numDeleted < 0) {
         return kTDStatusAttachmentError;
     }
-    LogInfo(DATASTORE_LOG_CONTEXT, @"Deleted %d attachments", (int)numDeleted);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleted %d attachments", (int)numDeleted);
     return kTDStatusOK;
 }
 

@@ -39,7 +39,7 @@
 - (void)maybeCreateRemoteDB
 {
     if (!_createTarget) return;
-    LogInfo(REPLICATION_LOG_CONTEXT, @"Remote db might not exist; creating it...");
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Remote db might not exist; creating it...");
     _creatingTarget = YES;
     [self asyncTaskStarted];
     [self sendAsyncRequest:@"PUT"
@@ -48,11 +48,11 @@
               onCompletion:^(id result, NSError* error) {
                   _creatingTarget = NO;
                   if (error && error.code != kTDStatusDuplicate) {
-                      LogInfo(REPLICATION_LOG_CONTEXT, @"Failed to create remote db: %@", error);
+                      CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Failed to create remote db: %@", error);
                       self.error = error;
                       [self stop];
                   } else {
-                      LogInfo(REPLICATION_LOG_CONTEXT, @"Created remote db");
+                      CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Created remote db");
                       _createTarget = NO;  // remember that I created the target
                       [self beginReplicating];
                   }
@@ -141,7 +141,7 @@
     SequenceNumber seq = rev.sequence;
     bool wasFirst = (seq == (SequenceNumber)_pendingSequences.firstIndex);
     if (![_pendingSequences containsIndex:(NSUInteger)seq])
-        LogWarn(REPLICATION_LOG_CONTEXT, @"%@ removePending: sequence %lld not in set, for rev %@",
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ removePending: sequence %lld not in set, for rev %@",
                 self, seq, rev);
     [_pendingSequences removeIndex:(NSUInteger)seq];
 
@@ -165,7 +165,7 @@
 
     if (!self.filter || !self.filter(rev, _filterParameters)) return;
 
-    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Queuing #%lld %@", self, rev.sequence, rev);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Queuing #%lld %@", self, rev.sequence, rev);
     [self addToInbox:rev];
 }
 
@@ -216,7 +216,7 @@
                               TDContentOptions options = kTDIncludeAttachments | kTDIncludeRevs;
                               if (!_dontSendMultipart) options |= kTDBigAttachmentsFollow;
                               if ([_db loadRevisionBody:rev options:options] >= 300) {
-                                  LogWarn(REPLICATION_LOG_CONTEXT,
+                                  CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                                           @"%@: Couldn't get local contents of %@", self, rev);
                                   [self revisionFailed];
                                   return nil;
@@ -296,8 +296,8 @@
 {
     NSUInteger numDocsToSend = docsToSend.count;
     if (numDocsToSend == 0) return;
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Sending %u revisions", self, (unsigned)numDocsToSend);
-    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sending %@", self, changes.allRevisions);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Sending %u revisions", self, (unsigned)numDocsToSend);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Sending %@", self, changes.allRevisions);
     self.changesTotal += numDocsToSend;
     [self asyncTaskStarted];
     [self sendAsyncRequest:@"POST"
@@ -319,7 +319,7 @@
                           }
 
                           // This item (doc) failed to save correctly
-                          LogWarn(REPLICATION_LOG_CONTEXT, @"%@: _bulk_docs got an error: %@", self,
+                          CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: _bulk_docs got an error: %@", self,
                                   item);
 
                           NSString* docID;
@@ -368,7 +368,7 @@
                           }
                       }
 
-                      LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sent %@", self,
+                      CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Sent %@", self,
                                  changes.allRevisions);
 
                   } else if (error && error.code == kTDStatusDuplicate) {
@@ -467,7 +467,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
                                                 [self revisionFailed];
                                             }
                                         } else {
-                                            LogVerbose(REPLICATION_LOG_CONTEXT,
+                                            CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,
                                                        @"%@: Sent multipart %@", self, rev);
                                             [self removePending:rev];
                                         }
@@ -480,7 +480,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
                                     }];
     uploader.authorizer = _authorizer;
     [self addRemoteRequest:uploader];
-    LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Queuing %@ (multipart, %lldkb)", self, uploader,
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Queuing %@ (multipart, %lldkb)", self, uploader,
                bodyStream.length / 1024);
     if (!_uploaderQueue) _uploaderQueue = [[NSMutableArray alloc] init];
     [_uploaderQueue addObject:uploader];
@@ -510,7 +510,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
                       self.error = error;
                       [self revisionFailed];
                   } else {
-                      LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Sent %@ (JSON), response=%@", self,
+                      CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Sent %@ (JSON), response=%@", self,
                                  rev, response);
                       [self removePending:rev];
                   }
@@ -523,7 +523,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
     if (!_uploading && _uploaderQueue.count > 0) {
         _uploading = YES;
         TDMultipartUploader* uploader = _uploaderQueue[0];
-        LogVerbose(REPLICATION_LOG_CONTEXT, @"%@: Starting %@", self, uploader);
+        CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting %@", self, uploader);
         [uploader start];
         [_uploaderQueue removeObjectAtIndex:0];
     }

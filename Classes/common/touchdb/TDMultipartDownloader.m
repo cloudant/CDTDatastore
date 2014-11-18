@@ -64,7 +64,7 @@
         if ([contentType hasPrefix:@"text/plain"])
             contentType = nil;  // Workaround for CouchDB returning JSON docs with text/plain type
         if (![_reader setContentType:contentType]) {
-            LogInfo(TD_REMOTE_REQUEST_CONTEXT, @"%@ got invalid Content-Type '%@'", self,
+            CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ got invalid Content-Type '%@'", self,
                     contentType);
             [self cancelWithStatus:_reader.status];
             return;
@@ -82,7 +82,7 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    LogVerbose(TD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
                (unsigned)_reader.attachmentCount);
     if (![_reader finish]) {
         [self cancelWithStatus:_reader.status];

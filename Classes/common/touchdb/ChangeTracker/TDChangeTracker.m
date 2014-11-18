@@ -99,7 +99,7 @@
                                              options:TDJSONWritingAllowFragments
                                                error:&error];
                 if (!value) {
-                    LogInfo(REPLICATION_LOG_CONTEXT, @"Illegal filter parameter %@ = %@", key,
+                    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Illegal filter parameter %@ = %@", key,
                             _filterParameters[key]);
                     continue;
                 }
@@ -110,7 +110,7 @@
 
     if (_docIDs) {
         if (_filterName) {
-            LogInfo(REPLICATION_LOG_CONTEXT, @"You can't set both a replication filter and "
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"You can't set both a replication filter and "
                                              @"doc_ids, since doc_ids uses the internal _doc_ids "
                                              @"filter.");
         } else {
@@ -119,7 +119,7 @@
                                                          options:TDJSONWritingAllowFragments
                                                            error:&error];
             if (!docIDsParam || error) {
-                LogInfo(REPLICATION_LOG_CONTEXT, @"Illegal doc IDs %@, %@", [_docIDs description],
+                CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Illegal doc IDs %@, %@", [_docIDs description],
                         [error localizedDescription]);
             }
             [path appendFormat:@"&filter=_doc_ids&doc_ids=%@", TDEscapeURLParam(docIDsParam)];
@@ -140,7 +140,7 @@
 
 - (void)setUpstreamError:(NSString*)message
 {
-    LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Server error: %@", self, message);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Server error: %@", self, message);
     self.error =
         [NSError errorWithDomain:@"TDChangeTracker" code:kTDStatusUpstreamError userInfo:nil];
 }
@@ -176,11 +176,11 @@
         NSTimeInterval retryDelay = kInitialRetryDelay * (1 << MIN(_retryCount, 16U));
         retryDelay = MIN(retryDelay, kMaxRetryDelay);
         ++_retryCount;
-        LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Connection error, retrying in %.1f sec: %@", self,
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Connection error, retrying in %.1f sec: %@", self,
                 retryDelay, error.localizedDescription);
         [self performSelector:@selector(retry) withObject:nil afterDelay:retryDelay];
     } else {
-        LogInfo(REPLICATION_LOG_CONTEXT, @"%@: Can't connect, giving up: %@", self, error);
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Can't connect, giving up: %@", self, error);
         self.error = error;
         [self stopped];
     }

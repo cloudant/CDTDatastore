@@ -67,7 +67,7 @@
     if (!_json && !_error) {
         _json = [[TDJSON dataWithJSONObject:_object options:0 error:NULL] copy];
         if (!_json) {
-            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT, @"TD_Body: couldn't convert to JSON");
+            CDTLogVerbose(CDTDOCUMENT_REVISION_LOG_CONTEXT, @"TD_Body: couldn't convert to JSON");
             _error = YES;
         }
     }
@@ -97,7 +97,7 @@
         NSError* error = nil;
         _object = [[TDJSON JSONObjectWithData:_json options:0 error:&error] copy];
         if (!_object) {
-            LogVerbose(DOCUMENT_REVISION_LOG_CONTEXT,
+            CDTLogVerbose(CDTDOCUMENT_REVISION_LOG_CONTEXT,
                        @"TD_Body: couldn't parse JSON: %@ (error=%@)", [_json my_UTF8ToString],
                        error);
             _error = YES;
