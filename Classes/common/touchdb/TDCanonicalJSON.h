@@ -10,16 +10,15 @@
 
 /** Generates a canonical JSON form of an object tree, suitable for signing.
     See algorithm at <http://wiki.apache.org/couchdb/SignedDocuments>. */
-@interface TDCanonicalJSON : NSObject
-{
-    @private
+@interface TDCanonicalJSON : NSObject {
+   @private
     id _input;
     NSString* _ignoreKeyPrefix;
     NSArray* _whitelistedKeys;
     NSMutableString* _output;
 }
 
-- (id) initWithObject: (id)object;
+- (id)initWithObject:(id)object;
 
 /** If non-nil, dictionary keys beginning with this prefix will be ignored. */
 @property (nonatomic, copy) NSString* ignoreKeyPrefix;
@@ -28,21 +27,23 @@
 @property (nonatomic, copy) NSArray* whitelistedKeys;
 
 /** Canonical JSON string from the input object tree.
-    This isn't directly useful for tasks like signing or generating digests; you probably want to use .canonicalData instead for that. */
+    This isn't directly useful for tasks like signing or generating digests; you probably want to
+   use .canonicalData instead for that. */
 @property (readonly) NSString* canonicalString;
 
 /** Canonical form of UTF-8 encoded JSON data from the input object tree. */
 @property (readonly) NSData* canonicalData;
 
+/** Convenience method that instantiates a TDCanonicalJSON object and uses it to encode the object.
+ */
++ (NSData*)canonicalData:(id)rootObject;
 
-/** Convenience method that instantiates a TDCanonicalJSON object and uses it to encode the object. */
-+ (NSData*) canonicalData: (id)rootObject;
+/** Convenience method that instantiates a TDCanonicalJSON object and uses it to encode the object,
+ * returning a string. */
++ (NSString*)canonicalString:(id)rootObject;
 
-/** Convenience method that instantiates a TDCanonicalJSON object and uses it to encode the object, returning a string. */
-+ (NSString*) canonicalString: (id)rootObject;
-
-
-/** Returns a dictionary's keys in the same order in which they would be written out in canonical JSON. */
-+ (NSArray*) orderedKeys: (NSDictionary*)dict;
+/** Returns a dictionary's keys in the same order in which they would be written out in canonical
+ * JSON. */
++ (NSArray*)orderedKeys:(NSDictionary*)dict;
 
 @end

@@ -22,11 +22,9 @@ extern NSString* TDReplicatorProgressChangedNotification;
 /** Posted when replicator stops running. */
 extern NSString* TDReplicatorStoppedNotification;
 
-
 /** Abstract base class for push or pull replications. */
-@interface TDReplicator : NSObject
-{
-    @protected
+@interface TDReplicator : NSObject {
+   @protected
     NSThread* _thread;
     TD_Database* __weak _db;
     NSURL* _remote;
@@ -50,17 +48,14 @@ extern NSString* TDReplicatorStoppedNotification;
     id<TDAuthorizer> _authorizer;
     NSDictionary* _options;
     NSDictionary* _requestHeaders;
-    @private
+   @private
     TDReachability* _host;
 }
 
-+ (NSString *)progressChangedNotification;
-+ (NSString *)stoppedNotification;
++ (NSString*)progressChangedNotification;
++ (NSString*)stoppedNotification;
 
-- (id) initWithDB: (TD_Database*)db
-           remote: (NSURL*)remote
-             push: (BOOL)push
-       continuous: (BOOL)continuous;
+- (id)initWithDB:(TD_Database*)db remote:(NSURL*)remote push:(BOOL)push continuous:(BOOL)continuous;
 
 @property (weak, readonly) TD_Database* db;
 @property (readonly) NSURL* remote;
@@ -68,7 +63,7 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (readonly) BOOL continuous;
 @property (copy) NSString* filterName;
 @property (copy) NSDictionary* filterParameters;
-@property (copy) NSArray *docIDs;
+@property (copy) NSArray* docIDs;
 @property (copy) NSDictionary* options;
 
 /** Optional dictionary of headers to be added to all requests to remote servers. */
@@ -77,17 +72,17 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (strong) id<TDAuthorizer> authorizer;
 
 /** Do these two replicators have identical settings? */
-- (bool) hasSameSettingsAs: (TDReplicator*)other;
+- (bool)hasSameSettingsAs:(TDReplicator*)other;
 
 /** Starts the replicator.
     Replicators run asynchronously so nothing will happen until later.
     A replicator can only be started once; don't reuse it after it stops. */
-- (void) start;
+- (void)start;
 
 /** Request to stop the replicator.
     Any pending asynchronous operations will be canceled.
     TDReplicatorStoppedNotification will be posted when it finally stops. */
-- (void) stop;
+- (void)stop;
 
 /** Is the replicator running? (Observable) */
 @property (readonly, nonatomic) BOOL running;

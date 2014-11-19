@@ -17,61 +17,53 @@
 
 #import "TDSequenceMap.h"
 
-
 @implementation TDSequenceMap
-
 
 - (id)init
 {
     self = [super init];
     if (self) {
         _sequences = [[NSMutableIndexSet alloc] init];
-        _values = [[NSMutableArray alloc] initWithCapacity: 100];
+        _values = [[NSMutableArray alloc] initWithCapacity:100];
         _firstValueSequence = 1;
     }
     return self;
 }
 
-
-
-
-- (SequenceNumber) addValue: (id)value {
-    [_sequences addIndex: ++_lastSequence];
-    [_values addObject: value];
+- (SequenceNumber)addValue:(id)value
+{
+    [_sequences addIndex:++_lastSequence];
+    [_values addObject:value];
     return _lastSequence;
 }
 
-
-- (void) removeSequence: (SequenceNumber)sequence {
+- (void)removeSequence:(SequenceNumber)sequence
+{
     Assert(sequence > 0 && sequence <= (SequenceNumber)_lastSequence,
            @"Invalid sequence %lld (latest is %u)", sequence, _lastSequence);
-    [_sequences removeIndex: (NSUInteger) sequence];
+    [_sequences removeIndex:(NSUInteger)sequence];
 }
 
+- (BOOL)isEmpty { return _sequences.firstIndex == NSNotFound; }
 
-- (BOOL) isEmpty {
-    return _sequences.firstIndex == NSNotFound;
-}
-
-
-- (SequenceNumber) checkpointedSequence {
+- (SequenceNumber)checkpointedSequence
+{
     NSUInteger sequence = _sequences.firstIndex;
-    sequence = (sequence == NSNotFound) ? _lastSequence : sequence-1;
-    
+    sequence = (sequence == NSNotFound) ? _lastSequence : sequence - 1;
+
     if (sequence > _firstValueSequence) {
         // Garbage-collect inaccessible values:
         NSUInteger numToRemove = sequence - _firstValueSequence;
-        [_values removeObjectsInRange: NSMakeRange(0, numToRemove)];
+        [_values removeObjectsInRange:NSMakeRange(0, numToRemove)];
         _firstValueSequence += numToRemove;
     }
     return sequence;
 }
 
-
-- (id) checkpointedValue {
+- (id)checkpointedValue
+{
     NSInteger index = (NSInteger)([self checkpointedSequence] - _firstValueSequence);
     return (index >= 0) ? _values[index] : nil;
 }
-
 
 @end

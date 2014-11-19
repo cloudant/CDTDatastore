@@ -9,20 +9,18 @@
 #import "TDRemoteRequest.h"
 @class TDMultipartDocumentReader, TD_Database;
 
-
 /** Downloads a remote CouchDB document in multipart format.
     Attachments are added to the database, but the document body isn't. */
-@interface TDMultipartDownloader : TDRemoteRequest
-{
-    @private
+@interface TDMultipartDownloader : TDRemoteRequest {
+   @private
     TD_Database* _db;
     TDMultipartDocumentReader* _reader;
 }
 
-- (id) initWithURL: (NSURL*)url
-          database: (TD_Database*)database
-    requestHeaders: (NSDictionary *) requestHeaders
-      onCompletion: (TDRemoteRequestCompletionBlock)onCompletion;
+- (id)initWithURL:(NSURL*)url
+          database:(TD_Database*)database
+    requestHeaders:(NSDictionary*)requestHeaders
+      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
 
 @property (readonly) NSDictionary* document;
 

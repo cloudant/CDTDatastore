@@ -26,63 +26,62 @@
 @interface CDTDocumentRevision : NSObject
 
 /** Document ID for this document revision. */
-@property (nonatomic,strong,readonly) NSString *docId;
+@property (nonatomic, strong, readonly) NSString *docId;
 /** Revision ID for this document revision. */
-@property (nonatomic,strong,readonly) NSString *revId;
+@property (nonatomic, strong, readonly) NSString *revId;
 
 /** `YES` if this document revision is deleted. */
-@property (nonatomic,readonly) BOOL deleted;
+@property (nonatomic, readonly) BOOL deleted;
 
-@property (nonatomic,readonly) SequenceNumber sequence;
+@property (nonatomic, readonly) SequenceNumber sequence;
 
--(id)initWithDocId:(NSString *)docId
-        revisionId:(NSString *) revId
-              body:(NSDictionary *)body
-       attachments:(NSDictionary *) attachments;
+- (id)initWithDocId:(NSString *)docId
+         revisionId:(NSString *)revId
+               body:(NSDictionary *)body
+        attachments:(NSDictionary *)attachments;
 
--(id)initWithDocId:(NSString *)docId
-        revisionId:(NSString *)revId
-              body:(NSDictionary *)body
-           deleted:(BOOL)deleted
-       attachments:(NSDictionary *)attachments
-          sequence:(SequenceNumber)sequence;
+- (id)initWithDocId:(NSString *)docId
+         revisionId:(NSString *)revId
+               body:(NSDictionary *)body
+            deleted:(BOOL)deleted
+        attachments:(NSDictionary *)attachments
+           sequence:(SequenceNumber)sequence;
 
 /**
  Creates an CDTDocumentRevision from JSON Data
  The json data is expected to come from
  Cloudant or a CouchDB instance.
- 
+
  @param json JSON data to create an object from
  @param documentURL the url of the document
  @param error points to an NSError in case of error
- 
+
  @return new CDTDocumentRevision instance
 */
-+(CDTDocumentRevision*)createRevisionFromJson:(NSDictionary*)jsonDict
-                                  forDocument:(NSURL *)documentURL
-                                        error:(NSError * __autoreleasing *) error;
++ (CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
+                                    forDocument:(NSURL *)documentURL
+                                          error:(NSError *__autoreleasing *)error;
 
-/** 
+/**
  Return document content as an NSData object.
- 
+
  This is often the format an object mapper will require.
 
  @param error will point to an NSError object in case of error.
- 
+
  @return document content as an NSData object.
  */
--(NSData*)documentAsDataError:(NSError * __autoreleasing *)error;
-
+- (NSData *)documentAsDataError:(NSError *__autoreleasing *)error;
 
 /**
  Return a mutable copy of this document.
- 
+
  @return mutable copy of this document
  */
--(CDTMutableDocumentRevision*)mutableCopy;
+- (CDTMutableDocumentRevision *)mutableCopy;
 
--(NSDictionary*)body;
+- (NSDictionary *)body;
 
--(NSDictionary*)attachments;
+- (NSDictionary *)attachments;
 
 @end

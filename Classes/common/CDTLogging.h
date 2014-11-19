@@ -21,34 +21,34 @@
 
  */
 
-#define INDEX_LOG_CONTEXT 10
-#define REPLICATION_LOG_CONTEXT 11
-#define DATASTORE_LOG_CONTEXT 12
-#define DOCUMENT_REVISION_LOG_CONTEXT 13
-#define TD_REMOTE_REQUEST_CONTEXT 14
-#define TD_JSON_CONTEXT 15
-#define TD_VIEW_CONTEXT 16
+#define CDTINDEX_LOG_CONTEXT 10
+#define CDTREPLICATION_LOG_CONTEXT 11
+#define CDTDATASTORE_LOG_CONTEXT 12
+#define CDTDOCUMENT_REVISION_LOG_CONTEXT 13
+#define CDTTD_REMOTE_REQUEST_CONTEXT 14
+#define CDTTD_JSON_CONTEXT 15
+#define CDTTD_VIEW_CONTEXT 16
 
-#define START_CONTEXT INDEX_LOG_CONTEXT
-#define END_CONTEXT TD_VIEW_CONTEXT
+#define START_CONTEXT CDTINDEX_LOG_CONTEXT
+#define END_CONTEXT CDTTD_VIEW_CONTEXT
 
 static DDLogLevel CDTLoggingLevels[] = {[0 ... END_CONTEXT - START_CONTEXT] = DDLogLevelOff};
 
-#define LogError(context, frmt, ...)                                                       \
+#define CDTLogError(context, frmt, ...)                                                    \
     LOG_MAYBE(NO, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagError, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define LogWarn(context, frmt, ...)                                                           \
+#define CDTLogWarn(context, frmt, ...)                                                        \
     LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagWarning, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define LogInfo(context, frmt, ...)                                                        \
+#define CDTLogInfo(context, frmt, ...)                                                     \
     LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagInfo, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define LogDebug(context, frmt, ...)                                                        \
+#define CDTLogDebug(context, frmt, ...)                                                     \
     LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagDebug, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define LogVerbose(context, frmt, ...)                                                        \
+#define CDTLogVerbose(context, frmt, ...)                                                     \
     LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagVerbose, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define ChangeLogLevel(context, logLevel) CDTLoggingLevels[context - START_CONTEXT] = logLevel
+#define CDTChangeLogLevel(context, logLevel) CDTLoggingLevels[context - START_CONTEXT] = logLevel
 
 #endif

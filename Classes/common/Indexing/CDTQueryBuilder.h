@@ -15,9 +15,9 @@
 //
 #import <Foundation/Foundation.h>
 
-extern NSString* const CDTQueryBuilderErrorDomain;
+extern NSString *const CDTQueryBuilderErrorDomain;
 
-@interface CDTQueryBuilderResult : NSObject 
+@interface CDTQueryBuilderResult : NSObject
 
 /**
  The SQL query, including placeholder marks, to use for querying.
@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, CDTQueryBuilderError) {
      * For NSComparisonPredicates, we only support
      *  >, >=, <, <=, =, !=
      */
-    CDTQueryBuilderErrorUnknownComparisonPredicateType= 2,
+    CDTQueryBuilderErrorUnknownComparisonPredicateType = 2,
     /**
      * NSComparisonPredicate can have key expression on both sides,
      * we can only support key on one side and a constant on the other side
@@ -70,16 +70,14 @@ typedef NS_ENUM(NSInteger, CDTQueryBuilderError) {
 
 /**
  Builds a sql and parameter values for querying the local Cloudant Database
- 
+
  @param predicate NSPredicate to bulid the query
  @param options   Query options
  @param error     Error object to hold any errors
  @return an object containing the SQL, placeholder values and used indexes for this predicate
  */
-+ (CDTQueryBuilderResult*) buildWithPredicate: (NSPredicate*) predicate
-                                      options: (NSDictionary*) options
-                                        error: (NSError* __autoreleasing *) error;
++ (CDTQueryBuilderResult *)buildWithPredicate:(NSPredicate *)predicate
+                                      options:(NSDictionary *)options
+                                        error:(NSError *__autoreleasing *)error;
 
 @end
-
-

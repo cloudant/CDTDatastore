@@ -17,7 +17,6 @@
 //
 // <http://wiki.apache.org/couchdb/HTTP_database_API#Changes>
 
-
 #import "TDChangeTracker.h"
 #import "TDSocketChangeTracker.h"
 #import "TDAuthorizer.h"
@@ -26,42 +25,40 @@
 #import "TDJSON.h"
 #import "CDTLogging.h"
 
-
 #define kDefaultHeartbeat (5 * 60.0)
 
-#define kInitialRetryDelay 2.0      // Initial retry delay (doubles after every subsequent failure)
-#define kMaxRetryDelay 300.0        // ...but will never get longer than this
-
+#define kInitialRetryDelay 2.0  // Initial retry delay (doubles after every subsequent failure)
+#define kMaxRetryDelay 300.0    // ...but will never get longer than this
 
 @interface TDChangeTracker ()
 @property (readwrite, copy, nonatomic) id lastSequenceID;
 @end
 
-
 @implementation TDChangeTracker
 
-@synthesize lastSequenceID=_lastSequenceID, databaseURL=_databaseURL, mode=_mode;
-@synthesize limit=_limit, heartbeat=_heartbeat, error=_error;
-@synthesize client=_client, filterName=_filterName, filterParameters=_filterParameters;
-@synthesize requestHeaders = _requestHeaders, authorizer=_authorizer;
+@synthesize lastSequenceID = _lastSequenceID, databaseURL = _databaseURL, mode = _mode;
+@synthesize limit = _limit, heartbeat = _heartbeat, error = _error;
+@synthesize client = _client, filterName = _filterName, filterParameters = _filterParameters;
+@synthesize requestHeaders = _requestHeaders, authorizer = _authorizer;
 @synthesize docIDs = _docIDs;
 
-- (id)initWithDatabaseURL: (NSURL*)databaseURL
-                     mode: (TDChangeTrackerMode)mode
-                conflicts: (BOOL)includeConflicts
-             lastSequence: (id)lastSequenceID
-                   client: (id<TDChangeTrackerClient>)client {
+- (id)initWithDatabaseURL:(NSURL*)databaseURL
+                     mode:(TDChangeTrackerMode)mode
+                conflicts:(BOOL)includeConflicts
+             lastSequence:(id)lastSequenceID
+                   client:(id<TDChangeTrackerClient>)client
+{
     NSParameterAssert(databaseURL);
     NSParameterAssert(client);
     self = [super init];
     if (self) {
-        if([self class] == [TDChangeTracker class]) {
+        if ([self class] == [TDChangeTracker class]) {
             // TDChangeTracker is abstract; instantiate a concrete subclass instead.
-            return [[TDSocketChangeTracker alloc] initWithDatabaseURL: databaseURL
-                                                                 mode: mode
-                                                            conflicts: includeConflicts
-                                                         lastSequence: lastSequenceID
-                                                               client: client];
+            return [[TDSocketChangeTracker alloc] initWithDatabaseURL:databaseURL
+                                                                 mode:mode
+                                                            conflicts:includeConflicts
+                                                         lastSequence:lastSequenceID
+                                                               client:client];
         }
         _databaseURL = databaseURL;
         _client = client;
@@ -73,154 +70,159 @@
     return self;
 }
 
-- (NSString*) databaseName {
-    return _databaseURL.path.lastPathComponent;
-}
+- (NSString*)databaseName { return _databaseURL.path.lastPathComponent; }
 
-- (NSString*) changesFeedPath {
-    static NSString* const kModeNames[3] = {@"normal", @"longpoll", @"continuous"};
+- (NSString*)changesFeedPath
+{
+    static NSString* const kModeNames[3] = { @"normal", @"longpoll", @"continuous" };
     NSMutableString* path;
-    path = [NSMutableString stringWithFormat: @"_changes?feed=%@&heartbeat=%.0f",
-                                              kModeNames[_mode], _heartbeat*1000.0];
-    if (_includeConflicts)
-        [path appendString: @"&style=all_docs"];
+    path = [NSMutableString stringWithFormat:@"_changes?feed=%@&heartbeat=%.0f", kModeNames[_mode],
+                                             _heartbeat * 1000.0];
+    if (_includeConflicts) [path appendString:@"&style=all_docs"];
     id seq = _lastSequenceID;
     if (seq) {
         // BigCouch is now using arrays as sequence IDs. These need to be sent back JSON-encoded.
-        if ([seq isKindOfClass: [NSArray class]] || [seq isKindOfClass: [NSDictionary class]])
-            seq = [TDJSON stringWithJSONObject: seq options: 0 error: nil];
-        [path appendFormat: @"&since=%@", TDEscapeURLParam([seq description])];
+        if ([seq isKindOfClass:[NSArray class]] || [seq isKindOfClass:[NSDictionary class]])
+            seq = [TDJSON stringWithJSONObject:seq options:0 error:nil];
+        [path appendFormat:@"&since=%@", TDEscapeURLParam([seq description])];
     }
-    if (_limit > 0)
-        [path appendFormat: @"&limit=%u", _limit];
+    if (_limit > 0) [path appendFormat:@"&limit=%u", _limit];
     if (_filterName) {
-        [path appendFormat: @"&filter=%@", TDEscapeURLParam(_filterName)];
+        [path appendFormat:@"&filter=%@", TDEscapeURLParam(_filterName)];
         for (NSString* key in _filterParameters) {
             NSString* value = _filterParameters[key];
-            if (![value isKindOfClass: [NSString class]]) {
+            if (![value isKindOfClass:[NSString class]]) {
                 // It's ambiguous whether non-string filter params are allowed.
                 // If we get one, encode it as JSON:
                 NSError* error;
-                value = [TDJSON stringWithJSONObject: value options: TDJSONWritingAllowFragments
-                                               error: &error];
+                value = [TDJSON stringWithJSONObject:value
+                                             options:TDJSONWritingAllowFragments
+                                               error:&error];
                 if (!value) {
-                    LogInfo(REPLICATION_LOG_CONTEXT,@"Illegal filter parameter %@ = %@", key, _filterParameters[key]);
+                    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Illegal filter parameter %@ = %@", key,
+                            _filterParameters[key]);
                     continue;
                 }
             }
-            [path appendFormat: @"&%@=%@", TDEscapeURLParam(key),
-                                           TDEscapeURLParam(value)];
+            [path appendFormat:@"&%@=%@", TDEscapeURLParam(key), TDEscapeURLParam(value)];
         }
     }
-    
+
     if (_docIDs) {
-        
         if (_filterName) {
-            LogInfo(REPLICATION_LOG_CONTEXT,@"You can't set both a replication filter and doc_ids, since doc_ids uses the internal _doc_ids filter.");
-        } else {        
-            NSError *error;
-            NSString *docIDsParam = [TDJSON stringWithJSONObject: _docIDs options: TDJSONWritingAllowFragments
-                                                           error: &error];
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"You can't set both a replication filter and "
+                                             @"doc_ids, since doc_ids uses the internal _doc_ids "
+                                             @"filter.");
+        } else {
+            NSError* error;
+            NSString* docIDsParam = [TDJSON stringWithJSONObject:_docIDs
+                                                         options:TDJSONWritingAllowFragments
+                                                           error:&error];
             if (!docIDsParam || error) {
-                LogInfo(REPLICATION_LOG_CONTEXT,@"Illegal doc IDs %@, %@", [_docIDs description], [error localizedDescription]);
+                CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Illegal doc IDs %@, %@", [_docIDs description],
+                        [error localizedDescription]);
             }
             [path appendFormat:@"&filter=_doc_ids&doc_ids=%@", TDEscapeURLParam(docIDsParam)];
         }
     }
-    
+
     return path;
 }
 
-- (NSURL*) changesFeedURL {
-    return TDAppendToURL(_databaseURL, self.changesFeedPath);
+- (NSURL*)changesFeedURL { return TDAppendToURL(_databaseURL, self.changesFeedPath); }
+
+- (NSString*)description
+{
+    return [NSString stringWithFormat:@"%@[%p %@]", [self class], self, self.databaseName];
 }
 
-- (NSString*) description {
-    return [NSString stringWithFormat: @"%@[%p %@]", [self class], self, self.databaseName];
+- (void)dealloc { [self stop]; }
+
+- (void)setUpstreamError:(NSString*)message
+{
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Server error: %@", self, message);
+    self.error =
+        [NSError errorWithDomain:@"TDChangeTracker" code:kTDStatusUpstreamError userInfo:nil];
 }
 
-- (void) dealloc {
-    [self stop];
-}
-
-- (void) setUpstreamError: (NSString*)message {
-    LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Server error: %@", self, message);
-    self.error = [NSError errorWithDomain: @"TDChangeTracker" code: kTDStatusUpstreamError userInfo: nil];
-}
-
-- (BOOL) start {
+- (BOOL)start
+{
     self.error = nil;
     return NO;
 }
 
-- (void) stop {
-    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(retry)
-                                               object: nil];    // cancel pending retries
+- (void)stop
+{
+    [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                             selector:@selector(retry)
+                                               object:nil];  // cancel pending retries
     [self stopped];
 }
 
-- (void) stopped {
+- (void)stopped
+{
     _retryCount = 0;
     // Clear client ref so its -changeTrackerStopped: won't be called again during -dealloc
     id<TDChangeTrackerClient> client = _client;
     _client = nil;
-    if ([client respondsToSelector: @selector(changeTrackerStopped:)])
-        [client changeTrackerStopped: self];    // note: this method might release/dealloc me
+    if ([client respondsToSelector:@selector(changeTrackerStopped:)])
+        [client changeTrackerStopped:self];  // note: this method might release/dealloc me
 }
 
-
-- (void) failedWithError: (NSError*)error {
+- (void)failedWithError:(NSError*)error
+{
     // If the error may be transient (flaky network, server glitch), retry:
     if (TDMayBeTransientError(error)) {
         NSTimeInterval retryDelay = kInitialRetryDelay * (1 << MIN(_retryCount, 16U));
         retryDelay = MIN(retryDelay, kMaxRetryDelay);
         ++_retryCount;
-        LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Connection error, retrying in %.1f sec: %@",
-            self, retryDelay, error.localizedDescription);
-        [self performSelector: @selector(retry) withObject: nil afterDelay: retryDelay];
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Connection error, retrying in %.1f sec: %@", self,
+                retryDelay, error.localizedDescription);
+        [self performSelector:@selector(retry) withObject:nil afterDelay:retryDelay];
     } else {
-        LogInfo(REPLICATION_LOG_CONTEXT,@"%@: Can't connect, giving up: %@", self, error);
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Can't connect, giving up: %@", self, error);
         self.error = error;
         [self stopped];
     }
 }
 
-
-- (void) retry {
+- (void)retry
+{
     if ([self start]) {
-        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(retry)
-                                                   object: nil];    // cancel pending retries
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(retry)
+                                                   object:nil];  // cancel pending retries
     }
 }
 
-
-- (BOOL) receivedChange: (NSDictionary*)change {
-    if (![change isKindOfClass: [NSDictionary class]])
-        return NO;
+- (BOOL)receivedChange:(NSDictionary*)change
+{
+    if (![change isKindOfClass:[NSDictionary class]]) return NO;
     id seq = change[@"seq"];
     if (!seq) {
         // If a continuous feed closes (e.g. if its database is deleted), the last line it sends
         // will indicate the last_seq. This is normal, just ignore it and return success:
         return change[@"last_seq"] != nil;
     }
-    [_client changeTrackerReceivedChange: change];
+    [_client changeTrackerReceivedChange:change];
     self.lastSequenceID = seq;
     return YES;
 }
 
-- (BOOL) receivedChanges: (NSArray*)changes errorMessage: (NSString**)errorMessage {
-    if ([_client respondsToSelector: @selector(changeTrackerReceivedChanges:)]) {
-        [_client changeTrackerReceivedChanges: changes];
-        if (changes.count > 0)
-            self.lastSequenceID = [[changes lastObject] objectForKey: @"seq"];
+- (BOOL)receivedChanges:(NSArray*)changes errorMessage:(NSString**)errorMessage
+{
+    if ([_client respondsToSelector:@selector(changeTrackerReceivedChanges:)]) {
+        [_client changeTrackerReceivedChanges:changes];
+        if (changes.count > 0) self.lastSequenceID = [[changes lastObject] objectForKey:@"seq"];
     } else {
         for (NSDictionary* change in changes) {
-            if (![self receivedChange: change]) {
+            if (![self receivedChange:change]) {
                 if (errorMessage) {
-                    *errorMessage = $sprintf(@"Invalid change object: %@",
-                                             [TDJSON stringWithJSONObject: change
-                                                                  options:TDJSONWritingAllowFragments
-                                                                    error: nil]);
+                    *errorMessage =
+                        $sprintf(@"Invalid change object: %@",
+                                 [TDJSON stringWithJSONObject:change
+                                                      options:TDJSONWritingAllowFragments
+                                                        error:nil]);
                 }
                 return NO;
             }
@@ -229,13 +231,14 @@
     return YES;
 }
 
-- (NSInteger) receivedPollResponse: (NSData*)body errorMessage: (NSString**)errorMessage {
+- (NSInteger)receivedPollResponse:(NSData*)body errorMessage:(NSString**)errorMessage
+{
     if (!body) {
         *errorMessage = @"No body in response";
         return -1;
     }
     NSError* error;
-    id changeObj = [TDJSON JSONObjectWithData: body options: 0 error: &error];
+    id changeObj = [TDJSON JSONObjectWithData:body options:0 error:&error];
     if (!changeObj) {
         *errorMessage = $sprintf(@"JSON parse error: %@", error.localizedDescription);
         return -1;
@@ -246,8 +249,7 @@
         *errorMessage = @"No 'changes' array in response";
         return -1;
     }
-    if (![self receivedChanges: changes errorMessage: errorMessage])
-        return -1;
+    if (![self receivedChanges:changes errorMessage:errorMessage]) return -1;
     return changes.count;
 }
 

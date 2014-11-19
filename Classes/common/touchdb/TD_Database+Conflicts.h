@@ -19,6 +19,6 @@
 
 @interface TD_Database (Conflicts)
 
--(NSArray *) getConflictedDocumentIds;
+- (NSArray *)getConflictedDocumentIds;
 
 @end

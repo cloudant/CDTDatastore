@@ -9,14 +9,12 @@
 #import "TD_Database+Attachments.h"
 #import "TDBlobStore.h"
 
-
 /** A simple container for attachment metadata. */
-@interface TD_Attachment : NSObject
-{
-    @private
+@interface TD_Attachment : NSObject {
+   @private
     NSString* _name;
     NSString* _contentType;
-    @public
+   @public
     // Yes, these are public. They're simple scalar values so it's not really worth
     // creating accessor methods for them all.
     TDBlobKey blobKey;
@@ -26,7 +24,7 @@
     unsigned revpos;
 }
 
-- (id) initWithName: (NSString*)name contentType: (NSString*)contentType;
+- (id)initWithName:(NSString*)name contentType:(NSString*)contentType;
 
 @property (readonly, nonatomic) NSString* name;
 @property (readonly, nonatomic) NSString* contentType;

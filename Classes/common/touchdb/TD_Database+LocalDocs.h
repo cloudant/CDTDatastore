@@ -10,17 +10,14 @@
 
 #import "TD_Database.h"
 
-
 @interface TD_Database (LocalDocs)
 
-- (TD_Revision*) getLocalDocumentWithID: (NSString*)docID 
-                            revisionID: (NSString*)revID;
+- (TD_Revision *)getLocalDocumentWithID:(NSString *)docID revisionID:(NSString *)revID;
 
-- (TD_Revision*) putLocalRevision: (TD_Revision*)revision
-                  prevRevisionID: (NSString*)prevRevID
-                          status: (TDStatus*)outStatus;
+- (TD_Revision *)putLocalRevision:(TD_Revision *)revision
+                   prevRevisionID:(NSString *)prevRevID
+                           status:(TDStatus *)outStatus;
 
-- (TDStatus) deleteLocalDocumentWithID: (NSString*)docID
-                            revisionID: (NSString*)revID;
+- (TDStatus)deleteLocalDocumentWithID:(NSString *)docID revisionID:(NSString *)revID;
 
 @end

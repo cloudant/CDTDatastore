@@ -1,6 +1,6 @@
 //
 //  CDTReplicatorFactory.m
-//  
+//
 //
 //  Created by Michael Rhodes on 10/12/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
@@ -27,14 +27,13 @@
 
 #import "TDReplicatorManager.h"
 
-static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryErrorDomain";
-
+static NSString *const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryErrorDomain";
 
 @interface CDTReplicatorFactory ()
 
-@property (nonatomic,strong) CDTDatastoreManager *manager;
+@property (nonatomic, strong) CDTDatastoreManager *manager;
 
-@property (nonatomic,strong) TDReplicatorManager *replicatorManager;
+@property (nonatomic, strong) TDReplicatorManager *replicatorManager;
 
 @end
 
@@ -42,8 +41,8 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
 
 #pragma mark Manage our TDReplicatorManager instance
 
-- (id) initWithDatastoreManager: (CDTDatastoreManager*)dsManager {
-
+- (id)initWithDatastoreManager:(CDTDatastoreManager *)dsManager
+{
     self = [super init];
     if (self) {
         self.manager = dsManager;
@@ -53,61 +52,51 @@ static NSString* const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
     return self;
 }
 
-- (void) start {
-    [self.replicatorManager start];
-}
+- (void)start { [self.replicatorManager start]; }
 
-- (void) stop {
-    [self.replicatorManager stop];
-}
+- (void)stop { [self.replicatorManager stop]; }
 
-- (void) dealloc {
-    [self stop];
-}
+- (void)dealloc { [self stop]; }
 
 #pragma mark CDTReplicatorFactory interface methods
 
-- (CDTReplicator*)onewaySourceDatastore:(CDTDatastore*)source
-                              targetURI:(NSURL*)target {
-    
+- (CDTReplicator *)onewaySourceDatastore:(CDTDatastore *)source targetURI:(NSURL *)target
+{
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:source target:target];
 
     return [self oneWay:push error:nil];
 }
 
-- (CDTReplicator*)onewaySourceURI:(NSURL*)source
-                  targetDatastore:(CDTDatastore*)target {
-
+- (CDTReplicator *)onewaySourceURI:(NSURL *)source targetDatastore:(CDTDatastore *)target
+{
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:target];
-    
+
     return [self oneWay:pull error:nil];
 }
 
-
-- (CDTReplicator*)oneWay:(CDTAbstractReplication*)replication
-                   error:(NSError * __autoreleasing *)error
+- (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
+                    error:(NSError *__autoreleasing *)error
 {
-    
     NSError *localError;
-    CDTReplicator *replicator = [[CDTReplicator alloc]
-                                 initWithTDReplicatorManager:self.replicatorManager
-                                                 replication:replication
-                                                       error:&localError];
-    
+    CDTReplicator *replicator =
+        [[CDTReplicator alloc] initWithTDReplicatorManager:self.replicatorManager
+                                               replication:replication
+                                                     error:&localError];
+
     if (replicator == nil) {
-        LogWarn(REPLICATION_LOG_CONTEXT,@"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
-              @"%@\n %@", [replication class], replication);
-        
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                @"CDTReplicatorFactory -oneWay:error: Error. Unable to create CDTReplicator. "
+                @"%@\n %@",
+                [replication class], replication);
+
         if (error) {
             *error = localError;
         }
-            
+
         return nil;
     }
-    
+
     return replicator;
-
 }
-
 
 @end

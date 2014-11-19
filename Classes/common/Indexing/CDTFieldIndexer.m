@@ -1,6 +1,6 @@
 //
 //  CDTFieldIndexer.m
-//  
+//
 //
 //  Created by Thomas Blench on 06/02/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -23,30 +23,27 @@
 
 @implementation CDTFieldIndexer
 
--(id)initWithFieldName:(NSString*)fieldName
-                  type:(CDTIndexType)type
+- (id)initWithFieldName:(NSString *)fieldName type:(CDTIndexType)type
 {
     self = [super init];
     if (self) {
         _fieldName = fieldName;
         _type = type;
-        
     }
     return self;
 }
 
--(NSArray*)valuesForRevision:(CDTDocumentRevision*)revision
-                   indexName:(NSString*)indexName
+- (NSArray *)valuesForRevision:(CDTDocumentRevision *)revision indexName:(NSString *)indexName
 {
     NSObject *value = [[revision body] valueForKey:_fieldName];
-    
+
     // only index strings, numbers, or arrays
-    if ([value isKindOfClass: [NSString class]] || [value isKindOfClass: [NSNumber class]]) {
-        return @[value];
-    } else if ([value isKindOfClass: [NSArray class]]) {
-        return (NSArray*)value;
+    if ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]]) {
+        return @[ value ];
+    } else if ([value isKindOfClass:[NSArray class]]) {
+        return (NSArray *)value;
     }
-    
+
     return nil;
 }
 

@@ -1,6 +1,6 @@
 //
 //  CDTDatastore+Attachments.h
-//  
+//
 //
 //  Created by Michael Rhodes on 24/03/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -48,29 +48,27 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
 
  @return NSArray of CDTAttachment
  */
--(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
-                        error:(NSError * __autoreleasing *)error;
+- (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev error:(NSError *__autoreleasing *)error;
 
-
--(NSArray*) attachmentsForRev:(CDTDocumentRevision*)rev
-                inTransaction:(FMDatabase *)db
-                        error:(NSError * __autoreleasing *)error;
+- (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev
+                 inTransaction:(FMDatabase *)db
+                         error:(NSError *__autoreleasing *)error;
 
 /*
  Streams attachment data into a blob in the blob store.
  Returns nil if there was a problem, otherwise a dictionary
  with the sha and size of the file.
  */
--(NSDictionary*)streamAttachmentToBlobStore:(CDTAttachment*)attachment
-                                      error:(NSError * __autoreleasing *)error;
+- (NSDictionary *)streamAttachmentToBlobStore:(CDTAttachment *)attachment
+                                        error:(NSError *__autoreleasing *)error;
 
 /*
  Add the row in the attachments table for a given attachment.
  The attachments dict should store the attachments CDTAttachment
  object, its length and its sha key.
  */
--(BOOL) addAttachment:(NSDictionary*)attachmentData
-                toRev:(CDTDocumentRevision*)revision
-           inDatabase:(FMDatabase*)db;
+- (BOOL)addAttachment:(NSDictionary *)attachmentData
+                toRev:(CDTDocumentRevision *)revision
+           inDatabase:(FMDatabase *)db;
 
 @end

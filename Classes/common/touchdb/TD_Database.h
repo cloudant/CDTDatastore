@@ -14,8 +14,7 @@
 #import "TDMisc.h"
 
 @class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
-struct TDQueryOptions;      // declared in TD_View.h
-
+struct TDQueryOptions;  // declared in TD_View.h
 
 /** NSNotification posted when a document is updated.
     UserInfo keys: @"rev": the new TD_Revision, @"source": NSURL of remote db pulled from,
@@ -28,24 +27,22 @@ extern NSString* const TD_DatabaseWillCloseNotification;
 /** NSNotification posted when a database is about to be deleted (but before it closes). */
 extern NSString* const TD_DatabaseWillBeDeletedNotification;
 
-
-
 /** Options for what metadata to include in document bodies */
 typedef unsigned TDContentOptions;
 enum {
-    kTDIncludeAttachments = 1,              // adds inline bodies of attachments
-    kTDIncludeConflicts = 2,                // adds '_conflicts' property (if relevant)
-    kTDIncludeRevs = 4,                     // adds '_revisions' property
-    kTDIncludeRevsInfo = 8,                 // adds '_revs_info' property
-    kTDIncludeLocalSeq = 16,                // adds '_local_seq' property
-    kTDLeaveAttachmentsEncoded = 32,        // i.e. don't decode
-    kTDBigAttachmentsFollow = 64,           // i.e. add 'follows' key instead of data for big ones
-    kTDNoBody = 128,                        // omit regular doc body properties
+    kTDIncludeAttachments = 1,        // adds inline bodies of attachments
+    kTDIncludeConflicts = 2,          // adds '_conflicts' property (if relevant)
+    kTDIncludeRevs = 4,               // adds '_revisions' property
+    kTDIncludeRevsInfo = 8,           // adds '_revs_info' property
+    kTDIncludeLocalSeq = 16,          // adds '_local_seq' property
+    kTDLeaveAttachmentsEncoded = 32,  // i.e. don't decode
+    kTDBigAttachmentsFollow = 64,     // i.e. add 'follows' key instead of data for big ones
+    kTDNoBody = 128,                  // omit regular doc body properties
 };
 
-
 /** Options for _changes feed (-changesSinceSequence:). */
-typedef struct TDChangesOptions {
+typedef struct TDChangesOptions
+{
     unsigned limit;
     TDContentOptions contentOptions;
     BOOL includeDocs;
@@ -55,15 +52,12 @@ typedef struct TDChangesOptions {
 
 extern const TDChangesOptions kDefaultTDChangesOptions;
 
-
-
 /** A TouchDB database. */
-@interface TD_Database : NSObject
-{
-    @private
+@interface TD_Database : NSObject {
+   @private
     NSString* _path;
     NSString* _name;
-    FMDatabaseQueue *_fmdbQueue;
+    FMDatabaseQueue* _fmdbQueue;
     BOOL _readOnly;
     BOOL _open;
     int _transactionLevel;
@@ -72,29 +66,32 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     TDBlobStore* _attachments;
     NSMutableDictionary* _pendingAttachmentsByDigest;
     NSMutableArray* _activeReplicators;
-}    
-        
-- (id) initWithPath: (NSString*)path;
-- (BOOL) open;
-- (BOOL) close;
-- (BOOL) deleteDatabase: (NSError**)outError;
+}
 
-+ (TD_Database*) createEmptyDBAtPath: (NSString*)path;
+- (id)initWithPath:(NSString*)path;
+- (BOOL)open;
+- (BOOL)close;
+- (BOOL)deleteDatabase:(NSError**)outError;
+
++ (TD_Database*)createEmptyDBAtPath:(NSString*)path;
 
 /** Should the database file be opened in read-only mode? */
 @property BOOL readOnly;
 
-@property (nonatomic,readonly) FMDatabaseQueue *fmdbQueue;
+@property (nonatomic, readonly) FMDatabaseQueue* fmdbQueue;
 
 /** Replaces the database with a copy of another database.
-    This is primarily used to install a canned database on first launch of an app, in which case you should first check .exists to avoid replacing the database if it exists already. The canned database would have been copied into your app bundle at build time.
+    This is primarily used to install a canned database on first launch of an app, in which case you
+   should first check .exists to avoid replacing the database if it exists already. The canned
+   database would have been copied into your app bundle at build time.
     @param databasePath  Path of the database file that should replace this one.
-    @param attachmentsPath  Path of the associated attachments directory, or nil if there are no attachments.
+    @param attachmentsPath  Path of the associated attachments directory, or nil if there are no
+   attachments.
     @param error  If an error occurs, it will be stored into this parameter on return.
     @return  YES if the database was copied, NO if an error occurred. */
-- (BOOL) replaceWithDatabaseFile: (NSString*)databasePath
-                 withAttachments: (NSString*)attachmentsPath
-                           error: (NSError**)outError;
+- (BOOL)replaceWithDatabaseFile:(NSString*)databasePath
+                withAttachments:(NSString*)attachmentsPath
+                          error:(NSError**)outError;
 
 @property (readonly) NSString* path;
 @property (readonly, copy) NSString* name;
@@ -109,97 +106,93 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 /** Executes the block within a database transaction.
     If the block returns a non-OK status, the transaction is aborted/rolled back.
     Any exception raised by the block will be caught and treated as kTDStatusException. */
-- (TDStatus) inTransaction: (TDStatus(^)(FMDatabase*))block;
+- (TDStatus)inTransaction:(TDStatus (^)(FMDatabase*))block;
 
 // DOCUMENTS:
 
-- (TD_Revision*) getDocumentWithID: (NSString*)docID 
-                       revisionID: (NSString*)revID
-                          options: (TDContentOptions)options
-                           status: (TDStatus*)outStatus;
-- (TD_Revision*) getDocumentWithID: (NSString*)docID
-                       revisionID: (NSString*)revID;
+- (TD_Revision*)getDocumentWithID:(NSString*)docID
+                       revisionID:(NSString*)revID
+                          options:(TDContentOptions)options
+                           status:(TDStatus*)outStatus;
+- (TD_Revision*)getDocumentWithID:(NSString*)docID revisionID:(NSString*)revID;
 
 /** Only call from within a queued transaction **/
-- (TD_Revision*) getDocumentWithID: (NSString*)docID
-                        revisionID: (NSString*)revID
-                           options: (TDContentOptions)options
-                            status: (TDStatus*)outStatus
-                          database: (FMDatabase*)db;
+- (TD_Revision*)getDocumentWithID:(NSString*)docID
+                       revisionID:(NSString*)revID
+                          options:(TDContentOptions)options
+                           status:(TDStatus*)outStatus
+                         database:(FMDatabase*)db;
 
-- (BOOL) existsDocumentWithID: (NSString*)docID
-                   revisionID: (NSString*)revID
-                     database: (FMDatabase*)db;
+- (BOOL)existsDocumentWithID:(NSString*)docID revisionID:(NSString*)revID database:(FMDatabase*)db;
 
-- (TDStatus) loadRevisionBody: (TD_Revision*)rev
-                      options: (TDContentOptions)options;
+- (TDStatus)loadRevisionBody:(TD_Revision*)rev options:(TDContentOptions)options;
 
-- (TDStatus) loadRevisionBody: (TD_Revision*)rev
-                      options: (TDContentOptions)options
-                     database: (FMDatabase*)db;
+- (TDStatus)loadRevisionBody:(TD_Revision*)rev
+                     options:(TDContentOptions)options
+                    database:(FMDatabase*)db;
 
 /** Returns an array of TDRevs in reverse chronological order,
  starting with the given revision. */
-- (NSArray*) getRevisionHistory: (TD_Revision*)rev;
-- (NSArray*) getRevisionHistory: (TD_Revision*)rev database:(FMDatabase*)db;
+- (NSArray*)getRevisionHistory:(TD_Revision*)rev;
+- (NSArray*)getRevisionHistory:(TD_Revision*)rev database:(FMDatabase*)db;
 
-/** Returns the revision history as a _revisions dictionary, as returned by the REST API's ?revs=true option. */
-- (NSDictionary*) getRevisionHistoryDict: (TD_Revision*)rev inDatabase:(FMDatabase*)db;
+/** Returns the revision history as a _revisions dictionary, as returned by the REST API's
+ * ?revs=true option. */
+- (NSDictionary*)getRevisionHistoryDict:(TD_Revision*)rev inDatabase:(FMDatabase*)db;
 
-/** 
+/**
  Returns all the known revisions (or all current/conflicting revisions) of a document.
- Each database document (i.e. each row in the revs table) contains a 'current' and 'deleted' element.
+ Each database document (i.e. each row in the revs table) contains a 'current' and 'deleted'
+ element.
  A row/documuent that has current = 1 is a leaf node in the revision tree for that document.
  And 'deleted', of course, indicates a deleted revision.
- 
+
  For example, this method may be used to get all active conflicting revisions for a document by
  calling this method with onlyCurrent=YES and excludeDeleted=YES.
- 
- Calling this method with onlyCurrent=NO and excludeDelete=NO will return the entire 
+
+ Calling this method with onlyCurrent=NO and excludeDelete=NO will return the entire
  set of revisions.
  */
-- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
-                                     onlyCurrent: (BOOL)onlyCurrent
-                                  excludeDeleted: (BOOL)excludeDeleted;
+- (TD_RevisionList*)getAllRevisionsOfDocumentID:(NSString*)docID
+                                    onlyCurrent:(BOOL)onlyCurrent
+                                 excludeDeleted:(BOOL)excludeDeleted;
 /**
- Sams as the method above, but is to be used within an ongoing database transaction. 
+ Sams as the method above, but is to be used within an ongoing database transaction.
  */
-- (TD_RevisionList*) getAllRevisionsOfDocumentID: (NSString*)docID
-                                     onlyCurrent: (BOOL)onlyCurrent
-                                  excludeDeleted: (BOOL)excludeDeleted
-                                        database: (FMDatabase*)db;
+- (TD_RevisionList*)getAllRevisionsOfDocumentID:(NSString*)docID
+                                    onlyCurrent:(BOOL)onlyCurrent
+                                 excludeDeleted:(BOOL)excludeDeleted
+                                       database:(FMDatabase*)db;
 
 /** Returns IDs of local revisions of the same document, that have a lower generation number.
     Does not return revisions whose bodies have been compacted away, or deletion markers. */
-- (NSArray*) getPossibleAncestorRevisionIDs: (TD_Revision*)rev
-                                      limit: (unsigned)limit;
+- (NSArray*)getPossibleAncestorRevisionIDs:(TD_Revision*)rev limit:(unsigned)limit;
 
 /** Returns the most recent member of revIDs that appears in rev's ancestry. */
-- (NSString*) findCommonAncestorOf: (TD_Revision*)rev withRevIDs: (NSArray*)revIDs database:(FMDatabase*)db;
+- (NSString*)findCommonAncestorOf:(TD_Revision*)rev
+                       withRevIDs:(NSArray*)revIDs
+                         database:(FMDatabase*)db;
 
 // VIEWS & QUERIES:
 
-- (NSDictionary*) getAllDocs: (const struct TDQueryOptions*)options;
+- (NSDictionary*)getAllDocs:(const struct TDQueryOptions*)options;
 
-- (NSDictionary*) getDocsWithIDs: (NSArray*)docIDs
-                         options: (const struct TDQueryOptions*)options;
+- (NSDictionary*)getDocsWithIDs:(NSArray*)docIDs options:(const struct TDQueryOptions*)options;
 
-- (TD_View*) viewNamed: (NSString*)name;
+- (TD_View*)viewNamed:(NSString*)name;
 
-- (TD_View*) existingViewNamed: (NSString*)name;
+- (TD_View*)existingViewNamed:(NSString*)name;
 
 /** Returns the view with the given name. If there is none, and the name is in CouchDB
     format ("designdocname/viewname"), it attempts to load the view properties from the
     design document and compile them with the TDViewCompiler. */
-- (TD_View*) compileViewNamed: (NSString*)name status: (TDStatus*)outStatus;
+- (TD_View*)compileViewNamed:(NSString*)name status:(TDStatus*)outStatus;
 
 @property (readonly) NSArray* allViews;
 
-- (TD_RevisionList*) changesSinceSequence: (SequenceNumber)lastSequence
-                                 options: (const TDChangesOptions*)options
-                                  filter: (TD_FilterBlock)filter
-                                  params: (NSDictionary*)filterParams;
-
-
+- (TD_RevisionList*)changesSinceSequence:(SequenceNumber)lastSequence
+                                 options:(const TDChangesOptions*)options
+                                  filter:(TD_FilterBlock)filter
+                                  params:(NSDictionary*)filterParams;
 
 @end

@@ -17,8 +17,7 @@
 One must -start (-stop) the TDReplicatorManager in order to setup (destroy) the replication
  thread on which individual TDReplicators execute.
 */
-@interface TDReplicatorManager : NSObject
-{
+@interface TDReplicatorManager : NSObject {
     TD_DatabaseManager* _dbManager;
     NSThread* _thread;
     NSMutableDictionary* _replicatorsBySessionID;
@@ -28,17 +27,16 @@ One must -start (-stop) the TDReplicatorManager in order to setup (destroy) the 
     BOOL _stopRunLoop;
 }
 
-- (id) initWithDatabaseManager: (TD_DatabaseManager*)dbManager;
+- (id)initWithDatabaseManager:(TD_DatabaseManager*)dbManager;
 
-- (void) start;
-- (void) stop;
+- (void)start;
+- (void)stop;
 
-- (TDReplicator* ) createReplicatorWithProperties:(NSDictionary*) properties
-                                            error:(NSError *__autoreleasing*)error;
-- (void) startReplicator: (TDReplicator*) repl;
+- (TDReplicator*)createReplicatorWithProperties:(NSDictionary*)properties
+                                          error:(NSError* __autoreleasing*)error;
+- (void)startReplicator:(TDReplicator*)repl;
 /** Attempts to cancel the start of a particular TDReplicator before it is started. Returns
  YES if successful or NO if the TDReplicator has already started.*/
-- (BOOL) cancelIfNotStarted:(TDReplicator *)repl;
-
+- (BOOL)cancelIfNotStarted:(TDReplicator*)repl;
 
 @end

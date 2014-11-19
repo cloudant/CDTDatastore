@@ -17,26 +17,19 @@
 @class TDChangeTracker;
 @protocol TDAuthorizer;
 
-
 @protocol TDChangeTrackerClient <NSObject>
 @optional
-- (void) changeTrackerReceivedChange: (NSDictionary*)change;
-- (void) changeTrackerReceivedChanges: (NSArray*)changes;
-- (void) changeTrackerStopped: (TDChangeTracker*)tracker;
+- (void)changeTrackerReceivedChange:(NSDictionary*)change;
+- (void)changeTrackerReceivedChanges:(NSArray*)changes;
+- (void)changeTrackerStopped:(TDChangeTracker*)tracker;
 @end
 
+typedef enum TDChangeTrackerMode { kOneShot, kLongPoll, kContinuous } TDChangeTrackerMode;
 
-typedef enum TDChangeTrackerMode {
-    kOneShot,
-    kLongPoll,
-    kContinuous
-} TDChangeTrackerMode;
-
-
-/** Reads the continuous-mode _changes feed of a database, and sends the individual change entries to its client.  */
-@interface TDChangeTracker : NSObject <NSStreamDelegate>
-{
-    @protected
+/** Reads the continuous-mode _changes feed of a database, and sends the individual change entries
+ * to its client.  */
+@interface TDChangeTracker : NSObject <NSStreamDelegate> {
+   @protected
     NSURL* _databaseURL;
     id<TDChangeTrackerClient> __weak _client;
     TDChangeTrackerMode _mode;
@@ -52,11 +45,11 @@ typedef enum TDChangeTrackerMode {
     unsigned _retryCount;
 }
 
-- (id)initWithDatabaseURL: (NSURL*)databaseURL
-                     mode: (TDChangeTrackerMode)mode
-                conflicts: (BOOL)includeConflicts
-             lastSequence: (id)lastSequenceID
-                   client: (id<TDChangeTrackerClient>)client;
+- (id)initWithDatabaseURL:(NSURL*)databaseURL
+                     mode:(TDChangeTrackerMode)mode
+                conflicts:(BOOL)includeConflicts
+             lastSequence:(id)lastSequenceID
+                   client:(id<TDChangeTrackerClient>)client;
 
 @property (readonly, nonatomic) NSURL* databaseURL;
 @property (readonly, nonatomic) NSString* databaseName;
@@ -64,7 +57,7 @@ typedef enum TDChangeTrackerMode {
 @property (readonly, copy, nonatomic) id lastSequenceID;
 @property (strong, nonatomic) NSError* error;
 @property (weak, nonatomic) id<TDChangeTrackerClient> client;
-@property (strong, nonatomic) NSDictionary *requestHeaders;
+@property (strong, nonatomic) NSDictionary* requestHeaders;
 @property (strong, nonatomic) id<TDAuthorizer> authorizer;
 
 @property (nonatomic) TDChangeTrackerMode mode;
@@ -72,23 +65,23 @@ typedef enum TDChangeTrackerMode {
 @property (copy) NSDictionary* filterParameters;
 @property (nonatomic) unsigned limit;
 @property (nonatomic) NSTimeInterval heartbeat;
-@property (nonatomic) NSArray *docIDs;
+@property (nonatomic) NSArray* docIDs;
 
-- (BOOL) start;
-- (void) stop;
+- (BOOL)start;
+- (void)stop;
 
 /** Asks the tracker to retry connecting, _if_ it's currently disconnected but waiting to retry.
     This should be called when the reachability of the remote host changes, or when the
     app is reactivated. */
-- (void) retry;
+- (void)retry;
 
 // Protected
 @property (readonly) NSString* changesFeedPath;
-- (void) setUpstreamError: (NSString*)message;
-- (void) failedWithError: (NSError*)error;
-- (NSInteger) receivedPollResponse: (NSData*)body errorMessage: (NSString**)errorMessage;
-- (BOOL) receivedChanges: (NSArray*)changes errorMessage: (NSString**)errorMessage;
-- (BOOL) receivedChange: (NSDictionary*)change;
-- (void) stopped; // override this
+- (void)setUpstreamError:(NSString*)message;
+- (void)failedWithError:(NSError*)error;
+- (NSInteger)receivedPollResponse:(NSData*)body errorMessage:(NSString**)errorMessage;
+- (BOOL)receivedChanges:(NSArray*)changes errorMessage:(NSString**)errorMessage;
+- (BOOL)receivedChange:(NSDictionary*)change;
+- (void)stopped;  // override this
 
 @end

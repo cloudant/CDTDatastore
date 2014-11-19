@@ -1,6 +1,6 @@
 //
 //  CDTDatastore+Internal.h
-//  
+//
 //  Created by G. Adam Cox on 27/03/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
@@ -11,7 +11,6 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
-
 
 #import "CDTDatastore.h"
 @class FMDatabase;
@@ -46,11 +45,11 @@
  * @param docId the document ID
  * @param db the FMDatabase object being used in the current database transaction
  */
--(NSArray*) activeRevisionsForDocumentId:(NSString*)docId database:(FMDatabase *)db;
+- (NSArray *)activeRevisionsForDocumentId:(NSString *)docId database:(FMDatabase *)db;
 
 /**
  This method is the same as above, but opens a separate database transaction
  */
--(NSArray*) activeRevisionsForDocumentId:(NSString *)docId;
+- (NSArray *)activeRevisionsForDocumentId:(NSString *)docId;
 
 @end

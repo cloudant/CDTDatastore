@@ -18,7 +18,7 @@
 
 @implementation CDTSQLiteHelpers
 
-+(NSString*)makeUpdatePlaceholders:(NSDictionary*)dict
++ (NSString *)makeUpdatePlaceholders:(NSDictionary *)dict
 {
     NSMutableArray *arr = [[NSMutableArray alloc] init];
     for (NSString *key in [dict keyEnumerator]) {
@@ -27,7 +27,7 @@
     return [arr componentsJoinedByString:@", "];
 }
 
-+(NSString*)makeInsertPlaceholders:(NSDictionary*)dict
++ (NSString *)makeInsertPlaceholders:(NSDictionary *)dict
 {
     NSMutableArray *arr = [[NSMutableArray alloc] init];
     for (NSString *key in [dict keyEnumerator]) {

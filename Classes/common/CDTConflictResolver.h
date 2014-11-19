@@ -19,10 +19,10 @@
 
 /**
  Protocol adopted by classes that implement a conflict resolution algorithm.
- 
+
  These classes are supplied as an argument to
  + [CDTDatastore resolveConflictsForDocument:resolver:error:].
- 
+
  @see CDTDatastore
  */
 
@@ -30,8 +30,8 @@
 
 /**
  * The implementation of this method should examine the conflicted revisions and return
- * a winning CDTDocumentRevision from the conflicts array. You may not create a new 
- * CDTDocumentRevision. If you wish to merge revisions to create a new winning revision, 
+ * a winning CDTDocumentRevision from the conflicts array. You may not create a new
+ * CDTDocumentRevision. If you wish to merge revisions to create a new winning revision,
  * call mutableCopy on a CDTDocumentRevision you wish to be parent revision, and then merge
  * the data from the conflicted revisions into the new revision.
  *
@@ -39,8 +39,8 @@
  * if there are conflicts found for the document ID.
  *
  * When called by [CDTDatastore resolveConflictsForDocument:resolver:error:],
- * the returned CDTDocumentRevision or CDTMutableDocumentRevision is declared the winner and all 
- * other conflicting revisions in the tree will be deleted. This all happens within a single 
+ * the returned CDTDocumentRevision or CDTMutableDocumentRevision is declared the winner and all
+ * other conflicting revisions in the tree will be deleted. This all happens within a single
  * database transaction in order to ensure atomicity.
  *
  * The output of this method should be deterministic. That is, for the given docId and
@@ -48,7 +48,7 @@
  * all calls.
  *
  * Additionally, this method should not modify other documents or attempt to query the database
- * (via calls to CDTDatastore methods). Doing so will create a blocking transaction to 
+ * (via calls to CDTDatastore methods). Doing so will create a blocking transaction to
  * the database; the code will never excute and this method will hang indefinitely.
  *
  * Finally, if `nil` is returned by this method, nothing will be changed in the database and the
@@ -61,8 +61,6 @@
  + *         currently is (i.e., leave the database unchanged).
  *
  */
--(CDTDocumentRevision *)resolve:(NSString*)docId
-                      conflicts:(NSArray*)conflicts;
-
+- (CDTDocumentRevision *)resolve:(NSString *)docId conflicts:(NSArray *)conflicts;
 
 @end

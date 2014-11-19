@@ -19,10 +19,10 @@
 
 @implementation TDBatcher
 
-
-- (id) initWithCapacity: (NSUInteger)capacity
-                  delay: (NSTimeInterval)delay
-              processor: (void (^)(NSArray*))block {
+- (id)initWithCapacity:(NSUInteger)capacity
+                 delay:(NSTimeInterval)delay
+             processor:(void (^)(NSArray*))block
+{
     self = [super init];
     if (self) {
         _capacity = capacity;
@@ -32,28 +32,26 @@
     return self;
 }
 
-
-
-
-- (void) unschedule {
+- (void)unschedule
+{
     _scheduled = false;
-    [NSObject cancelPreviousPerformRequestsWithTarget: self
-                                             selector: @selector(processNow) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                             selector:@selector(processNow)
+                                               object:nil];
 }
 
-
-- (void) scheduleWithDelay: (NSTimeInterval)delay {
-    if (_scheduled && delay < _scheduledDelay)
-        [self unschedule];
+- (void)scheduleWithDelay:(NSTimeInterval)delay
+{
+    if (_scheduled && delay < _scheduledDelay) [self unschedule];
     if (!_scheduled) {
         _scheduled = true;
         _scheduledDelay = delay;
-        [self performSelector: @selector(processNow) withObject: nil afterDelay: delay];
+        [self performSelector:@selector(processNow) withObject:nil afterDelay:delay];
     }
 }
 
-
-- (void) processNow {
+- (void)processNow
+{
     _scheduled = false;
     NSArray* toProcess;
     NSUInteger count = _inbox.count;
@@ -63,43 +61,38 @@
         toProcess = _inbox;
         _inbox = nil;
     } else {
-        toProcess = [_inbox subarrayWithRange: NSMakeRange(0, _capacity)];
-        [_inbox removeObjectsInRange: NSMakeRange(0, _capacity)];
+        toProcess = [_inbox subarrayWithRange:NSMakeRange(0, _capacity)];
+        [_inbox removeObjectsInRange:NSMakeRange(0, _capacity)];
         // There are more objects left, so schedule them Real Soon:
-        [self scheduleWithDelay: 0.0];
+        [self scheduleWithDelay:0.0];
     }
     _processor(toProcess);
 }
 
-
-- (void) queueObjects: (NSArray*)objects {
-    if (objects.count == 0)
-        return;
-    if (!_inbox)
-        _inbox = [[NSMutableArray alloc] init];
-    [_inbox addObjectsFromArray: objects];
+- (void)queueObjects:(NSArray*)objects
+{
+    if (objects.count == 0) return;
+    if (!_inbox) _inbox = [[NSMutableArray alloc] init];
+    [_inbox addObjectsFromArray:objects];
 
     if (_inbox.count < _capacity)
-        [self scheduleWithDelay: _delay];
+        [self scheduleWithDelay:_delay];
     else {
         [self unschedule];
         [self processNow];
     }
 }
 
+- (void)queueObject:(id)object { [self queueObjects:@[ object ]]; }
 
-- (void) queueObject: (id)object {
-    [self queueObjects: @[object]];
-}
-
-
-- (void) flush {
+- (void)flush
+{
     [self unschedule];
     [self processNow];
 }
 
-
-- (void) flushAll {
+- (void)flushAll
+{
     if (_inbox.count > 0) {
         [self unschedule];
         NSArray* toProcess = _inbox;
@@ -108,10 +101,6 @@
     }
 }
 
-
-- (NSUInteger) count {
-    return _inbox.count;
-}
-
+- (NSUInteger)count { return _inbox.count; }
 
 @end

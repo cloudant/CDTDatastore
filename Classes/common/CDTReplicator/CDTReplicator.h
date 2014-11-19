@@ -33,17 +33,16 @@ typedef NS_ENUM(NSInteger, CDTReplicatorErrors) {
     /**
      Internal error: unable to create a new TDReplicator object
      */
-    CDTReplicatorErrorTDReplicatorNil  = 2,
+    CDTReplicatorErrorTDReplicatorNil = 2,
     /**
      Internal error: TDReplicator object of wrong type.
      */
-    CDTReplicatorErrorTDReplicatorWrongType  = 3,
+    CDTReplicatorErrorTDReplicatorWrongType = 3,
     /**
      Internal error: TDReplicator reports local database deleted
      */
     CDTReplicatorErrorLocalDatabaseDeleted = 4
 };
-
 
 /**
  * Describes the state of a CDTReplicator at a given moment.
@@ -88,7 +87,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  */
 @interface CDTReplicator : NSObject
 
-
 /**---------------------------------------------------------------------------------------
  * @name Replication status
  *  --------------------------------------------------------------------------------------
@@ -122,7 +120,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see CDTReplicatorDelegate
  */
-@property (nonatomic,weak) NSObject<CDTReplicatorDelegate> *delegate;
+@property (nonatomic, weak) NSObject<CDTReplicatorDelegate> *delegate;
 
 /**
  Returns true if the state is `CDTReplicatorStatePending`, `CDTReplicatorStateStarted` or
@@ -130,23 +128,21 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
  @see CDTReplicatorState
  */
--(BOOL)isActive;
+- (BOOL)isActive;
 
 /**
  Returns a string representation of a CDTReplicatorState value.
 
  @param state state to return string representation
  */
-+(NSString*)stringForReplicatorState:(CDTReplicatorState)state;
-
++ (NSString *)stringForReplicatorState:(CDTReplicatorState)state;
 
 /*
  Private so no docs
  */
--(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
-                     replication:(CDTAbstractReplication*)replication
-                           error:(NSError * __autoreleasing*)error;
-
+- (id)initWithTDReplicatorManager:(TDReplicatorManager *)replicatorManager
+                      replication:(CDTAbstractReplication *)replication
+                            error:(NSError *__autoreleasing *)error;
 
 /**---------------------------------------------------------------------------------------
  * @name Controlling replication
@@ -156,7 +152,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /**
  * Starts a replication.
  *
- * The replication will continue until the replication is caught up with the source database; 
+ * The replication will continue until the replication is caught up with the source database;
  * that is, until there are no current changes to replicate.
  *
  * -startWithError can be called from any thread and will immediately return. It queues its work
@@ -171,7 +167,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see CDTReplicatorState
  */
-- (BOOL)startWithError:(NSError * __autoreleasing*)error;
+- (BOOL)startWithError:(NSError *__autoreleasing *)error;
 
 /**
   Use startWithError. This will be deprecated.
@@ -181,8 +177,8 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /**
  * Stop an in-progress replication or attempt to stop a replication that has not yet started.
  *
- * Replications are queued on a separate thread. If the replication is already running, 
- * this method, which can be called from any thread, is guaranteed to initiate the shutdown 
+ * Replications are queued on a separate thread. If the replication is already running,
+ * this method, which can be called from any thread, is guaranteed to initiate the shutdown
  * process and will return YES immediately.
  *
  * Already replicated changes will remain in the datastore.
@@ -204,13 +200,13 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * shutdown process.
  *
  * If the replication has not yet begun on the separate thread, this method will attempt
- * to stop the replication before it starts. If it cannot stop the replication, this method 
+ * to stop the replication before it starts. If it cannot stop the replication, this method
  * will return NO and replication will start and progress as normal.
  *
- * If -startWithError was never called, this method will move the state from 
+ * If -startWithError was never called, this method will move the state from
  * CDTRelicatorStatePending to CDTReplicatorStateStopped, inform the delegate and return YES.
- * 
- * 
+ *
+ *
  * @return YES or NO depending on success.
  *
  *
@@ -220,7 +216,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
 /**
  If -state is equal to CDTReplicatorStateError, this will contain the error message.
- This error information is also sent to the delegate object. 
+ This error information is also sent to the delegate object.
  */
 @property (nonatomic, readonly) NSError *error;
 

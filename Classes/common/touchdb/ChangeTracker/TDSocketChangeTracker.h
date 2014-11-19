@@ -8,13 +8,12 @@
 
 #import "TDChangeTracker.h"
 
-
-/** TDChangeTracker implementation that uses a raw TCP socket to read the chunk-mode HTTP response. */
-@interface TDSocketChangeTracker : TDChangeTracker
-{
-    @private
+/** TDChangeTracker implementation that uses a raw TCP socket to read the chunk-mode HTTP response.
+ */
+@interface TDSocketChangeTracker : TDChangeTracker {
+   @private
     NSInputStream* _trackingInput;
-    
+
     NSMutableData* _inputBuffer;
     NSMutableData* _changeBuffer;
     CFHTTPMessageRef _unauthResponse;

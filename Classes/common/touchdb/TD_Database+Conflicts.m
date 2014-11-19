@@ -20,21 +20,16 @@
 
 @implementation TD_Database (Conflicts)
 
-
 /** Only call from within a queued transaction **/
-- (NSArray*) getConflictedDocumentIdsWithDatabase:(FMDatabase*)db
+- (NSArray *)getConflictedDocumentIdsWithDatabase:(FMDatabase *)db
 {
-    NSString* sql = @"SELECT docs.docid, COUNT(*) "
-                    @"FROM docs,revs "
-                    @"WHERE revs.doc_id = docs.doc_id AND deleted = 0 "
-                    @"AND revs.sequence NOT IN "
-                        @"(SELECT DISTINCT parent FROM revs "
-                        @"WHERE parent NOT NULL) "
-                    @"GROUP BY docs.docid HAVING COUNT(*) > 1";
-    FMResultSet* r = [db executeQuery: sql];
-    if (!r)
-        return nil;
-    NSMutableArray* docs = [[NSMutableArray alloc] init];
+    NSString *sql = @"SELECT docs.docid, COUNT(*) " @"FROM docs,revs "
+        @"WHERE revs.doc_id = docs.doc_id AND deleted = 0 " @"AND revs.sequence NOT IN "
+        @"(SELECT DISTINCT parent FROM revs " @"WHERE parent NOT NULL) "
+        @"GROUP BY docs.docid HAVING COUNT(*) > 1";
+    FMResultSet *r = [db executeQuery:sql];
+    if (!r) return nil;
+    NSMutableArray *docs = [[NSMutableArray alloc] init];
     while ([r next]) {
         [docs addObject:[r stringForColumn:@"docid"]];
     }
@@ -42,8 +37,7 @@
     return docs;
 }
 
-
-- (NSArray*) getConflictedDocumentIds
+- (NSArray *)getConflictedDocumentIds
 {
     __block NSArray *result;
     __weak TD_Database *weakSelf = self;

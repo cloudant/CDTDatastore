@@ -11,49 +11,47 @@
 #import "TDStatus.h"
 @class TD_Database, TDReplicator, TDReplicatorManager;
 
-typedef struct TD_DatabaseManagerOptions {
+typedef struct TD_DatabaseManagerOptions
+{
     bool readOnly;
     bool noReplicator;
 } TD_DatabaseManagerOptions;
 
 extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
-
 /** Manages a directory containing TD_Databases. */
-@interface TD_DatabaseManager : NSObject 
-{
-    @private
+@interface TD_DatabaseManager : NSObject {
+   @private
     NSString* _dir;
     TD_DatabaseManagerOptions _options;
     NSMutableDictionary* _databases;
     TDReplicatorManager* _replicatorManager;
 }
 
-+ (BOOL) isValidDatabaseName: (NSString*)name;
++ (BOOL)isValidDatabaseName:(NSString*)name;
 
-- (id) initWithDirectory: (NSString*)dirPath
-                 options: (const TD_DatabaseManagerOptions*)options
-                   error: (NSError**)outError;
+- (id)initWithDirectory:(NSString*)dirPath
+                options:(const TD_DatabaseManagerOptions*)options
+                  error:(NSError**)outError;
 
 @property (readonly) NSString* directory;
 
-- (TD_Database*) databaseNamed: (NSString*)name;
-- (TD_Database*) existingDatabaseNamed: (NSString*)name;
+- (TD_Database*)databaseNamed:(NSString*)name;
+- (TD_Database*)existingDatabaseNamed:(NSString*)name;
 
-- (BOOL) deleteDatabaseNamed: (NSString*)name;
+- (BOOL)deleteDatabaseNamed:(NSString*)name;
 
 @property (readonly) NSArray* allDatabaseNames;
 @property (readonly) NSArray* allOpenDatabases;
 
-- (void) close;
+- (void)close;
 
-- (TDStatus) validateReplicatorProperties: (NSDictionary*)properties;
-- (TDReplicator*) replicatorWithProperties: (NSDictionary*)body
-                                    status: (TDStatus*)outStatus;
+- (TDStatus)validateReplicatorProperties:(NSDictionary*)properties;
+- (TDReplicator*)replicatorWithProperties:(NSDictionary*)body status:(TDStatus*)outStatus;
 
-#if DEBUG  //made public for testing (Adam Cox, Cloudant. 2014-1-20)
-+ (TD_DatabaseManager*) createEmptyAtPath: (NSString*)path;
-+ (TD_DatabaseManager*) createEmptyAtTemporaryPath: (NSString*)name;
+#if DEBUG  // made public for testing (Adam Cox, Cloudant. 2014-1-20)
++ (TD_DatabaseManager*)createEmptyAtPath:(NSString*)path;
++ (TD_DatabaseManager*)createEmptyAtTemporaryPath:(NSString*)name;
 #endif
 
 @end

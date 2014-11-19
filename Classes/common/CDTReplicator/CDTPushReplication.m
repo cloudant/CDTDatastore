@@ -1,6 +1,6 @@
 //
 //  CDTPushReplication.m
-//  
+//
 //
 //  Created by Adam Cox on 4/8/14.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
@@ -18,45 +18,42 @@
 #import "TDMisc.h"
 #import "CDTLogging.h"
 
-@interface CDTPushReplication()
-@property (nonatomic, strong, readwrite) NSURL* target;
+@interface CDTPushReplication ()
+@property (nonatomic, strong, readwrite) NSURL *target;
 @property (nonatomic, strong, readwrite) CDTDatastore *source;
 @end
 
 @implementation CDTPushReplication
 
-+(instancetype) replicationWithSource:(CDTDatastore *)source
-                               target:(NSURL *)target
++ (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target
 {
     return [[self alloc] initWithSource:source target:target];
 }
 
--(instancetype) initWithSource:(CDTDatastore *)source
-                        target:(NSURL *)target
+- (instancetype)initWithSource:(CDTDatastore *)source target:(NSURL *)target
 {
-    if(self = [super init]) {
+    if (self = [super init]) {
         _source = source;
         _target = target;
     }
     return self;
 }
 
--(instancetype) copyWithZone:(NSZone *)zone
+- (instancetype)copyWithZone:(NSZone *)zone
 {
-   CDTPushReplication *copy = [super copyWithZone:zone];
-    
+    CDTPushReplication *copy = [super copyWithZone:zone];
+
     if (copy) {
         copy.source = self.source;
         copy.target = self.target;
         copy.filter = self.filter;
         copy.filterParams = self.filterParams;
     }
-    
+
     return copy;
 }
 
-
--(NSDictionary*) dictionaryForReplicatorDocument:(NSError * __autoreleasing*)error
+- (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
 {
     NSError *localError;
     if (![self validateRemoteDatastoreURL:self.target error:&localError]) {
@@ -65,7 +62,7 @@
         }
         return nil;
     }
-    
+
     NSDictionary *superdoc = [super dictionaryForReplicatorDocument:&localError];
     if (superdoc == nil) {
         if (error) {
@@ -73,19 +70,20 @@
         }
         return nil;
     }
-    
+
     NSMutableDictionary *doc = [NSMutableDictionary dictionaryWithDictionary:superdoc];
-    
+
     [doc setObject:self.target.absoluteString forKey:@"target"];
-    
+
     if (self.source) {
         [doc setObject:self.source.name forKey:@"source"];
     } else {
-        LogWarn(REPLICATION_LOG_CONTEXT,@"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
 
         if (error) {
             NSString *msg = @"Cannot sync data. Local data source not specified.";
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                          code:CDTReplicationErrorUndefinedSource
                                      userInfo:userInfo];
@@ -93,32 +91,31 @@
         return nil;
     }
 
-
     if (self.filterParams) {
-        [doc setObject:self.filterParams ? : @{} forKey:@"query_params"];
+        [doc setObject:self.filterParams ?: @{} forKey:@"query_params"];
     }
-    
+
     return doc;
 }
 
-//This is method is overridden and this code placed here so we can provide a better error message
--(BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError * __autoreleasing*)error
+// This is method is overridden and this code placed here so we can provide a better error message
+- (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error
 {
     if (url == nil) {
-        LogWarn(REPLICATION_LOG_CONTEXT,@"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                @"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
 
         if (error) {
             NSString *msg = @"Cannot sync data. Remote server not specified.";
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
             *error = [NSError errorWithDomain:CDTReplicationErrorDomain
                                          code:CDTReplicationErrorUndefinedTarget
                                      userInfo:userInfo];
         }
         return NO;
     }
-    
+
     return [super validateRemoteDatastoreURL:url error:error];
 }
-
 
 @end

@@ -34,7 +34,7 @@
  *
  * @param replicator the replicator issuing the event.
  */
--(void) replicatorDidChangeState:(CDTReplicator*)replicator;
+- (void)replicatorDidChangeState:(CDTReplicator *)replicator;
 
 /**
  * <p>Called whenever the replicator changes progress</p>
@@ -43,7 +43,7 @@
  *
  * @param replicator the replicator issuing the event.
  */
--(void) replicatorDidChangeProgress:(CDTReplicator*)replicator;
+- (void)replicatorDidChangeProgress:(CDTReplicator *)replicator;
 
 /**
  * <p>Called when a state transition to COMPLETE or STOPPED is
@@ -55,7 +55,7 @@
  *
  * @param replicator the replicator issuing the event.
  */
-- (void)replicatorDidComplete:(CDTReplicator*)replicator;
+- (void)replicatorDidComplete:(CDTReplicator *)replicator;
 
 /**
  * <p>Called when a state transition to ERROR is completed.</p>
@@ -73,6 +73,6 @@
  * @param replicator the replicator issuing the event.
  * @param info information about the error that occurred.
  */
-- (void)replicatorDidError:(CDTReplicator*)replicator info:(NSError*)info;
+- (void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info;
 
 @end
