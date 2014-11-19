@@ -16,15 +16,22 @@
 @interface TDPuller : TDReplicator {
    @private
     TDChangeTracker* _changeTracker;
-    BOOL _caughtUp;                      // Have I received all current _changes entries?
-    TDSequenceMap* _pendingSequences;    // Received but not yet copied into local DB
-    NSMutableArray* _revsToPull;         // Queue of TDPulledRevisions to download
-    NSMutableArray* _deletedRevsToPull;  // Separate lower-priority of deleted TDPulledRevisions
-    NSMutableArray* _bulkRevsToPull;     // TDPulledRevisions that can be fetched in bulk
-    NSUInteger _httpConnectionCount;     // Number of active NSURLConnections
-    TDBatcher* _downloadsToInsert;       // Queue of TDPulledRevisions, with bodies, to insert in DB
+    BOOL _caughtUp;                     // Have I received all current _changes entries?
+    TDSequenceMap* _pendingSequences;   // Received but not yet copied into local DB
+    NSMutableArray* _revsToPull;        // Queue of TDPulledRevisions to download
+    NSMutableArray* _deletedRevsToPull; // Separate lower-priority of deleted TDPulledRevisions
+    NSMutableArray* _bulkRevsToPull;    // TDPulledRevisions that can be fetched in bulk
+    NSUInteger _httpConnectionCount;    // Number of active NSURLConnections
+    TDBatcher* _downloadsToInsert;      // Queue of TDPulledRevisions, with bodies, to insert in DB
+    NSArray* _clientFilterDocIds;       // If set, only pull this subset of doc ids
+    NSMutableSet *_clientFilterNewDocIds; // The set difference: _clientFilterDocIds - all doc ids in DB
 }
 
+// overriden from TDReplicator
+- (NSString*) remoteCheckpointDocID;
+// overriden from TDReplicator
+- (void) addToInbox: (TD_Revision*)rev;
+- (void) setClientFilterDocIds:(NSArray *)clientFilterDocIds;
 @end
 
 /** A revision received from a remote server during a pull. Tracks the opaque remote sequence ID. */

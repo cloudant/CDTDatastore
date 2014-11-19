@@ -46,6 +46,7 @@
         copy.target = self.target;
         copy.filter = self.filter;
         copy.filterParams = self.filterParams;
+        copy.clientFilterDocIds = self.clientFilterDocIds;
     }
 
     return copy;
@@ -95,7 +96,11 @@
             [doc setObject:self.filterParams forKey:@"query_params"];
         }
     }
-
+    
+    if (self.clientFilterDocIds) {
+        [doc setObject:self.clientFilterDocIds forKey:@"client_filter_doc_ids"];
+    }
+    
     return doc;
 }
 
