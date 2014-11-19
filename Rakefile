@@ -6,12 +6,12 @@ end
 desc "Run the CDTDatastore Tests for iOS"
 task :testios do
     # build using xcpretty as otherwise it's very verbose when running tests
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=8.0,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=8.1,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
   unless $ios_success
     puts "** Build failed"
     exit(-1)
   end
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=8.0,name=iPhone 4S' test")
+  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination 'platform=iOS Simulator,OS=8.1,name=iPhone 4S' test")
   puts "\033[0;31m! iOS unit tests failed with status code #{$?}" unless $ios_success
   if $ios_success
     puts "** All tests executed successfully"
