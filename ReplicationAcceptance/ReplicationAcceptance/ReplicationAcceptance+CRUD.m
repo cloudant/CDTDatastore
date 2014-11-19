@@ -120,16 +120,10 @@
 
 - (void)createRemoteDocs:(NSInteger)count
 {
-    [self createRemoteDocs:count suffixFrom:0];
+    [self createRemoteDocs:count suffixFrom:1];
 }
 
 -(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start
-{
-    [self createRemoteDocs:1 count:count];
-}
-
--(void) createRemoteDocs:(NSInteger)start
-                   count:(NSInteger)count
 {
     NSMutableArray *docs = [NSMutableArray array];
     NSUInteger currentIndex;

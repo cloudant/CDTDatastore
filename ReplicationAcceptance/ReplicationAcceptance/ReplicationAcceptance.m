@@ -891,7 +891,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // then upload 2-rev 0..5000 remote
     
     [self createLocalDocs:localdocs];
-    [self createRemoteDocs:localdocs+1 count:remotedocs];
+    [self createRemoteDocs:remotedocs suffixFrom:localdocs+1];
     // now do some updates
     for (CDTDocumentRevision *rev in [self.datastore getAllDocuments]) {
         // 2-rev, with the 1-rev as parent
@@ -985,7 +985,7 @@ static NSUInteger largeRevTreeSize = 1500;
                    @"Incorrect number of documents created");
     
     // 50 more
-    [self createRemoteDocs:51 count:ndocs];
+    [self createRemoteDocs:ndocs suffixFrom:51];
 
     [self pullFromRemoteWithClientFilterDocIds:filterDocIds];
 
