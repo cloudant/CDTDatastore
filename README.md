@@ -130,7 +130,6 @@ Replication is simple to get started in the common cases:
 // Create and start the replicator -- -start is essential!
 CDTReplicatorFactory *replicatorFactory =
 [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
-[replicatorFactory start];
 
 NSString *s = @"https://apikey:apipassword@username.cloudant.com/my_database";
 NSURL *remoteDatabaseURL = [NSURL URLWithString:s];

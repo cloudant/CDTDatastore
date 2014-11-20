@@ -198,10 +198,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                                object:self.tdReplicator];
 
     // queues the replication on the TDReplicatorManager's replication thread
-    [self.replicatorManager startReplicator:self.tdReplicator];
-
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: ReplicationManager starting %@, sessionID %@",
-               [self.tdReplicator class], self.tdReplicator.sessionID);
+    [self.tdReplicator start];
+    
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: Replicator starting %@, sessionID %@",
+          [self.tdReplicator class], self.tdReplicator.sessionID);
 
     return YES;
 }
@@ -223,9 +223,8 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
                 if (self.started) {
                     //-startWithError was called and self.tdReplicator was successfully
-                    // instantiated (otherwise state == 'error')
-
-                    if ([self.replicatorManager cancelIfNotStarted:self.tdReplicator]) {
+                    //instantiated (otherwise state == 'error')
+                    if ([self.tdReplicator cancelIfNotStarted]) {
                         self.state = CDTReplicatorStateStopped;
                     } else {
                         stopSuccessful = NO;
@@ -447,10 +446,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
         if ([self.tdReplicator.error.domain isEqualToString:TDInternalErrorDomain]) {
             switch (self.tdReplicator.error.code) {
-                case TDReplicatorManagerErrorLocalDatabaseDeleted:
-                    userInfo = @{
-                        NSLocalizedDescriptionKey : NSLocalizedString(@"Data sync failed.", nil)
-                    };
+                
+                case TDReplicatorErrorLocalDatabaseDeleted:
+                    userInfo =
+                    @{NSLocalizedDescriptionKey: NSLocalizedString(@"Data sync failed.", nil)};
                     self.error = [NSError errorWithDomain:CDTReplicatorErrorDomain
                                                      code:CDTReplicatorErrorLocalDatabaseDeleted
                                                  userInfo:userInfo];
@@ -468,6 +467,20 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     }
 
     return _error;
+}
+
+
+-(BOOL) threadExecuting;
+{
+    return self.tdReplicator.threadExecuting;
+}
+-(BOOL) threadFinished
+{
+    return self.tdReplicator.threadFinished;
+}
+-(BOOL) threadCanceled
+{
+    return self.tdReplicator.threadCanceled;
 }
 
 @end

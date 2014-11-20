@@ -163,13 +163,12 @@ static NSCharacterSet* kIllegalNameChars;
     }];
 }
 
-- (NSArray*)allOpenDatabases { return _databases.allValues; }
+- (NSArray*) allOpenDatabases {
+    return _databases.allValues;
+}
 
-- (void)close
-{
+- (void) close {
     CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
-    [_replicatorManager stop];
-    _replicatorManager = nil;
     for (TD_Database* db in _databases.allValues) {
         [db close];
     }
@@ -320,16 +319,6 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 
     if (outStatus) *outStatus = kTDStatusOK;
     return repl;
-}
-
-- (TDReplicatorManager*)replicatorManager
-{
-    if (!_replicatorManager && !_options.noReplicator) {
-        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Starting replicator manager for %@", self);
-        _replicatorManager = [[TDReplicatorManager alloc] initWithDatabaseManager:self];
-        [_replicatorManager start];
-    }
-    return _replicatorManager;
 }
 
 @end

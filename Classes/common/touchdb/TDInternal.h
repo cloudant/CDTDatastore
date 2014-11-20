@@ -102,7 +102,6 @@
 @end
 
 @interface TD_DatabaseManager ()
-@property (readonly, nonatomic) TDReplicatorManager* replicatorManager;
 #if DEBUG
 + (TD_DatabaseManager*)createEmptyAtPath:(NSString*)path;           // for testing
 + (TD_DatabaseManager*)createEmptyAtTemporaryPath:(NSString*)name;  // for testing

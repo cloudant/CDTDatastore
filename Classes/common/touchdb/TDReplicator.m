@@ -46,9 +46,18 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 @interface TDReplicator ()
 @property (readwrite, nonatomic) BOOL running, active;
 @property (readwrite, copy) NSDictionary* remoteCheckpoint;
-- (void)updateActive;
-- (void)fetchRemoteCheckpointDoc;
-- (void)saveLastSequence;
+
+//if cancelReplicator is YES, then it will not be started once it reaches the front of the queue.
+@property (nonatomic) BOOL cancelReplicator;
+//indicates that the replicator has started on the queue.
+@property (nonatomic) BOOL replicatorStarted;
+
+@property (nonatomic, strong) NSThread *replicatorThread;
+@property (nonatomic) BOOL stopRunLoop;
+
+- (void) updateActive;
+- (void) fetchRemoteCheckpointDoc;
+- (void) saveLastSequence;
 @end
 
 @implementation TDReplicator
@@ -78,6 +87,8 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
         static int sLastSessionID = 0;
         _sessionID = [$sprintf(@"repl%03d", ++sLastSessionID) copy];
+        _replicatorThread = nil;
+        _stopRunLoop = NO;
     }
     return self;
 }
@@ -106,15 +117,18 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [self clearDbRef];
 }
 
-- (NSString*)description { return $sprintf(@"%@[%@]", [self class], _remote.absoluteString); }
+- (NSString*) description {
+    return $sprintf(@"%@ [%@://%@:****@%@\%@]", [self class], _remote.scheme, _remote.user,
+                    _remote.host, _remote.path);
+}
 
-@synthesize db = _db, remote = _remote, filterName = _filterName,
-            filterParameters = _filterParameters, docIDs = _docIDs;
-@synthesize running = _running, online = _online, active = _active, continuous = _continuous;
-@synthesize error = _error, sessionID = _sessionID, options = _options;
-@synthesize changesProcessed = _changesProcessed, changesTotal = _changesTotal;
-@synthesize remoteCheckpoint = _remoteCheckpoint;
-@synthesize authorizer = _authorizer;
+
+@synthesize db=_db, remote=_remote, filterName=_filterName, filterParameters=_filterParameters, docIDs = _docIDs;
+@synthesize running=_running, online=_online, active=_active, continuous=_continuous;
+@synthesize error=_error, sessionID=_sessionID, options=_options;
+@synthesize changesProcessed=_changesProcessed, changesTotal=_changesTotal;
+@synthesize remoteCheckpoint=_remoteCheckpoint;
+@synthesize authorizer=_authorizer;
 @synthesize requestHeaders = _requestHeaders;
 
 - (BOOL)isPush
@@ -183,9 +197,106 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     }
 }
 
-- (void)start
+- (void) start {
+    
+    if(_replicatorThread){
+        return;
+    }
+    
+    _replicatorThread = [[NSThread alloc] initWithTarget: self
+                                            selector: @selector(runReplicatorThread)
+                                              object: nil];
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Starting TDReplicator thread %@ ...", _replicatorThread);
+    [_replicatorThread start];
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(databaseWasDeleted:)
+                                                 name: TD_DatabaseWillBeDeletedNotification
+                                               object: _db];
+
+    __weak TDReplicator *weakSelf = self;
+    
+    [self queue:^{
+        __strong TDReplicator *strongSelf = weakSelf;
+        @synchronized(strongSelf) {
+            if(strongSelf.cancelReplicator){
+                return;
+            }
+            strongSelf.replicatorStarted = YES;
+        }
+        
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.",
+                [strongSelf class], strongSelf.sessionID );
+        
+        [strongSelf startReplicatorTasks];
+    }];
+}
+
+- (BOOL) cancelIfNotStarted
 {
-    if (_running) return;
+    @synchronized(self) {
+        if (self.replicatorStarted) {
+            return NO;
+        }
+        self.cancelReplicator = YES;
+        return YES;
+    }
+}
+
+
+/**
+ * Start a thread for each replicator
+ * Taken from TDServer.m.
+ */
+- (void) runReplicatorThread {
+    @autoreleasepool {
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread starting...");
+        
+        [[NSThread currentThread]
+         setName:[NSString stringWithFormat:@"TDReplicator: %@", self.sessionID]];
+
+#ifndef GNUSTEP
+        // Add a no-op source so the runloop won't stop on its own:
+        CFRunLoopSourceContext context = {}; // all zeros
+        CFRunLoopSourceRef source = CFRunLoopSourceCreate(NULL, 0, &context);
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+        CFRelease(source);
+#endif
+        
+        // Now run:
+        while (!_stopRunLoop && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
+            ;
+        
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread exiting");
+    }
+}
+
+- (void) queue: (void(^)())block {
+    Assert(_replicatorThread, @"-queue: called after -stop");
+    MYOnThread(_replicatorThread, block);
+}
+
+// Notified that our database is being deleted; stop replication
+- (void) databaseWasDeleted: (NSNotification*)n {
+    
+    TD_Database* db = n.object;
+    Assert(db == _db, @"database objects should be the same!");
+
+    NSString *msg =[NSString stringWithFormat:@"Replicator stopped: %@ (%@).",
+                    [self class], self.sessionID];
+    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+    
+    self.error = [NSError errorWithDomain:TDInternalErrorDomain
+                                     code:TDReplicatorErrorLocalDatabaseDeleted
+                                 userInfo:userInfo];
+    
+    [self stop];
+    
+}
+
+- (void) startReplicatorTasks {
+    if (_running)
+        return;
     Assert(_db, @"Can't restart an already stopped TDReplicator");
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STARTING ...", self);
 
@@ -268,10 +379,15 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                                                   object:nil];
 #endif
     [self stopRemoteRequests];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                             selector:@selector(retryIfReady)
-                                               object:nil];
-    if (_running && _asyncTaskCount == 0) [self stopped];
+
+    [NSObject cancelPreviousPerformRequestsWithTarget: self
+                                             selector: @selector(retryIfReady) object: nil];
+
+    //this just sets the isCanceled BOOL on the object. It's
+    //our responsibility to actually stop the thread.
+    [_replicatorThread cancel];
+    
+    [self stopped];
 }
 
 - (void)stopped
@@ -288,8 +404,25 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     _batcher = nil;
     [_host stop];
     _host = nil;
-    [self clearDbRef];  // _db no longer tracks me so it won't notify me when it closes; clear ref
-                        // now
+
+    [self clearDbRef];  // _db no longer tracks me so it won't notify me when it closes; clear ref now
+    
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
+    [[NSNotificationCenter defaultCenter] removeObserver: self];
+    _stopRunLoop = YES;
+}
+
+-(BOOL) threadExecuting
+{
+    return [self.replicatorThread isExecuting];
+}
+-(BOOL) threadFinished
+{
+    return [self.replicatorThread isFinished];
+}
+-(BOOL) threadCanceled
+{
+    return [self.replicatorThread isCancelled];
 }
 
 // Called after a continuous replication has gone idle, but it failed to transfer some revisions

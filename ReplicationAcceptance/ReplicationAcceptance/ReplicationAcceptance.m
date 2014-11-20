@@ -73,7 +73,7 @@ static NSUInteger largeRevTreeSize = 1500;
     [self createRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
-    [self.replicatorFactory start];
+
 }
 
 - (void)tearDown
@@ -84,8 +84,6 @@ static NSUInteger largeRevTreeSize = 1500;
     [self deleteRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
     self.datastore = nil;
-
-    [self.replicatorFactory stop];
 
     self.replicatorFactory = nil;
 
@@ -253,6 +251,15 @@ static NSUInteger largeRevTreeSize = 1500;
     STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
                    @"Wrong error code: %ld", mydel.error.code);
     
+    //have to wait for the threadsto completely stop executing
+    while(replicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
+    
 }
 
 -(void) testPushErrorsWhenLocalDatabaseIsDeleted
@@ -295,6 +302,15 @@ static NSUInteger largeRevTreeSize = 1500;
 
     STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
                    @"Wrong error code: %ld", mydel.error.code);
+    
+    //have to wait for the threadsto completely stop executing
+    while(replicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
 }
 
 /**
@@ -450,6 +466,16 @@ static NSUInteger largeRevTreeSize = 1500;
       expectFewerDocsInRemoteDatabase:self.primaryRemoteDatabaseURL];
     
     STAssertTrue(docComparison, @"Remote database doesn't have fewer docs than local.");
+    
+    //have to wait for the threadsto completely stop executing
+    while(replicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
+    
 }
 
 /**
@@ -987,6 +1013,75 @@ static NSUInteger largeRevTreeSize = 1500;
                      [tester.headerFailures[headerName] integerValue], headerName);
         
     }
+}
+
+-(void) testMultiThreadedReplication
+{
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
+    
+    CDTDatastore *secondDatastore = [self.factory datastoreNamed:@"test2" error:nil];
+    CDTPullReplication *secondPull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:secondDatastore];
+    CDTReplicator *secondReplicator =  [self.replicatorFactory oneWay:secondPull error:nil];
+    
+    [self createRemoteDocs:2000];
+    
+    CDTTestReplicatorMultiThreaded *tester = [[CDTTestReplicatorMultiThreaded alloc] init];
+    tester.firstReplicator = replicator;
+    tester.secondReplicator = secondReplicator;
+    replicator.delegate = tester;
+    secondReplicator.delegate = tester;
+    
+    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    STAssertFalse(replicator.threadFinished, @"First replicator thread finished");
+    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+
+    STAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
+    STAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
+    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    
+    NSError *error;
+    STAssertTrue([replicator startWithError:&error],
+                @"First replicator started with error: %@", error);
+    error = nil;
+    STAssertTrue([secondReplicator startWithError:&error],
+                @"Second replicator started with error: %@", error);
+
+    
+    STAssertTrue(replicator.threadExecuting, @"First replicator thread NOT executing");
+    STAssertFalse(replicator.threadFinished, @"First replicator thread finished");
+    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    
+    STAssertTrue(secondReplicator.threadExecuting, @"Second replicator thread NOT executing");
+    STAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
+    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    
+    while (replicator.isActive || secondReplicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" 1st replicator -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+        NSLog(@"    changes Processed: %ld", replicator.changesProcessed);
+        NSLog(@" 2nd replicator -> %@", [CDTReplicator stringForReplicatorState:secondReplicator.state]);
+        NSLog(@"    changes Processed: %ld", secondReplicator.changesProcessed);
+        
+    }
+    
+    STAssertTrue(tester.multiThreaded, @"Delegate didn't find multithreading evidence.");
+
+    //wait for the threads to completely stop executing
+    while(replicator.threadExecuting || secondReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    
+    STAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
+    STAssertTrue(secondReplicator.threadFinished, @"Second replicator thread NOT finished");
+    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    
 }
 
 @end

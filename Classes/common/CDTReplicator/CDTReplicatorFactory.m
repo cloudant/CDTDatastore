@@ -52,11 +52,6 @@ static NSString *const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
     return self;
 }
 
-- (void)start { [self.replicatorManager start]; }
-
-- (void)stop { [self.replicatorManager stop]; }
-
-- (void)dealloc { [self stop]; }
 
 #pragma mark CDTReplicatorFactory interface methods
 

@@ -10,9 +10,9 @@ static NSString* const TDInternalErrorDomain = @"TDInternalError";
 
 typedef NS_ENUM(NSInteger, TDInternalErrors) {
     /**
-     * TDReplicatorManager: local database deleted during replication
+     * TDReplicator: local database deleted during replication
      */
-    TDReplicatorManagerErrorLocalDatabaseDeleted = 1001
+    TDReplicatorErrorLocalDatabaseDeleted  = 1001
 };
 
 /** TouchDB internal status/error codes. Superset of HTTP status codes. */

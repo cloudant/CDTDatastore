@@ -9,7 +9,8 @@
 
 #import <Foundation/Foundation.h>
 #import "TDStatus.h"
-@class TD_Database, TDReplicator, TDReplicatorManager;
+@class TD_Database, TDReplicator;
+//@class TDReplicatorManager;
 
 typedef struct TD_DatabaseManagerOptions
 {
@@ -25,7 +26,6 @@ extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
     NSString* _dir;
     TD_DatabaseManagerOptions _options;
     NSMutableDictionary* _databases;
-    TDReplicatorManager* _replicatorManager;
 }
 
 + (BOOL)isValidDatabaseName:(NSString*)name;

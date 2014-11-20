@@ -114,7 +114,6 @@
     
     CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
                                                initWithDatastoreManager:self.factory];
-    [replicatorFactory start];
     
     error = nil;
     CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
@@ -125,8 +124,6 @@
     
     STAssertTrue(push.filter != nil, @"No filter set in CDTPushReplication");
     STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
-    
-    [replicatorFactory stop];
     
     //ensure that TDReplicatorManager makes the appropriate TDPuller object
     //The code to do this, seems, a bit precarious and this guards against any future
@@ -278,7 +275,6 @@
     
     CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
                                                initWithDatastoreManager:self.factory];
-    [replicatorFactory start];
     
     error = nil;
     CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
