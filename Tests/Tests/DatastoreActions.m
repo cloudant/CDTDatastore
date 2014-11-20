@@ -19,6 +19,8 @@
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
 #import "FMDatabaseAdditions.h"
+#import "CDTMutableDocumentRevision.h"
+#import "CDTDocumentRevision.h"
 #import "TDJSON.h"
 
 @interface DatastoreActions : CloudantSyncTests
@@ -91,5 +93,39 @@
 }
 
 
+//Note: TD_Database -compact is throughly tested in DatastoreCRUD
+- (void)testCompact
+{
+    NSError *error;
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    rev.body = @{ @"hello" : @"world" };
+    rev.docId = @"myDocId";
+    
+    CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev error:&error];
+    rev = [revision mutableCopy];
+    rev.body = @{ @"hello" : @"world", @"test" : @"testy" };
+    revision = [datastore updateDocumentFromRevision:rev error:&error];
+    
+    STAssertTrue([datastore compactWithError:&error],@"Compaction failed");
+    STAssertNil(error, @"Error compacting datastore, %@", error);
+    
+    NSArray *previsousRevs = [datastore getRevisionHistory:revision];
+
+    int compacted = 0;
+
+    for (CDTDocumentRevision *previous in previsousRevs) {
+        // erm check that one out of two has their body compacted?
+        CDTDocumentRevision *prevRev =
+            [datastore getDocumentWithId:previous.docId rev:previous.revId error:nil];
+        
+        if([prevRev.body count] == 0){
+            compacted++;
+        } else {
+            STAssertEqualObjects(rev.body, prevRev.body, @"Unexpected body, wrong revision compacted?");
+        }
+    }
+    STAssertEquals(1, compacted, @"Wrong number of docs compacted");
+}
 
 @end

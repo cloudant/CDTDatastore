@@ -756,4 +756,18 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return [deletedDocs copy];
 }
 
+- (BOOL)compactWithError:(NSError *__autoreleasing *)error
+{
+    TDStatus status = [self.database compact];
+
+    if (TDStatusIsError(status)) {
+        if(error){
+            *error = TDStatusToNSError(status, nil);
+        }
+        return NO;
+    }
+    
+    return YES;
+}
+
 @end
