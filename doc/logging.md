@@ -1,7 +1,7 @@
 Logging with CocoaLumberJack 
 ============================
 
-CDTDatastore has upgraded the logging capabilities with version (TBD). 
+CDTDatastore has upgraded the logging capabilities with version 0.9.0. 
 Logging now uses the [CocoaLumberJack](https://github.com/CocoaLumberjack/CocoaLumberjack) framework.
 Using CocoaLumberJack provides more flexibility on where log entries are stored and a number of other attributes.
 
@@ -14,15 +14,15 @@ Note: CDTDatastore uses log contexts 10 - 16 therefore your application should a
 
 ### Switching Log Levels
 
-By default the logging level for each component is set to Warn. To raise and lower the log level for CDTDatastore use the macro `ChangeLogLevel`.  All component logging levels are located in the CDTLogging.h header file. For example to change the log level for the Indexing component:
+By default the logging level for each component is set to Off. To raise and lower the log level for CDTDatastore use the macro `CDTChangeLogLevel`.  All component logging levels are located in the CDTLogging.h header file. For example to change the log level for the Indexing component:
 
 ```objc
-ChangeLogLevel(INDEX_LOG_CONTEXT,LOG_LEVEL_INFO);
+CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT,DDLogLevelInfo);
 ``` 
 To turn off logging for a component:
 
 ```objc
-ChangeLogLevel(INDEX_LOG_CONTEXT,LOG_LEVEL_OFF);
+CDTChangeLogLevel(INDEX_LOG_CONTEXT,DDLogLevelOff);
 ```
 
 ### Configuring Loggers
@@ -83,16 +83,16 @@ CDTDatastore has 5 levels of logging. These are:
 - Debug
 - Verbose 
  
-They map to their respective log functions such as `LogError(INDEX_LOG_CONTEXT, @"A log message")`
+They map to their respective log functions such as `CDTLogError(CDTINDEX_LOG_CONTEXT, @"A log message")`
 
 Log statements have 7 contexts. These contexts are broad areas of functionality in the library, and enable logging levels to be selectively changed for these areas.
 
-- INDEX_LOG_CONTEXT 
-- REPLICATION_LOG_CONTEXT 
-- DATASTORE_LOG_CONTEXT 
-- DOCUMENT_REVISION_LOG_CONTEXT 
-- TD_REMOTE_REQUEST_CONTEXT 
-- TD_JSON_CONTEXT 
-- TD_VIEW_CONTEXT 
+- CDTINDEX_LOG_CONTEXT 
+- CDTREPLICATION_LOG_CONTEXT 
+- CDTDATASTORE_LOG_CONTEXT 
+- CDTDOCUMENT_REVISION_LOG_CONTEXT 
+- CDTTD_REMOTE_REQUEST_CONTEXT 
+- CDTTD_JSON_CONTEXT 
+- CDTTD_VIEW_CONTEXT 
 
 All log statements in CDTLogging.h follow the same conventions are DDLog and NSLog. There is a key difference however, the first parameter is the context for which this log is in, the rest of the arguments follow NSLog (format then args).
