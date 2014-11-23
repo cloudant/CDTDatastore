@@ -22,7 +22,7 @@ CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT,DDLogLevelInfo);
 To turn off logging for a component:
 
 ```objc
-CDTChangeLogLevel(INDEX_LOG_CONTEXT,DDLogLevelOff);
+CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT,DDLogLevelOff);
 ```
 
 ### Configuring Loggers
