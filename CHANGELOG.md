@@ -1,5 +1,16 @@
 # CDTDatastore CHANGELOG
 
+## 0.12.0 (2014-11-24)
+
+- [NEW] CDTDatastore gains a -compact function, run this to remove
+  old revision content and attachments.
+- [CHANGE] Each replication runs its own thread, rather than running all
+  replications on a single thread. This removes the -start method from
+  CDTReplicatorFactory: the class is now purely a factory for replicator
+  objects.
+- [FIX] Logging macros and constants now have a CDT-prefix to avoid naming
+  collisions.
+
 ## 0.11.0 (2014-11-11)
 
 - [FIX] Incompatibility with CocoaLumberjack 2.0.0-beta4. Also pin to beta4.
