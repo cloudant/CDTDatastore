@@ -32,6 +32,11 @@
  */
 @property (nonatomic, strong) NSMutableDictionary *revIDFromDocID;
 
+/**
+ *  This holds the "dot" directed graph, see [dotMe](@ref dotMe)
+ */
+@property (nonatomic, strong) NSData *dotData;
+
 @end
 
 #pragma mark - string constants
@@ -1388,3 +1393,138 @@ static BOOL CDTISDeleteAggresively = NO;
     return objectIDs;
 }
 
+#pragma mark - DOT
+/**
+ *  Quick function to write an `NSString` in UTF8 format.
+ *
+ *  @param out Object to write to.
+ *  @param s   The string to write.
+ */
+static void DotWrite(NSMutableData *out, NSString *s)
+{
+    [out appendBytes:[s UTF8String]
+              length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
+}
+
+/**
+ *  This is a quick hack which lets me dump the storage graph visually.
+ *  It uses [Graphviz](http://www.graphviz.org/) "dot" format.
+ *
+ *  Once you have a database configured, in any form, you can simply call:
+ *      [self dotMe]
+ *
+ *  What you get:
+ *  * You may call this from your code or from the debugger (LLDB).
+ *  * The result is stored as `self.dotData` which is an `NSData` object`
+ *  ** You can then use your favorite `writeTo` method.
+ *  * dotMe returns
+ *  > *Warning*: this replaces contents of an existing file but does not
+ *  > truncate it. So if the original file was bigger there will be garbage
+ *  > at the end.
+ *
+ *  @return A string that is the debugger command to dump the result
+ *   into a file on the host.
+ */
+- (NSString *)dotMe __attribute__ ((used))
+{
+    if (!self.datastore) {
+        return @"FAIL";
+    }
+    NSArray *all = [self.datastore getAllDocuments];
+    NSMutableData *out = [NSMutableData data];
+
+    DotWrite(out, @"strict digraph CDTIS {\n");
+    DotWrite(out, @"  overlap=false;\n");
+    DotWrite(out, @"  splines=true;\n");
+
+
+    for (CDTDocumentRevision *rev in all) {
+        NSString *type = rev.body[kCDTISTypeKey];
+        if ([type isEqualToString:kCDTISTypeProperties]) {
+            NSString *entity = nil;
+            NSMutableArray *props = [NSMutableArray array];
+
+            for (NSString *name in rev.body) {
+
+                if ([name isEqual:kCDTISEntityNameKey]) {
+                    // the node
+                    entity = rev.body[name];
+                }
+
+                if ([name hasPrefix:kCDTISPrefix]) {
+                    continue;
+                }
+                NSArray *prop = rev.body[name];
+                NSString *ptype = [prop objectAtIndex:0];
+
+                size_t idx = [props count] + 1;
+
+                if ([ptype isEqualToString:kCDTISRelationToOneType]) {
+                    NSString *str = [prop objectAtIndex:2];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
+                    DotWrite(out,
+                             [NSString stringWithFormat:@"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
+                              rev.docId, idx, str]);
+
+                } else if ([ptype isEqualToString:kCDTISRelationToManyType]) {
+                    [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
+                    DotWrite(out,
+                             [NSString stringWithFormat:@"  \"%@\":%zu -> { ",
+                              rev.docId, idx]);
+                    for (NSArray *r in [prop objectAtIndex:1] ) {
+                        NSString *str = [r objectAtIndex:1];
+                        DotWrite(out,
+                                 [NSString stringWithFormat:@"\"%@\":0 ", str]);
+                    }
+                    DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
+
+                } else if ([ptype isEqualToString:kCDTISDecimalAttributeType]) {
+                    NSString *str = [prop objectAtIndex:1];
+                    NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@",
+                                      idx, name, dec]];
+
+                } else if ([ptype isEqualToString:kCDTISStringAttributeType] ||
+                           [ptype hasPrefix:kCDTISNumberPrefix]) {
+                    NSString *str = [prop objectAtIndex:1];
+                    if ([str length] > 16) {
+                        str = [NSString stringWithFormat:@"%@...",
+                               [str substringToIndex:16]];
+                    }
+                    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@: %@",
+                                      idx, name, str]];
+
+                } else {
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:*",
+                                      idx, name]];
+                }
+            }
+
+            if (!entity) oops(@"no entity name?");
+            DotWrite(out,
+                     [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
+                      rev.docId, entity]);
+
+            for (NSString *p in props) {
+                DotWrite(out, [NSString stringWithFormat:@"| %@ ", p]);
+            }
+            DotWrite(out, @"}\" ];\n");
+
+        } else if ([type isEqualToString:kCDTISTypeMetadata]) {
+            //DotWrite(out, node);
+
+        } else {
+            oops(@"unknown type: %@", type);
+        }
+    }
+    DotWrite(out, @"}\n");
+
+    self.dotData = [NSData dataWithData:out];
+    size_t length = [self.dotData length];
+    return [NSString
+            stringWithFormat:@"memory read --force --binary --outfile /tmp/CDTIS.dot --count %zu %p",
+            length, [self.dotData bytes]];
+}
+
+@end
