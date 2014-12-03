@@ -59,4 +59,10 @@
     self.private_attachments = [attachments mutableCopy];
 }
 
+-(CDTMutableDocumentRevision*) mutableCopy{
+    CDTMutableDocumentRevision * copy = [super mutableCopy];
+    copy.sourceRevId = self.sourceRevId;
+    return copy;
+}
+
 @end
