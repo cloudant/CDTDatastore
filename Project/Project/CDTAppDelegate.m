@@ -16,7 +16,8 @@
 #import "CDTAppDelegate.h"
 
 #import "CDTCompletedIndexer.h"
-
+#import "CDTTodoReplicator.h"
+#import "CDTLogging.h"
 #import <CloudantSync.h>
 
 @interface CDTAppDelegate()
@@ -29,6 +30,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
+    [DDLog addLogger:[DDASLLogger sharedInstance]];
+    
+    CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT, DDLogLevelError);
+    CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, DDLogLevelError);
+    CDTChangeLogLevel(CDTDATASTORE_LOG_CONTEXT, DDLogLevelError);
+    CDTChangeLogLevel(CDTDOCUMENT_REVISION_LOG_CONTEXT, DDLogLevelError);
+    CDTChangeLogLevel(CDTTD_REMOTE_REQUEST_CONTEXT, DDLogLevelError);
+    CDTChangeLogLevel(CDTTD_JSON_CONTEXT, DDLogLevelError);
+    
     self.datastore = [self create_datastore];
 
     // Create the indexManager and add an index on the "completed" field with a
@@ -43,16 +54,16 @@
 
     error = nil;
     CDTCompletedIndexer *fi = [[CDTCompletedIndexer alloc] init];
-    return [self.indexManager ensureIndexedWithIndexName:@"completed"
-                                                    type:CDTIndexTypeInteger
-                                                 indexer:fi
-                                                   error:&error];
-    if (error) {
+    BOOL ensuredIndex = [self.indexManager ensureIndexedWithIndexName:@"completed"
+                                                                 type:CDTIndexTypeInteger
+                                                              indexer:fi
+                                                                error:&error];
+    if (!ensuredIndex) {
         NSLog(@"Error creating indexManager: %@", error);
         exit(1);
     }
 
-
+    self.todoReplicator = [[CDTTodoReplicator alloc] init];
     
     return YES;
 }
