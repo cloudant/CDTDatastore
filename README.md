@@ -43,6 +43,18 @@ pod "CDTDatastore"
 
 [gs]: https://github.com/cloudant/CDTDatastore/wiki/Getting-Started
 
+### Using in a Swift app
+
+CDTDatastore isn't yet module-enabled, so can't be used simply from within
+Swift out of the box. Until such time as this situation is improved (e.g., via 
+this [pull request](https://github.com/CocoaPods/CocoaPods/pull/2835)), create 
+the following file at `Pods/Header/Public/CDTDatastore/module.modulemap`:
+
+    module CloudantSync {
+         header "CloudantSync.h"
+         export *
+    }
+
 ## Example project
 
 There is an example project in the `Project` folder, for iOS 7. To get
