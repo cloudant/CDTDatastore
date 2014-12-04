@@ -1138,6 +1138,15 @@ static BOOL CDTISDeleteAggresively = NO;
     // go directly to super
     [super setMetadata:metaData];
 
+
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_0
+    // must exclude anything but iOS
+    /* FIXME
+     * caches are either garbage or out of sync some how, so we just delete them?
+     */
+    [NSFetchedResultsController deleteCacheWithName:nil];
+#endif
+
     return YES;
 }
 
