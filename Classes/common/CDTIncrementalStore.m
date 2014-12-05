@@ -273,6 +273,42 @@ static NSString* makeMeta(NSString *s)
     return enc;
 }
 
+/**
+ *  Make sure an index we will need exists
+ *  To perform predicates and sorts we need to index on the key.
+ *
+ *  We just try to create the index and allow it to fail.
+ *  FIXME?:
+ *  We could track all the indexes in an NSSet, just not sure it is
+ *  worth it.
+ *
+ *  @param indexName  case-sensitive name of the index.
+ *                    Can only contain letters, digits and underscores.
+ *                    It must not start with a digit.
+ *  @param fieldName  top-level field use for index values
+ *  @param error      will point to an NSError object in case of error.
+ *
+ *  @return  YES if successful; NO in case of error.
+ */
+- (BOOL)ensureIndexExists:(NSString *)indexName
+                fieldName:(NSString *)fieldName
+                    error:(NSError **)error
+{
+    NSError *err = nil;
+    if (![self.indexManager ensureIndexedWithIndexName:indexName
+                                             fieldName:fieldName
+                                                 error:&err]) {
+        if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
+            oops(@"fail to ensure index: %@:%@: %@",
+                 indexName, fieldName, err);
+            if (error) *error = err;
+            return NO;
+        }
+    }
+    return YES;
+}
+
+
 #pragma mark - File System
 /**
  *  Create a path to the directory for the local database
@@ -1322,19 +1358,9 @@ static NSNumber *decodeFP(NSString *str)
             }
             NSString *key = [sd key];
 
-            // We just try to create the index and allow it to fail.
-            /* FIXME?:
-             * We could track all the indexes in an NSSet, just not sure it is
-             * worth it.
-             */
-            if (![self.indexManager ensureIndexedWithIndexName:key
-                                                     fieldName:key
-                                                         error:&err]) {
-                if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
-                    oops(@"fail to ensure index: %@: %@", key, err);
-                    // just get the results and damn the options
-                    return nil;
-                }
+            if (![self ensureIndexExists:key fieldName:key error:&err]) {
+                oops(@"fail to ensure index: %@: %@", key, err);
+                return nil;
             }
             sdOpts[kCDTQueryOptionSortBy] = key;
             if ([sd ascending]) {
@@ -1348,6 +1374,168 @@ static NSNumber *decodeFP(NSString *str)
     return nil;
 }
 
+/**
+ *  Process comparison predicates
+ *  > *Warning*: completely untested right now
+ *
+ *  The queries currently supported by the backing store are:
+ *  * `{index: @{@"max": value}}`: index <= value
+ *  * `{index: value}`: index == value
+ *  * `{index: @{@"min": value}}`: index >= value
+ *  * `{index: @{@"min": value1, @"max": value2}}`: value1 <= index <= value2
+ *  * `{index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
+ *
+ *  @param fetchRequest
+ *
+ *  @return predicat dictionary
+ */
+- (NSDictionary *)comparisonPredicate:(NSComparisonPredicate *)cp
+{
+    NSExpression* lhs = [cp leftExpression];
+    NSExpression* rhs = [cp rightExpression];
+
+    NSString *key = @"";
+    if ([lhs expressionType] == NSKeyPathExpressionType) {
+        key = [lhs keyPath];
+    }
+    id value = [rhs expressionValueWithObject:nil context:nil];
+    NSDictionary *result = nil;
+    if (!key || !value) {
+        return nil;
+    }
+    NSString *keyStr = key;
+
+    // process the predicate operator and create the key-value string
+    NSPredicateOperatorType predType = [cp predicateOperatorType];
+    switch (predType) {
+        case NSLessThanOrEqualToPredicateOperatorType:
+            result = @{ keyStr : @{ @"$max": value } };
+            break;
+        case NSEqualToPredicateOperatorType:
+            result = @{ keyStr : value };
+            break;
+        case NSGreaterThanOrEqualToPredicateOperatorType:
+            result = @{ keyStr : @{ @"min": value } };
+            break;
+
+        case NSInPredicateOperatorType: {
+            if ([value isKindOfClass:[NSString class]]) {
+                oops(@"Can't do substring matches");
+                break;
+            }
+            // FIXME? I hope this deals with collections
+            if ([value respondsToSelector:@selector(objectEnumerator)]) {
+                NSMutableArray *set = [NSMutableArray array];
+                for (id el in value) {
+                    [set addObject:el];
+                }
+                result = @{ keyStr : [NSArray arrayWithArray:set] };
+            }
+            break;
+        }
+
+        case NSBetweenPredicateOperatorType: {
+            NSArray *between = value;
+
+            result = @{ keyStr: @{@"min": [between objectAtIndex:0],
+                                  @"max": [between objectAtIndex:1]}};
+            break;
+        }
+
+        case NSNotEqualToPredicateOperatorType:
+        case NSGreaterThanPredicateOperatorType:
+        case NSLessThanPredicateOperatorType:
+        case NSMatchesPredicateOperatorType:
+        case NSLikePredicateOperatorType:
+        case NSBeginsWithPredicateOperatorType:
+        case NSEndsWithPredicateOperatorType:
+        case NSCustomSelectorPredicateOperatorType:
+        case NSContainsPredicateOperatorType:
+            oops(@"Predicate with unsupported comparison operator: %@",
+                 @(predType));
+            break;
+
+        default:
+            oops(@"Predicate with unrecognized comparison operator: %@",
+                 @(predType));
+            break;
+    }
+
+    NSError *err = nil;
+    if (![self ensureIndexExists:keyStr fieldName:keyStr error:&err]) {
+        oops(@"failed at creating index for key %@", keyStr);
+        // it is unclear what happens if I perform a query with no index
+        // I think we should let the backing store deal with it.
+    }
+    return result;
+}
+
+/**
+ *  Process the predicates
+ *
+ *  @param fetchRequest fetchRequest
+ *
+ *  @return return value
+ */
+- (NSDictionary *)processPredicate:(NSPredicate *)p
+{
+    if (!p) {
+        return nil;
+    }
+
+    if ([p isKindOfClass:[NSCompoundPredicate class]]) {
+        NSCompoundPredicate *cp = (NSCompoundPredicate *)p;
+        NSCompoundPredicateType predType = [cp compoundPredicateType];
+
+        switch(predType) {
+            case NSAndPredicateType: {
+                oops(@"can we do this?");
+                NSMutableDictionary *ands = [NSMutableDictionary dictionary];
+                for (NSPredicate *sub in [cp subpredicates]) {
+                    [ands addEntriesFromDictionary:[self processPredicate:sub]];
+                }
+                return [NSDictionary dictionaryWithDictionary:ands];
+                break;
+            }
+            case NSOrPredicateType:
+            case NSNotPredicateType:
+                oops(@"Predicate with unsuported compound operator: %@",
+                     @(predType));
+                break;
+            default:
+                oops(@"Predicate with unrecognized compound operator: %@",
+                     @(predType));
+        }
+
+        return nil;
+
+    } else if ([p isKindOfClass:[NSComparisonPredicate class]]) {
+        return [self comparisonPredicate:(NSComparisonPredicate *)p];
+    }
+    oops(@"bad predicate class?");
+    return nil;
+}
+
+/**
+ *  create a query dictionaary for the backing store
+ *  > *Note*: the predicates are included in this dictionary
+ *
+ *  @param fetchRequest fetchRequest
+ *
+ *  @return return value
+ */
+- (NSDictionary *)queryForFetchRequest:(NSFetchRequest *)fetchRequest
+{
+    NSEntityDescription *entity = [fetchRequest entity];
+    NSString *entityName = [entity name];
+
+    NSMutableDictionary *query = [@{kCDTISEntityNameKey : entityName} mutableCopy];
+    NSDictionary *predicate = [self processPredicate:[fetchRequest predicate]];
+    [query addEntriesFromDictionary:predicate];
+
+    return [NSDictionary dictionaryWithDictionary:query];
+}
+
 - (id)executeFetchRequest:(NSFetchRequest *)fetchRequest
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
@@ -1355,11 +1543,9 @@ static NSNumber *decodeFP(NSString *str)
     NSError *err = nil;
     NSFetchRequestResultType fetchType = [fetchRequest resultType];
     NSEntityDescription *entity = [fetchRequest entity];
-    NSString *entityName = [entity name];
 
-    NSDictionary *query = @{kCDTISEntityNameKey : entityName};
-
-    // Get sort descriptors
+    // Get sort descriptors and add them as options
+    NSDictionary *query = [self queryForFetchRequest:fetchRequest];
     NSDictionary *options = [self sortByOptions:fetchRequest];
     CDTQueryResult *hits = [self.indexManager queryWithDictionary:query
                                                           options:options
