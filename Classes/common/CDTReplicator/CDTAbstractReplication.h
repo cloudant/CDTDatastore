@@ -128,6 +128,14 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 @property (nonatomic, copy) NSDictionary* optionalHeaders;
 
 /**
+ If non-nil, this block is executed before -startWithError returns.
+
+ This allows the Replication configuration to be customized just
+ before the replicator starts.
+ */
+@property (nonatomic, copy) void(^onStart)(CDTAbstractReplication*);
+
+/**
  Returns the default "User-Agent" header value used in HTTP requests made during replication.
 */
 + (NSString*)defaultUserAgentHTTPHeader;

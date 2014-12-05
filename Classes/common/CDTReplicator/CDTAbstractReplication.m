@@ -28,6 +28,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     CDTAbstractReplication *copy = [[[self class] allocWithZone:zone] init];
     if (copy) {
         copy.optionalHeaders = self.optionalHeaders;
+        copy.onStart = self.onStart;
     }
 
     return copy;

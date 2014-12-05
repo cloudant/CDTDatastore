@@ -84,14 +84,6 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     if (self) {
         _replicatorManager = replicatorManager;
         _cdtReplication = [replication copy];
-
-        NSError *localError;
-        _replConfig = [_cdtReplication dictionaryForReplicatorDocument:&localError];
-        if (!_replConfig) {
-            if (error) *error = localError;
-            return nil;
-        }
-
         _state = CDTReplicatorStatePending;
         _started = NO;
     }
@@ -133,10 +125,39 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         }
 
         self.started = YES;
+    }
+    
+    // if we have an onStart block then it wants to do some
+    // configuration because this may take some time, wrap it up in a
+    // dispatch_async block and then carry on with normal startup
+    if (self.cdtReplication.onStart) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            self.cdtReplication.onStart(self.cdtReplication);
+            [self configureAndStartReplicator];
+        });
+    } else {
+        [self configureAndStartReplicator];
+    }
+    return YES;
+}
 
+- (void)configureAndStartReplicator
+{
+
+    NSError *localError;
+    
+    _replConfig = [_cdtReplication dictionaryForReplicatorDocument:&localError];
+    if (!_replConfig) {
+        self.state = CDTReplicatorStateError;
+        self.error = localError;
+        return;
+    }
+
+    @synchronized(self)
+    {
+        
         // doing this inside @synchronized lets us be certain that self.tdReplicator is either
         // created or nil throughout the rest of the code (especially in -stop)
-        NSError *localError;
         self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
                                                                              error:&localError];
 
@@ -148,16 +169,14 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                        @"TDReplicator. TD Error: %@ Current State: %@",
                        localError, [CDTReplicator stringForReplicatorState:self.state]);
 
-            if (error) {
-                // build a CDT error
-                NSDictionary *userInfo = @{
-                    NSLocalizedDescriptionKey : NSLocalizedString(@"Data sync failed.", nil)
-                };
-                *error = [NSError errorWithDomain:CDTReplicatorErrorDomain
-                                             code:CDTReplicatorErrorTDReplicatorNil
-                                         userInfo:userInfo];
-            }
-            return NO;
+            // build a CDT error
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey : NSLocalizedString(@"Data sync failed.", nil)
+            };
+            self.error = [NSError errorWithDomain:CDTReplicatorErrorDomain
+                                         code:CDTReplicatorErrorTDReplicatorNil
+                                     userInfo:userInfo];
+            return;
         }
     }
 
@@ -179,7 +198,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             };
         }
     }
-
+    
     self.changesTotal = self.changesProcessed = 0;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -202,8 +221,6 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: ReplicationManager starting %@, sessionID %@",
                [self.tdReplicator class], self.tdReplicator.sessionID);
-
-    return YES;
 }
 
 - (BOOL)stop
