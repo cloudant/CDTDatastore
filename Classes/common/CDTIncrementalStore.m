@@ -44,7 +44,7 @@ static NSString *const kCDTISType = @"CDTIncrementalStore";
 static NSString *const kCDTISErrorDomain = @"CDTIncrementalStoreDomain";
 static NSString *const kCDTISDirectory = @"cloudant-sync-datastore-incremental";
 static NSString *const kCDTISPrefix = @"CDTIS";
-static NSString *const kCDTISEscape = @"CDTISEscape";
+static NSString *const kCDTISMeta = @"CDTISMeta_";
 static NSString *const kCDTISMetaDataDocID = @"CDTISMetaData";
 
 #pragma mark - private keys
@@ -188,6 +188,54 @@ static BOOL CDTISDeleteAggresively = NO;
         return [ref stringValue];
     }
     return ref;
+}
+
+static NSString* makeMeta(NSString *s)
+{
+    return [kCDTISMeta stringByAppendingString:s];
+}
+
+/**
+ *  Split the encoding into two properties
+ *  We put in two properties, since we can only index top level items:
+ *  1. props[name] which is the actual data
+ *  1. props[meta] which is the other data we need
+ *
+ *  > *Note*: The documents hint that there is a way to index at lowered levels
+ *  > but it it is unclear how to do it.  If it is possible it may be better
+ *  > than the splitting that is done here.
+ *
+ *  @param props props
+ *  @param name  name
+ *  @param enc   enc
+ */
+- (void)setPropertyIn:(NSMutableDictionary *)props withName:(NSString *)name forEncoding:(NSArray *)enc
+{
+    NSString *data = [enc lastObject];
+    props[name] = data;
+    // pop the last one off
+    NSRange r = NSMakeRange(0, [enc count] - 1);
+    NSArray *meta = [enc subarrayWithRange:r];
+    props[makeMeta(name)] = meta;
+}
+
+/**
+ *  Join the two properties in to the singel tuple. @See setPropertyIn
+ *
+ *  @param props props
+ *  @param name  name
+ *
+ *  @return encoded tuple in array, or nil if there is no contents
+ */
+- (NSArray *)getPropertyFrom:(NSDictionary *)props withName:(NSString *)name
+{
+    NSString *prop = props[name];
+    NSArray *meta = props[makeMeta(name)];
+
+    // We use this method so if meta is nil enc will be nil
+    NSArray *enc = [meta arrayByAddingObject:prop];
+
+    return enc;
 }
 
 #pragma mark - File System
@@ -452,7 +500,7 @@ static BOOL CDTISDeleteAggresively = NO;
             oops(@"there is user info.. what to do?");
         }
         id obj = [mo valueForKey:name];
-        id enc = nil;
+        NSArray *enc = nil;
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
             if (!obj) {
@@ -469,8 +517,9 @@ static BOOL CDTISDeleteAggresively = NO;
         if (!enc) {
             oops(@"%@", err);
         }
-        props[name] = enc;
+        [self setPropertyIn:props withName:name forEncoding:enc];
     }
+
     // just checking
     NSArray *entitySubs = [[mo entity] subentities];
     if ([entitySubs count] > 0) {
@@ -508,10 +557,10 @@ static BOOL CDTISDeleteAggresively = NO;
  *  Get the object from a property encoded with
  *  [propertiesFromManagedObject](@ref propertiesFromManagedObject)
  *
- *  @param prop    <#prop description#>
- *  @param context <#context description#>
+ *  @param prop    prop
+ *  @param context context
  *
- *  @return <#return value description#>
+ *  @return object
  */
 - (id)decodePropertyFrom:(NSArray *)prop
              withContext:(NSManagedObjectContext *)context
@@ -683,7 +732,7 @@ static BOOL CDTISDeleteAggresively = NO;
         } else {
             oops(@"bad prop?");
         }
-        props[name] = enc;
+        [self setPropertyIn:props withName:name forEncoding:enc];
     }
 
     // :( It makes me very sad that I have to fetch it
@@ -714,7 +763,7 @@ static BOOL CDTISDeleteAggresively = NO;
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
     // delete all changed properies, in case they are being removed.
-    [upRev.body removeObjectsForKeys:[changed allKeys]];
+    [upRev.body removeObjectsForKeys:[props allKeys]];
     [upRev.body addEntriesFromDictionary:props];
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
@@ -830,7 +879,8 @@ static BOOL CDTISDeleteAggresively = NO;
         if ([name hasPrefix:kCDTISPrefix]) {
             continue;
         }
-        NSArray *prop = rev.body[name];
+        NSArray *prop = [self getPropertyFrom:rev.body withName:name];
+        if (!prop) oops(@"we encoded baddly");
 
         // we defer to newValueForRelationship:forObjectWithID:withContext:error
         if ([[prop firstObject] isEqualToString:kCDTISRelationToManyType]) {
@@ -1347,7 +1397,7 @@ static BOOL CDTISDeleteAggresively = NO;
         oops(@"no attributes: %@", err);
     }
     NSString *name = [relationship name];
-    NSArray *rel = rev.body[name];
+    NSArray *rel = [self getPropertyFrom:rev.body withName:name];
     NSString *type = [rel objectAtIndex:0];
 
     if ([type isEqualToString:kCDTISRelationToOneType]) {
@@ -1454,7 +1504,8 @@ static void DotWrite(NSMutableData *out, NSString *s)
                 if ([name hasPrefix:kCDTISPrefix]) {
                     continue;
                 }
-                NSArray *prop = rev.body[name];
+                NSArray *prop = [self getPropertyFrom:rev.body
+                                                   withName:name];
                 NSString *ptype = [prop objectAtIndex:0];
 
                 size_t idx = [props count] + 1;
