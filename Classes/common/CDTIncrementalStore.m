@@ -1205,6 +1205,54 @@ static NSString* makeMeta(NSString *s)
     return YES;
 }
 
+/**
+ *  Create a dictionary of query options for the fetch query
+ *
+ *  @param fetchRequest fetchRequest
+ *
+ *  @return options dic
+ */
+- (NSDictionary *)sortByOptions:(NSFetchRequest *)fetchRequest
+{
+    NSError *err = nil;
+    NSArray *sds = [fetchRequest sortDescriptors];
+    if (sds.count) {
+        if (sds.count > 1) oops(@"not sure what to do here");
+
+        NSMutableDictionary *sdOpts = [NSMutableDictionary dictionary];
+        for (NSSortDescriptor *sd in sds) {
+            NSString *sel = NSStringFromSelector([sd selector]);
+            if (![sel isEqualToString:@"compare:"]) {
+                oops(@"we do not allow custom compares");
+            }
+            NSString *key = [sd key];
+
+            // We just try to create the index and allow it to fail.
+            /* FIXME?:
+             * We could track all the indexes in an NSSet, just not sure it is
+             * worth it.
+             */
+            if (![self.indexManager ensureIndexedWithIndexName:key
+                                                     fieldName:key
+                                                         error:&err]) {
+                if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
+                    oops(@"fail to ensure index: %@: %@", key, err);
+                    // just get the results and damn the options
+                    return nil;
+                }
+            }
+            sdOpts[kCDTQueryOptionSortBy] = key;
+            if ([sd ascending]) {
+                sdOpts[kCDTQueryOptionAscending] = @YES;
+            } else {
+                sdOpts[kCDTQueryOptionDescending] = @YES;
+            }
+        }
+        return [NSDictionary dictionaryWithDictionary:sdOpts];
+    }
+    return nil;
+}
+
 - (id)executeFetchRequest:(NSFetchRequest *)fetchRequest
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
@@ -1215,7 +1263,12 @@ static NSString* makeMeta(NSString *s)
     NSString *entityName = [entity name];
 
     NSDictionary *query = @{kCDTISEntityNameKey : entityName};
-    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query error:&err];
+
+    // Get sort descriptors
+    NSDictionary *options = [self sortByOptions:fetchRequest];
+    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query
+                                                          options:options
+                                                            error:&err];
     if (!hits) {
         oops(@"no hits");
     }
