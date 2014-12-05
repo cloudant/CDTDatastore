@@ -1,5 +1,12 @@
 # CDTDatastore CHANGELOG
 
+## master
+  - [FIX] The behavior and documentation regarding the CDTReplicator's
+  fire-and-forget it have been updated. At the moment, CDTReplicator
+  is not fire-and-forget. Strong references to CDTReplicators must be
+  retained in order for replication to complete. Premature deallocation 
+  will stop replication and call it's delegate's -replicatorDidError method. 
+
 ## 0.12.1 (2014-12-10)
 
 - [FIX] Using CDTChangeLogLevel now sets log levels across the library

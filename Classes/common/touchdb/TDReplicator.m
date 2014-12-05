@@ -203,6 +203,8 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         return;
     }
     
+    self.running = YES;
+    
     _replicatorThread = [[NSThread alloc] initWithTarget: self
                                             selector: @selector(runReplicatorThread)
                                               object: nil];
@@ -224,7 +226,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
             strongSelf.replicatorStarted = YES;
         }
         
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"ReplicatorManager: %@ (%@) was queued.",
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Replicator: %@ (%@) was queued.",
                 [strongSelf class], strongSelf.sessionID );
         
         [strongSelf startReplicatorTasks];
@@ -295,8 +297,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 }
 
 - (void) startReplicatorTasks {
-    if (_running)
-        return;
+
     Assert(_db, @"Can't restart an already stopped TDReplicator");
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STARTING ...", self);
 
@@ -332,7 +333,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
             CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Found credential, using %@", self, _authorizer);
     }
 
-    self.running = YES;
     _startTime = CFAbsoluteTimeGetCurrent();
 
     [[NSNotificationCenter defaultCenter] postNotificationName:TDReplicatorStartedNotification

@@ -41,7 +41,12 @@ typedef NS_ENUM(NSInteger, CDTReplicatorErrors) {
     /**
      Internal error: TDReplicator reports local database deleted
      */
-    CDTReplicatorErrorLocalDatabaseDeleted = 4
+    CDTReplicatorErrorLocalDatabaseDeleted = 4,
+    /**
+     Programming error: CDTReplicator was deallocated while replication was ongoing. 
+     Retain a strong reference to the replicator until replication completes.
+     */
+    CDTReplicatorErrorDeallocatedWhileReplicating = 5
 };
 
 /**

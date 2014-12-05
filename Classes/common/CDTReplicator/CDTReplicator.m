@@ -98,7 +98,57 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     return self;
 }
 
-- (void)dealloc { [[NSNotificationCenter defaultCenter] removeObserver:self]; }
+- (void)dealloc
+{
+    if (self.tdReplicator.running) {
+        //we are being deallocated while replication is still happening
+        //report error
+        NSError *deallocError;
+        
+        NSString *replicationType;
+        NSString *source;
+        NSString *target;
+        
+        if ( [self.tdReplicator isPush] ) {
+            replicationType = @"push" ;
+            source = self.tdReplicator.db.name;
+            target = [self cleanRemote];
+        }
+        else {
+            replicationType = @"pull" ;
+            source = [self cleanRemote];
+            target = self.tdReplicator.db.name;
+        }
+        
+        NSString *message = [NSString stringWithFormat: @"Object deallocated before completed "
+                             @"replication. Keep a strong reference to the replicator object to "
+                             @"avoid this.\n CDTReplicator %@, source: %@, target: %@ "
+                             @"filter name: %@, filter parameters %@, unique replication session "
+                             @"ID: %@", replicationType, source, target, self.tdReplicator.filterName,
+                             self.tdReplicator.filterParameters, self.tdReplicator.sessionID];
+        
+        NSDictionary *userInfo = @{
+                                   NSLocalizedDescriptionKey :
+                                       NSLocalizedString(message, nil)
+                                   };
+        deallocError = [NSError errorWithDomain:CDTReplicatorErrorDomain
+                                           code:CDTReplicatorErrorDeallocatedWhileReplicating
+                                       userInfo:userInfo];
+        //send nil to replicatorDidError since we're half-way through deallocation.
+        [self.delegate replicatorDidError:nil info:deallocError];
+        
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@", message);
+    }
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (NSString*) cleanRemote
+{
+    NSURL *remote = self.tdReplicator.remote;
+    return [NSString stringWithFormat:@"%@://%@:****@%@%@", remote.scheme, remote.user,
+            remote.host, remote.path ];
+}
 
 #pragma mark Lifecycle
 
@@ -197,7 +247,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                                  name:TDReplicatorStartedNotification
                                                object:self.tdReplicator];
 
-    // queues the replication on the TDReplicatorManager's replication thread
+    // queues the replication on the TDReplicator's replication thread
     [self.tdReplicator start];
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: Replicator starting %@, sessionID %@",
@@ -335,12 +385,12 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     CDTReplicatorState oldState = strongSelf.state;
     @synchronized(strongSelf) {  // lock out other processes from changing state. strongSelf.state = CDTReplicatorStateStarted; }
 
-    id<CDTReplicatorDelegate> delegate = strongSelf.delegate;
+        id<CDTReplicatorDelegate> delegate = strongSelf.delegate;
 
-    BOOL stateChanged = (oldState != strongSelf.state);
-    if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
-        [delegate replicatorDidChangeState:strongSelf];
-    }
+        BOOL stateChanged = (oldState != strongSelf.state);
+        if (stateChanged && [delegate respondsToSelector:@selector(replicatorDidChangeState:)]) {
+            [delegate replicatorDidChangeState:strongSelf];
+        }
     }
 }
 
