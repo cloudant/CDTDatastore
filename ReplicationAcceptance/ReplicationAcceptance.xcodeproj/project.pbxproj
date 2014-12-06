@@ -960,6 +960,7 @@
 		};
 		27ED10A7192CF8DB00F75E95 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A9AF7E2659CCF39B5454D35 /* Pods-ios.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReplicationAcceptanceApp.app/ReplicationAcceptanceApp";
@@ -1009,6 +1010,7 @@
 		};
 		27ED10A8192CF8DB00F75E95 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = EDDE94B9BFCFBFA9EE766F1D /* Pods-ios.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ReplicationAcceptanceApp.app/ReplicationAcceptanceApp";
