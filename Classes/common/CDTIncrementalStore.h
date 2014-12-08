@@ -13,7 +13,20 @@ extern NSString* const CDTIncrementalStoreErrorDomain;
 
 @interface CDTIncrementalStore : NSIncrementalStore
 
+/**
+ *  Returns the string that was used to register this incremental store
+ *
+ *  @return NSString
+ */
 + (NSString *)type;
+
+/**
+ *  Returns URL to the local directory that the incremental databases shall be
+ *  stored.
+ *
+ *  @return NSURL
+ */
++ (NSURL *)localDir;
 
 @end
 

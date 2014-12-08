@@ -67,6 +67,12 @@ static NSString *const kCDTISInteger64AttributeType = kCDTISNumberPrefix @"int64
 static NSString *const kCDTISFloatAttributeType = kCDTISNumberPrefix @"float";
 static NSString *const kCDTISDoubleAttributeType = kCDTISNumberPrefix @"double";
 
+// encodings for floating point special values
+#define kCDTISFPPrefix @"floating_point_"
+static NSString *const kCDTISFPInfinity = kCDTISFPPrefix @"infinity";
+static NSString *const kCDTISFPNegInfinity = kCDTISFPPrefix @"-infinity";
+static NSString *const kCDTISFPNaN = kCDTISFPPrefix@"nan";
+
 static NSString *const kCDTISDecimalAttributeType = @"decimal";
 static NSString *const kCDTISStringAttributeType = @"utf8";
 static NSString *const kCDTISBooleanAttributeType = @"bool";
@@ -148,6 +154,16 @@ static BOOL CDTISDeleteAggresively = NO;
 + (NSString *)type
 {
     return kCDTISType;
+}
+
++ (NSURL *)localDir
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSURL *documentsDir =
+    [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+    NSURL *dbDir = [documentsDir URLByAppendingPathComponent:kCDTISDirectory];
+
+    return dbDir;
 }
 
 #pragma mark - Utils
@@ -247,17 +263,15 @@ static NSString* makeMeta(NSString *s)
  *
  *  @return The path
  */
-- (NSString *)pathToDBDirectory:(NSString *)dirName error:(NSError **)error
+- (NSString *)pathToDBDirectory:(NSError **)error
 {
     NSError *err = nil;
 
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSURL *documentsDir =
-        [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-    self.localURL = [documentsDir URLByAppendingPathComponent:dirName];
+    self.localURL = [[self class] localDir];
     NSString *path = [self.localURL path];
 
     BOOL isDir;
+    NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL exists = [fileManager fileExistsAtPath:path isDirectory:&isDir];
 
     if (exists) {
@@ -289,6 +303,32 @@ static NSString* makeMeta(NSString *s)
 }
 
 #pragma mark - property encode
+/**
+ *  Backing Store does not handle special values
+ *
+ *  So we encode them as separate types
+ *  > *Warning*: This means that sort and predicates can't really
+ *  > work on these values. Not sure what will happen.
+ *
+ *  @param num NSNumber of type float or double
+ *
+ *  @return <#return value description#>
+ */
+static NSArray *encodeFP(NSNumber *num)
+{
+    // We use our own string representation for special in case they change
+    if ([num isEqual:@(INFINITY)]) {
+        return @[ kCDTISFPInfinity, @"Infinity" ];
+    }
+    if ([num isEqual:@(-INFINITY)]) {
+        return @[ kCDTISFPNegInfinity, @"-Infinity" ];
+    }
+    if ([num isEqual:@(NAN)]) {
+        return @[ kCDTISFPNaN, @"NaN" ];
+    }
+    return nil;
+}
+
 /**
  *  Create an array (for JSON) that encodes an attribute.
  *  The array represents a tuple of strings:
@@ -369,34 +409,37 @@ static NSString* makeMeta(NSString *s)
             NSString *desc = [dec description];
             return @[ kCDTISDecimalAttributeType, desc ];
         }
-        case NSDoubleAttributeType:{
+        case NSDoubleAttributeType: {
             NSNumber *num = obj;
-            NSString *str = [num stringValue];
-            return @[ kCDTISDoubleAttributeType, str];
+            NSArray *enc = encodeFP(num);
+            if (enc) {
+                return enc;
+            }
+            return @[ kCDTISDoubleAttributeType, num];
         }
 
-        case NSFloatAttributeType:{
+        case NSFloatAttributeType: {
             NSNumber *num = obj;
-            NSString *str = [num stringValue];
-            return @[ kCDTISFloatAttributeType, str];
+            NSArray *enc = encodeFP(num);
+            if (enc) {
+                return enc;
+            }
+            return @[ kCDTISFloatAttributeType, num];
         }
 
-        case NSInteger16AttributeType:{
+        case NSInteger16AttributeType: {
             NSNumber *num = obj;
-            NSString *str = [num stringValue];
-            return @[ kCDTISInteger16AttributeType, str];
+            return @[ kCDTISInteger16AttributeType, num];
         }
 
-        case NSInteger32AttributeType:{
+        case NSInteger32AttributeType: {
             NSNumber *num = obj;
-            NSString *str = [num stringValue];
-            return @[ kCDTISInteger32AttributeType, str];
+            return @[ kCDTISInteger32AttributeType, num];
         }
 
         case NSInteger64AttributeType: {
             NSNumber *num = obj;
-            NSString *str = [num stringValue];
-            return @[ kCDTISInteger64AttributeType, str];
+            return @[ kCDTISInteger64AttributeType, num];
         }
         default: {
             if (error) {
@@ -530,6 +573,27 @@ static NSString* makeMeta(NSString *s)
 
 #pragma mark - property decode
 /**
+ *  @See encodeFP
+ *
+ *  @param str string
+ *
+ *  @return Returned Number
+ */
+static NSNumber *decodeFP(NSString *str)
+{
+    if ([str isEqualToString:kCDTISFPInfinity]) {
+        return @(INFINITY);
+    }
+    if ([str isEqualToString:kCDTISFPNegInfinity]) {
+        return @(-INFINITY);
+    }
+    if ([str isEqualToString:kCDTISFPNaN]) {
+        return @(NAN);
+    }
+    return nil;
+}
+
+/**
  *  Create an Object ID from the information decoded in
  *  [encodeRelationFromManagedObject](@ref encodeRelationFromManagedObject)
  *
@@ -605,28 +669,26 @@ static NSString* makeMeta(NSString *s)
     } else if ([type isEqualToString:kCDTISDecimalAttributeType]) {
         NSString *str = value;
         obj = [NSDecimalNumber decimalNumberWithString:str];
-
-    } else if ([type hasPrefix:kCDTISNumberPrefix]) {
-        NSString *str = value;
-        NSNumber *num;
-        if ([type isEqualToString:kCDTISDoubleAttributeType]) {
-            double dbl = [str doubleValue];
-            num = [NSNumber numberWithDouble:dbl];
-        } else if ([type isEqualToString:kCDTISFloatAttributeType]) {
-            float flt = [str floatValue];
-            num = [NSNumber numberWithFloat:flt];
-        } else if ([type isEqualToString:kCDTISInteger16AttributeType]) {
-            int i16 = [str intValue];
-            num = [NSNumber numberWithInt:i16];
-        } else if ([type isEqualToString:kCDTISInteger32AttributeType]) {
-            int i32 = [str intValue];
-            num = [NSNumber numberWithInt:i32];
-        } else if ([type isEqualToString:kCDTISInteger64AttributeType]) {
-            int64_t i64 = [str longLongValue];
-            num = [NSNumber numberWithLongLong:i64];
-        }
+    } else if ([type hasPrefix:kCDTISFPPrefix]) {
+        // we don't care about value
+        NSNumber *num = decodeFP(type);
+        if (!num) oops(@"bad FP special type");
         obj = num;
-
+    } else if ([type isEqualToString:kCDTISDoubleAttributeType]) {
+        NSNumber *num = value;
+        obj = num;
+    } else if ([type isEqualToString:kCDTISFloatAttributeType]) {
+        NSNumber *num = value;
+        obj = num;
+    } else if ([type isEqualToString:kCDTISInteger16AttributeType]) {
+        NSNumber *num = value;
+        obj = num;
+    } else if ([type isEqualToString:kCDTISInteger32AttributeType]) {
+        NSNumber *num = value;
+        obj = num;
+    } else if ([type isEqualToString:kCDTISInteger64AttributeType]) {
+        NSNumber *num = value;
+        obj = num;
     } else if ([type isEqualToString:kCDTISRelationToOneType]) {
         NSString *entityName = value;
         if (entityName.length == 0) {
@@ -916,7 +978,7 @@ static NSString* makeMeta(NSString *s)
 
     NSURL *remoteURL = [self URL];
     self.databaseName = [remoteURL lastPathComponent];
-    NSString *path = [self pathToDBDirectory:kCDTISDirectory error:&err];
+    NSString *path = [self pathToDBDirectory:&err];
     if (!path) {
         if (error) *error = err;
         return NO;
@@ -1584,12 +1646,19 @@ static void DotWrite(NSMutableData *out, NSString *s)
 
                 } else if ([ptype isEqualToString:kCDTISDecimalAttributeType]) {
                     NSString *str = [prop objectAtIndex:1];
-                    NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
+                    NSDecimalNumber *dec = [NSDecimalNumber
+                                            decimalNumberWithString:str];
+                    double dbl = [dec doubleValue];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%e",
+                                      idx, name, dbl]];
+
+                } else if ([ptype hasPrefix:kCDTISNumberPrefix]) {
+                    NSNumber *num = [prop objectAtIndex:1];
                     [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@",
-                                      idx, name, dec]];
+                                      idx, name, num]];
 
                 } else if ([ptype isEqualToString:kCDTISStringAttributeType] ||
-                           [ptype hasPrefix:kCDTISNumberPrefix]) {
+                           [ptype hasPrefix:kCDTISFPPrefix]) {
                     NSString *str = [prop objectAtIndex:1];
                     if ([str length] > 16) {
                         str = [NSString stringWithFormat:@"%@...",
