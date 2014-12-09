@@ -14,10 +14,13 @@
 
 + (void)initialize
 {
-        [DDLog addLogger:[DDTTYLogger sharedInstance]];
-        for (int i = 0; i < sizeof(CDTLoggingLevels); i++) {
-            CDTLoggingLevels[i] = DDLogLevelAll;
-        }
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
+    CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT, DDLogLevelWarning);
+    CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, DDLogLevelWarning);
+    CDTChangeLogLevel(CDTDATASTORE_LOG_CONTEXT, DDLogLevelWarning);
+    CDTChangeLogLevel(CDTDOCUMENT_REVISION_LOG_CONTEXT, DDLogLevelWarning);
+    CDTChangeLogLevel(CDTTD_REMOTE_REQUEST_CONTEXT, DDLogLevelWarning);
+    CDTChangeLogLevel(CDTTD_JSON_CONTEXT, DDLogLevelWarning);
 }
 
 @end
