@@ -112,6 +112,18 @@ static BOOL CDTISReadableUUIDs = YES;
  */
 static BOOL CDTISDeleteAggresively = NO;
 
+/**
+ *  The backing store will drop the document body if there is a JSON
+ *  serialization error. When this happens there is no failure condition or
+ *  error reported.  So we read it back and make sure the body isn't empty.
+ */
+static BOOL CDTISReadItBack = YES;
+
+/**
+ *  Will update the Dot graph on save request
+ */
+static BOOL CDTISDotMeUpdate = NO;
+
 #pragma mark - oops macro for debug
 /**
  *  This is how I like to assert, it stops me in the debugger
@@ -751,6 +763,20 @@ static NSNumber *decodeFP(NSString *str)
         NSLog(@"newRev: %@", newRev.body);
         oops(@"error: %@", err);
         return NO;
+    }
+
+    if (CDTISReadItBack) {
+        /**
+         *  See CDTISReadItBack
+         */
+        rev = [self.datastore getDocumentWithId:newRev.docId error:&err];
+        if (!rev && err && error) {
+            *error = err;
+            NSLog(@"readback: %@", newRev.body);
+            oops(@"error: %@", err);
+            return NO;
+        }
+        if ([rev.body count] == 0) oops(@"empty save");
     }
 
     return YES;
@@ -1419,6 +1445,10 @@ static NSNumber *decodeFP(NSString *str)
         if (![self optLockManagedObject:mo error:&err]) {
             oops(@"optObject")
         }
+    }
+
+    if (CDTISDotMeUpdate) {
+        NSLog(@"DotMe: %@", [self dotMe]);
     }
 
     /* quote the docs:
