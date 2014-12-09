@@ -108,7 +108,7 @@ rev.body = @{
 CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                           initWithPath:@"/path/to/image.jpg"
                           name:@"cute_cat.jpg"
-                          type:@"image/jpeg"]]
+                          type:@"image/jpeg"];
 rev.attachments = @{ att1.name:att1 };
 
 // Save the document to the database
