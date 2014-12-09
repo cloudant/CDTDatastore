@@ -28,13 +28,23 @@ By default the logging level for each component is set to `Off`. To raise and lo
 ```objc
 #import <CDTLogging.h>
 
-CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT,DDLogLevelInfo);
+CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT, DDLogLevelInfo);
 ``` 
 To turn off logging for a component:
 
 ```objc
-CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT,DDLogLevelOff);
+CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT, DDLogLevelOff);
 ```
+
+Available log levels (from CocoaLumberjack):
+
+- `DDLogLevelOff`
+- `DDLogLevelError`
+- `DDLogLevelWarning`
+- `DDLogLevelInfo`
+- `DDLogLevelDebug`
+- `DDLogLevelVerbose`
+- `DDLogLevelAll`
 
 ### Configuring Loggers
 
