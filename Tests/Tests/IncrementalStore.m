@@ -16,7 +16,8 @@
  *  ##Start Ripoff:
  *  The following code segment, that creates a managed object model
  *  programatically, has been derived from:
- *  > https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
+ *  >
+ *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
  *
  *  Which at the time of pilferage had the following license:
  *  > http://www.apache.org/licenses/LICENSE-2.0
@@ -27,9 +28,12 @@
 @property (nonatomic, retain) NSDate *created_at;
 @property (nonatomic, retain) NSString *text;
 @property (nonatomic, retain) NSString *text2;
-@property (nonatomic, retain) NSNumber *number;
-@property (nonatomic, retain) NSDecimalNumber *decimalNumber;
-@property (nonatomic, retain) NSNumber *doubleNumber;
+@property (nonatomic, retain) NSNumber *i16;
+@property (nonatomic, retain) NSNumber *i32;
+@property (nonatomic, retain) NSNumber *i64;
+@property (nonatomic, retain) NSDecimalNumber *fpDecimal;
+@property (nonatomic, retain) NSNumber *fpDouble;
+@property (nonatomic, retain) NSNumber *fpFloat;
 @property (nonatomic, retain) NSSet *subEntries;
 @property (nonatomic, retain) NSSet *files;
 @end
@@ -61,8 +65,8 @@
 @property (nonatomic, retain) Entry *entry;
 @end
 
-NSAttributeDescription *MakeAttribute(NSString *name, BOOL optional,
-                                      NSAttributeType type, id defaultValue)
+NSAttributeDescription *MakeAttribute(NSString *name, BOOL optional, NSAttributeType type,
+                                      id defaultValue)
 {
     NSAttributeDescription *attribute = [NSAttributeDescription new];
     [attribute setName:name];
@@ -74,7 +78,8 @@ NSAttributeDescription *MakeAttribute(NSString *name, BOOL optional,
     return attribute;
 }
 NSRelationshipDescription *MakeRelationship(NSString *name, BOOL optional, BOOL toMany,
-                                                       NSDeleteRule deletionRule, NSEntityDescription *destinationEntity)
+                                            NSDeleteRule deletionRule,
+                                            NSEntityDescription *destinationEntity)
 {
     NSRelationshipDescription *relationship = [NSRelationshipDescription new];
     [relationship setName:name];
@@ -102,10 +107,14 @@ NSManagedObjectModel *MakeCoreDataModel(void)
     [subentry setName:@"Subentry"];
     [subentry setManagedObjectClassName:@"Subentry"];
 
-    NSRelationshipDescription *entryFiles = MakeRelationship(@"files", YES, YES, NSCascadeDeleteRule, file);
-    NSRelationshipDescription *entrySubentries = MakeRelationship(@"subEntries", YES, YES, NSCascadeDeleteRule, subentry);
-    NSRelationshipDescription *fileEntry = MakeRelationship(@"entry", YES, NO, NSNullifyDeleteRule, entry);
-    NSRelationshipDescription *subentryEntry = MakeRelationship(@"entry", YES, NO, NSNullifyDeleteRule, entry);
+    NSRelationshipDescription *entryFiles =
+        MakeRelationship(@"files", YES, YES, NSCascadeDeleteRule, file);
+    NSRelationshipDescription *entrySubentries =
+        MakeRelationship(@"subEntries", YES, YES, NSCascadeDeleteRule, subentry);
+    NSRelationshipDescription *fileEntry =
+        MakeRelationship(@"entry", YES, NO, NSNullifyDeleteRule, entry);
+    NSRelationshipDescription *subentryEntry =
+        MakeRelationship(@"entry", YES, NO, NSNullifyDeleteRule, entry);
 
     [entryFiles setInverseRelationship:fileEntry];
     [entrySubentries setInverseRelationship:subentryEntry];
@@ -113,36 +122,40 @@ NSManagedObjectModel *MakeCoreDataModel(void)
     [subentryEntry setInverseRelationship:entrySubentries];
 
     [entry setProperties:@[
-                           MakeAttribute(@"check", YES, NSBooleanAttributeType, nil),
-                           MakeAttribute(@"created_at", YES, NSDateAttributeType, nil),
-                           MakeAttribute(@"decimalNumber", YES, NSDecimalAttributeType, @(0.0)),
-                           MakeAttribute(@"doubleNumber", YES, NSDoubleAttributeType, @(0.0)),
-                           MakeAttribute(@"number", YES, NSInteger16AttributeType, @(0)),
-                           MakeAttribute(@"text", YES, NSStringAttributeType, nil),
-                           MakeAttribute(@"text2", YES, NSStringAttributeType, nil),
-                           entryFiles,
-                           entrySubentries
-                           ]];
+        MakeAttribute(@"check", YES, NSBooleanAttributeType, nil),
+        MakeAttribute(@"created_at", YES, NSDateAttributeType, nil),
+        MakeAttribute(@"fpDecimal", YES, NSDecimalAttributeType, @(0.0)),
+        MakeAttribute(@"fpDouble", YES, NSDoubleAttributeType, @(0.0)),
+        MakeAttribute(@"fpFloat", YES, NSFloatAttributeType, @(0.0)),
+        MakeAttribute(@"i16", YES, NSInteger16AttributeType, @(0)),
+        MakeAttribute(@"i32", YES, NSInteger32AttributeType, @(0)),
+        MakeAttribute(@"i64", YES, NSInteger64AttributeType, @(0)),
+        MakeAttribute(@"text", YES, NSStringAttributeType, nil),
+        MakeAttribute(@"text2", YES, NSStringAttributeType, nil),
+        entryFiles,
+        entrySubentries
+    ]];
 
     [file setProperties:@[
-                          MakeAttribute(@"data", YES, NSBinaryDataAttributeType, nil),
-                          MakeAttribute(@"filename", YES, NSStringAttributeType, nil),
-                          fileEntry
-                          ]];
+        MakeAttribute(@"data", YES, NSBinaryDataAttributeType, nil),
+        MakeAttribute(@"filename", YES, NSStringAttributeType, nil),
+        fileEntry
+    ]];
 
     [subentry setProperties:@[
-                              MakeAttribute(@"number", YES, NSInteger32AttributeType, @(0)),
-                              MakeAttribute(@"text", YES, NSStringAttributeType, nil),
-                              subentryEntry
-                              ]];
+        MakeAttribute(@"number", YES, NSInteger32AttributeType, @(0)),
+        MakeAttribute(@"text", YES, NSStringAttributeType, nil),
+        subentryEntry
+    ]];
 
-    [model setEntities:@[entry, file, subentry]];
+    [model setEntities:@[ entry, file, subentry ]];
 
     return model;
 }
 
 @implementation Entry
-@dynamic check, created_at, text, text2, number, decimalNumber, doubleNumber, subEntries, files;
+@dynamic check, created_at, text, text2, i16, i32, i64, fpDecimal, fpDouble, fpFloat, subEntries,
+    files;
 @end
 
 @implementation Subentry
@@ -159,8 +172,8 @@ NSManagedObjectModel *MakeCoreDataModel(void)
 
 Entry *MakeEntry(NSManagedObjectContext *moc)
 {
-    return [NSEntityDescription insertNewObjectForEntityForName:@"Entry"
-                                         inManagedObjectContext:moc];
+    return
+        [NSEntityDescription insertNewObjectForEntityForName:@"Entry" inManagedObjectContext:moc];
 }
 
 @interface IncrementalStore : CloudantSyncTests
@@ -175,7 +188,6 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
 - (NSManagedObjectModel *)managedObjectModel
 {
-
     if (_managedObjectModel != nil) {
         return _managedObjectModel;
     }
@@ -193,7 +205,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
     if (coordinator != nil) {
         _managedObjectContext = [NSManagedObjectContext new];
-        [_managedObjectContext setPersistentStoreCoordinator: coordinator];
+        [_managedObjectContext setPersistentStoreCoordinator:coordinator];
     }
     return _managedObjectContext;
 }
@@ -204,7 +216,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         return _persistentStoreCoordinator;
     }
     _persistentStoreCoordinator =
-    [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 
     NSError *err = nil;
     NSURL *storeURL = [NSURL URLWithString:@"cdtis_test"];
@@ -218,8 +230,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     return _persistentStoreCoordinator;
 }
 
-
-- (void)setUp {
+- (void)setUp
+{
     [super setUp];
 
     static BOOL initialized = NO;
@@ -237,38 +249,73 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     }
 }
 
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+- (void)tearDown
+{
+    // Put teardown code here. This method is called after the invocation of each test method in the
+    // class.
     [super tearDown];
 
     self.managedObjectContext = nil;
-    
-
+    self.persistentStoreCoordinator = nil;
 }
 
-- (void)testCheckNumbers {
+- (void)testCheckNumbers
+{
     NSError *err = nil;
+    // This will create the database
     NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    // Increment this for every entry you make
+    NSUInteger entries = 0;
 
     Entry *maxNums = MakeEntry(moc);
+    ++entries;
     maxNums.check = @YES;
-    maxNums.decimalNumber = [NSDecimalNumber maximumDecimalNumber];
-    maxNums.doubleNumber = [NSNumber numberWithDouble:INFINITY];
-    maxNums.number = @INT16_MAX;
+    maxNums.fpDecimal = [NSDecimalNumber maximumDecimalNumber];
+    maxNums.fpDouble = @(FLT_MAX);  //@(DBL_MAX);
+    maxNums.fpFloat = @(FLT_MAX);
+    maxNums.i16 = @INT16_MAX;
+    maxNums.i32 = @INT32_MAX;
+    maxNums.i64 = @INT64_MAX;
 
     Entry *minNums = MakeEntry(moc);
+    ++entries;
     minNums.check = @NO;
-    minNums.decimalNumber = [NSDecimalNumber minimumDecimalNumber];
-    minNums.doubleNumber = [NSNumber numberWithDouble:-INFINITY];
-    minNums.number = @INT16_MIN;
+    minNums.fpDecimal = [NSDecimalNumber minimumDecimalNumber];
+    minNums.fpDouble = @(FLT_MIN);  //@(DBL_MIN);
+    minNums.fpFloat = @(FLT_MIN);
+    minNums.i16 = @INT16_MIN;
+    minNums.i32 = @INT32_MIN;
+    minNums.i64 = @INT64_MIN;
+
+    Entry *infNums = MakeEntry(moc);
+    ++entries;
+    infNums.fpDouble = @(INFINITY);
+    infNums.fpFloat = @(INFINITY);
+
+    Entry *ninfNums = MakeEntry(moc);
+    ++entries;
+    ninfNums.fpFloat = @(-INFINITY);
+    ninfNums.fpDouble = @(-INFINITY);
+
+    Entry *nanNums = MakeEntry(moc);
+    ++entries;
+    nanNums.fpDouble = @(NAN);
+    nanNums.fpFloat = @(NAN);
 
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
     // does this really cause everything to fault?
-    [moc refreshObject:maxNums mergeChanges:NO];
+    [moc refreshObject:infNums mergeChanges:NO];
 
-    XCTAssertTrue([maxNums.doubleNumber isEqual: @(INFINITY)],
-                 @"Failed to retain infinity");
+    XCTAssertTrue([infNums.fpDouble isEqual:@(INFINITY)], @"Failed to retain double infinity");
+    XCTAssertTrue([infNums.fpFloat isEqual:@(INFINITY)], @"Failed to retain float infinity");
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    NSUInteger count = [moc countForFetchRequest:fr error:&err];
+
+    XCTAssertTrue(count == entries, @"Count fails");
 }
 
 #if 0
