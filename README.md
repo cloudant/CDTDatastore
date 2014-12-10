@@ -45,15 +45,19 @@ pod "CDTDatastore"
 
 ### Using in a Swift app
 
-CDTDatastore isn't yet module-enabled, so can't be used simply from within
-Swift out of the box. Until such time as this situation is improved (e.g., via 
-this [pull request](https://github.com/CocoaPods/CocoaPods/pull/2835)), create 
-the following file at `Pods/Header/Public/CDTDatastore/module.modulemap`:
+CDTDatastore is useable from Swift out of the box with a few small quirks. Install as per the 
+instructions above, and import CloudantSync.h into your [bridging header](https://developer.apple.com/library/ios/documentation/swift/conceptual/buildingcocoaapps/MixandMatch.html). If you need to iterate
+over the CDTQueryResult class, you need to create a small extension before you can do so in Swift:
 
-    module CloudantSync {
-         header "CloudantSync.h"
-         export *
+```swift
+extension CDTQueryResult: SequenceType {
+    public func generate() -> NSFastGenerator {
+        return NSFastGenerator(self)
     }
+}
+```
+
+The [Overview](#overview) section below has examples in both Objective-C and Swift.
 
 ## Example project
 
@@ -71,7 +75,7 @@ $ open Project.xcworkspace
 
 See [CONTRIBUTING](CONTRIBUTING.md).
 
-## Overview of the library
+## <a name="overview"></a>Overview of the library
 
 Once the libraries are added to a project, the basics of adding and reading
 a document are:
@@ -119,6 +123,58 @@ CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
 NSString *docId = revision.docId;
 CDTDocumentRevision *retrieved = [datastore getDocumentWithId:docId
                                                         error:&error];
+```
+If you are using Swift, install the libraries as per the instructions above, and configure a bridging header for your project. Pull in the CloudantSync.h header into the bridging header, and you should be good to go:
+
+```objc
+#import <CloudantSync.h>
+```
+
+To add, and read documents in Swift, the basics are:
+
+```swift
+var error: NSError?
+
+let fileManager  = NSFileManager.defaultManager()
+let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
+	as NSURL
+let storeURL     = documentsDir.URLByAppendingPathComponent("cloudant-sync-datastore")
+let path         = storeURL.path
+
+// Create Datastore Manager
+let manager = CDTDatastoreManager(directory: path, error: &error)
+if let err = error {
+    println("Error creating datastore manager: \(err.localizedDescription)")
+}
+
+// Note: data store name must not contain capital letters
+let datastore = manager.datastoreNamed("my_datastore", error: &error)
+if let err = error {
+    println("Error creating datastore: \(err.localizedDescription)")
+}
+
+// Create a document
+var rev = CDTMutableDocumentRevision()
+rev.docId = "doc1"  // Or don't and get an ID generated for you
+var body = [
+    "description": "Buy milk",
+    "completed": false,
+    "type": "com.cloudant.sync.example.task"
+] as NSMutableDictionary
+rev.setBody(body)
+
+// Save the document to the database
+let revision = datastore.createDocumentFromRevision(rev, error: &error)
+if let err = error {
+    println("Error storing document: \(err.localizedDescription)")
+}
+
+// Read a document
+let docId = revision.docId
+let retrieved = datastore.getDocumentWithId(docId, error: &error)
+if let err = error {
+    println("Error retrieving document: \(err.localizedDescription)")
+}
 ```
 
 Read more in [the CRUD document](https://github.com/cloudant/CDTDatastore/blob/master/doc/crud.md).
