@@ -29,26 +29,26 @@
 #define CDTTD_JSON_CONTEXT 15
 #define CDTTD_VIEW_CONTEXT 16
 
-#define START_CONTEXT CDTINDEX_LOG_CONTEXT
-#define END_CONTEXT CDTTD_VIEW_CONTEXT
+#define CDTSTART_CONTEXT CDTINDEX_LOG_CONTEXT
+#define CDTEND_CONTEXT CDTTD_VIEW_CONTEXT
 
-static DDLogLevel CDTLoggingLevels[] = {[0 ... END_CONTEXT - START_CONTEXT] = DDLogLevelOff};
+extern DDLogLevel CDTLoggingLevels[];
 
 #define CDTLogError(context, frmt, ...)                                                    \
-    LOG_MAYBE(NO, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagError, context, nil, \
+    LOG_MAYBE(NO, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagError, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogWarn(context, frmt, ...)                                                        \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagWarning, context, nil, \
+    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagWarning, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogInfo(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagInfo, context, nil, \
+    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagInfo, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogDebug(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagDebug, context, nil, \
+    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagDebug, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogVerbose(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - START_CONTEXT], DDLogFlagVerbose, context, nil, \
+    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagVerbose, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
-#define CDTChangeLogLevel(context, logLevel) CDTLoggingLevels[context - START_CONTEXT] = logLevel
+#define CDTChangeLogLevel(context, logLevel) CDTLoggingLevels[context - CDTSTART_CONTEXT] = logLevel
 
 #endif
