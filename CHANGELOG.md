@@ -1,5 +1,12 @@
 # CDTDatastore CHANGELOG
 
+## 0.12.1 (2014-12-10)
+
+- [FIX] Using CDTChangeLogLevel now sets log levels across the library
+  correctly.
+- [FIX] Calling -mutableCopy on CDTMutableDocumentRevision objects now
+  works.
+
 ## 0.12.0 (2014-11-24)
 
 - [NEW] CDTDatastore gains a -compact function, run this to remove
