@@ -259,6 +259,70 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     self.persistentStoreCoordinator = nil;
 }
 
+- (void)testFetchConstraints
+{
+    int max = 100;
+    int limit = 10;
+    int offset = 50;
+
+    XCTAssertTrue(offset + limit <= max && offset - limit >= 0,
+                  @"test parameters out of legal range");
+
+    NSError *err = nil;
+    // This will create the database
+    NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    for (int i = 0; i < max; i++) {
+        Entry *e = MakeEntry(moc);
+        e.i64 = @(i);
+        e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
+    }
+    // push it out
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+
+    /**
+     *  We will sort by number first
+     */
+    NSSortDescriptor *sd = [NSSortDescriptor sortDescriptorWithKey:@"i64" ascending:YES];
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.sortDescriptors = @[ sd ];
+    fr.fetchLimit = limit;
+    fr.fetchOffset = offset;
+    fr.shouldRefreshRefetchedObjects = YES;
+
+    NSArray *results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
+                  [results count]);
+    long long last = offset - 1;
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val >= offset && val < offset + limit,
+                      @"entry is out of range [%d, %d): %lld", offset, offset + limit, val);
+        XCTAssertTrue(val == last + 1, @"unexpected entry %d: %@", val, e);
+        ++last;
+    }
+
+    /**
+     *  now by string, descending just for fun
+     */
+    sd = [NSSortDescriptor sortDescriptorWithKey:@"text" ascending:NO];
+
+    fr.sortDescriptors = @[ sd ];
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
+                  [results count]);
+    last = offset;
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val >= offset - limit && val < offset,
+                      @"entry is out of range [%d, %d): %lld", offset - limit, offset, val);
+        XCTAssertTrue(val == last - 1, @"unexpected entry %d: %@", val, e);
+        --last;
+    }
+}
+
 - (void)testCheckNumbers
 {
     NSError *err = nil;

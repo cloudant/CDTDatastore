@@ -1444,10 +1444,12 @@ static NSNumber *decodeFP(NSString *str)
  *
  *  @return options dic
  */
-- (NSDictionary *)sortByOptions:(NSFetchRequest *)fetchRequest
+- (NSDictionary *)processOptions:(NSFetchRequest *)fetchRequest
                           error:(NSError **)error
 {
     NSError *err = nil;
+    NSMutableDictionary *sdOpts = [NSMutableDictionary dictionary];
+
     NSArray *sds = [fetchRequest sortDescriptors];
     if (sds.count) {
         if (sds.count > 1) oops(@"not sure what to do here");
@@ -1676,7 +1678,7 @@ static NSNumber *decodeFP(NSString *str)
 
     // Get sort descriptors and add them as options
     err = nil;
-    NSDictionary *options = [self sortByOptions:fetchRequest error:&err];
+    NSDictionary *options = [self processOptions:fetchRequest error:&err];
     if (!options && err) {
         if (error) *error = err;
         // I think we do this on error, it is unclear
