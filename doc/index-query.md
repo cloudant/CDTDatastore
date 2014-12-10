@@ -162,7 +162,7 @@ There is a variant of the query method used above which takes an extra `options`
 ```objective-c
 result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}},
                                    options:@{kCDTQueryOptionSortBy: @"age",
-                                             kCDTQueryOptionDescending: true}
+                                             kCDTQueryOptionDescending: @YES}
                                      error:nil];
 ```
 
@@ -170,7 +170,8 @@ As in the example above, this can be combined with the key `kCDTQueryOptionAscen
 `kCDTQueryOptionDescending` and the value `true` to sort ascending or descending. If neither option
 is used, then the default is ascending.
 
-The ordering is determined by the underlying SQL type of the index. 
+The value passed as `kCDTQueryOptionSortBy` must be an index rather than a field in the returned
+documents. The ordering is determined by the underlying SQL type of the index. 
 
 `kCDTQueryOptionOffset` and `kCDTQueryOptionLimit` can be used to page through results, which can be
 useful when presenting information in a GUI. In this example we present 10 results at a time:
