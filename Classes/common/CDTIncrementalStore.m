@@ -286,6 +286,34 @@ static NSString* makeMeta(NSString *s)
     return enc;
 }
 
+- (CDTIndexType)indexTypeFromAttributeType:(NSAttributeType)type
+{
+    CDTIndexType it;
+    switch (type) {
+        default:
+        case NSUndefinedAttributeType:
+        case NSBinaryDataAttributeType:
+        case NSTransformableAttributeType:
+        case NSObjectIDAttributeType:
+            oops(@"can't index on these!");
+            break;
+
+        case NSStringAttributeType:
+            it = CDTIndexTypeString;
+
+        case NSBooleanAttributeType:
+        case NSDateAttributeType:
+        case NSInteger16AttributeType:
+        case NSInteger32AttributeType:
+        case NSInteger64AttributeType:
+        case NSDecimalAttributeType:
+        case NSDoubleAttributeType:
+        case NSFloatAttributeType:
+            it = CDTIndexTypeInteger;
+    }
+    return it;
+}
+
 /**
  *  Make sure an index we will need exists
  *  To perform predicates and sorts we need to index on the key.
@@ -299,17 +327,22 @@ static NSString* makeMeta(NSString *s)
  *                    Can only contain letters, digits and underscores.
  *                    It must not start with a digit.
  *  @param fieldName  top-level field use for index values
+ *  @param type       type for the field to index on
  *  @param error      will point to an NSError object in case of error.
  *
  *  @return  YES if successful; NO in case of error.
  */
 - (BOOL)ensureIndexExists:(NSString *)indexName
                 fieldName:(NSString *)fieldName
+                     type:(CDTIndexType)type
                     error:(NSError **)error
 {
     NSError *err = nil;
+
+    // Todo: BUG? if we get the type wrong should there be an error?
     if (![self.indexManager ensureIndexedWithIndexName:indexName
                                              fieldName:fieldName
+                                                  type:type
                                                  error:&err]) {
         if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
             if (error) *error = err;
@@ -1419,7 +1452,6 @@ static NSNumber *decodeFP(NSString *str)
     if (sds.count) {
         if (sds.count > 1) oops(@"not sure what to do here");
 
-        NSMutableDictionary *sdOpts = [NSMutableDictionary dictionary];
         for (NSSortDescriptor *sd in sds) {
             NSString *sel = NSStringFromSelector([sd selector]);
             if (![sel isEqualToString:@"compare:"]) {
@@ -1427,7 +1459,20 @@ static NSNumber *decodeFP(NSString *str)
             }
             NSString *key = [sd key];
 
-            if (![self ensureIndexExists:key fieldName:key error:&err]) {
+            NSEntityDescription *entity = fetchRequest.entity;
+            NSDictionary *props = [entity propertiesByName];
+            id prop = props[key];
+            if (![prop isKindOfClass:[NSAttributeDescription class]]) {
+                oops(@"expected attribute");
+            }
+            NSAttributeDescription *attr = prop;
+
+            CDTIndexType type = [self indexTypeFromAttributeType:attr.attributeType];
+
+            if (![self ensureIndexExists:key
+                               fieldName:key
+                                    type:type
+                                   error:&err]) {
                 if (error) *error = err;
                 oops(@"fail to ensure index: %@: %@", key, err);
                 return nil;
@@ -1439,6 +1484,16 @@ static NSNumber *decodeFP(NSString *str)
                 sdOpts[kCDTQueryOptionDescending] = @YES;
             }
         }
+    }
+
+    if (fetchRequest.fetchLimit) {
+        sdOpts[kCDTQueryOptionLimit] = @(fetchRequest.fetchLimit);
+    }
+    if (fetchRequest.fetchOffset) {
+        sdOpts[kCDTQueryOptionOffset] = @(fetchRequest.fetchOffset);
+    }
+
+    if ([sdOpts count]) {
         return [NSDictionary dictionaryWithDictionary:sdOpts];
     }
     return nil;
@@ -1532,7 +1587,13 @@ static NSNumber *decodeFP(NSString *str)
     }
 
     NSError *err = nil;
-    if (![self ensureIndexExists:keyStr fieldName:keyStr error:&err]) {
+
+    oops(@"need to know the correct index type");
+
+    if (![self ensureIndexExists:keyStr
+                       fieldName:keyStr
+                            type:CDTIndexTypeString
+                           error:&err]) {
         oops(@"failed at creating index for key %@", keyStr);
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
