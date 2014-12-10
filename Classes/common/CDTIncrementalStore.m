@@ -396,6 +396,25 @@ static NSArray *encodeFP(NSNumber *num)
 }
 
 /**
+ *  Make sure the double is in the range that JOSN can handle
+ *
+ *  @param d NSNumber that represents a double
+ *
+ *  @return NSnumber that represents a value that JSON can handle
+ */
+static NSNumber *JSONDouble(NSNumber *d)
+{
+    // Todo: just send a float right now
+    float f = [d floatValue];
+    if (f == INFINITY) {
+        f = FLT_MAX;
+    } else if (f == -INFINITY) {
+        f = -FLT_MAX;
+    }
+    return [NSNumber numberWithFloat:f];
+}
+
+/**
  *  Create an array (for JSON) that encodes an attribute.
  *  The array represents a tuple of strings:
  *  * type
@@ -482,7 +501,19 @@ static NSArray *encodeFP(NSNumber *num)
             if (enc) {
                 return enc;
             }
-            return @[ kCDTISDoubleAttributeType, num];
+            /**
+             *  JSON cannot handle the full range of double so we store 
+             *  two values:
+             *  1. `long long` "image" so we can store accurately
+             *  > This could be a problematic when replicating to other arches
+             *  2. A JSON range value so predicates and sort order can work
+             */
+            NSNumber *jsonNum = JSONDouble(num);
+            double jd = [num doubleValue];
+
+            // copy the image into the `long long`, note the pointer swizzling
+            NSNumber *ll = @(*(long long *)&jd);
+            return @[ kCDTISDoubleAttributeType, ll, jsonNum];
         }
 
         case NSFloatAttributeType: {
@@ -746,7 +777,15 @@ static NSNumber *decodeFP(NSString *str)
         if (!num) oops(@"bad FP special type");
         obj = num;
     } else if ([type isEqualToString:kCDTISDoubleAttributeType]) {
-        NSNumber *num = value;
+        /**
+         *  The value is stored as a `long long` image
+         */
+        NSNumber *llNum = value;
+        long long ll = [llNum longLongValue];
+
+        // copy the image into `double`, not wht pointer swizzling
+        double dbl = *(double *)&ll;
+        NSNumber *num = @(dbl);
         obj = num;
     } else if ([type isEqualToString:kCDTISFloatAttributeType]) {
         NSNumber *num = value;
@@ -1919,7 +1958,15 @@ static void DotWrite(NSMutableData *out, NSString *s)
                                       idx, name, dbl]];
 
                 } else if ([ptype hasPrefix:kCDTISNumberPrefix]) {
-                    NSNumber *num = [prop objectAtIndex:1];
+                    id value = [prop objectAtIndex:1];
+                    NSNumber *num;
+                    if ([ptype isEqualToString:kCDTISDoubleAttributeType]) {
+                        NSString *str = value;
+                        double dbl = [str doubleValue];
+                        num = [NSNumber numberWithDouble:dbl];
+                    } else {
+                        num = value;
+                    }
                     [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@",
                                       idx, name, num]];
 
