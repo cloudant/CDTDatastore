@@ -130,6 +130,12 @@ static BOOL CDTISReadItBack = YES;
 static BOOL CDTISDotMeUpdate = NO;
 
 /**
+ *  Select if compound predicatates are ever supported
+ *  > *Warning*: Untested
+ */
+static BOOL SupportCompoundPredicates = NO;
+
+/**
  *  This is how I like to assert, it stops me in the debugger.
  *
  *  *Why not use exceptions?*
@@ -283,8 +289,22 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     return enc;
 }
 
-- (CDTIndexType)indexTypeFromAttributeType:(NSAttributeType)type
+- (CDTIndexType)indexTypeForKey:(NSString *)key inProperties:(NSDictionary *)props
 {
+    // our own keys are not in the core data properties
+    // but we still want to index on them
+    if ([key hasPrefix:kCDTISPrefix]) {
+        return CDTIndexTypeString;
+    }
+
+    id prop = props[key];
+    if (![prop isKindOfClass:[NSAttributeDescription class]]) {
+        oops(@"expected attribute");
+    }
+    NSAttributeDescription *attr = prop;
+
+    NSAttributeType type = attr.attributeType;
+
     CDTIndexType it;
     switch (type) {
         default:
@@ -297,6 +317,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
         case NSStringAttributeType:
             it = CDTIndexTypeString;
+            break;
 
         case NSBooleanAttributeType:
         case NSDateAttributeType:
@@ -1440,16 +1461,10 @@ static NSNumber *decodeFP(NSString *str)
             }
             NSString *key = [sd key];
 
-            NSEntityDescription *entity = fetchRequest.entity;
+            NSEntityDescription *entity = [fetchRequest entity];
             NSDictionary *props = [entity propertiesByName];
-            id prop = props[key];
-            if (![prop isKindOfClass:[NSAttributeDescription class]]) {
-                oops(@"expected attribute");
-            }
-            NSAttributeDescription *attr = prop;
 
-            NSAttributeType aType = attr.attributeType;
-            CDTIndexType type = [self indexTypeFromAttributeType:aType];
+            CDTIndexType type = [self indexTypeForKey:key inProperties:props];
 
             if (![self ensureIndexExists:key fieldName:key type:type error:&err]) {
                 if (error) *error = err;
@@ -1491,9 +1506,10 @@ static NSNumber *decodeFP(NSString *str)
  *
  *  @param fetchRequest
  *
- *  @return predicat dictionary
+ *  @return predicate dictionary
  */
 - (NSDictionary *)comparisonPredicate:(NSComparisonPredicate *)cp
+                       withProperties:(NSDictionary *)props
 {
     NSExpression *lhs = [cp leftExpression];
     NSExpression *rhs = [cp rightExpression];
@@ -1501,7 +1517,10 @@ static NSNumber *decodeFP(NSString *str)
     NSString *key = @"";
     if ([lhs expressionType] == NSKeyPathExpressionType) {
         key = [lhs keyPath];
+    } else if ([lhs expressionType] == NSEvaluatedObjectExpressionType) {
+        key = kCDTISIdentifierKey;
     }
+
     id value = [rhs expressionValueWithObject:nil context:nil];
     NSDictionary *result = nil;
     if (!key || !value) {
@@ -1513,7 +1532,7 @@ static NSNumber *decodeFP(NSString *str)
     NSPredicateOperatorType predType = [cp predicateOperatorType];
     switch (predType) {
         case NSLessThanOrEqualToPredicateOperatorType:
-            result = @{ keyStr : @{@"$max" : value} };
+            result = @{ keyStr : @{@"max" : value} };
             break;
         case NSEqualToPredicateOperatorType:
             result = @{keyStr : value};
@@ -1524,7 +1543,7 @@ static NSNumber *decodeFP(NSString *str)
 
         case NSInPredicateOperatorType: {
             if ([value isKindOfClass:[NSString class]]) {
-                oops(@"Can't do substring matches");
+                [NSException raise:kCDTISException format:@"Can't do substring matches: %@", value];
                 break;
             }
             // FIXME? I hope this deals with collections
@@ -1539,6 +1558,10 @@ static NSNumber *decodeFP(NSString *str)
         }
 
         case NSBetweenPredicateOperatorType: {
+            if (![value isKindOfClass:[NSArray class]]) {
+                [NSException raise:kCDTISException format:@"unexpected \"between\" args"];
+                break;
+            }
             NSArray *between = value;
 
             result = @{
@@ -1556,19 +1579,21 @@ static NSNumber *decodeFP(NSString *str)
         case NSEndsWithPredicateOperatorType:
         case NSCustomSelectorPredicateOperatorType:
         case NSContainsPredicateOperatorType:
-            oops(@"Predicate with unsupported comparison operator: %@", @(predType));
+            [NSException raise:kCDTISException
+                        format:@"Predicate with unsupported comparison operator: %@", @(predType)];
             break;
 
         default:
-            oops(@"Predicate with unrecognized comparison operator: %@", @(predType));
+            [NSException raise:kCDTISException
+                        format:@"Predicate with unrecognized comparison operator: %@", @(predType)];
             break;
     }
 
     NSError *err = nil;
 
-    oops(@"need to know the correct index type");
+    CDTIndexType type = [self indexTypeForKey:keyStr inProperties:props];
 
-    if (![self ensureIndexExists:keyStr fieldName:keyStr type:CDTIndexTypeString error:&err]) {
+    if (![self ensureIndexExists:keyStr fieldName:keyStr type:type error:&err]) {
         oops(@"failed at creating index for key %@", keyStr);
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
@@ -1576,20 +1601,14 @@ static NSNumber *decodeFP(NSString *str)
     return result;
 }
 
-/**
- *  Process the predicates
- *
- *  @param fetchRequest fetchRequest
- *
- *  @return return value
- */
-- (NSDictionary *)processPredicate:(NSPredicate *)p
+- (NSDictionary *)processPredicate:(NSPredicate *)p withProperties:(NSDictionary *)props
 {
-    if (!p) {
-        return nil;
-    }
-
     if ([p isKindOfClass:[NSCompoundPredicate class]]) {
+        if (!SupportCompoundPredicates) {
+            [NSException raise:kCDTISException
+                        format:@"Compound predicates not supported at all: %@", p];
+        }
+
         NSCompoundPredicate *cp = (NSCompoundPredicate *)p;
         NSCompoundPredicateType predType = [cp compoundPredicateType];
 
@@ -1598,7 +1617,8 @@ static NSNumber *decodeFP(NSString *str)
                 oops(@"can we do this?");
                 NSMutableDictionary *ands = [NSMutableDictionary dictionary];
                 for (NSPredicate *sub in [cp subpredicates]) {
-                    [ands addEntriesFromDictionary:[self processPredicate:sub]];
+                    [ands
+                        addEntriesFromDictionary:[self processPredicate:sub withProperties:props]];
                 }
                 return [NSDictionary dictionaryWithDictionary:ands];
             }
@@ -1613,10 +1633,31 @@ static NSNumber *decodeFP(NSString *str)
         return nil;
 
     } else if ([p isKindOfClass:[NSComparisonPredicate class]]) {
-        return [self comparisonPredicate:(NSComparisonPredicate *)p];
+        NSComparisonPredicate *cp = (NSComparisonPredicate *)p;
+        return [self comparisonPredicate:cp withProperties:props];
     }
     oops(@"bad predicate class?");
     return nil;
+}
+
+/**
+ *  Process the predicates
+ *
+ *  @param fetchRequest fetchRequest
+ *
+ *  @return return value
+ */
+- (NSDictionary *)processPredicate:(NSFetchRequest *)fetchRequest
+{
+    NSPredicate *p = [fetchRequest predicate];
+    if (!p) {
+        return nil;
+    }
+
+    NSEntityDescription *entity = [fetchRequest entity];
+    NSDictionary *props = [entity propertiesByName];
+
+    return [self processPredicate:p withProperties:props];
 }
 
 /**
@@ -1633,7 +1674,7 @@ static NSNumber *decodeFP(NSString *str)
     NSString *entityName = [entity name];
 
     NSMutableDictionary *query = [@{ kCDTISEntityNameKey : entityName } mutableCopy];
-    NSDictionary *predicate = [self processPredicate:[fetchRequest predicate]];
+    NSDictionary *predicate = [self processPredicate:fetchRequest];
     [query addEntriesFromDictionary:predicate];
 
     return [NSDictionary dictionaryWithDictionary:query];
