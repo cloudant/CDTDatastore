@@ -42,8 +42,11 @@
 @end
 
 #pragma mark - string constants
+// externed
+NSString *const kCDTISErrorDomain = @"CDTIncrementalStoreDomain";
+NSString *const kCDTISException = @"CDTIncrementalStoreException";
+
 static NSString *const kCDTISType = @"CDTIncrementalStore";
-static NSString *const kCDTISErrorDomain = @"CDTIncrementalStoreDomain";
 static NSString *const kCDTISDirectory = @"cloudant-sync-datastore-incremental";
 static NSString *const kCDTISPrefix = @"CDTIS";
 static NSString *const kCDTISMeta = @"CDTISMeta_";
@@ -73,7 +76,7 @@ static NSString *const kCDTISDoubleAttributeType = kCDTISNumberPrefix @"double";
 #define kCDTISFPPrefix @"floating_point_"
 static NSString *const kCDTISFPInfinity = kCDTISFPPrefix @"infinity";
 static NSString *const kCDTISFPNegInfinity = kCDTISFPPrefix @"-infinity";
-static NSString *const kCDTISFPNaN = kCDTISFPPrefix@"nan";
+static NSString *const kCDTISFPNaN = kCDTISFPPrefix @"nan";
 
 static NSString *const kCDTISDecimalAttributeType = @"decimal";
 static NSString *const kCDTISStringAttributeType = @"utf8";
@@ -183,16 +186,13 @@ static BOOL CDTISDotMeUpdate = NO;
     [NSPersistentStoreCoordinator registerStoreClass:self forStoreType:[self type]];
 }
 
-+ (NSString *)type
-{
-    return kCDTISType;
-}
++ (NSString *)type { return kCDTISType; }
 
 + (NSURL *)localDir
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSURL *documentsDir =
-    [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+        [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
     NSURL *dbDir = [documentsDir URLByAppendingPathComponent:kCDTISDirectory];
 
     return dbDir;
@@ -210,15 +210,13 @@ static BOOL CDTISDotMeUpdate = NO;
      *  @See CDTISReadableUUIDs
      */
     if (!CDTISReadableUUIDs) {
-        return [NSString stringWithFormat:@"%@-%@",
-                kCDTISPrefix, TDCreateUUID()];
+        return [NSString stringWithFormat:@"%@-%@", kCDTISPrefix, TDCreateUUID()];
     }
 
     static volatile int64_t uniqueCounter;
     uint64_t val = OSAtomicIncrement64(&uniqueCounter);
 
-    return [NSString stringWithFormat:@"%@-%@-%llu",
-            kCDTISPrefix, self.run, val];
+    return [NSString stringWithFormat:@"%@-%@-%llu", kCDTISPrefix, self.run, val];
 }
 
 /**
@@ -238,10 +236,7 @@ static BOOL CDTISDotMeUpdate = NO;
     return ref;
 }
 
-static NSString* makeMeta(NSString *s)
-{
-    return [kCDTISMeta stringByAppendingString:s];
-}
+static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingString:s]; }
 
 /**
  *  Split the encoding into two properties
@@ -257,14 +252,16 @@ static NSString* makeMeta(NSString *s)
  *  @param name  name
  *  @param enc   enc
  */
-- (void)setPropertyIn:(NSMutableDictionary *)props withName:(NSString *)name forEncoding:(NSArray *)enc
+- (void)setPropertyIn:(NSMutableDictionary *)props
+             withName:(NSString *)name
+          forEncoding:(NSArray *)enc
 {
     NSString *data = [enc lastObject];
     props[name] = data;
     // pop the last one off
     NSRange r = NSMakeRange(0, [enc count] - 1);
     NSArray *meta = [enc subarrayWithRange:r];
-    props[makeMeta(name)] = meta;
+    props[MakeMeta(name)] = meta;
 }
 
 /**
@@ -278,7 +275,7 @@ static NSString* makeMeta(NSString *s)
 - (NSArray *)getPropertyFrom:(NSDictionary *)props withName:(NSString *)name
 {
     NSString *prop = props[name];
-    NSArray *meta = props[makeMeta(name)];
+    NSArray *meta = props[MakeMeta(name)];
 
     // We use this method so if meta is nil enc will be nil
     NSArray *enc = [meta arrayByAddingObject:prop];
@@ -314,45 +311,6 @@ static NSString* makeMeta(NSString *s)
     return it;
 }
 
-/**
- *  Make sure an index we will need exists
- *  To perform predicates and sorts we need to index on the key.
- *
- *  We just try to create the index and allow it to fail.
- *  FIXME?:
- *  We could track all the indexes in an NSSet, just not sure it is
- *  worth it.
- *
- *  @param indexName  case-sensitive name of the index.
- *                    Can only contain letters, digits and underscores.
- *                    It must not start with a digit.
- *  @param fieldName  top-level field use for index values
- *  @param type       type for the field to index on
- *  @param error      will point to an NSError object in case of error.
- *
- *  @return  YES if successful; NO in case of error.
- */
-- (BOOL)ensureIndexExists:(NSString *)indexName
-                fieldName:(NSString *)fieldName
-                     type:(CDTIndexType)type
-                    error:(NSError **)error
-{
-    NSError *err = nil;
-
-    // Todo: BUG? if we get the type wrong should there be an error?
-    if (![self.indexManager ensureIndexedWithIndexName:indexName
-                                             fieldName:fieldName
-                                                  type:type
-                                                 error:&err]) {
-        if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
-            if (error) *error = err;
-            return NO;
-        }
-    }
-    return YES;
-}
-
-
 #pragma mark - File System
 /**
  *  Create a path to the directory for the local database
@@ -375,14 +333,14 @@ static NSString* makeMeta(NSString *s)
 
     if (exists) {
         if (!isDir) {
-            NSString *s = [NSString
-                localizedStringWithFormat:
-                    @"Can't create datastore directory: file in the way at %@", self.localURL];
+            NSString *s = [NSString localizedStringWithFormat:@"Can't create datastore directory: "
+                                                              @"file in the way at %@",
+                                                              self.localURL];
             NSLog(@"%@", s);
             if (error) {
-                *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                             code:CDTISErrorBadPath
-                                         userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+                NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
+                *error =
+                    [NSError errorWithDomain:kCDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
             }
             return nil;
         }
@@ -473,12 +431,12 @@ static NSNumber *JSONDouble(NSNumber *d)
         case NSUndefinedAttributeType: {
             if (error) {
                 NSString *str =
-                    [NSString
-                     localizedStringWithFormat:@"%@ attribute type: %@",
-                     kCDTISUndefinedAttributeType, @(type)];
+                    [NSString localizedStringWithFormat:@"%@ attribute type: %@",
+                                                        kCDTISUndefinedAttributeType, @(type)];
+                NSDictionary *ui = @{NSLocalizedDescriptionKey : str};
                 *error = [NSError errorWithDomain:kCDTISErrorDomain
                                              code:CDTISErrorUndefinedAttributeType
-                                         userInfo:@{NSLocalizedDescriptionKey : str}];
+                                         userInfo:ui];
             }
             return nil;
         }
@@ -506,11 +464,7 @@ static NSNumber *JSONDouble(NSNumber *d)
             // use reverseTransformedValue to come back
             NSData *save = [xform transformedValue:obj];
             NSString *bytes = [save base64EncodedStringWithOptions:0];
-            return @[
-                kCDTISTransformableAttributeType,
-                xname,
-                bytes
-            ];
+            return @[ kCDTISTransformableAttributeType, xname, bytes ];
         }
         case NSObjectIDAttributeType: {
             // I'm guessing here
@@ -535,7 +489,7 @@ static NSNumber *JSONDouble(NSNumber *d)
                 return enc;
             }
             /**
-             *  JSON cannot handle the full range of double so we store 
+             *  JSON cannot handle the full range of double so we store
              *  two values:
              *  1. `long long` "image" so we can store accurately
              *  > This could be a problematic when replicating to other arches
@@ -546,7 +500,7 @@ static NSNumber *JSONDouble(NSNumber *d)
 
             // copy the image into the `long long`, note the pointer swizzling
             NSNumber *ll = @(*(long long *)&jd);
-            return @[ kCDTISDoubleAttributeType, ll, jsonNum];
+            return @[ kCDTISDoubleAttributeType, ll, jsonNum ];
         }
 
         case NSFloatAttributeType: {
@@ -555,22 +509,22 @@ static NSNumber *JSONDouble(NSNumber *d)
             if (enc) {
                 return enc;
             }
-            return @[ kCDTISFloatAttributeType, num];
+            return @[ kCDTISFloatAttributeType, num ];
         }
 
         case NSInteger16AttributeType: {
             NSNumber *num = obj;
-            return @[ kCDTISInteger16AttributeType, num];
+            return @[ kCDTISInteger16AttributeType, num ];
         }
 
         case NSInteger32AttributeType: {
             NSNumber *num = obj;
-            return @[ kCDTISInteger32AttributeType, num];
+            return @[ kCDTISInteger32AttributeType, num ];
         }
 
         case NSInteger64AttributeType: {
             NSNumber *num = obj;
-            return @[ kCDTISInteger64AttributeType, num];
+            return @[ kCDTISInteger64AttributeType, num ];
         }
         default:
             break;
@@ -578,8 +532,8 @@ static NSNumber *JSONDouble(NSNumber *d)
 
     if (error) {
         NSString *str = [NSString
-                         localizedStringWithFormat:@"type %@: is not of NSNumber: %@ = %@", @(type),
-                         attribute.name, NSStringFromClass([obj class])];
+            localizedStringWithFormat:@"type %@: is not of " @"NSNumber: %@ = %@", @(type),
+                                      attribute.name, NSStringFromClass([obj class])];
         *error = [NSError errorWithDomain:kCDTISErrorDomain
                                      code:CDTISErrorNaN
                                  userInfo:@{NSLocalizedDescriptionKey : str}];
@@ -629,7 +583,7 @@ static NSNumber *JSONDouble(NSNumber *d)
                       error:(NSError **)error
 {
     if (!rel.isToMany) {
-        NSArray *ret = @[kCDTISRelationToOneType];
+        NSArray *ret = @[ kCDTISRelationToOneType ];
         NSManagedObject *mo = obj;
         NSArray *enc = [self encodeRelationFromManagedObject:mo];
         ret = [ret arrayByAddingObjectsFromArray:enc];
@@ -642,7 +596,7 @@ static NSNumber *JSONDouble(NSNumber *d)
         NSArray *enc = [self encodeRelationFromManagedObject:mo];
         [ids addObject:enc];
     }
-    return @[ kCDTISRelationToManyType, ids];
+    return @[ kCDTISRelationToManyType, ids ];
 }
 
 /**
@@ -745,10 +699,9 @@ static NSNumber *decodeFP(NSString *str)
     if (entityName.length == 0) {
         return nil;
     }
-    NSEntityDescription *entity = [NSEntityDescription entityForName:entityName
-                                              inManagedObjectContext:context];
-    NSManagedObjectID *moid = [self newObjectIDForEntity:entity
-                                         referenceObject:ref];
+    NSEntityDescription *entity =
+        [NSEntityDescription entityForName:entityName inManagedObjectContext:context];
+    NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:ref];
     return moid;
 }
 
@@ -761,8 +714,7 @@ static NSNumber *decodeFP(NSString *str)
  *
  *  @return object
  */
-- (id)decodePropertyFrom:(NSArray *)prop
-             withContext:(NSManagedObjectContext *)context
+- (id)decodePropertyFrom:(NSArray *)prop withContext:(NSManagedObjectContext *)context
 {
     NSString *type = [prop firstObject];
     id value = [prop objectAtIndex:1];
@@ -838,9 +790,8 @@ static NSNumber *decodeFP(NSString *str)
             obj = [NSNull null];
         } else {
             NSString *ref = [prop objectAtIndex:2];
-            NSManagedObjectID *moid = [self decodeRelationFromEntityName:entityName
-                                                                 withRef:ref
-                                                             withContext:context];
+            NSManagedObjectID *moid =
+                [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
             // we cannot return nil
             if (!moid) {
                 obj = [NSNull null];
@@ -861,6 +812,44 @@ static NSNumber *decodeFP(NSString *str)
 }
 
 #pragma mark - database methods
+/**
+ *  Make sure an index we will need exists
+ *  To perform predicates and sorts we need to index on the key.
+ *
+ *  We just try to create the index and allow it to fail.
+ *  FIXME?:
+ *  We could track all the indexes in an NSSet, just not sure it is
+ *  worth it.
+ *
+ *  @param indexName  case-sensitive name of the index.
+ *                    Can only contain letters, digits and underscores.
+ *                    It must not start with a digit.
+ *  @param fieldName  top-level field use for index values
+ *  @param type       type for the field to index on
+ *  @param error      will point to an NSError object in case of error.
+ *
+ *  @return  YES if successful; NO in case of error.
+ */
+- (BOOL)ensureIndexExists:(NSString *)indexName
+                fieldName:(NSString *)fieldName
+                     type:(CDTIndexType)type
+                    error:(NSError **)error
+{
+    NSError *err = nil;
+
+    // Todo: BUG? if we get the type wrong should there be an error?
+    if (![self.indexManager ensureIndexedWithIndexName:indexName
+                                             fieldName:fieldName
+                                                  type:type
+                                                 error:&err]) {
+        if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
+            if (error) *error = err;
+            return NO;
+        }
+    }
+    return YES;
+}
+
 /**
  *  Insert a managed object to the database
  *
@@ -963,9 +952,10 @@ static NSNumber *decodeFP(NSString *str)
         if (error) {
             NSString *s = [NSString
                 localizedStringWithFormat:@"RevisionID mismatch %@: %@", oldRev.revId, revID];
+            NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
             *error = [NSError errorWithDomain:kCDTISErrorDomain
                                          code:CDTISErrorRevisionIDMismatch
-                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+                                     userInfo:ui];
         }
         return NO;
     }
@@ -1047,9 +1037,10 @@ static NSNumber *decodeFP(NSString *str)
         if (error) {
             NSString *s = [NSString
                 localizedStringWithFormat:@"RevisionID mismatch %@: %@", oldRev.revId, revID];
+            NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
             *error = [NSError errorWithDomain:kCDTISErrorDomain
                                          code:CDTISErrorRevisionIDMismatch
-                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+                                     userInfo:ui];
         }
         return NO;
     }
@@ -1093,8 +1084,7 @@ static NSNumber *decodeFP(NSString *str)
 {
     NSError *err = nil;
 
-    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID
-                                                           error:&err];
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID error:&err];
     if (!rev) {
         if (error) *error = err;
         oops(@"no properties: %@", err);
@@ -1118,11 +1108,11 @@ static NSNumber *decodeFP(NSString *str)
             continue;
         }
 
-        id obj = [self decodePropertyFrom:prop
-                              withContext:context];
+        id obj = [self decodePropertyFrom:prop withContext:context];
         if (!obj) {
             // Dictionaries do not take nil, but Values can't have NSNull.
-            // Apparentely we just skip it and the properties faults take care of it
+            // Apparentely we just skip it and the properties faults take care
+            // of it
             continue;
         }
         values[name] = obj;
@@ -1248,13 +1238,11 @@ static NSNumber *decodeFP(NSString *str)
 
     // hashes are inline data and need to be converted
     if (hashes) {
-        metaData[NSStoreModelVersionHashesKey] =
-        [self encodeVersionHashes:hashes];
+        metaData[NSStoreModelVersionHashesKey] = [self encodeVersionHashes:hashes];
     }
     upRev.body[@"metaData"] = [NSDictionary dictionaryWithDictionary:metaData];
 
-    CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev
-                                                                        error:&err];
+    CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
         NSLog(@"could not update metadata: %@", err);
@@ -1304,20 +1292,18 @@ static NSNumber *decodeFP(NSString *str)
         self.run = @"1";
 
         NSString *uuid = [self uniqueID];
-        NSDictionary *metaData = @{
-                                   NSStoreUUIDKey : uuid,
-                                   NSStoreTypeKey : [self type]
-                                   };
+        NSDictionary *metaData = @{NSStoreUUIDKey : uuid, NSStoreTypeKey : [self type]};
 
         // TODO: NSStoreModelVersionHashes?
 
         // store it so we can get it back the next time
         CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
         newRev.docId = kCDTISMetaDataDocID;
-        newRev.body = @{kCDTISTypeKey : kCDTISTypeMetadata,
-                        @"metaData" : metaData,
-                        @"run" : self.run
-                        };
+        newRev.body = @{
+            kCDTISTypeKey : kCDTISTypeMetadata,
+            @"metaData" : metaData,
+            @"run" : self.run
+        };
 
         rev = [self.datastore createDocumentFromRevision:newRev error:&err];
         if (!rev) {
@@ -1344,13 +1330,11 @@ static NSNumber *decodeFP(NSString *str)
     }
 
     NSMutableDictionary *newMetaData = [oldMetaData mutableCopy];
-    NSMutableDictionary *hashes = [newMetaData[NSStoreModelVersionHashesKey]
-                                   mutableCopy];
+    NSMutableDictionary *hashes = [newMetaData[NSStoreModelVersionHashesKey] mutableCopy];
 
     // hashes are encoded and need to be inline data
     if (hashes) {
-        newMetaData[NSStoreModelVersionHashesKey] =
-        [self decodeVersionHashes:hashes];
+        newMetaData[NSStoreModelVersionHashesKey] = [self decodeVersionHashes:hashes];
     }
 
     NSDictionary *metaData = [NSDictionary dictionaryWithDictionary:newMetaData];
@@ -1371,13 +1355,10 @@ static NSNumber *decodeFP(NSString *str)
 {
     NSString *s = metaData[NSStoreTypeKey];
     if (![s isEqualToString:kCDTISType]) {
-        NSString *e = [NSString
-                      localizedStringWithFormat:
-                      @"Unexpected store type %@", s];
+        NSString *e = [NSString localizedStringWithFormat:@"Unexpected store type %@", s];
         if (error) {
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                         code:CDTISErrorBadPath
-                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+            NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : e};
+            *error = [NSError errorWithDomain:kCDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
         }
         return NO;
     }
@@ -1391,13 +1372,12 @@ static NSNumber *decodeFP(NSString *str)
  *  > Subclasses must override this property to provide storage and
  *  > persistence for the store metadata.
  *
- *  @param metadata <#metadata description#>
+ *  @param metadata
  */
 - (void)setMetadata:(NSDictionary *)metadata
 {
     NSError *err = nil;
-    if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID
-                                 error:&err]) {
+    if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID error:&err]) {
         oops(@"update metadata error: %@", err);
     }
     [super setMetadata:metadata];
@@ -1425,11 +1405,11 @@ static NSNumber *decodeFP(NSString *str)
     // go directly to super
     [super setMetadata:metaData];
 
-
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_0
     // must exclude anything but iOS
     /* FIXME
-     * caches are either garbage or out of sync some how, so we just delete them?
+     * caches are either garbage or out of sync some how.
+     * so we just delete them?
      */
     [NSFetchedResultsController deleteCacheWithName:nil];
 #endif
@@ -1444,8 +1424,7 @@ static NSNumber *decodeFP(NSString *str)
  *
  *  @return options dic
  */
-- (NSDictionary *)processOptions:(NSFetchRequest *)fetchRequest
-                          error:(NSError **)error
+- (NSDictionary *)processOptions:(NSFetchRequest *)fetchRequest error:(NSError **)error
 {
     NSError *err = nil;
     NSMutableDictionary *sdOpts = [NSMutableDictionary dictionary];
@@ -1469,12 +1448,10 @@ static NSNumber *decodeFP(NSString *str)
             }
             NSAttributeDescription *attr = prop;
 
-            CDTIndexType type = [self indexTypeFromAttributeType:attr.attributeType];
+            NSAttributeType aType = attr.attributeType;
+            CDTIndexType type = [self indexTypeFromAttributeType:aType];
 
-            if (![self ensureIndexExists:key
-                               fieldName:key
-                                    type:type
-                                   error:&err]) {
+            if (![self ensureIndexExists:key fieldName:key type:type error:&err]) {
                 if (error) *error = err;
                 oops(@"fail to ensure index: %@: %@", key, err);
                 return nil;
@@ -1518,8 +1495,8 @@ static NSNumber *decodeFP(NSString *str)
  */
 - (NSDictionary *)comparisonPredicate:(NSComparisonPredicate *)cp
 {
-    NSExpression* lhs = [cp leftExpression];
-    NSExpression* rhs = [cp rightExpression];
+    NSExpression *lhs = [cp leftExpression];
+    NSExpression *rhs = [cp rightExpression];
 
     NSString *key = @"";
     if ([lhs expressionType] == NSKeyPathExpressionType) {
@@ -1536,13 +1513,13 @@ static NSNumber *decodeFP(NSString *str)
     NSPredicateOperatorType predType = [cp predicateOperatorType];
     switch (predType) {
         case NSLessThanOrEqualToPredicateOperatorType:
-            result = @{ keyStr : @{ @"$max": value } };
+            result = @{ keyStr : @{@"$max" : value} };
             break;
         case NSEqualToPredicateOperatorType:
-            result = @{ keyStr : value };
+            result = @{keyStr : value};
             break;
         case NSGreaterThanOrEqualToPredicateOperatorType:
-            result = @{ keyStr : @{ @"min": value } };
+            result = @{ keyStr : @{@"min" : value} };
             break;
 
         case NSInPredicateOperatorType: {
@@ -1556,7 +1533,7 @@ static NSNumber *decodeFP(NSString *str)
                 for (id el in value) {
                     [set addObject:el];
                 }
-                result = @{ keyStr : [NSArray arrayWithArray:set] };
+                result = @{keyStr : [NSArray arrayWithArray:set]};
             }
             break;
         }
@@ -1564,8 +1541,9 @@ static NSNumber *decodeFP(NSString *str)
         case NSBetweenPredicateOperatorType: {
             NSArray *between = value;
 
-            result = @{ keyStr: @{@"min": [between objectAtIndex:0],
-                                  @"max": [between objectAtIndex:1]}};
+            result = @{
+                keyStr : @{@"min" : [between objectAtIndex:0], @"max" : [between objectAtIndex:1]}
+            };
             break;
         }
 
@@ -1578,13 +1556,11 @@ static NSNumber *decodeFP(NSString *str)
         case NSEndsWithPredicateOperatorType:
         case NSCustomSelectorPredicateOperatorType:
         case NSContainsPredicateOperatorType:
-            oops(@"Predicate with unsupported comparison operator: %@",
-                 @(predType));
+            oops(@"Predicate with unsupported comparison operator: %@", @(predType));
             break;
 
         default:
-            oops(@"Predicate with unrecognized comparison operator: %@",
-                 @(predType));
+            oops(@"Predicate with unrecognized comparison operator: %@", @(predType));
             break;
     }
 
@@ -1592,10 +1568,7 @@ static NSNumber *decodeFP(NSString *str)
 
     oops(@"need to know the correct index type");
 
-    if (![self ensureIndexExists:keyStr
-                       fieldName:keyStr
-                            type:CDTIndexTypeString
-                           error:&err]) {
+    if (![self ensureIndexExists:keyStr fieldName:keyStr type:CDTIndexTypeString error:&err]) {
         oops(@"failed at creating index for key %@", keyStr);
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
@@ -1620,7 +1593,7 @@ static NSNumber *decodeFP(NSString *str)
         NSCompoundPredicate *cp = (NSCompoundPredicate *)p;
         NSCompoundPredicateType predType = [cp compoundPredicateType];
 
-        switch(predType) {
+        switch (predType) {
             case NSAndPredicateType: {
                 oops(@"can we do this?");
                 NSMutableDictionary *ands = [NSMutableDictionary dictionary];
@@ -1631,12 +1604,10 @@ static NSNumber *decodeFP(NSString *str)
             }
             case NSOrPredicateType:
             case NSNotPredicateType:
-                oops(@"Predicate with unsuported compound operator: %@",
-                     @(predType));
+                oops(@"Predicate with unsuported compound operator: %@", @(predType));
                 break;
             default:
-                oops(@"Predicate with unrecognized compound operator: %@",
-                     @(predType));
+                oops(@"Predicate with unrecognized compound operator: %@", @(predType));
         }
 
         return nil;
@@ -1661,7 +1632,7 @@ static NSNumber *decodeFP(NSString *str)
     NSEntityDescription *entity = [fetchRequest entity];
     NSString *entityName = [entity name];
 
-    NSMutableDictionary *query = [@{kCDTISEntityNameKey : entityName} mutableCopy];
+    NSMutableDictionary *query = [@{ kCDTISEntityNameKey : entityName } mutableCopy];
     NSDictionary *predicate = [self processPredicate:[fetchRequest predicate]];
     [query addEntriesFromDictionary:predicate];
 
@@ -1692,9 +1663,7 @@ static NSNumber *decodeFP(NSString *str)
     }
 
     err = nil;
-    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query
-                                                          options:options
-                                                            error:&err];
+    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:options error:&err];
     // hits == nil is valie, get rid of this once tested
     if (!hits) oops(@"no hits");
     if (!hits && err) {
@@ -1706,8 +1675,8 @@ static NSNumber *decodeFP(NSString *str)
         case NSManagedObjectResultType: {
             NSMutableArray *results = [NSMutableArray array];
             for (CDTDocumentRevision *rev in hits) {
-                NSManagedObjectID *moid = [self newObjectIDForEntity:entity
-                                                     referenceObject:rev.docId];
+                NSManagedObjectID *moid =
+                    [self newObjectIDForEntity:entity referenceObject:rev.docId];
                 NSManagedObject *mo = [context objectWithID:moid];
                 [results addObject:mo];
             }
@@ -1718,8 +1687,8 @@ static NSNumber *decodeFP(NSString *str)
             oops(@"NSManagedObjectIDResultType: guessing");
             NSMutableArray *results = [NSMutableArray array];
             for (CDTDocumentRevision *rev in hits) {
-                NSManagedObjectID *moid = [self newObjectIDForEntity:entity
-                                                     referenceObject:rev.docId];
+                NSManagedObjectID *moid =
+                    [self newObjectIDForEntity:entity referenceObject:rev.docId];
                 [results addObject:moid];
             }
             return [NSArray arrayWithArray:results];
@@ -1738,9 +1707,8 @@ static NSNumber *decodeFP(NSString *str)
         default:
             break;
     }
-    NSString *s = [NSString
-                   localizedStringWithFormat:
-                   @"Unknown request fetch type: %@", fetchRequest];
+    NSString *s =
+        [NSString localizedStringWithFormat:@"Unknown request fetch type: %@", fetchRequest];
     if (error) {
         *error = [NSError errorWithDomain:kCDTISErrorDomain
                                      code:CDTISErrorExectueRequestFetchTypeUnkown
@@ -1750,8 +1718,8 @@ static NSNumber *decodeFP(NSString *str)
 }
 
 - (id)executeSaveRequest:(NSSaveChangesRequest *)saveRequest
-              withContext:(NSManagedObjectContext *)context
-                    error:(NSError **)error
+             withContext:(NSManagedObjectContext *)context
+                   error:(NSError **)error
 {
     NSError *err = nil;
 
@@ -1788,15 +1756,11 @@ static NSNumber *decodeFP(NSString *str)
 
     /* quote the docs:
      * > If the save request contains nil values for the
-     * > inserted/updated/deleted/locked collections; 
+     * > inserted/updated/deleted/locked collections;
      * > you should treat it as a request to save the store metadata.
      */
-    if (!insertedObjects &&
-        !updatedObjects &&
-        !deletedObjects &&
-        !optLockObjects) {
-        if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID
-                                     error:&err]) {
+    if (!insertedObjects && !updatedObjects && !deletedObjects && !optLockObjects) {
+        if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID error:&err]) {
             if (error) *error = err;
             return nil;
         }
@@ -1813,21 +1777,15 @@ static NSNumber *decodeFP(NSString *str)
 
     if (requestType == NSFetchRequestType) {
         NSFetchRequest *fetchRequest = (NSFetchRequest *)request;
-        return [self executeFetchRequest:fetchRequest
-                             withContext:context
-                                   error:error];
+        return [self executeFetchRequest:fetchRequest withContext:context error:error];
     }
 
     if (requestType == NSSaveRequestType) {
         NSSaveChangesRequest *saveRequest = (NSSaveChangesRequest *)request;
-        return [self executeSaveRequest:saveRequest
-                            withContext:context
-                                  error:error];
+        return [self executeSaveRequest:saveRequest withContext:context error:error];
     }
 
-    NSString *s = [NSString
-                   localizedStringWithFormat:
-                   @"Unknown request type: %@", @(requestType)];
+    NSString *s = [NSString localizedStringWithFormat:@"Unknown request type: %@", @(requestType)];
     if (error) {
         *error = [NSError errorWithDomain:kCDTISErrorDomain
                                      code:CDTISErrorExectueRequestTypeUnkown
@@ -1845,10 +1803,8 @@ static NSNumber *decodeFP(NSString *str)
     NSString *docID = [self stringReferenceObjectForObjectID:objectID];
     uint64_t version = 1;
 
-    NSDictionary *values = [self valuesFromDocID:docID
-                                     withContext:context
-                                      versionPtr:&version
-                                           error:&err];
+    NSDictionary *values =
+        [self valuesFromDocID:docID withContext:context versionPtr:&version error:&err];
 
     if (!values && err) {
         if (error) *error = err;
@@ -1871,14 +1827,13 @@ static NSNumber *decodeFP(NSString *str)
      */
     NSError *err = nil;
     NSString *docID = [self stringReferenceObjectForObjectID:objectID];
-    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID
-                                                           error:&err];
+    CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID error:&err];
     if (!rev) {
         if (error) *error = err;
         oops(@"no attributes: %@", err);
         return nil;
     }
-    
+
     NSString *name = [relationship name];
     NSArray *rel = [self getPropertyFrom:rev.body withName:name];
     NSString *type = [rel objectAtIndex:0];
@@ -1886,9 +1841,8 @@ static NSNumber *decodeFP(NSString *str)
     if ([type isEqualToString:kCDTISRelationToOneType]) {
         NSString *entityName = [rel objectAtIndex:1];
         NSString *ref = [rel objectAtIndex:2];
-        NSManagedObjectID *moid = [self decodeRelationFromEntityName:entityName
-                                                             withRef:ref
-                                                         withContext:context];
+        NSManagedObjectID *moid =
+            [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
         if (!moid) {
             return [NSNull null];
         }
@@ -1900,9 +1854,8 @@ static NSNumber *decodeFP(NSString *str)
         for (NSArray *oid in oids) {
             NSString *entityName = [oid objectAtIndex:0];
             NSString *ref = [oid objectAtIndex:1];
-            NSManagedObjectID *moid = [self decodeRelationFromEntityName:entityName
-                                                                 withRef:ref
-                                                             withContext:context];
+            NSManagedObjectID *moid =
+                [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
             // if we get nil, don't add it, this should get us an empty array
             if (!moid && oids.count > 1) oops(@"got nil in an oid list");
             if (moid) {
@@ -1935,8 +1888,7 @@ static NSNumber *decodeFP(NSString *str)
  */
 static void DotWrite(NSMutableData *out, NSString *s)
 {
-    [out appendBytes:[s UTF8String]
-              length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
+    [out appendBytes:[s UTF8String] length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
 }
 
 /**
@@ -1958,7 +1910,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
  *  @return A string that is the debugger command to dump the result
  *   into a file on the host.
  */
-- (NSString *)dotMe __attribute__ ((used))
+- (NSString *)dotMe __attribute__((used))
 {
     if (!self.datastore) {
         return @"FAIL";
@@ -1970,7 +1922,6 @@ static void DotWrite(NSMutableData *out, NSString *s)
     DotWrite(out, @"  overlap=false;\n");
     DotWrite(out, @"  splines=true;\n");
 
-
     for (CDTDocumentRevision *rev in all) {
         NSString *type = rev.body[kCDTISTypeKey];
         if ([type isEqualToString:kCDTISTypeProperties]) {
@@ -1978,7 +1929,6 @@ static void DotWrite(NSMutableData *out, NSString *s)
             NSMutableArray *props = [NSMutableArray array];
 
             for (NSString *name in rev.body) {
-
                 if ([name isEqual:kCDTISEntityNameKey]) {
                     // the node
                     entity = rev.body[name];
@@ -1987,8 +1937,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
                 if ([name hasPrefix:kCDTISPrefix]) {
                     continue;
                 }
-                NSArray *prop = [self getPropertyFrom:rev.body
-                                                   withName:name];
+                NSArray *prop = [self getPropertyFrom:rev.body withName:name];
                 NSString *ptype = [prop objectAtIndex:0];
 
                 size_t idx = [props count] + 1;
@@ -1997,28 +1946,26 @@ static void DotWrite(NSMutableData *out, NSString *s)
                     NSString *str = [prop objectAtIndex:2];
                     [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
                     DotWrite(out,
-                             [NSString stringWithFormat:@"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
-                              rev.docId, idx, str]);
+                             [NSString
+                                 stringWithFormat:
+                                     @"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
+                                     rev.docId, idx, str]);
 
                 } else if ([ptype isEqualToString:kCDTISRelationToManyType]) {
                     [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
                     DotWrite(out,
-                             [NSString stringWithFormat:@"  \"%@\":%zu -> { ",
-                              rev.docId, idx]);
-                    for (NSArray *r in [prop objectAtIndex:1] ) {
+                             [NSString stringWithFormat:@"  \"%@\":%zu -> { ", rev.docId, idx]);
+                    for (NSArray *r in [prop objectAtIndex:1]) {
                         NSString *str = [r objectAtIndex:1];
-                        DotWrite(out,
-                                 [NSString stringWithFormat:@"\"%@\":0 ", str]);
+                        DotWrite(out, [NSString stringWithFormat:@"\"%@\":0 ", str]);
                     }
                     DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
 
                 } else if ([ptype isEqualToString:kCDTISDecimalAttributeType]) {
                     NSString *str = [prop objectAtIndex:1];
-                    NSDecimalNumber *dec = [NSDecimalNumber
-                                            decimalNumberWithString:str];
+                    NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
                     double dbl = [dec doubleValue];
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%e",
-                                      idx, name, dbl]];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%e", idx, name, dbl]];
 
                 } else if ([ptype hasPrefix:kCDTISNumberPrefix]) {
                     id value = [prop objectAtIndex:1];
@@ -2030,30 +1977,25 @@ static void DotWrite(NSMutableData *out, NSString *s)
                     } else {
                         num = value;
                     }
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@",
-                                      idx, name, num]];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@", idx, name, num]];
 
                 } else if ([ptype isEqualToString:kCDTISStringAttributeType] ||
                            [ptype hasPrefix:kCDTISFPPrefix]) {
                     NSString *str = [prop objectAtIndex:1];
                     if ([str length] > 16) {
-                        str = [NSString stringWithFormat:@"%@...",
-                               [str substringToIndex:16]];
+                        str = [NSString stringWithFormat:@"%@...", [str substringToIndex:16]];
                     }
                     str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@: %@",
-                                      idx, name, str]];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@: %@", idx, name, str]];
 
                 } else {
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:*",
-                                      idx, name]];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:*", idx, name]];
                 }
             }
 
             if (!entity) oops(@"no entity name?");
-            DotWrite(out,
-                     [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
-                      rev.docId, entity]);
+            DotWrite(out, [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
+                                                     rev.docId, entity]);
 
             for (NSString *p in props) {
                 DotWrite(out, [NSString stringWithFormat:@"| %@ ", p]);
@@ -2061,7 +2003,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
             DotWrite(out, @"}\" ];\n");
 
         } else if ([type isEqualToString:kCDTISTypeMetadata]) {
-            //DotWrite(out, node);
+            // DotWrite(out, node);
 
         } else {
             oops(@"unknown type: %@", type);
@@ -2071,9 +2013,9 @@ static void DotWrite(NSMutableData *out, NSString *s)
 
     self.dotData = [NSData dataWithData:out];
     size_t length = [self.dotData length];
-    return [NSString
-            stringWithFormat:@"memory read --force --binary --outfile /tmp/CDTIS.dot --count %zu %p",
-            length, [self.dotData bytes]];
+    return [NSString stringWithFormat:@"memory read --force --binary --outfile "
+                                      @"/tmp/CDTIS.dot --count %zu %p",
+                                      length, [self.dotData bytes]];
 }
 
 @end

@@ -12,19 +12,26 @@
 #import "CloudantSyncTests.h"
 #import "CDTIncrementalStore.h"
 
-/*
- *  ##Start Ripoff:
- *  The following code segment, that creates a managed object model
- *  programatically, has been derived from:
- *  >
- *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
- *
- *  Which at the time of pilferage had the following license:
- *  > http://www.apache.org/licenses/LICENSE-2.0
- */
+#ifdef CDTDATASTORE_SUPPORTS_COMPOUND_PREDICATES
+static BOOL SupportCompoundPredicates =
+    YES
+#else
+static BOOL SupportCompoundPredicates = NO;
+#endif
 
-@interface Entry : NSManagedObject
-@property (nonatomic, retain) NSNumber *check;
+    /*
+     *  ##Start Ripoff:
+     *  The following code segment, that creates a managed object model
+     *  programatically, has been derived from:
+     *  >
+     *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
+     *
+     *  Which at the time of pilferage had the following license:
+     *  > http://www.apache.org/licenses/LICENSE-2.0
+     */
+
+    @interface Entry : NSManagedObject @property(nonatomic, retain) NSNumber *
+                       check;
 @property (nonatomic, retain) NSDate *created_at;
 @property (nonatomic, retain) NSString *text;
 @property (nonatomic, retain) NSString *text2;
@@ -38,7 +45,7 @@
 @property (nonatomic, retain) NSSet *files;
 @end
 
-@class Subentry;
+    @class Subentry;
 @class File;
 
 @interface Entry (CoreDataGeneratedAccessors)
@@ -245,7 +252,9 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     NSURL *dir = [CDTIncrementalStore localDir];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm removeItemAtURL:dir error:&err]) {
-        XCTAssertNil(err, @"%@", err);
+        if (err.code != NSFileNoSuchFileError) {
+            XCTAssertNil(err, @"%@", err);
+        }
     }
 }
 
@@ -257,6 +266,242 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     self.managedObjectContext = nil;
     self.persistentStoreCoordinator = nil;
+}
+
+- (void)testPredicates
+{
+    int max = 100;
+
+    XCTAssertTrue((max % 4) == 0, @"Test assumes max is mod 4: %d", max);
+
+    NSError *err = nil;
+    // This will create the database
+    NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    for (int i = 0; i < max; i++) {
+        Entry *e = MakeEntry(moc);
+        // check will indicate if value is an even number
+        e.check = (i % 2) ? @NO : @YES;
+        e.i64 = @(i);
+        e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
+    }
+
+    // push it out
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+
+    NSArray *results;
+    /**
+     *  Fetch even numbers
+     */
+    NSPredicate *even = [NSPredicate predicateWithFormat:@"check == YES"];
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+    fr.predicate = even;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
+                  [results count]);
+
+    for (Entry *e in results) {
+        XCTAssertTrue([e.check boolValue], @"not even?");
+
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue((val % 2) == 0, @"entry.i64 should be even");
+    }
+
+    /**
+     *  Fetch odd Numbers
+     */
+    NSPredicate *odd = [NSPredicate predicateWithFormat:@"check == NO"];
+    fr.predicate = odd;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
+                  [results count]);
+
+    for (Entry *e in results) {
+        XCTAssertFalse([e.check boolValue], @"not odd?");
+
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue((val % 2) == 1, @"entry.i64 should be odd");
+    }
+
+    /**
+     *  fetch == value
+     *  * `{index: value}`: index == value
+     */
+    NSPredicate *eq = [NSPredicate predicateWithFormat:@"i64 == %u", max / 2];
+    fr.predicate = eq;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == 1, @"results count should be %d is %d", max / 2,
+                  [results count]);
+
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val == (max / 2), @"entry.i64 should be %d is %lld", max / 2, val);
+    }
+
+    /**
+     *  fetch <= value
+     *  * `{index: @{@"max": value}}`: index <= value
+     */
+    NSPredicate *lte = [NSPredicate predicateWithFormat:@"i64 <= %u", max / 2];
+    fr.predicate = lte;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == ((max / 2) + 1), @"results count should be %d is %d",
+                  (max / 2) + 1, [results count]);
+
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val <= (max / 2), @"entry.i64 should be <= %d, is %lld", max / 2, val);
+    }
+
+    /**
+     *  fetch >= value
+     *  * `{index: @{@"min": value}}`: index >= value
+     */
+    NSPredicate *gte = [NSPredicate predicateWithFormat:@"i64 >= %u", max / 2];
+    fr.predicate = gte;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
+                  [results count]);
+
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val >= (max / 2), @"entry.i64 should be >= %d, is %lld", max / 2, val);
+    }
+
+    /**
+     *  strict "less than" not supported
+     */
+    NSPredicate *nosup = [NSPredicate predicateWithFormat:@"i64 < %u", max];
+    fr.predicate = nosup;
+
+    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                 kCDTISException, @"Expected Exception");
+
+    /**
+     *  fetch in range
+     *  * `{index: @{@"min": value1, @"max": value2}}`: value1 <= index <= value2
+     */
+    int start = max / 4;
+    int end = (max * 3) / 4;
+    NSPredicate *tween = [NSPredicate predicateWithFormat:@"i64 between { %u, %u }", start, end];
+    fr.predicate = tween;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == (max / 2) + 1, @"results count should be %d is %d", max / 2,
+                  [results count]);
+
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val >= start && val <= end, @"entry.i64 should be between [%d, %d] is %lld",
+                      start, end, val);
+    }
+
+    /**
+     *  fetch member of
+     *  * `{index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
+     */
+    NSComparisonPredicate *cp;
+    NSExpression *lhs;
+    NSExpression *rhs;
+
+    // make a set of random numbers in set
+    NSMutableSet *nums = [NSMutableSet set];
+    for (int i = 0; i < max / 4; i++) {
+        uint32_t r = arc4random();
+        r %= max;
+        [nums addObject:@(r)];
+    }
+    NSUInteger count = [nums count];
+    // add one that is not there for dun
+    [nums addObject:@(max)];
+
+    lhs = [NSExpression expressionForKeyPath:@"i64"];
+    rhs = [NSExpression expressionForConstantValue:[nums allObjects]];
+    cp = [NSComparisonPredicate predicateWithLeftExpression:lhs
+                                            rightExpression:rhs
+                                                   modifier:NSDirectPredicateModifier
+                                                       type:NSInPredicateOperatorType
+                                                    options:0];
+    fr.predicate = cp;
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == count, @"results count should be %d is %d", count,
+                  [results count]);
+
+    for (Entry *e in results) {
+        XCTAssertTrue([nums containsObject:e.i64], @"entry.i64: %@ should be in set", e.i64);
+    }
+
+    /**
+     *  No support for substring "in" predicated
+     */
+    lhs = [NSExpression expressionForKeyPath:@"text"];
+    rhs = [NSExpression expressionForConstantValue:@"0"];
+    cp = [NSComparisonPredicate predicateWithLeftExpression:lhs
+                                            rightExpression:rhs
+                                                   modifier:NSDirectPredicateModifier
+                                                       type:NSInPredicateOperatorType
+                                                    options:0];
+    fr.predicate = cp;
+
+    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                 kCDTISException, @"Expected Exception");
+
+    /**
+     *  Compound Predicates
+     */
+    if (!SupportCompoundPredicates) {
+        NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
+        fr.predicate = both;
+
+        XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                     kCDTISException, @"Expected Exception");
+        return;
+    }
+
+    /**
+     *  fetch both with or
+     */
+    NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
+    fr.predicate = both;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == max, @"results count should be %d is %d", max,
+                  [results count]);
+
+    /**
+     *  Fetch none with AND, yes I know this is nonsense
+     */
+    NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
+    fr.predicate = none;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == 0, @"results count should be %d is %d", 0, [results count]);
 }
 
 - (void)testFetchConstraints
@@ -278,21 +523,25 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         e.i64 = @(i);
         e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
     }
+
     // push it out
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
+    NSArray *results;
     /**
      *  We will sort by number first
      */
     NSSortDescriptor *sd = [NSSortDescriptor sortDescriptorWithKey:@"i64" ascending:YES];
 
     NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
     fr.sortDescriptors = @[ sd ];
     fr.fetchLimit = limit;
     fr.fetchOffset = offset;
-    fr.shouldRefreshRefetchedObjects = YES;
 
-    NSArray *results = [moc executeFetchRequest:fr error:&err];
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
     XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
                   [results count]);
     long long last = offset - 1;
@@ -311,6 +560,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     fr.sortDescriptors = @[ sd ];
     results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
     XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
                   [results count]);
     last = offset;

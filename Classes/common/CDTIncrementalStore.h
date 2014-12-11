@@ -1,6 +1,6 @@
 //
 //  CDTIncrementalStore.h
-//  
+//
 //
 //  Created by Jimi Xenidis on 11/18/14.
 //
@@ -9,7 +9,8 @@
 #import <CoreData/CoreData.h>
 #import <CloudantSync.h>
 
-extern NSString* const CDTIncrementalStoreErrorDomain;
+extern NSString *const kCDTISErrorDomain;
+extern NSString *const kCDTISException;
 
 @interface CDTIncrementalStore : NSIncrementalStore
 
@@ -29,4 +30,3 @@ extern NSString* const CDTIncrementalStoreErrorDomain;
 + (NSURL *)localDir;
 
 @end
-
