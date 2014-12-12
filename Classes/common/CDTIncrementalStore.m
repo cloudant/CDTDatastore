@@ -15,14 +15,17 @@
 #import "CDTFieldIndexer.h"
 
 #pragma mark - properties
-@interface CDTIncrementalStore ()
+@interface CDTIncrementalStore () <CDTReplicatorDelegate>
 
 @property (nonatomic, strong) NSString *databaseName;
 @property (nonatomic, strong) CDTDatastoreManager *manager;
 @property (nonatomic, strong) CDTDatastore *datastore;
-@property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 @property (nonatomic, strong) NSURL *localURL;
+@property (nonatomic, strong) NSURL *remoteURL;
 @property (nonatomic, strong) CDTIndexManager *indexManager;
+@property (nonatomic, strong) CDTReplicator *puller;
+@property (nonatomic, strong) CDTReplicator *pusher;
+@property (copy) CDTISProgressBlock progressBlock;
 
 /**
  *  Helps us with our bogus [uniqueID](@ref uniqueID)
@@ -100,6 +103,8 @@ typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
     CDTISErrorExectueRequestTypeUnkown,
     CDTISErrorExectueRequestFetchTypeUnkown,
     CDTISErrorMetaDataMismatch,
+    CDTISErrorNoRemoteDB,
+    CDTISErrorSyncBusy,
     CDTISErrorNotSupported
 };
 
@@ -110,7 +115,7 @@ typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
  *  This allows UIDs for individual objects to be readable.
  *  Useful for debugging
  */
-static BOOL CDTISReadableUUIDs = YES;
+static BOOL CDTISReadableUUIDs = NO;
 
 /**
  *  If true, will simply delete the database object with no considerations
@@ -216,7 +221,6 @@ static BOOL CDTISSupportCompoundPredicates = NO;
     }
     return [NSArray arrayWithArray:ours];
 }
-
 
 #pragma mark - Utils
 /**
@@ -404,7 +408,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
  *
  *  @param num NSNumber of type float or double
  *
- *  @return <#return value description#>
+ *  @return encoding or 'nil' if not a special value
  */
 static NSArray *encodeFP(NSNumber *num)
 {
@@ -1158,6 +1162,179 @@ static NSNumber *decodeFP(NSString *str)
     return [NSDictionary dictionaryWithDictionary:values];
 }
 
+- (BOOL)commWithRemote:(CDTReplicator *)rep
+                 error:(NSError **)error
+          withProgress:(CDTISProgressBlock)progress
+{
+    NSError *err = nil;
+
+    CDTReplicatorState state = self.pusher.state;
+    // we can only start from pending
+    if (state != CDTReplicatorStatePending) {
+        NSString *stateName = nil;
+        switch (state) {
+            case CDTReplicatorStatePending:
+                break;
+            case CDTReplicatorStateComplete:
+                stateName = @"CDTReplicatorStateComplete";
+                break;
+            case CDTReplicatorStateError:
+                stateName = @"CDTReplicatorStateError";
+                break;
+            case CDTReplicatorStateStopped:
+                stateName = @"CDTReplicatorStateStopped";
+                break;
+            default:
+                stateName = [NSString stringWithFormat:@"Unknown replicator state: %@", @(state)];
+                break;
+        }
+        if (error) {
+            NSString *s =
+                [NSString localizedStringWithFormat:@"Replicator in state: %@", stateName];
+
+            *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                         code:CDTISErrorSyncBusy
+                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+        }
+        return NO;
+    }
+
+    if (self.progressBlock) {
+        if (error) {
+            NSString *s =
+                [NSString localizedStringWithFormat:@"Replicator comm already in progress"];
+
+            *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                         code:CDTISErrorSyncBusy
+                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+        }
+        return NO;
+    }
+    self.progressBlock = progress;
+
+    if ([rep startWithError:&err]) {
+        // The delegates should reset self.progressBlock
+        return YES;
+    }
+    if (err) {
+        NSLog(@"Replicator: start: Maybe bogus error: %@", err);
+    }
+    self.progressBlock = nil;
+    return NO;
+}
+
+- (BOOL)pushToRemote:(NSError **)error
+        withProgress:
+            (void (^)(BOOL last, NSInteger processed, NSInteger total, NSError *err))progress;
+{
+    if (!self.pusher) {
+        if (error) {
+            NSString *s = [NSString localizedStringWithFormat:@"There is no remote defined"];
+
+            *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                         code:CDTISErrorNoRemoteDB
+                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+        }
+        return NO;
+    }
+    return [self commWithRemote:self.pusher error:error withProgress:progress];
+}
+
+- (BOOL)pullFromRemote:(NSError **)error
+          withProgress:
+              (void (^)(BOOL last, NSInteger processed, NSInteger total, NSError *err))progress;
+{
+    if (!self.puller) {
+        if (error) {
+            NSString *s = [NSString localizedStringWithFormat:@"There is no remote defined"];
+
+            *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                         code:CDTISErrorNoRemoteDB
+                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+        }
+        return NO;
+    }
+
+    return [self commWithRemote:self.puller error:error withProgress:progress];
+}
+
+/**
+ *  configure the replicators
+ *
+ *  @param remoteURL remoteURL
+ *  @param manager   manager
+ *  @param datastore datastore
+ *
+ *  @return YES/NO. If `NO` then the caller should continue with local database
+ *          only.
+ */
+- (BOOL)setupReplicators:(NSURL *)remoteURL
+                 manager:(CDTDatastoreManager *)manager
+               datastore:(CDTDatastore *)datastore
+{
+    NSError *err = nil;
+
+    // If remoteURL has a host component, then we have a replication target
+    if (![remoteURL host]) {
+        NSLog(@"no host component, so no replication");
+        return NO;
+    }
+
+    CDTReplicatorFactory *repFactory =
+        [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
+    if (!repFactory) {
+        NSLog(@"could not create replication factory");
+        return NO;
+    }
+
+    CDTPushReplication *pushRep =
+        [CDTPushReplication replicationWithSource:datastore target:remoteURL];
+    if (!pushRep) {
+        NSLog(@"Could not create push replication object");
+        return NO;
+    }
+
+    CDTReplicator *pusher = [repFactory oneWay:pushRep error:&err];
+    if (!pusher) {
+        NSLog(@"Could not create replicator for push: %@", err);
+        return NO;
+    }
+
+    CDTPullReplication *pullRep =
+        [CDTPullReplication replicationWithSource:remoteURL target:datastore];
+    if (!pullRep) {
+        NSLog(@"Could not create pull replication object");
+        return NO;
+    }
+
+    CDTReplicator *puller = [repFactory oneWay:pushRep error:&err];
+    if (!puller) {
+        NSLog(@"Could not create replicator for pull: %@", err);
+        return NO;
+    }
+
+    self.remoteURL = remoteURL;
+
+    self.puller = puller;
+    puller.delegate = self;
+
+    self.pusher = pusher;
+    pusher.delegate = self;
+
+    return YES;
+}
+
+- (BOOL)linkReplicators:(NSURL *)remoteURL
+{
+    return [self setupReplicators:remoteURL manager:self.manager datastore:self.datastore];
+}
+
+- (void)unlinkReplicators
+{
+    self.pusher = nil;
+    self.puller = nil;
+}
+
 /**
  *  Initialize database
  *  > *Note*: only does local right now
@@ -1171,36 +1348,50 @@ static NSNumber *decodeFP(NSString *str)
     NSError *err = nil;
 
     NSURL *remoteURL = [self URL];
-    self.databaseName = [remoteURL lastPathComponent];
+
+    /**
+     *  At this point, we assume we are just a local store.
+     *  We use the last path component to name the database in the local
+     *  directory.
+     */
+    NSString *databaseName = [remoteURL lastPathComponent];
     NSString *path = [self pathToDBDirectory:&err];
     if (!path) {
         if (error) *error = err;
         return NO;
     }
 
-    self.manager = [[CDTDatastoreManager alloc] initWithDirectory:path error:&err];
-    if (!self.manager) {
+    CDTDatastoreManager *manager = [[CDTDatastoreManager alloc] initWithDirectory:path error:&err];
+    if (!manager) {
         NSLog(@"Error creating manager: %@", err);
         if (error) *error = err;
         return NO;
     }
 
-    self.datastore = [self.manager datastoreNamed:self.databaseName error:&err];
-    if (!self.datastore) {
+    CDTDatastore *datastore = [manager datastoreNamed:databaseName error:&err];
+    if (!datastore) {
         NSLog(@"Error creating datastore: %@", err);
         if (error) *error = err;
         return NO;
     }
 
-    self.indexManager = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-    if (!self.indexManager) {
+    CDTIndexManager *indexManager =
+        [[CDTIndexManager alloc] initWithDatastore:datastore error:&err];
+    if (!indexManager) {
         if (error) *error = err;
         NSLog(@"Cannot create indexManager: %@", err);
         return NO;
     }
 
-    // nothing really here yet
-    self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.manager];
+    // Commit before setting up replication
+    self.databaseName = databaseName;
+    self.datastore = datastore;
+    self.manager = manager;
+    self.indexManager = indexManager;
+
+    if (![self setupReplicators:remoteURL manager:manager datastore:datastore]) {
+        NSLog(@"continuing without replication");
+    }
 
     return YES;
 }
@@ -1416,6 +1607,71 @@ static NSNumber *decodeFP(NSString *str)
         oops(@"update metadata error: %@", err);
     }
     [super setMetadata:metadata];
+}
+
+#pragma mark - Database Delegates
+/**
+ * Called when the replicator changes state.
+ */
+- (void)replicatorDidChangeState:(CDTReplicator *)replicator
+{
+    NSString *state;
+    switch (replicator.state) {
+        case CDTReplicatorStatePending:
+            state = @"CDTReplicatorStatePending";
+            break;
+        case CDTReplicatorStateStarted:
+            state = @"CDTReplicatorStateStarted";
+            break;
+        case CDTReplicatorStateStopped:
+            state = @"CDTReplicatorStateStopped";
+            break;
+        case CDTReplicatorStateStopping:
+            state = @"CDTReplicatorStateStopping";
+            break;
+        case CDTReplicatorStateComplete:
+            state = @"CDTReplicatorStateComplete";
+            break;
+        case CDTReplicatorStateError:
+            state = @"CDTReplicatorStateError";
+            break;
+        default:
+            state = @"unknown replicator state";
+            break;
+    }
+
+    NSLog(@"%@: state: %@", replicator, state);
+}
+
+/**
+ * Called whenever the replicator changes progress
+ */
+- (void)replicatorDidChangeProgress:(CDTReplicator *)replicator
+{
+    NSLog(@"%@: progressed: [%@/%@]", replicator, @(replicator.changesProcessed),
+          @(replicator.changesTotal));
+    self.progressBlock(NO, replicator.changesProcessed, replicator.changesTotal, nil);
+}
+
+/**
+ * Called when a state transition to COMPLETE or STOPPED is
+ * completed.
+ */
+- (void)replicatorDidComplete:(CDTReplicator *)replicator
+{
+    NSLog(@"%@: completed", replicator);
+    self.progressBlock(YES, 0, 0, nil);
+    self.progressBlock = nil;
+}
+
+/**
+ * Called when a state transition to ERROR is completed.
+ */
+- (void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info
+{
+    NSLog(@"%@: suffered error: %@", replicator, info);
+    self.progressBlock(YES, 0, 0, info);
+    self.progressBlock = nil;
 }
 
 #pragma mark - required methods
