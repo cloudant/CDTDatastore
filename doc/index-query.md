@@ -167,7 +167,7 @@ result = [indexManager queryWithDictionary:@{@"age": @{@"min": @26}},
 ```
 
 As in the example above, this can be combined with the key `kCDTQueryOptionAscending` or
-`kCDTQueryOptionDescending` and the value `true` to sort ascending or descending. If neither option
+`kCDTQueryOptionDescending` and the value `@YES` to sort ascending or descending. If neither option
 is used, then the default is ascending.
 
 The value passed as `kCDTQueryOptionSortBy` must be an index rather than a field in the returned
