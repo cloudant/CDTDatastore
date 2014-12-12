@@ -32,22 +32,40 @@
 #define CDTSTART_CONTEXT CDTINDEX_LOG_CONTEXT
 #define CDTEND_CONTEXT CDTTD_VIEW_CONTEXT
 
+#ifdef DEBUG
+
+    #ifndef CDTLogAsync
+
+        #define CDTLogAsync NO
+
+    #endif
+
+#else
+
+    #ifndef CDTLogAsync
+
+        #define CDTLogAsync YES
+
+    #endif
+
+#endif
+
 extern DDLogLevel CDTLoggingLevels[];
 
 #define CDTLogError(context, frmt, ...)                                                    \
     LOG_MAYBE(NO, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagError, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogWarn(context, frmt, ...)                                                        \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagWarning, context, nil, \
+    LOG_MAYBE(CDTLogAsync, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagWarning, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogInfo(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagInfo, context, nil, \
+    LOG_MAYBE(CDTLogAsync, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagInfo, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogDebug(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagDebug, context, nil, \
+    LOG_MAYBE(CDTLogAsync, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagDebug, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTLogVerbose(context, frmt, ...)                                                     \
-    LOG_MAYBE(YES, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagVerbose, context, nil, \
+    LOG_MAYBE(CDTLogAsync, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagVerbose, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTChangeLogLevel(context, logLevel) CDTLoggingLevels[context - CDTSTART_CONTEXT] = logLevel
 

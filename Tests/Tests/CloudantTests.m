@@ -14,6 +14,7 @@
 
 + (void)initialize
 {
+    [DDLog removeAllLoggers];
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
     CDTChangeLogLevel(CDTINDEX_LOG_CONTEXT, DDLogLevelWarning);
     CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, DDLogLevelWarning);
