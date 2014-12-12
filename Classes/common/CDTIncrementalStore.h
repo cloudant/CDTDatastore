@@ -29,4 +29,14 @@ extern NSString *const kCDTISException;
  */
 + (NSURL *)localDir;
 
+/**
+ *  Returns an array of @ref CDTIncrementalStore objects associated with a
+ *  @ref NSPersistentStoreCoordinator
+ *
+ *  @param coordinator The coordinator
+ *
+ *  @return the array
+ */
++ (NSArray *)storesFromCoordinator:(NSPersistentStoreCoordinator *)coordinator;
+
 @end

@@ -204,6 +204,20 @@ static BOOL CDTISSupportCompoundPredicates = NO;
     return dbDir;
 }
 
++ (NSArray *)storesFromCoordinator:(NSPersistentStoreCoordinator *)coordinator
+{
+    NSArray *stores = [coordinator persistentStores];
+    NSMutableArray *ours = [NSMutableArray array];
+
+    for (id ps in stores) {
+        if ([ps isKindOfClass:[CDTIncrementalStore class]]) {
+            [ours addObject:ps];
+        }
+    }
+    return [NSArray arrayWithArray:ours];
+}
+
+
 #pragma mark - Utils
 /**
  *  Generate a unique identifier
