@@ -29,6 +29,10 @@ datastore, or both ways to implement synchronisation.
 
 Replicating a local datastore to a remote database:
 
+***Warning***: When you create a CDTReplicator object, you have the only strong
+reference to that object. If you do not maintain that reference, the object
+will be deallocated and replication will stop prematurely.
+
 ```objc
 #import <CloudantSync.h>
 
@@ -125,14 +129,17 @@ To use, just assign to the `delegate` property of the replicator object. **Note:
 this is a `weak` property, so the delegate needs to be strongly retained elsewhere,
 as otherwise its methods won't be called.
 
+You must keep a strong reference to the CDTReplicator object or it will
+be deallocated and your delegate methods will never be called. 
+
 ```objc
-// For this example, self retains the delegate
+// For this example, self retains the delegate and the CDTReplicator.
 self.replicationDelegate = /* alloc/init a sync delegate, or share one */;
 
 CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:datastore
                                                                          target:remoteDatabaseURL];
 NSError *error;
-CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&error];
-replicator.delegate = self.replicationDelegate;
-[replicator start];
+self.replicator = [replicatorFactory oneWay:pushReplication error:&error];
+self.replicator.delegate = self.replicatorDelegate;
+[self.replicator start];
 ```
