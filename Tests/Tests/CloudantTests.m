@@ -7,7 +7,7 @@
 //
 
 #import "CloudantTests.h"
-#import "CDTlogging.h"
+#import "CDTLogging.h"
 #import "DDTTYLogger.h"
 
 @implementation CloudantTests
