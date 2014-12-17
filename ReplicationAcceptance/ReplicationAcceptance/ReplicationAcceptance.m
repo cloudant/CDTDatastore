@@ -313,6 +313,187 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
 }
 
+-(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pushDelegateDeletes
+{
+    [self createLocalDocs:5000];
+    [self createRemoteDocs:5000 suffixFrom:5000];
+    
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *pullReplicator =  [self.replicatorFactory oneWay:pull error:nil];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    CDTReplicator *pushReplicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    
+    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
+    [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
+    mydel.databaseToDelete = self.datastore.name;
+    mydel.dsManager = self.factory;
+    
+    pushReplicator.delegate = mydel;
+
+    NSError *error;
+    if (![pushReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    if (![pullReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (pushReplicator.isActive || pullReplicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@"push -> %@", [CDTReplicator stringForReplicatorState:pushReplicator.state]);
+        NSLog(@"pull -> %@", [CDTReplicator stringForReplicatorState:pullReplicator.state]);
+    }
+    
+    
+    //check pull replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pullReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pullReplicator.changesProcessed, n_docs);
+
+    XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pullReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+    
+    //have to wait for the threadsto completely stop executing
+    while(pullReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    XCTAssertFalse(pullReplicator.threadExecuting, @"Pull replicator thread executing");
+    XCTAssertTrue(pullReplicator.threadFinished, @"Pull replicator thread NOT finished");
+    XCTAssertTrue(pullReplicator.threadCanceled, @"Pull replicator thread NOT canceled");
+
+    
+    //check push replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pushReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pushReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pushReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+    
+    //have to wait for the threadsto completely stop executing
+    while(pushReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    XCTAssertFalse(pushReplicator.threadExecuting, @"Push replicator thread executing");
+    XCTAssertTrue(pushReplicator.threadFinished, @"Push replicator thread NOT finished");
+    XCTAssertTrue(pushReplicator.threadCanceled, @"Push replicator thread NOT canceled");
+    
+    BOOL notSame = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertFalse(notSame, @"Remote and local databases are the same and should be different");
+    
+}
+
+
+-(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pullDelegateDeletes
+{
+    [self createLocalDocs:5000];
+    [self createRemoteDocs:5000 suffixFrom:5000];
+    
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *pullReplicator =  [self.replicatorFactory oneWay:pull error:nil];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    CDTReplicator *pushReplicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    
+    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
+    [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
+    mydel.databaseToDelete = self.datastore.name;
+    mydel.dsManager = self.factory;
+    
+    pullReplicator.delegate = mydel;
+    
+    NSError *error;
+    if (![pushReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    if (![pullReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (pushReplicator.isActive || pullReplicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@"push -> %@", [CDTReplicator stringForReplicatorState:pushReplicator.state]);
+        NSLog(@"pull -> %@", [CDTReplicator stringForReplicatorState:pullReplicator.state]);
+    }
+    
+    
+    //check pull replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pullReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pullReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pullReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+    
+    //have to wait for the threadsto completely stop executing
+    while(pullReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    XCTAssertTrue(pullReplicator.threadFinished, @"Pull replicator thread NOT finished");
+    XCTAssertTrue(pullReplicator.threadCanceled, @"Pull replicator thread NOT canceled");
+    
+    
+    //check push replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pushReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pushReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pushReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", mydel.error.code);
+    
+    //have to wait for the threadsto completely stop executing
+    while(pushReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    XCTAssertTrue(pushReplicator.threadFinished, @"Push replicator thread NOT finished");
+    XCTAssertTrue(pushReplicator.threadCanceled, @"Push replicator thread NOT canceled");
+    
+    BOOL notSame = [self compareDatastore:self.datastore
+                             withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertFalse(notSame, @"Remote and local databases are the same and should be different");
+    
+}
+
+
+
 /**
  As per testPullLotsOfOneRevDocuments but ensuring indexes are updated.
  NB this currently about twice as slow as without indexing.
