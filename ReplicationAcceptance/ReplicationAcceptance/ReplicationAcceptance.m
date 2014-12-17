@@ -30,7 +30,7 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
-
+#import "CDTLogging.h"
 @interface ReplicationAcceptance ()
 
 /** This database is used as the primary remote database. Some tests create further
@@ -315,9 +315,21 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pushDelegateDeletes
 {
-    [self createLocalDocs:5000];
-    [self createRemoteDocs:5000 suffixFrom:5000];
+    //create unique set of docs on local and remote databases.
+    //set up both a push and pull replication and then effectively
+    //cancel the replications by deleting the local database with one
+    //of the replicator's delegates. then we check to ensure that
+    //replicators quit as expected.
+    //
+    //this test uses the push replicator's delegate to delete the local
+    //datastore
     
+    //2000 docs should be sufficient to start a replication and delete the local
+    //store before the replicators pull/push all of the remote/local docs
+    //If this test fails because the replicators complete their job, then
+    //increase increase the number of docs.
+    [self createLocalDocs:2000];
+    [self createRemoteDocs:2000 suffixFrom:2000];
     
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
@@ -406,10 +418,22 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pullDelegateDeletes
 {
-    [self createLocalDocs:5000];
-    [self createRemoteDocs:5000 suffixFrom:5000];
+    //create unique set of docs on local and remote databases.
+    //set up both a push and pull replication and then effectively
+    //cancel the replications by deleting the local database with one
+    //of the replicator's delegates. then we check to ensure that
+    //replicators quit as expected.
+    //
+    //this test uses the pull replicator's delegate to delete the local
+    //datastore
     
-    
+    //2000 docs should be sufficient to start a replication and delete the local
+    //store before the replicators pull/push all of the remote/local docs
+    //If this test fails because the replicators complete their job, then
+    //increase increase the number of docs.
+    [self createLocalDocs:2000];
+    [self createRemoteDocs:2000 suffixFrom:2000];
+
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
     CDTReplicator *pullReplicator =  [self.replicatorFactory oneWay:pull error:nil];
