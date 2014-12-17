@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <libkern/OSAtomic.h>
 
+#import <CDTLogging.h>
+
 #import "CDTIncrementalStore.h"
 #import "CDTFieldIndexer.h"
 
@@ -157,6 +159,11 @@ static BOOL CDTISDotMeUpdate = NO;
  */
 + (void)initialize
 {
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
+
+    CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, DDLogLevelOff);
+    CDTChangeLogLevel(CDTTD_REMOTE_REQUEST_CONTEXT, DDLogLevelOff);
+
     if (![[self class] isEqual:[CDTIncrementalStore class]]) {
         return;
     }
