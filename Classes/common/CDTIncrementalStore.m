@@ -126,9 +126,22 @@ static BOOL CDTISReadItBack = YES;
  */
 static BOOL CDTISDotMeUpdate = NO;
 
-#pragma mark - oops macro for debug
 /**
- *  This is how I like to assert, it stops me in the debugger
+ *  This is how I like to assert, it stops me in the debugger.
+ *
+ *  *Why not use exceptions?*
+ *  1. I can continue from this simply by typing:
+ *  ```
+ *  strap register write pc `$pc+2`
+ *  ```
+ *  > Different architectures will use different addend values
+ *  2. I don't need to "Add Exception Breakpoint"
+ *  3. I don't need to hunt down which excpetion a test is using in an
+ *  expected way
+ *
+ *  *Why is it a macro?*
+ *  I want to stop *at* the `oops` line in the code and not have to "pop up"
+ *  the stack if `oops` was not inlines due to optimization issues.
  *
  *  @param fmt A format string
  *  @param ... A comma-separated list of arguments to substitute into format.
@@ -299,8 +312,6 @@ static NSString* makeMeta(NSString *s)
                                              fieldName:fieldName
                                                  error:&err]) {
         if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
-            oops(@"fail to ensure index: %@:%@: %@",
-                 indexName, fieldName, err);
             if (error) *error = err;
             return NO;
         }
@@ -403,6 +414,7 @@ static NSArray *encodeFP(NSNumber *num)
 {
     NSAttributeType type = attribute.attributeType;
 
+    // Keep this
     if (!obj) oops(@"no nil allowed");
 
     switch (type) {
@@ -496,19 +508,19 @@ static NSArray *encodeFP(NSNumber *num)
             NSNumber *num = obj;
             return @[ kCDTISInteger64AttributeType, num];
         }
-        default: {
-            if (error) {
-                NSString *str = [NSString
-                                 localizedStringWithFormat:@"type %@: is not of NSNumber: %@ = %@", @(type),
-                                 attribute.name, NSStringFromClass([obj class])];
-                *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                             code:CDTISErrorNaN
-                                         userInfo:@{NSLocalizedDescriptionKey : str}];
-            }
-            return nil;
-        }
+        default:
+            break;
     }
-    oops(@"should never get here");
+
+    if (error) {
+        NSString *str = [NSString
+                         localizedStringWithFormat:@"type %@: is not of NSNumber: %@ = %@", @(type),
+                         attribute.name, NSStringFromClass([obj class])];
+        *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                     code:CDTISErrorNaN
+                                 userInfo:@{NSLocalizedDescriptionKey : str}];
+    }
+
     return nil;
 }
 
@@ -532,7 +544,9 @@ static NSArray *encodeFP(NSNumber *num)
     NSEntityDescription *entity = [mo entity];
     NSString *entityName = [entity name];
     NSManagedObjectID *moid = [mo objectID];
+
     if (moid.isTemporaryID) oops(@"tmp");
+
     NSString *ref = [self referenceObjectForObjectID:moid];
     return @[ entityName, ref ];
 }
@@ -610,11 +624,13 @@ static NSArray *encodeFP(NSNumber *num)
             NSRelationshipDescription *rel = prop;
             enc = [self encodeRelation:rel withObject:obj error:&err];
         } else {
-            oops(@"bad prop?");
+            oops(@"unknown property: %@", prop);
         }
+
         if (!enc) {
-            oops(@"%@", err);
+            oops(@"There should always be an encoding: %@: %@", prop, err);
         }
+
         [self setPropertyIn:props withName:name forEncoding:enc];
     }
 
@@ -766,7 +782,7 @@ static NSNumber *decodeFP(NSString *str)
         oops(@"this is defered to newValueForRelationship");
 
     } else {
-        oops(@"unknown ecoding: %@", type);
+        oops(@"unknown encoding: %@", type);
     }
 
     return obj;
@@ -788,6 +804,7 @@ static NSNumber *decodeFP(NSString *str)
     NSString *docID = [self stringReferenceObjectForObjectID:moid];
     NSEntityDescription *entity = [mo entity];
 
+    // I don't think this should never happen
     if (moid.isTemporaryID) oops(@"tmp");
 
     CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
@@ -801,10 +818,8 @@ static NSNumber *decodeFP(NSString *str)
     newRev.body[kCDTISIdentifierKey] = [[[mo objectID] URIRepresentation] absoluteString];
 
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:newRev error:&err];
-    if (!rev && err && error) {
-        *error = err;
-        NSLog(@"newRev: %@", newRev.body);
-        oops(@"error: %@", err);
+    if (!rev) {
+        if (error) *error = err;
         return NO;
     }
 
@@ -813,12 +828,11 @@ static NSNumber *decodeFP(NSString *str)
          *  See CDTISReadItBack
          */
         rev = [self.datastore getDocumentWithId:newRev.docId error:&err];
-        if (!rev && err && error) {
-            *error = err;
-            NSLog(@"readback: %@", newRev.body);
-            oops(@"error: %@", err);
-            return NO;
+        if (!rev) {
+            // Always oops!
+            oops(@"ReadItBack: error: %@", err);
         }
+        // Always oops
         if ([rev.body count] == 0) oops(@"empty save");
     }
 
@@ -868,9 +882,9 @@ static NSNumber *decodeFP(NSString *str)
 
     // :( It makes me very sad that I have to fetch it
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
-    if (!oldRev && err) {
+    if (!oldRev) {
         if (error) *error = err;
-        oops(@"no properties: %@", err);
+        return NO;
     }
 
     if (![oldRev.revId isEqualToString:revID]) {
@@ -898,12 +912,25 @@ static NSNumber *decodeFP(NSString *str)
     [upRev.body addEntriesFromDictionary:props];
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
-    if (!upedRev && err) {
+    if (!upedRev) {
         if (error) *error = err;
-        oops(@"no properties: %@", err);
+        return NO;
     }
     // does not appear that I have to do this since we fetch it all again?
     self.revIDFromDocID[docID] = upedRev.revId;
+
+    if (CDTISReadItBack) {
+        /**
+         *  See CDTISReadItBack
+         */
+        upedRev = [self.datastore getDocumentWithId:upRev.docId error:&err];
+        if (!upedRev) {
+            // Always oops!
+            oops(@"ReadItBack: error: %@", err);
+        }
+        // Always oops
+        if ([upedRev.body count] == 0) oops(@"empty save");
+    }
 
     return YES;
 }
@@ -933,16 +960,16 @@ static NSNumber *decodeFP(NSString *str)
         return YES;
     }
 
-    NSString *revID = self.revIDFromDocID[docID];
-    if (!revID) oops(@"revID is nil");
-
-    // :( It makes me very sad that I have to fetch it
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
-    if (!oldRev && err) {
+    if (!oldRev) {
         if (error) *error = err;
-        oops(@"no properties: %@", err);
         return NO;
     }
+
+    // If we get nil here, it just means we have never seen it.
+    NSString *revID = self.revIDFromDocID[docID];
+    // If we have never seen it before.. should we be deleting it?
+    if (!revID) oops(@"Trying to delete an unknown object");
 
     if (![oldRev.revId isEqualToString:revID]) {
         if (error) {
@@ -954,6 +981,7 @@ static NSNumber *decodeFP(NSString *str)
         }
         return NO;
     }
+
     if (![self.datastore deleteDocumentFromRevision:oldRev error:&err]) {
         if (error) *error = err;
         return NO;
@@ -995,7 +1023,7 @@ static NSNumber *decodeFP(NSString *str)
 
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID
                                                            error:&err];
-    if (!rev && err) {
+    if (!rev) {
         if (error) *error = err;
         oops(@"no properties: %@", err);
         return nil;
@@ -1070,7 +1098,7 @@ static NSNumber *decodeFP(NSString *str)
     self.indexManager = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     if (!self.indexManager) {
         if (error) *error = err;
-        oops(@"cannot create indexManager: %@", err);
+        NSLog(@"Cannot create indexManager: %@", err);
         return NO;
     }
 
@@ -1097,7 +1125,7 @@ static NSNumber *decodeFP(NSString *str)
                                              fieldName:kCDTISEntityNameKey
                                                  error:&err]) {
         if (error) *error = err;
-        oops(@"cannot create default index: %@", err);
+        NSLog(@"cannot create default index: %@", err);
         return NO;
     }
 
@@ -1135,9 +1163,10 @@ static NSNumber *decodeFP(NSString *str)
 {
     NSError *err = nil;
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
-    if (!oldRev && err) {
+    if (!oldRev) {
         if (error) *error = err;
-        oops(@"no metaData?: %@", err);
+        NSLog(@"no metaData?: %@", err);
+        return NO;
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
@@ -1154,9 +1183,10 @@ static NSNumber *decodeFP(NSString *str)
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev
                                                                         error:&err];
-    if (!upedRev && err) {
+    if (!upedRev) {
         if (error) *error = err;
-        oops(@"could not update metadata: %@", err);
+        NSLog(@"could not update metadata: %@", err);
+        return NO;
     }
 
     return YES;
@@ -1218,9 +1248,9 @@ static NSNumber *decodeFP(NSString *str)
                         };
 
         rev = [self.datastore createDocumentFromRevision:newRev error:&err];
-        if (!rev && err) {
+        if (!rev) {
             if (error) *error = err;
-            oops(@"unable to store metaData: %@", err);
+            NSLog(@"unable to store metaData: %@", err);
             return nil;
         }
         return metaData;
@@ -1235,9 +1265,9 @@ static NSNumber *decodeFP(NSString *str)
     CDTMutableDocumentRevision *upRev = [rev mutableCopy];
     upRev.body[@"run"] = self.run;
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
-    if (!upedRev && err) {
+    if (!upedRev) {
         if (error) *error = err;
-        oops(@"upedRev: %@", err);
+        NSLog(@"upedRev: %@", err);
         return nil;
     }
 
@@ -1277,7 +1307,6 @@ static NSNumber *decodeFP(NSString *str)
                                          code:CDTISErrorBadPath
                                      userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
         }
-        oops(@"%@", e);
         return NO;
     }
     // TODO: check hashes
@@ -1297,7 +1326,7 @@ static NSNumber *decodeFP(NSString *str)
     NSError *err = nil;
     if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID
                                  error:&err]) {
-        oops(@"update metadata error?");
+        oops(@"update metadata error: %@", err);
     }
     [super setMetadata:metadata];
 }
@@ -1344,6 +1373,7 @@ static NSNumber *decodeFP(NSString *str)
  *  @return options dic
  */
 - (NSDictionary *)sortByOptions:(NSFetchRequest *)fetchRequest
+                          error:(NSError **)error
 {
     NSError *err = nil;
     NSArray *sds = [fetchRequest sortDescriptors];
@@ -1359,6 +1389,7 @@ static NSNumber *decodeFP(NSString *str)
             NSString *key = [sd key];
 
             if (![self ensureIndexExists:key fieldName:key error:&err]) {
+                if (error) *error = err;
                 oops(@"fail to ensure index: %@: %@", key, err);
                 return nil;
             }
@@ -1495,7 +1526,6 @@ static NSNumber *decodeFP(NSString *str)
                     [ands addEntriesFromDictionary:[self processPredicate:sub]];
                 }
                 return [NSDictionary dictionaryWithDictionary:ands];
-                break;
             }
             case NSOrPredicateType:
             case NSNotPredicateType:
@@ -1524,7 +1554,7 @@ static NSNumber *decodeFP(NSString *str)
  *
  *  @return return value
  */
-- (NSDictionary *)queryForFetchRequest:(NSFetchRequest *)fetchRequest
+- (NSDictionary *)queryForFetchRequest:(NSFetchRequest *)fetchRequest error:(NSError **)error
 {
     NSEntityDescription *entity = [fetchRequest entity];
     NSString *entityName = [entity name];
@@ -1540,18 +1570,34 @@ static NSNumber *decodeFP(NSString *str)
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
 {
-    NSError *err = nil;
+    NSError *err;
     NSFetchRequestResultType fetchType = [fetchRequest resultType];
     NSEntityDescription *entity = [fetchRequest entity];
 
     // Get sort descriptors and add them as options
-    NSDictionary *query = [self queryForFetchRequest:fetchRequest];
-    NSDictionary *options = [self sortByOptions:fetchRequest];
+    err = nil;
+    NSDictionary *options = [self sortByOptions:fetchRequest error:&err];
+    if (!options && err) {
+        if (error) *error = err;
+        // I think we do this on error, it is unclear
+        return nil;
+    }
+
+    NSDictionary *query = [self queryForFetchRequest:fetchRequest error:&err];
+    if (!query) {
+        if (error) *error = err;
+        return nil;
+    }
+
+    err = nil;
     CDTQueryResult *hits = [self.indexManager queryWithDictionary:query
                                                           options:options
                                                             error:&err];
-    if (!hits) {
-        oops(@"no hits");
+    // hits == nil is valie, get rid of this once tested
+    if (!hits) oops(@"no hits");
+    if (!hits && err) {
+        if (error) *error = err;
+        return nil;
     }
 
     switch (fetchType) {
@@ -1564,7 +1610,6 @@ static NSNumber *decodeFP(NSString *str)
                 [results addObject:mo];
             }
             return [NSArray arrayWithArray:results];
-            break;
         }
 
         case NSManagedObjectIDResultType: {
@@ -1576,7 +1621,6 @@ static NSNumber *decodeFP(NSString *str)
                 [results addObject:moid];
             }
             return [NSArray arrayWithArray:results];
-            break;
         }
 
         case NSDictionaryResultType:
@@ -1587,24 +1631,19 @@ static NSNumber *decodeFP(NSString *str)
             NSArray *docIDs = [hits documentIds];
             NSUInteger count = [docIDs count];
             return @[ [NSNumber numberWithUnsignedLong:count] ];
-            break;
         }
 
-        default: {
-            NSString *s = [NSString
-                           localizedStringWithFormat:
-                           @"Unknown request fetch type: %@", fetchRequest];
-            if (error) {
-                *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                             code:CDTISErrorExectueRequestFetchTypeUnkown
-                                         userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
-            }
-            oops(@"%@", s);
-            return nil;
+        default:
             break;
-        }
     }
-    oops(@"should never get here");
+    NSString *s = [NSString
+                   localizedStringWithFormat:
+                   @"Unknown request fetch type: %@", fetchRequest];
+    if (error) {
+        *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                     code:CDTISErrorExectueRequestFetchTypeUnkown
+                                 userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+    }
     return nil;
 }
 
@@ -1620,6 +1659,7 @@ static NSNumber *decodeFP(NSString *str)
             oops(@"inserted: %@", err);
         }
     }
+    // Todo: Not sure how to deal with errors here
     NSSet *updatedObjects = [saveRequest updatedObjects];
     for (NSManagedObject *mo in updatedObjects) {
         if (![self updateManagedObject:mo error:&err]) {
@@ -1655,7 +1695,8 @@ static NSNumber *decodeFP(NSString *str)
         !optLockObjects) {
         if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID
                                      error:&err]) {
-            oops(@"update metadata error?");
+            if (error) *error = err;
+            return nil;
         }
     }
     // indicates success
@@ -1673,25 +1714,25 @@ static NSNumber *decodeFP(NSString *str)
         return [self executeFetchRequest:fetchRequest
                              withContext:context
                                    error:error];
-    } else if (requestType == NSSaveRequestType) {
+    }
+
+    if (requestType == NSSaveRequestType) {
         NSSaveChangesRequest *saveRequest = (NSSaveChangesRequest *)request;
         return [self executeSaveRequest:saveRequest
                             withContext:context
                                   error:error];
-    } else {
-        NSString *s = [NSString
-                       localizedStringWithFormat:
-                       @"Unknown request type: %@", @(requestType)];
-        if (error) {
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                         code:CDTISErrorExectueRequestTypeUnkown
-                                     userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
-        }
-        oops(@"%@", s);
-        return nil;
     }
-    oops(@"never get here");
-    return @[];
+
+    NSString *s = [NSString
+                   localizedStringWithFormat:
+                   @"Unknown request type: %@", @(requestType)];
+    if (error) {
+        *error = [NSError errorWithDomain:kCDTISErrorDomain
+                                     code:CDTISErrorExectueRequestTypeUnkown
+                                 userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
+    }
+    oops(@"%@", s);
+    return nil;
 }
 
 - (NSIncrementalStoreNode *)newValuesForObjectWithID:(NSManagedObjectID *)objectID
@@ -1730,10 +1771,12 @@ static NSNumber *decodeFP(NSString *str)
     NSString *docID = [self stringReferenceObjectForObjectID:objectID];
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID
                                                            error:&err];
-    if (!rev && err) {
+    if (!rev) {
         if (error) *error = err;
         oops(@"no attributes: %@", err);
+        return nil;
     }
+    
     NSString *name = [relationship name];
     NSArray *rel = [self getPropertyFrom:rev.body withName:name];
     NSString *type = [rel objectAtIndex:0];

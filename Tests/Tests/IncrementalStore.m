@@ -273,7 +273,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     ++entries;
     maxNums.check = @YES;
     maxNums.fpDecimal = [NSDecimalNumber maximumDecimalNumber];
-    maxNums.fpDouble = @(FLT_MAX);  //@(DBL_MAX);
+    maxNums.fpDouble = @(DBL_MAX);
     maxNums.fpFloat = @(FLT_MAX);
     maxNums.i16 = @INT16_MAX;
     maxNums.i32 = @INT32_MAX;
@@ -283,7 +283,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     ++entries;
     minNums.check = @NO;
     minNums.fpDecimal = [NSDecimalNumber minimumDecimalNumber];
-    minNums.fpDouble = @(FLT_MIN);  //@(DBL_MIN);
+    minNums.fpDouble = @(DBL_MIN);
     minNums.fpFloat = @(FLT_MIN);
     minNums.i16 = @INT16_MIN;
     minNums.i32 = @INT32_MIN;
@@ -307,10 +307,21 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
     // does this really cause everything to fault?
+    [moc refreshObject:maxNums mergeChanges:NO];
+    [moc refreshObject:minNums mergeChanges:NO];
     [moc refreshObject:infNums mergeChanges:NO];
+    [moc refreshObject:nanNums mergeChanges:NO];
 
-    XCTAssertTrue([infNums.fpDouble isEqual:@(INFINITY)], @"Failed to retain double infinity");
-    XCTAssertTrue([infNums.fpFloat isEqual:@(INFINITY)], @"Failed to retain float infinity");
+    XCTAssertTrue([maxNums.fpDouble isEqualToNumber:@(DBL_MAX)], @"Failed to retain double max");
+    XCTAssertTrue([minNums.fpDouble isEqualToNumber:@(DBL_MIN)], @"Failed to retain double min");
+
+    XCTAssertTrue([infNums.fpDouble isEqualToNumber:@(INFINITY)],
+                  @"Failed to retain double infinity");
+    XCTAssertTrue([infNums.fpFloat isEqualToNumber:@(INFINITY)],
+                  @"Failed to retain float infinity");
+
+    XCTAssertTrue([nanNums.fpDouble isEqualToNumber:@(NAN)], @"Failed to retain double min");
+    XCTAssertTrue([nanNums.fpFloat isEqualToNumber:@(NAN)], @"Failed to retain float min");
 
     NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
     NSUInteger count = [moc countForFetchRequest:fr error:&err];
