@@ -133,7 +133,7 @@ static BOOL CDTISDotMeUpdate = NO;
  *  Select if compound predicatates are ever supported
  *  > *Warning*: Untested
  */
-static BOOL SupportCompoundPredicates = NO;
+static BOOL CDTISSupportCompoundPredicates = NO;
 
 /**
  *  This is how I like to assert, it stops me in the debugger.
@@ -1604,7 +1604,7 @@ static NSNumber *decodeFP(NSString *str)
 - (NSDictionary *)processPredicate:(NSPredicate *)p withProperties:(NSDictionary *)props
 {
     if ([p isKindOfClass:[NSCompoundPredicate class]]) {
-        if (!SupportCompoundPredicates) {
+        if (!CDTISSupportCompoundPredicates) {
             [NSException raise:kCDTISException
                         format:@"Compound predicates not supported at all: %@", p];
         }
