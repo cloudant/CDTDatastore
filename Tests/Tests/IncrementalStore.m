@@ -454,6 +454,36 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     }
 
     /**
+     *  fetch objects from a list of objects
+     */
+    // we will borrow the results from the test above
+    NSMutableSet *ids = [NSMutableSet set];
+    for (Entry *e in results) {
+        NSManagedObjectID *moid = e.objectID;
+        NSURL *uri = [moid URIRepresentation];
+        NSString *s = [uri absoluteString];
+        [ids addObject:s];
+    }
+
+    lhs = [NSExpression expressionForEvaluatedObject];
+    rhs = [NSExpression expressionForConstantValue:[ids allObjects]];
+    cp = [NSComparisonPredicate predicateWithLeftExpression:lhs
+                                            rightExpression:rhs
+                                                   modifier:NSDirectPredicateModifier
+                                                       type:NSInPredicateOperatorType
+                                                    options:0];
+    fr.predicate = cp;
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == count, @"results count should be %d is %d", count,
+                  [results count]);
+
+    for (Entry *e in results) {
+        XCTAssertTrue([nums containsObject:e.i64], @"entry.i64: %@ should be in set", e.i64);
+    }
+
+    /**
      *  No support for substring "in" predicated
      */
     lhs = [NSExpression expressionForKeyPath:@"text"];
