@@ -23,6 +23,11 @@ extern NSString *const kCDTISException;
  */
 typedef void (^CDTISProgressBlock)(BOOL end, NSInteger processed, NSInteger total, NSError *err);
 
+typedef NS_ENUM(NSInteger, CDTISReplicateDirection) {
+    push = 0,
+    pull = 1
+};
+
 @interface CDTIncrementalStore : NSIncrementalStore
 
 /**
@@ -46,6 +51,19 @@ typedef void (^CDTISProgressBlock)(BOOL end, NSInteger processed, NSInteger tota
  *  @return YES/NO with optional error
  */
 - (BOOL)pullFromRemote:(NSError **)error withProgress:(CDTISProgressBlock)progress;
+
+/**
+ *  Convenience function where direction is an argument.
+ *  Use this when you find that the `progress` block is the same for pusha and
+ *  pull.
+ *
+ *  @param direction Which direction should the replication be done in
+ *  @param error     Error if replication could not be initiated
+ *  @param progress  @See CDTISProgressBlock
+ *
+ *  @return YES/NO with optional error
+ */
+- (BOOL)replicateInDirection:(CDTISReplicateDirection)direction withError:(NSError **)error withProgress:(CDTISProgressBlock)progress;
 
 /**
  *  Define the remote backing store of an existing datastore

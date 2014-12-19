@@ -1285,6 +1285,14 @@ static NSNumber *decodeFP(NSString *str)
     return [self commWithRemote:self.puller error:error withProgress:progress];
 }
 
+- (BOOL)replicateInDirection:(CDTISReplicateDirection)direction withError:(NSError **)error withProgress:(CDTISProgressBlock)progress;
+{
+    if (direction == push) {
+        return [self pushToRemote:error withProgress:progress];
+    }
+    return [self pullFromRemote:error withProgress:progress];
+}
+
 /**
  *  configure the replicators
  *

@@ -22,7 +22,7 @@ static BOOL SupportCompoundPredicates = NO;
     /*
      *  ##Start Ripoff:
      *  The following code segment, that creates a managed object model
-     *  programatically, has been derived from:
+     *  programmatically, has been derived from:
      *  >
      *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
      *
