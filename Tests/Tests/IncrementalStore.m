@@ -12,13 +12,15 @@
 #import "CloudantSyncTests.h"
 #import "CDTIncrementalStore.h"
 
-//
-//  CBLIncrementalStoreTests.m
-//  CouchbaseLite
-//
-//  Created by Christian Beer on 01.12.13.
-//
-//
+/*
+ *  ##Start Ripoff:
+ *  The following code segment, that creates a managed object model
+ *  programatically, has been derived from:
+ *  > https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
+ *
+ *  Which at the time of pilferage had the following license:
+ *  > http://www.apache.org/licenses/LICENSE-2.0
+ */
 
 @interface Entry : NSManagedObject
 @property (nonatomic, retain) NSNumber *check;
@@ -151,9 +153,9 @@ NSManagedObjectModel *MakeCoreDataModel(void)
 @dynamic filename, data, entry;
 @end
 
-//
-// end rip-off
-//
+/*
+ *  ##End Ripoff:
+ */
 
 Entry *MakeEntry(NSManagedObjectContext *moc)
 {
@@ -161,10 +163,6 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
                                          inManagedObjectContext:moc];
 }
 
-
-/**
- *  <#Description#>
- */
 @interface IncrementalStore : CloudantSyncTests
 
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
