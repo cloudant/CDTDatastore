@@ -135,7 +135,7 @@ static BOOL CDTISReadItBack = YES;
 static BOOL CDTISDotMeUpdate = NO;
 
 /**
- *  Select if compound predicatates are ever supported
+ *  Select if compound predicates are ever supported
  *  > *Warning*: Untested
  */
 static BOOL CDTISSupportCompoundPredicates = NO;
@@ -157,7 +157,7 @@ static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
  *  ```
  *  > Different architectures will use different addend values
  *  2. I don't need to "Add Exception Breakpoint"
- *  3. I don't need to hunt down which excpetion a test is using in an
+ *  3. I don't need to hunt down which exception a test is using in an
  *  expected way
  *
  *  *Why is it a macro?*
@@ -309,7 +309,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 }
 
 /**
- *  Join the two properties in to the singel tuple. @See setPropertyIn
+ *  Join the two properties in to the single tuple. @See setPropertyIn
  *
  *  @param props props
  *  @param name  name
@@ -683,7 +683,7 @@ static NSNumber *JSONDouble(NSNumber *d)
     /* TODO
      * Should we bother with attachments?
      * I believe that CoreData deals with this and we should just treat
-     * everything inline, otherwise we just add another unecessary reference.
+     * everything inline, otherwise we just add another unnecessary reference.
      */
 
     for (NSString *name in names) {
@@ -867,7 +867,7 @@ static NSNumber *decodeFP(NSString *str)
     } else if ([type isEqualToString:kCDTISRelationToManyType]) {
         // we actually should do this here, but we hope to eventually
         // use a Cloudant View?
-        oops(@"this is defered to newValueForRelationship");
+        oops(@"this is deferred to newValueForRelationship");
 
     } else {
         oops(@"unknown encoding: %@", type);
@@ -966,7 +966,7 @@ static NSNumber *decodeFP(NSString *str)
 }
 
 /**
- *  Update exisiting object in the database
+ *  Update existing object in the database
  *
  *  @param mo    Managed Object
  *  @param error Error
@@ -1034,7 +1034,7 @@ static NSNumber *decodeFP(NSString *str)
 
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
-    // delete all changed properies, in case they are being removed.
+    // delete all changed properties, in case they are being removed.
     [upRev.body removeObjectsForKeys:[props allKeys]];
     [upRev.body addEntriesFromDictionary:props];
 
@@ -1166,7 +1166,7 @@ static NSNumber *decodeFP(NSString *str)
             continue;
         }
         NSArray *prop = [self getPropertyFrom:rev.body withName:name];
-        if (!prop) oops(@"we encoded baddly");
+        if (!prop) oops(@"we encoded badly");
 
         // we defer to newValueForRelationship:forObjectWithID:withContext:error
         if ([[prop firstObject] isEqualToString:kCDTISRelationToManyType]) {
@@ -1176,7 +1176,7 @@ static NSNumber *decodeFP(NSString *str)
         id obj = [self decodePropertyFrom:prop withContext:context];
         if (!obj) {
             // Dictionaries do not take nil, but Values can't have NSNull.
-            // Apparentely we just skip it and the properties faults take care
+            // Apparently we just skip it and the properties faults take care
             // of it
             continue;
         }
@@ -1285,7 +1285,9 @@ static NSNumber *decodeFP(NSString *str)
     return [self commWithRemote:self.puller error:error withProgress:progress];
 }
 
-- (BOOL)replicateInDirection:(CDTISReplicateDirection)direction withError:(NSError **)error withProgress:(CDTISProgressBlock)progress;
+- (BOOL)replicateInDirection:(CDTISReplicateDirection)direction
+                   withError:(NSError **)error
+                withProgress:(CDTISProgressBlock)progress;
 {
     if (direction == push) {
         return [self pushToRemote:error withProgress:progress];
@@ -1502,7 +1504,7 @@ static NSNumber *decodeFP(NSString *str)
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
-    // need to fixup the version hashed
+    // need to fix up the version hashed
     NSMutableDictionary *metaData = [[self metadata] mutableCopy];
     NSDictionary *hashes = metaData[NSStoreModelVersionHashesKey];
 
@@ -1946,7 +1948,7 @@ static NSNumber *decodeFP(NSString *str)
             }
             case NSOrPredicateType:
             case NSNotPredicateType:
-                oops(@"Predicate with unsuported compound operator: %@", @(predType));
+                oops(@"Predicate with unsupported compound operator: %@", @(predType));
                 break;
             default:
                 oops(@"Predicate with unrecognized compound operator: %@", @(predType));
@@ -1983,7 +1985,7 @@ static NSNumber *decodeFP(NSString *str)
 }
 
 /**
- *  create a query dictionaary for the backing store
+ *  create a query dictionary for the backing store
  *  > *Note*: the predicates are included in this dictionary
  *
  *  @param fetchRequest fetchRequest

@@ -54,7 +54,7 @@ typedef NS_ENUM(NSInteger, CDTISReplicateDirection) {
 
 /**
  *  Convenience function where direction is an argument.
- *  Use this when you find that the `progress` block is the same for pusha and
+ *  Use this when you find that the `progress` block is the same for push and
  *  pull.
  *
  *  @param direction Which direction should the replication be done in
