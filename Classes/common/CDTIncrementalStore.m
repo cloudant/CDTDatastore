@@ -211,8 +211,9 @@ static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
     if (CDTISEnableLogging != DDLogLevelOff) {
         [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
-        CDTChangeLogLevel(CDTDATASTORE_LOG_CONTEXT, CDTISEnableLogging);
         CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, CDTISEnableLogging);
+        CDTChangeLogLevel(CDTDATASTORE_LOG_CONTEXT, CDTISEnableLogging);
+        CDTChangeLogLevel(CDTDOCUMENT_REVISION_LOG_CONTEXT, CDTISEnableLogging);
         CDTChangeLogLevel(CDTTD_REMOTE_REQUEST_CONTEXT, CDTISEnableLogging);
     }
 }
@@ -401,7 +402,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             NSString *s = [NSString localizedStringWithFormat:@"Can't create datastore directory: "
                                                               @"file in the way at %@",
                                                               self.localURL];
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@", s);
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@", kCDTISType, s);
             if (error) {
                 NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
                 *error =
@@ -414,7 +415,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                    withIntermediateDirectories:YES
                                     attributes:nil
                                          error:&err]) {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Error creating manager directory: %@", err);
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Error creating manager directory: %@",
+                        kCDTISType, err);
             if (error) {
                 *error = err;
             }
@@ -720,7 +722,7 @@ static NSNumber *JSONDouble(NSNumber *d)
     // just checking
     NSArray *entitySubs = [[mo entity] subentities];
     if ([entitySubs count] > 0) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"subentities: %@", entitySubs);
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: subentities: %@", kCDTISType, entitySubs);
     }
     return [NSDictionary dictionaryWithDictionary:props];
 }
@@ -1243,7 +1245,7 @@ static NSNumber *decodeFP(NSString *str)
         return YES;
     }
     if (err) {
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"Replicator: start: %@: %@",
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Replicator: start: %@: %@", kCDTISType,
                    [self cleanURL:self.remoteURL], err);
     }
     self.progressBlock = nil;
@@ -1313,7 +1315,8 @@ static NSNumber *decodeFP(NSString *str)
 
     // If remoteURL has a host component, then we have a replication target
     if (![remoteURL host]) {
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"no host component, so no replication");
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: no host component, so no replication",
+                   kCDTISType);
         return NO;
     }
 
@@ -1322,37 +1325,38 @@ static NSNumber *decodeFP(NSString *str)
     CDTReplicatorFactory *repFactory =
         [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
     if (!repFactory) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Could not create replication factory", clean);
+        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replication factory",
+                    kCDTISType, clean);
         return NO;
     }
 
     CDTPushReplication *pushRep =
         [CDTPushReplication replicationWithSource:datastore target:remoteURL];
     if (!pushRep) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Could not create push replication object",
-                    clean);
+        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create push replication object",
+                    kCDTISType, clean);
         return NO;
     }
 
     CDTReplicator *pusher = [repFactory oneWay:pushRep error:&err];
     if (!pusher) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Could not create replicator for push: %@",
-                    clean, err);
+        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replicator for push: %@",
+                    kCDTISType, clean, err);
         return NO;
     }
 
     CDTPullReplication *pullRep =
         [CDTPullReplication replicationWithSource:remoteURL target:datastore];
     if (!pullRep) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Could not create pull replication object",
-                    clean);
+        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create pull replication object",
+                    kCDTISType, clean);
         return NO;
     }
 
     CDTReplicator *puller = [repFactory oneWay:pushRep error:&err];
     if (!puller) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Could not create replicator for pull: %@",
-                    clean, err);
+        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replicator for pull: %@",
+                    kCDTISType, clean, err);
         return NO;
     }
 
@@ -1406,15 +1410,16 @@ static NSNumber *decodeFP(NSString *str)
 
     CDTDatastoreManager *manager = [[CDTDatastoreManager alloc] initWithDirectory:path error:&err];
     if (!manager) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Error creating manager: %@", databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating manager: %@", kCDTISType,
+                    databaseName, err);
         if (error) *error = err;
         return NO;
     }
 
     CDTDatastore *datastore = [manager datastoreNamed:databaseName error:&err];
     if (!datastore) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Error creating datastore: %@", databaseName,
-                    err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating datastore: %@", kCDTISType,
+                    databaseName, err);
         if (error) *error = err;
         return NO;
     }
@@ -1423,8 +1428,8 @@ static NSNumber *decodeFP(NSString *str)
         [[CDTIndexManager alloc] initWithDatastore:datastore error:&err];
     if (!indexManager) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Cannot create indexManager: %@", databaseName,
-                    err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Cannot create indexManager: %@", kCDTISType,
+                    databaseName, err);
         return NO;
     }
 
@@ -1435,7 +1440,7 @@ static NSNumber *decodeFP(NSString *str)
     self.indexManager = indexManager;
 
     if (![self setupReplicators:remoteURL manager:manager datastore:datastore]) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"continuing without replication");
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: continuing without replication", kCDTISType);
     }
 
     return YES;
@@ -1458,8 +1463,8 @@ static NSNumber *decodeFP(NSString *str)
                                              fieldName:kCDTISEntityNameKey
                                                  error:&err]) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: cannot create default index: %@",
-                    self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@",
+                    kCDTISType, self.databaseName, err);
         return NO;
     }
 
@@ -1499,7 +1504,8 @@ static NSNumber *decodeFP(NSString *str)
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
     if (!oldRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: no metaData?: %@", self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: no metaData?: %@", kCDTISType,
+                    self.databaseName, err);
         return NO;
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
@@ -1517,7 +1523,7 @@ static NSNumber *decodeFP(NSString *str)
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: could not update metadata: %@",
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: could not update metadata: %@", kCDTISType,
                     self.databaseName, err);
         return NO;
     }
@@ -1581,8 +1587,8 @@ static NSNumber *decodeFP(NSString *str)
         rev = [self.datastore createDocumentFromRevision:newRev error:&err];
         if (!rev) {
             if (error) *error = err;
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: unable to store metaData: %@",
-                        self.databaseName, err);
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: unable to store metaData: %@",
+                        kCDTISType, self.databaseName, err);
             return nil;
         }
         return metaData;
@@ -1599,7 +1605,8 @@ static NSNumber *decodeFP(NSString *str)
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: upedRev: %@", self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: upedRev: %@", kCDTISType, self.databaseName,
+                    err);
         return nil;
     }
 
@@ -1685,13 +1692,13 @@ static NSNumber *decodeFP(NSString *str)
             break;
         default:
             state = @"unknown replicator state";
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: state: %@",
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", kCDTISType,
                        [self cleanURL:self.remoteURL], replicator, state);
             break;
     }
 
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: state: %@", [self cleanURL:self.remoteURL],
-               replicator, state);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", kCDTISType,
+               [self cleanURL:self.remoteURL], replicator, state);
 }
 
 /**
@@ -1699,7 +1706,7 @@ static NSNumber *decodeFP(NSString *str)
  */
 - (void)replicatorDidChangeProgress:(CDTReplicator *)replicator
 {
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: progressed: [%@/%@]",
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: progressed: [%@/%@]", kCDTISType,
                [self cleanURL:self.remoteURL], replicator, @(replicator.changesProcessed),
                @(replicator.changesTotal));
     self.progressBlock(NO, replicator.changesProcessed, replicator.changesTotal, nil);
@@ -1711,8 +1718,8 @@ static NSNumber *decodeFP(NSString *str)
  */
 - (void)replicatorDidComplete:(CDTReplicator *)replicator
 {
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: completed", [self cleanURL:self.remoteURL],
-               replicator);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: completed", kCDTISType,
+               [self cleanURL:self.remoteURL], replicator);
     self.progressBlock(YES, 0, 0, nil);
     self.progressBlock = nil;
 }
@@ -1722,7 +1729,7 @@ static NSNumber *decodeFP(NSString *str)
  */
 - (void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info
 {
-    CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: suffered error: %@",
+    CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: suffered error: %@", kCDTISType,
                 [self cleanURL:self.remoteURL], replicator, info);
     self.progressBlock(YES, 0, 0, info);
     self.progressBlock = nil;
