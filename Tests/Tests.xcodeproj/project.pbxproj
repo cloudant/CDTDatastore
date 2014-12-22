@@ -38,6 +38,8 @@
 		989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		98BB740019E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
 		98BB740119E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
+		98DDEB9F1A41CD3400767178 /* DatastoreManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */; };
+		98DDEBA01A41CD3400767178 /* DatastoreManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */; };
 		9985C74919AE5D8300636AB6 /* CDTQueryBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */; };
 		9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F0D23E818888C6C00D3D04E /* Foundation.framework */; };
 		9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F0D23F0188B4FA900D3D04E /* TDMultipartReaderTests.m */; };
@@ -107,6 +109,7 @@
 		989E6E21198799AE00FB8510 /* DatastoreCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreCRUD.m; sourceTree = "<group>"; };
 		98BB73FE19E5927600C57866 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloudantTests.h; sourceTree = "<group>"; };
 		98BB73FF19E5927600C57866 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantTests.m; sourceTree = "<group>"; };
+		98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerTests.m; sourceTree = "<group>"; };
 		9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQueryBuilderTests.m; sourceTree = "<group>"; };
 		9A7D07FED5506284BDC1ACC8 /* Pods-osx.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.debug.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.debug.xcconfig"; sourceTree = "<group>"; };
 		9E965C9FF72A8429FFFF4E1F /* Pods-ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.debug.xcconfig"; sourceTree = "<group>"; };
@@ -198,6 +201,7 @@
 			isa = PBXGroup;
 			children = (
 				98BB73FE19E5927600C57866 /* CloudantTests.h */,
+				98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */,
 				98BB73FF19E5927600C57866 /* CloudantTests.m */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
 				9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */,
@@ -487,6 +491,7 @@
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				9F0D23FA188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
 				985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */,
+				98DDEB9F1A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
 				9F4E646B19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
 				98BB740019E5927600C57866 /* CloudantTests.m in Sources */,
 				9F0D2402188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
@@ -521,6 +526,7 @@
 				9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				9F0D23FB188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
 				9F0D2403188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
+				98DDEBA01A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
 				9F4E646C19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
 				98BB740119E5927600C57866 /* CloudantTests.m in Sources */,
 				985A188B19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
