@@ -165,8 +165,19 @@ described as "base64" and should be considered of mime-type
 ### Transformable Data
 [Core Data] applications can provide a class that can transform an
 object into some serialized form.  The name of this "Transformer
-Class" is stored along with the base64 encoding of the result.  The
-mime-type should be considered "application/octet-stream".
+Class" and the mime-type is stored along with the base64 encoding of
+the result.  The mime-type by default is "application/octet-stream".
+
+To increase portability, it is recommended, where possible, that the
+programmer add an additional class method called `+MIMEType` that
+returns the mime-type of encoded result.  Example method for a class
+that transforms to a PNG image.
+
+```objc
++ (NSString *)MIMEType {
+    return @"image/png";
+}
+```
 
 ### Arbitrary Decimal Numbers
 The `NSDecimalNumber` is described by Apple as:

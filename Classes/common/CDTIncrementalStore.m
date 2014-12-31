@@ -527,11 +527,17 @@ static NSNumber *JSONDouble(NSNumber *d)
         }
         case NSTransformableAttributeType: {
             NSString *xname = [attribute valueTransformerName];
-            id xform = [[NSClassFromString(xname) alloc] init];
+            NSString *mimeType = @"application/octet-stream";
+            Class myClass = NSClassFromString(xname);
+            // Yes, we could try/catch here.. but why?
+            if ([myClass respondsToSelector:@selector(MIMEType)]) {
+                mimeType = [myClass performSelector:@selector(MIMEType)];
+            }
+            id xform = [[myClass alloc] init];
             // use reverseTransformedValue to come back
             NSData *save = [xform transformedValue:obj];
             NSString *bytes = [save base64EncodedStringWithOptions:0];
-            return @[ kCDTISTransformableAttributeType, xname, bytes ];
+            return @[ kCDTISTransformableAttributeType, xname, mimeType, bytes ];
         }
         case NSObjectIDAttributeType: {
             // I'm guessing here
@@ -804,7 +810,7 @@ static NSNumber *decodeFP(NSString *str)
     } else if ([type isEqualToString:kCDTISTransformableAttributeType]) {
         NSString *str = value;
         id xform = [[NSClassFromString(str) alloc] init];
-        NSString *base64 = [prop objectAtIndex:2];
+        NSString *base64 = [prop objectAtIndex:3];
         NSData *restore = nil;
         if ([base64 length]) {
             restore = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
