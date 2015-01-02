@@ -25,6 +25,7 @@
 #import "TDBase64.h"
 #import "MYBlockUtils.h"
 #import "MYURLUtils.h"
+#import "TDMisc.h"
 #import <string.h>
 #import "TDJSON.h"
 #import "CDTLogging.h"
@@ -95,7 +96,7 @@
     }
 
     // Now open the connection:
-    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@", self, url.resourceSpecifier);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@", self, TDCleanURLtoString(url));
     CFReadStreamRef cfInputStream = CFReadStreamCreateForHTTPRequest(NULL, request);
     CFRelease(request);
     if (!cfInputStream) return NO;
@@ -135,7 +136,7 @@
     [_trackingInput scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     [_trackingInput open];
     _startTime = CFAbsoluteTimeGetCurrent();
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, self.changesFeedURL);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, TDCleanURLtoString(self.changesFeedURL));
     return YES;
 }
 

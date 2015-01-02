@@ -75,5 +75,68 @@
     [self escapeIDTest:@"foo&bar" str2:@"foo%26bar"];
 }
 
+-(void)testCleanURL
+{
+    NSString *cleanString;
+    NSURL *testUrl;
+    
+    //these should create a cleaned URL.
+    testUrl = [NSURL URLWithString: @"https://adam:adamspassword@myhost.com:1234/db?all_docs=true"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam:*****@myhost.com:1234/db?all_docs=true",
+                          @"not cleaned: %@", cleanString);
+    
+    testUrl = [NSURL URLWithString:
+               @"https://adam:adamspassword@myhost.com:1234/db/with/long/path.html?q=true"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam:*****@myhost.com:1234/db/with/long/path.html?q=true",
+                          @"not cleaned: %@", cleanString);
+    
+    testUrl = [NSURL URLWithString:
+               @"https://adam:adamspassword@myhost.com:1234/db/with/long/path.html?q=true&foo=bar&bam=baz"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString,
+                          @"https://adam:*****@myhost.com:1234/db/with/long/path.html?q=true&foo=bar&bam=baz",
+                          @"not cleaned: %@", cleanString);
+
+    testUrl = [NSURL URLWithString:@"https://adam:adamspassword@myhost.com/db?all_docs=true"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam:*****@myhost.com/db?all_docs=true",
+                          @"not cleaned: %@", cleanString);
+    
+    testUrl = [NSURL URLWithString:@"https://adam:adamspassword@myhost.com/db"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam:*****@myhost.com/db",
+                          @"not cleaned: %@", cleanString);
+    
+    testUrl = [NSURL URLWithString:
+               @"https://adam:adamspassword@myhost.com:1234/db?all_docs=true#some_fragment"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString,
+                          @"https://adam:*****@myhost.com:1234/db?all_docs=true#some_fragment",
+                          @"not cleaned: %@", cleanString);
+    
+    testUrl = [NSURL URLWithString:@"https://adam@/db"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam@/db", @"should not have changed: %@",
+                          cleanString);
+    
+    testUrl = [NSURL URLWithString:@"https://adam@"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam@", @"should not have changed: %@",
+                          cleanString);
+    
+    testUrl = [NSURL URLWithString:@"https://adam@myhost.com/db"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://adam@myhost.com/db", @"should not have changed: %@",
+                          cleanString);
+    
+    testUrl = [NSURL URLWithString:@"https://nothing.to.clean/db"];
+    cleanString = TDCleanURLtoString(testUrl);
+    XCTAssertEqualObjects(cleanString, @"https://nothing.to.clean/db", @"should not have changed: %@",
+                          cleanString);
+
+    
+}
 
 @end

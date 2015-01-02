@@ -16,6 +16,7 @@
 #import "CDTPullReplication.h"
 #import "CDTDatastore.h"
 #import "CDTLogging.h"
+#import "TDMisc.h"
 
 @interface CDTPullReplication ()
 @property (nonatomic, strong, readwrite) CDTDatastore *target;
@@ -49,6 +50,13 @@
     }
 
     return copy;
+}
+
+- (NSString *)description
+{
+    NSMutableDictionary *dictionary = [[self dictionaryForReplicatorDocument:nil] mutableCopy];
+    dictionary[@"source"] = TDCleanURLtoString(self.source);
+    return [NSString stringWithFormat:@"%@: %@", [self class], dictionary];
 }
 
 - (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error

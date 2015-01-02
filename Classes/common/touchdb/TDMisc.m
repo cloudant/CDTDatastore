@@ -258,3 +258,33 @@ NSURL* TDAppendToURL(NSURL* baseURL, NSString* toAppend)
     [urlStr appendString:toAppend];
     return [NSURL URLWithString:urlStr];
 }
+
+NSString* TDCleanURLtoString(NSURL* url)
+{
+    if ([url.password length] != 0) {
+        NSString *cleanedURL = [NSString stringWithFormat:@"%@://%@:*****@%@",
+                                url.scheme, url.user, url.host];
+        
+        if (url.port) {
+            cleanedURL = [cleanedURL stringByAppendingFormat:@":%@", url.port];
+        }
+
+        if (url.path) {
+            cleanedURL = [cleanedURL stringByAppendingString:url.path];
+        }
+        
+        if (url.query) {
+            cleanedURL = [cleanedURL stringByAppendingFormat:@"?%@", url.query];
+        }
+
+        if (url.fragment) {
+            cleanedURL = [cleanedURL stringByAppendingFormat:@"#%@", url.fragment];
+        }
+        
+        return cleanedURL;
+    }
+    else {
+        return [url absoluteString];
+    }
+}
+

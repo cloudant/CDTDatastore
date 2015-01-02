@@ -127,12 +127,6 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     return [NSDictionary dictionaryWithDictionary:doc];
 }
 
-- (NSString *)description
-{
-    return [NSString
-        stringWithFormat:@"Replicator Doc: %@", [self dictionaryForReplicatorDocument:nil]];
-}
-
 - (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error
 {
     NSString *scheme = [url.scheme lowercaseString];

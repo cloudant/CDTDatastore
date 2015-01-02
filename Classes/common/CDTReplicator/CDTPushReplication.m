@@ -53,6 +53,13 @@
     return copy;
 }
 
+- (NSString *)description
+{
+    NSMutableDictionary *dictionary = [[self dictionaryForReplicatorDocument:nil] mutableCopy];
+    dictionary[@"target"] = TDCleanURLtoString(self.target);
+    return [NSString stringWithFormat:@"%@: %@", [self class], dictionary];
+}
+
 - (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
 {
     NSError *localError;
