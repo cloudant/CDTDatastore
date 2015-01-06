@@ -548,23 +548,15 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             }
             if ([num isEqual:@(NAN)]) {
                 num = @(0);  // not sure what to do here
+                dbl = 0.;
                 meta[kCDTISFPNaNKey] = @"true";
             }
 
-            // it is possible that the JSON implementation will punt and call a
-            // really big number infinity, and really small numbers NaN.
-            // To solve this we constrain ourselves to the range of float?
-            if ([num compare:@(FLT_MAX)] == NSOrderedDescending) {
-                num = @(FLT_MAX);
-            } else if ([num compare:@(-FLT_MAX)] == NSOrderedAscending) {
-                num = @(-FLT_MAX);
-            } else if ([num compare:@(FLT_MIN)] == NSOrderedAscending) {
-                num = @(FLT_MIN);
-            } else if ([num compare:@(-FLT_MIN)] == NSOrderedDescending) {
-                num = @(-FLT_MIN);
-            }
-
-            return @{name : num, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            // NSDecimalNumber "description" is the closest thing we will get
+            // to an arbitrary precision number in JSON, so lets use it.
+            NSDecimalNumber *dec = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:dbl];
+            NSString *str = [dec description];
+            return @{name : str, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
         }
 
         case NSFloatAttributeType: {
