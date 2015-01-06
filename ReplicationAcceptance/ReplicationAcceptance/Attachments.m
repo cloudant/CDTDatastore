@@ -10,7 +10,7 @@
 #import "CloudantReplicationBase+CompareDb.h"
 
 #import <UNIRest.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <CloudantSync.h>
 #import <FMDatabase.h>
 
@@ -32,7 +32,7 @@
 
     NSError *error;
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
     
@@ -95,7 +95,7 @@
         [request setUrl:[attachmentURL absoluteString]];
         [request setHeaders:headers];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
 }
 
 #pragma mark Tests
@@ -151,17 +151,17 @@
     
     rev = [self.datastore getDocumentWithId:@"attachments1"
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
                  @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:@"attachments3"
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)3],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)3],
                  @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:@"attachments4"
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)4],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)4],
                  @"Incorrect number of attachments");
     
     //
@@ -219,8 +219,8 @@
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
 
 
-    STAssertNotNil(rev, @"Unable to add attachments to document");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
                  @"Incorrect number of attachments");
     
     // 
@@ -233,10 +233,10 @@
     // Checks
     //
     
-    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
                  @"Local and remote database comparison failed");
     
-    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
                                                 withDatabase:remoteDbURL],
                  @"Local and remote database attachment comparison failed");
                  
@@ -299,8 +299,8 @@
     mrev.attachments = attachments;
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
 
-    STAssertNotNil(rev, @"Unable to add attachments to document");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
                  @"Incorrect number of attachments");
     
     // 
@@ -323,8 +323,8 @@
     
     rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
     
-    STAssertNotNil(rev, @"Attachments are not deleted.");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
+    XCTAssertNotNil(rev, @"Attachments are not deleted.");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
                  @"Incorrect number of attachments");
     
     [self pushTo:remoteDbURL from:self.datastore];
@@ -333,10 +333,10 @@
     // Checks
     //
     
-    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
                  @"Local and remote database comparison failed");
     
-    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
                                                 withDatabase:remoteDbURL],
                  @"Local and remote database attachment comparison failed");
     
@@ -399,8 +399,8 @@
     mrev.attachments = attachments;
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
     
-    STAssertNotNil(rev, @"Unable to add attachments to document");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
                  @"Incorrect number of attachments");
     
     // 
@@ -423,8 +423,8 @@
     
     rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
     
-    STAssertNotNil(rev, @"Attachments are not deleted.");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
+    XCTAssertNotNil(rev, @"Attachments are not deleted.");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
                  @"Incorrect number of attachments");
     
     // To get the 412 response to happen, we have to change the revpos in the attachments
@@ -441,10 +441,10 @@
     // Checks
     //
     
-    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
                  @"Local and remote database comparison failed");
     
-    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
                                                 withDatabase:remoteDbURL],
                  @"Local and remote database attachment comparison failed");
     
@@ -514,19 +514,19 @@
     CDTDocumentRevision *rev;
     rev = [self.datastore getDocumentWithId:docId
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
                  @"Incorrect number of attachments");
     
     for (NSString *attachmentName in [originalAttachments keyEnumerator]) {
 
         CDTAttachment *a = [[rev attachments] objectForKey:attachmentName];
         
-        STAssertNotNil(a, @"No attachment named %@", attachmentName);
+        XCTAssertNotNil(a, @"No attachment named %@", attachmentName);
         
         NSData *data = [a dataFromAttachmentContent];
         NSData *originalData = originalAttachments[attachmentName];
         
-        STAssertEqualObjects(data, originalData, @"attachment content didn't match");
+        XCTAssertEqualObjects(data, originalData, @"attachment content didn't match");
     }
     
     //
@@ -592,7 +592,7 @@
     [mrev.attachments setObject:attachment forKey:attachmentName];
     rev = [self.datastore updateDocumentFromRevision:mrev error:&error];
 
-    STAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
     
     [self pushTo:remoteDbURL from:self.datastore];
     
@@ -600,10 +600,10 @@
     // Checks
     //
     
-    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
                  @"Local and remote database comparison failed");
     
-    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
                                                 withDatabase:remoteDbURL],
                  @"Local and remote database attachment comparison failed");
     
@@ -663,8 +663,8 @@
     [mrev.attachments removeObjectForKey:attachmentName];
     rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
 
-    STAssertNotNil(rev, @"Unable to add attachments to document");
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
                  @"Incorrect number of attachments");
     
     
@@ -674,9 +674,9 @@
     // Checks
     //
     
-    STAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
                  @"Local and remote database comparison failed");
-    STAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore 
                                                 withDatabase:remoteDbURL],
                  @"Local and remote database attachment comparison failed");
     
@@ -743,7 +743,7 @@
     
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
                                                            error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
                  @"Incorrect number of attachments");
     
     //
@@ -815,10 +815,10 @@
     
     // The regression this tests for is triggered by the attachment's revpos being
     // greater than the generation of the revision.
-    STAssertEqualObjects(json[@"_attachments"][@"txtDoc"][@"revpos"], 
+    XCTAssertEqualObjects(json[@"_attachments"][@"txtDoc"][@"revpos"], 
                          @(2), 
                          @"revpos not expected");
-    STAssertTrue([json[@"_rev"] hasPrefix:@"1"], @"revpos not expected");
+    XCTAssertTrue([json[@"_rev"] hasPrefix:@"1"], @"revpos not expected");
     
     //
     // Replicate to local database
@@ -834,12 +834,12 @@
     
     rev = [self.datastore getDocumentWithId:docId
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
                  @"Incorrect number of attachments");
     
     rev = [self.datastore getDocumentWithId:copiedDocId
                                       error:nil];
-    STAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)1],
                  @"Incorrect number of attachments");
     
     //

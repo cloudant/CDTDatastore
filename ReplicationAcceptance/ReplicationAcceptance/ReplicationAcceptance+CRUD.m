@@ -57,8 +57,8 @@
         if (updates) {
             rev = [self.datastore getDocumentWithId:docId error:&error];
             if (error.code != 404) {  // new doc, so not error
-                STAssertNil(error, @"Error creating docs: %@", error);
-                STAssertNotNil(rev, @"Error creating docs: rev was nil");
+                XCTAssertNil(error, @"Error creating docs: %@", error);
+                XCTAssertNotNil(rev, @"Error creating docs: rev was nil");
             }
         }
 
@@ -71,15 +71,15 @@
             rev = [self.datastore createDocumentFromRevision:mdrev
                                                        error:&error];
             //            NSLog(@"Created %@", docId);
-            STAssertNil(error, @"Error creating doc: %@", error);
-            STAssertNotNil(rev, @"Error creating doc: rev was nil");
+            XCTAssertNil(error, @"Error creating doc: %@", error);
+            XCTAssertNotNil(rev, @"Error creating doc: rev was nil");
         } else {
             mdrev.sourceRevId = rev.revId;
             rev = [self.datastore updateDocumentFromRevision:mdrev error:&error];
 
             //            NSLog(@"Updated %@", docId);
-            STAssertNil(error, @"Error updating doc: %@", error);
-            STAssertNotNil(rev, @"Error updating doc: rev was nil");
+            XCTAssertNil(error, @"Error updating doc: %@", error);
+            XCTAssertNotNil(rev, @"Error updating doc: rev was nil");
         }
 
 
@@ -99,14 +99,14 @@
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mdrev error:&error];
 
-    STAssertNil(error, @"Error creating docs: %@", error);
-    STAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
+    XCTAssertNil(error, @"Error creating docs: %@", error);
+    XCTAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
 
     // Create revisions of document in local store
     rev = [self addRevsToDocumentRevision:rev count:n_revs];
 
     NSString *revPrefix = [NSString stringWithFormat:@"%li", (long)n_revs];
-    STAssertTrue([rev.revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", rev.revId);
+    XCTAssertTrue([rev.revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", rev.revId);
 }
 
 -(CDTDocumentRevision*) addRevsToDocumentRevision:(CDTDocumentRevision*)rev count:(NSInteger)n_revs
@@ -150,7 +150,7 @@
                                                            error:nil]];
     }] asJson];
     //    NSLog(@"%@", response.body.array);
-    STAssertTrue([response.body.array count] == count, @"Remote db has wrong number of docs");
+    XCTAssertTrue([response.body.array count] == count, @"Remote db has wrong number of docs");
 }
 
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs
@@ -179,7 +179,7 @@
     }
 
     NSString *revPrefix = [NSString stringWithFormat:@"%li", (long)n_revs];
-    STAssertTrue([revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", revId);
+    XCTAssertTrue([revId hasPrefix:revPrefix], @"Unexpected current rev in local document, %@", revId);
 }
 
 -(NSString*) createRemoteDocWithId:(NSString *)docId body:(NSDictionary*)body
@@ -195,7 +195,7 @@
                                                          options:0
                                                            error:nil]];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
     return [response.body.object objectForKey:@"rev"];
 }
 
@@ -217,7 +217,7 @@
         NSDictionary* headers = @{@"accept": @"application/json", @"If-Match": revId};
         [request setHeaders:headers];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Delete document failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Delete document failed");
     return [response.body.object objectForKey:@"rev"];
 }
 
@@ -235,10 +235,10 @@
 -(void) assertRemoteDatabaseHasDocCount:(NSInteger)count deletedDocs:(NSInteger)deleted
 {
     NSDictionary *dbMeta = [self remoteDbMetadata];
-    STAssertEquals(count,
+    XCTAssertEqual(count,
                    [dbMeta[@"doc_count"] integerValue],
                    @"Wrong number of remote docs");
-    STAssertEquals(deleted,
+    XCTAssertEqual(deleted,
                    [dbMeta[@"doc_del_count"] integerValue],
                    @"Wrong number of remote deleted docs");
 }

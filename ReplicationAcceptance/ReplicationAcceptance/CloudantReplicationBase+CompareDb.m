@@ -10,7 +10,7 @@
 
 #import <CloudantSync.h>
 #import <CDTDatastore+Internal.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <UNIRest.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <NSData+Base64.h>
@@ -98,14 +98,14 @@
 
     // Check both databases have the same doc IDs
     if (![[localDocs allKeys] isEqualToArray:[remoteDocs allKeys]]) {
-        STFail(@"Local and remote docIds not equal");
+        XCTFail(@"Local and remote docIds not equal");
         return NO;
     }
 
     // Check each docId has the same rev
     for (NSString *docId in [localDocs allKeys]) {
         if (![localDocs[docId] isEqualToString:remoteDocs[docId]]) {
-            STFail(@"Local and remote revs don't match");
+            XCTFail(@"Local and remote revs don't match");
             return NO;
         }
     }
@@ -169,7 +169,7 @@
             localRevIds = [localRevIds subarrayWithRange:range];
 
             if (![localRevIds isEqualToArray:remoteRevIds]) {
-                STFail(@"Local and remote rev histories don't match");
+                XCTFail(@"Local and remote rev histories don't match");
                 return;
             }
         }
@@ -202,12 +202,12 @@
          
          NSDictionary *remoteAttachments = json[@"_attachments"];
          
-         STAssertEquals(localAttachments.count, 
+         XCTAssertEqual(localAttachments.count, 
                         remoteAttachments.count, 
                         @"Wrong attachment number");
          NSArray *remoteAttachmentNames = [remoteAttachments allKeys];
          for (NSString *name in [localAttachments allKeys]) {
-             STAssertTrue([remoteAttachmentNames containsObject:name], 
+             XCTAssertTrue([remoteAttachmentNames containsObject:name], 
                           @"local had attachment remote didn't");
          }
          
@@ -224,7 +224,7 @@
              NSData *remoteData = [NSData dataFromBase64String:rAttachment[@"data"]];
              NSString *remoteValue = [[NSString alloc] initWithData:remoteData
                                                            encoding:NSUTF8StringEncoding];
-             STAssertEqualObjects(localValue, remoteValue, @"Attachment data didn't match");
+             XCTAssertEqualObjects(localValue, remoteValue, @"Attachment data didn't match");
              
              // This doesn't work right now, the MD5s don't match
              // even though the data does.
