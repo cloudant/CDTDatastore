@@ -87,6 +87,7 @@ static NSString *const kCDTISRelationNameKey = @"name";
 static NSString *const kCDTISRelationReferenceKey = @"reference";
 static NSString *const kCDTISFloatImageKey = @"ieee754_single";
 static NSString *const kCDTISDoubleImageKey = @"ieee754_double";
+static NSString *const kCDTISDecimalImageKey = @"nsdecimal";
 static NSString *const kCDTISMetaDataKey = @"metaData";
 static NSString *const kCDTISRunKey = @"run";
 
@@ -513,13 +514,20 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         case NSDecimalAttributeType: {
             NSDecimalNumber *dec = obj;
             NSString *desc = [dec description];
-            return @{
-                name : desc,
-                MakeMeta(name) : @{
-                    kCDTISTypeStringKey : kCDTISDecimalAttributeType,
-                    kCDTISTypeCodeKey : @(type)
-                }
-            };
+            NSDecimal val = [dec decimalValue];
+            NSData *data = [NSData dataWithBytes:&val length:sizeof(val)];
+            NSString *b64 = [data base64EncodedStringWithOptions:0];
+            NSMutableDictionary *meta = [NSMutableDictionary dictionary];
+            meta[kCDTISTypeStringKey] = kCDTISDecimalAttributeType;
+            meta[kCDTISTypeCodeKey] = @(type);
+            meta[kCDTISDecimalImageKey] = b64;
+
+            if ([dec isEqual:[NSDecimalNumber notANumber]]) {
+                meta[kCDTISFPNaNKey] = @"true";
+                desc = @"0";
+            }
+
+            return @{name : desc, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
         }
         case NSDoubleAttributeType: {
             NSNumber *num = obj;
@@ -835,8 +843,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             obj = moid;
         } break;
         case NSDecimalAttributeType: {
-            NSString *str = prop;
-            obj = [NSDecimalNumber decimalNumberWithString:str];
+            NSString *b64 = meta[kCDTISDecimalImageKey];
+            NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:0];
+            NSDecimal val;
+            [data getBytes:&val length:sizeof(val)];
+            obj = [NSDecimalNumber decimalNumberWithDecimal:val];
         } break;
         case NSDoubleAttributeType: {
             // just get the image
