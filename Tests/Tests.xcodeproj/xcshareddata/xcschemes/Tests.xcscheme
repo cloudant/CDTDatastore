@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27389E0B185345FD0027A404"
-               BuildableName = "Tests.octest"
+               BuildableName = "Tests.xctest"
                BlueprintName = "Tests"
                ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
-               BuildableName = "Tests OSX.octest"
+               BuildableName = "Tests OSX.xctest"
                BlueprintName = "Tests OSX"
                ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
@@ -47,7 +47,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27389E0B185345FD0027A404"
-               BuildableName = "Tests.octest"
+               BuildableName = "Tests.xctest"
                BlueprintName = "Tests"
                ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
@@ -57,7 +57,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
-               BuildableName = "Tests OSX.octest"
+               BuildableName = "Tests OSX.xctest"
                BlueprintName = "Tests OSX"
                ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
@@ -73,6 +73,15 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "27389E0B185345FD0027A404"
+            BuildableName = "Tests.xctest"
+            BlueprintName = "Tests"
+            ReferencedContainer = "container:Tests.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OBJC_DISABLE_GC"

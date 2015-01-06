@@ -78,7 +78,7 @@
 
 /* Begin PBXFileReference section */
 		03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
-		27389E0C185345FD0027A404 /* Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		27389E0C185345FD0027A404 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27389E11185345FD0027A404 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		27389E13185345FD0027A404 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		27389E17185345FD0027A404 /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-Info.plist"; sourceTree = "<group>"; };
@@ -88,7 +88,7 @@
 		27389E2E18534E050027A404 /* CloudantSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantSyncTests.m; sourceTree = "<group>"; };
 		27389E3018534E050027A404 /* DatastoreActions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreActions.m; sourceTree = "<group>"; };
 		27651C6319001B54006FEF7F /* bonsai-boston.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "bonsai-boston.jpg"; path = "Assets/bonsai-boston.jpg"; sourceTree = "<group>"; };
-		27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CCEDCA187AD64F006F3C66 /* Tests OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests OSX-Info.plist"; sourceTree = "<group>"; };
 		27CCEDCC187AD64F006F3C66 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27CCEDCE187AD64F006F3C66 /* Tests_OSX.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests_OSX.m; sourceTree = "<group>"; };
@@ -172,8 +172,8 @@
 		27389E0D185345FD0027A404 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				27389E0C185345FD0027A404 /* Tests.octest */,
-				27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */,
+				27389E0C185345FD0027A404 /* Tests.xctest */,
+				27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -325,7 +325,7 @@
 			);
 			name = Tests;
 			productName = Tests;
-			productReference = 27389E0C185345FD0027A404 /* Tests.octest */;
+			productReference = 27389E0C185345FD0027A404 /* Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		27CCEDC5187AD64F006F3C66 /* Tests OSX */ = {
@@ -344,7 +344,7 @@
 			);
 			name = "Tests OSX";
 			productName = "Tests OSX";
-			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */;
+			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */

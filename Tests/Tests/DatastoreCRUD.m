@@ -263,7 +263,8 @@
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     
@@ -281,7 +282,8 @@
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -942,7 +944,8 @@
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
@@ -966,7 +969,8 @@
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 
 }
@@ -1051,7 +1055,8 @@
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     [queue inDatabase:^(FMDatabase *db) {
@@ -1105,7 +1110,8 @@
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
 
     }];
 
@@ -1174,7 +1180,8 @@
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
@@ -1192,7 +1199,8 @@
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
 

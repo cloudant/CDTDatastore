@@ -70,11 +70,11 @@
 		27A7E67D189973EE007FAF1C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27A7E67F189973EE007FAF1C /* ReplicationAcceptance.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ReplicationAcceptance.m; sourceTree = "<group>"; };
 		27A7E681189973EE007FAF1C /* ReplicationAcceptance-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ReplicationAcceptance-Prefix.pch"; sourceTree = "<group>"; };
-		27A7E68918997412007FAF1C /* RA_Tests_iOS.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RA_Tests_iOS.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		27A7E68918997412007FAF1C /* RA_Tests_iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RA_Tests_iOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27A7E68F18997412007FAF1C /* RA_Tests_iOS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "RA_Tests_iOS-Info.plist"; sourceTree = "<group>"; };
 		27A7E69118997412007FAF1C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27A7E69518997412007FAF1C /* RA_Tests_iOS-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RA_Tests_iOS-Prefix.pch"; sourceTree = "<group>"; };
-		27A7E69D1899741C007FAF1C /* RA_Tests_OSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RA_Tests_OSX.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		27A7E69D1899741C007FAF1C /* RA_Tests_OSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RA_Tests_OSX.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27A7E6A11899741C007FAF1C /* RA_Tests_OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "RA_Tests_OSX-Info.plist"; sourceTree = "<group>"; };
 		27A7E6A31899741C007FAF1C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27A7E6A71899741C007FAF1C /* RA_Tests_OSX-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RA_Tests_OSX-Prefix.pch"; sourceTree = "<group>"; };
@@ -181,8 +181,8 @@
 		27A7E671189973EE007FAF1C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				27A7E68918997412007FAF1C /* RA_Tests_iOS.octest */,
-				27A7E69D1899741C007FAF1C /* RA_Tests_OSX.octest */,
+				27A7E68918997412007FAF1C /* RA_Tests_iOS.xctest */,
+				27A7E69D1899741C007FAF1C /* RA_Tests_OSX.xctest */,
 				27ED107F192CF8DB00F75E95 /* ReplicationAcceptanceApp.app */,
 				27ED1096192CF8DB00F75E95 /* ReplicationAcceptanceAppTests.octest */,
 			);
@@ -329,7 +329,7 @@
 			);
 			name = RA_Tests_iOS;
 			productName = RA_Tests_iOS;
-			productReference = 27A7E68918997412007FAF1C /* RA_Tests_iOS.octest */;
+			productReference = 27A7E68918997412007FAF1C /* RA_Tests_iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		27A7E69C1899741C007FAF1C /* RA_Tests_OSX */ = {
@@ -348,7 +348,7 @@
 			);
 			name = RA_Tests_OSX;
 			productName = RA_Tests_OSX;
-			productReference = 27A7E69D1899741C007FAF1C /* RA_Tests_OSX.octest */;
+			productReference = 27A7E69D1899741C007FAF1C /* RA_Tests_OSX.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		27ED107E192CF8DB00F75E95 /* ReplicationAcceptanceApp */ = {

@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27A7E68818997412007FAF1C"
-               BuildableName = "RA_Tests_iOS.octest"
+               BuildableName = "RA_Tests_iOS.xctest"
                BlueprintName = "RA_Tests_iOS"
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.octest"
+               BuildableName = "RA_Tests_OSX.xctest"
                BlueprintName = "RA_Tests_OSX"
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
@@ -47,7 +47,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27A7E68818997412007FAF1C"
-               BuildableName = "RA_Tests_iOS.octest"
+               BuildableName = "RA_Tests_iOS.xctest"
                BlueprintName = "RA_Tests_iOS"
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
@@ -57,7 +57,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.octest"
+               BuildableName = "RA_Tests_OSX.xctest"
                BlueprintName = "RA_Tests_OSX"
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
@@ -77,7 +77,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "27A7E68818997412007FAF1C"
-            BuildableName = "RA_Tests_iOS.octest"
+            BuildableName = "RA_Tests_iOS.xctest"
             BlueprintName = "RA_Tests_iOS"
             ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
          </BuildableReference>

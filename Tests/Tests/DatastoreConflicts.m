@@ -354,7 +354,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     
@@ -438,7 +439,8 @@
                                hasRows:expectedRows
                                orderBy:orderby
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     
@@ -780,7 +782,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
 }
@@ -860,7 +863,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
     
     

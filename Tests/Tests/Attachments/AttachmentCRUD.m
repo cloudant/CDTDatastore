@@ -260,7 +260,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                                @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -322,7 +323,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -373,7 +375,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -475,7 +478,8 @@
                                hasRows:expectedRows
                                orderBy:orderBy
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -551,8 +555,9 @@
         XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
-                                 error:&validationError],
-                     [dc formattedErrors:validationError]);
+                                  error:&validationError],
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -671,7 +676,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -742,7 +748,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -856,7 +863,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -903,7 +911,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 
 }
@@ -958,7 +967,8 @@
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
         
         // Check the attachments table is empty
         expectedRows = @[
@@ -968,7 +978,8 @@
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                       @"%@",
+                       [dc formattedErrors:validationError]);
     }];
 }
 
