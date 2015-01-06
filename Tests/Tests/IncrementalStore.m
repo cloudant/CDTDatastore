@@ -614,6 +614,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     Entry *maxNums = MakeEntry(moc);
     ++entries;
+    maxNums.text = @"maximums";
     maxNums.check = @YES;
     maxNums.fpDecimal = [NSDecimalNumber maximumDecimalNumber];
     maxNums.fpDouble = @(DBL_MAX);
@@ -624,6 +625,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     Entry *minNums = MakeEntry(moc);
     ++entries;
+    minNums.text = @"minimums";
     minNums.check = @NO;
     minNums.fpDecimal = [NSDecimalNumber minimumDecimalNumber];
     minNums.fpDouble = @(DBL_MIN);
@@ -634,18 +636,24 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     Entry *infNums = MakeEntry(moc);
     ++entries;
+    infNums.text = @"INFINITY";
     infNums.fpDouble = @(INFINITY);
     infNums.fpFloat = @(INFINITY);
+    infNums.fpDecimal = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:INFINITY];
 
     Entry *ninfNums = MakeEntry(moc);
     ++entries;
+    ninfNums.text = @"-INFINITY";
     ninfNums.fpFloat = @(-INFINITY);
     ninfNums.fpDouble = @(-INFINITY);
+    ninfNums.fpDecimal = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:-INFINITY];
 
     Entry *nanNums = MakeEntry(moc);
     ++entries;
+    nanNums.text = @"NaN";
     nanNums.fpDouble = @(NAN);
     nanNums.fpFloat = @(NAN);
+    nanNums.fpDecimal = [NSDecimalNumber notANumber];
 
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
@@ -658,13 +666,26 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     XCTAssertTrue([maxNums.fpDouble isEqualToNumber:@(DBL_MAX)], @"Failed to retain double max");
     XCTAssertTrue([minNums.fpDouble isEqualToNumber:@(DBL_MIN)], @"Failed to retain double min");
 
+    XCTAssertTrue([maxNums.fpFloat isEqualToNumber:@(FLT_MAX)], @"Failed to retain float max");
+    XCTAssertTrue([minNums.fpFloat isEqualToNumber:@(FLT_MIN)], @"Failed to retain float min");
+
+    XCTAssertTrue([maxNums.fpDecimal isEqual:[NSDecimalNumber maximumDecimalNumber]],
+                  @"Failed to retain decimal max");
+    XCTAssertTrue([minNums.fpDecimal isEqual:[NSDecimalNumber minimumDecimalNumber]],
+                  @"Failed to retain decimal min");
+
     XCTAssertTrue([infNums.fpDouble isEqualToNumber:@(INFINITY)],
                   @"Failed to retain double infinity");
     XCTAssertTrue([infNums.fpFloat isEqualToNumber:@(INFINITY)],
                   @"Failed to retain float infinity");
+    XCTAssertTrue(
+        [infNums.fpDecimal isEqual:(NSDecimalNumber *)[NSDecimalNumber numberWithDouble:INFINITY]],
+        @"Failed to retain decimal infinity");
 
-    XCTAssertTrue([nanNums.fpDouble isEqualToNumber:@(NAN)], @"Failed to retain double min");
-    XCTAssertTrue([nanNums.fpFloat isEqualToNumber:@(NAN)], @"Failed to retain float min");
+    XCTAssertTrue([nanNums.fpDouble isEqualToNumber:@(NAN)], @"Failed to retain double NaN");
+    XCTAssertTrue([nanNums.fpFloat isEqualToNumber:@(NAN)], @"Failed to retain float NaN");
+    XCTAssertTrue([nanNums.fpDecimal isEqual:[NSDecimalNumber notANumber]],
+                  @"Failed to retain decimal NaN");
 
     NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
     NSUInteger count = [moc countForFetchRequest:fr error:&err];
