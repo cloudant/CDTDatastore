@@ -13,7 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import "CloudantSyncTests.h"
 
@@ -39,7 +39,7 @@
  */
 - (void)testSetupAndTeardownDatastoreFactory
 {
-    STAssertNotNil(self.factory, @"Factory is nil");
+    XCTAssertNotNil(self.factory, @"Factory is nil");
 }
 
 /**
@@ -51,7 +51,7 @@
 {
     NSError *error;
     CDTDatastore *datastore = [self.factory datastoreNamed:@"test" error:&error];
-    STAssertNotNil(datastore, @"datastore is nil");
+    XCTAssertNotNil(datastore, @"datastore is nil");
 }
 
 /**
@@ -62,8 +62,8 @@
     NSError *error;
     CDTDatastore *datastore1 = [self.factory datastoreNamed:@"test" error:&error];
     CDTDatastore *datastore2 = [self.factory datastoreNamed:@"test2" error:&error];
-    STAssertNotNil(datastore1, @"datastore1 is nil");
-    STAssertNotNil(datastore2, @"datastore2 is nil");
+    XCTAssertNotNil(datastore1, @"datastore1 is nil");
+    XCTAssertNotNil(datastore2, @"datastore2 is nil");
 }
 
 /**
@@ -73,8 +73,8 @@
 {
     NSError *error;
     CDTDatastore *datastore = [self.factory datastoreNamed:@"_test" error:&error];
-    STAssertNil(datastore, @"datastore is not nil");
-    STAssertNotNil(error, @"error is nil");
+    XCTAssertNil(datastore, @"datastore is not nil");
+    XCTAssertNotNil(error, @"error is nil");
 }
 
 /**
@@ -88,7 +88,7 @@
     
     // setup datastore and indexmanager
     CDTDatastore *datastore = [self.factory datastoreNamed:dbName error:&error];
-    STAssertNil(datastore, @"datastore is not nil");
+    XCTAssertNil(datastore, @"datastore is not nil");
 }
 
 /**
@@ -112,17 +112,17 @@
     NSString *dir = [[[datastore database] path] stringByDeletingLastPathComponent];
     
     // check various files/dirs exist
-    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file does not exist");
-    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir does not exist");
-    STAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir does not exist");
+    XCTAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file does not exist");
+    XCTAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir does not exist");
+    XCTAssertTrue([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir does not exist");
     
     // delete datastore
-    STAssertTrue([self.factory deleteDatastoreNamed:dbName error:&error], @"deleteDatastoreNamed did not return true");
+    XCTAssertTrue([self.factory deleteDatastoreNamed:dbName error:&error], @"deleteDatastoreNamed did not return true");
 
     // check various files/dirs have been deleted
-    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file was not deleted");
-    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir was not deleted");
-    STAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir was not deleted");
+    XCTAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameFull]], @"db file was not deleted");
+    XCTAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameExtensions]], @"extensions dir was not deleted");
+    XCTAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir was not deleted");
 }
 
 @end

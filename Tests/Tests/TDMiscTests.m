@@ -27,17 +27,17 @@
 
 - (void)quoteStringTest:(NSString *)str1 str2:(NSString *)str2
 {
-    STAssertEqualObjects(TDQuoteString(str1), str2, @"TDQuoteString test failed for str1:%@ and str2:%@ in %s", str1, str2, __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(TDQuoteString(str1), str2, @"TDQuoteString test failed for str1:%@ and str2:%@ in %s", str1, str2, __PRETTY_FUNCTION__);
 }
 
 - (void)unquoteStringTest:(NSString *)str1 str2:(NSString *)str2
 {
-    STAssertEqualObjects(TDUnquoteString(str1), str2, @"TDUnquoteString test failed for str1:%@ and str2:%@ in %s", str1, str2,__PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(TDUnquoteString(str1), str2, @"TDUnquoteString test failed for str1:%@ and str2:%@ in %s", str1, str2,__PRETTY_FUNCTION__);
 }
 
 - (void)escapeIDTest:(NSString *)str1 str2:(NSString *)str2
 {
-    STAssertEqualObjects(TDEscapeID(str1), str2, @"TDEscapeID test failed for str1:%@ and str2:%@ in %s", str1, str2, __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(TDEscapeID(str1), str2, @"TDEscapeID test failed for str1:%@ and str2:%@ in %s", str1, str2, __PRETTY_FUNCTION__);
 }
 
 

@@ -30,7 +30,7 @@
 {
     int gen;
     NSString* suffix;
-    STAssertFalse([TD_Revision parseRevID: aRev intoGeneration: &gen andSuffix: &suffix],
+    XCTAssertFalse([TD_Revision parseRevID: aRev intoGeneration: &gen andSuffix: &suffix],
                   @"parsing rev: %@ did not fail in %s", aRev, __PRETTY_FUNCTION__);
 }
 
@@ -39,11 +39,11 @@
     int localgen;
     NSString* localsuffix;
 
-    STAssertTrue([TD_Revision parseRevID: aRev intoGeneration: &localgen andSuffix: &localsuffix],
+    XCTAssertTrue([TD_Revision parseRevID: aRev intoGeneration: &localgen andSuffix: &localsuffix],
                  @"%@ did not fail in %s", aRev, __PRETTY_FUNCTION__);
     
-    STAssertEquals(gen, localgen, @"generation number is not 1 in %s", __PRETTY_FUNCTION__);
-    STAssertEqualObjects(suffix, localsuffix,
+    XCTAssertEqual(gen, localgen, @"generation number is not 1 in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(suffix, localsuffix,
                          @"Revision suffix is not \"%@\" in %s", suffix, __PRETTY_FUNCTION__);
     
 }
@@ -69,7 +69,7 @@
 
 - (void)runCollateRevEqualsTest:(const char*)rev1 rev2:(const char*)rev2 val:(int)val
 {
-    STAssertEquals(TDCollateRevIDs(NULL, (int)strlen(rev1), rev1, (int)strlen(rev2), rev2),
+    XCTAssertEqual(TDCollateRevIDs(NULL, (int)strlen(rev1), rev1, (int)strlen(rev2), rev2),
                    val,
                    @"TDCollateRevIDs rev1:%s, rev2:%2 does not return %d in %s", rev1, rev2, val, __PRETTY_FUNCTION__);
 }

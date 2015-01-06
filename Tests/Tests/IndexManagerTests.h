@@ -6,7 +6,7 @@
 //
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import "CloudantSyncTests.h"
 #import "CDTIndexer.h"
 

@@ -68,16 +68,16 @@
 {
     //NSLog(@"TDMultpartReader_Types");
     TDMultipartReader* reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY\"" delegate: nil];
-    STAssertEqualObjects(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding], @"Quotation escaped Boundary objects not equal in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding], @"Quotation escaped Boundary objects not equal in %s", __PRETTY_FUNCTION__);
     
     reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=BOUNDARY" delegate: nil];
-    STAssertEqualObjects(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding], @"No quotation Boundary objects not equal in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(reader.boundary, [@"\r\n--BOUNDARY" dataUsingEncoding: NSUTF8StringEncoding], @"No quotation Boundary objects not equal in %s", __PRETTY_FUNCTION__);
     
     reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY" delegate: nil];
-    STAssertNil(reader, @"TDMultipartReader not nil with improper initialization in %s", __PRETTY_FUNCTION__);
+    XCTAssertNil(reader, @"TDMultipartReader not nil with improper initialization in %s", __PRETTY_FUNCTION__);
     
     reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related;boundary=X" delegate: nil];
-    STAssertEqualObjects(reader.boundary, [@"\r\n--X" dataUsingEncoding: NSUTF8StringEncoding], @"No quotation Arbitrary objects not equal in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(reader.boundary, [@"\r\n--X" dataUsingEncoding: NSUTF8StringEncoding], @"No quotation Arbitrary objects not equal in %s", __PRETTY_FUNCTION__);
     
 }
 
@@ -96,18 +96,18 @@
 //        NSLog(@"--- chunkSize = %u", (unsigned)chunkSize);
         MyMultipartReaderDelegate* delegate = [[MyMultipartReaderDelegate alloc] init];
         TDMultipartReader* reader = [[TDMultipartReader alloc] initWithContentType: @"multipart/related; boundary=\"BOUNDARY\"" delegate: delegate];
-        STAssertFalse(reader.finished, @"Premature finished reading data in %s", __PRETTY_FUNCTION__);
+        XCTAssertFalse(reader.finished, @"Premature finished reading data in %s", __PRETTY_FUNCTION__);
         
         NSRange r = {0, 0};
         do {
-            STAssertTrue(r.location < mime.length, @"Parser didn't stop at end in %s", __PRETTY_FUNCTION__ );
+            XCTAssertTrue(r.location < mime.length, @"Parser didn't stop at end in %s", __PRETTY_FUNCTION__ );
             r.length = MIN(chunkSize, mime.length - r.location);
             [reader appendData: [mime subdataWithRange: r]];
-            STAssertTrue(!reader.error, @"Reader got a parse error: %@ in %s", reader.error, __PRETTY_FUNCTION__ );
+            XCTAssertTrue(!reader.error, @"Reader got a parse error: %@ in %s", reader.error, __PRETTY_FUNCTION__ );
             r.location += chunkSize;
         } while (!reader.finished);
-        STAssertEqualObjects(delegate.partList, expectedParts, @"Unexpected part in Delegate in %s",  __PRETTY_FUNCTION__ );
-        STAssertEqualObjects(delegate.headerList, expectedHeaders, @"Unexpected Headers in Delegate in %s", __PRETTY_FUNCTION__ );
+        XCTAssertEqualObjects(delegate.partList, expectedParts, @"Unexpected part in Delegate in %s",  __PRETTY_FUNCTION__ );
+        XCTAssertEqualObjects(delegate.headerList, expectedHeaders, @"Unexpected Headers in Delegate in %s", __PRETTY_FUNCTION__ );
     }
 
 }

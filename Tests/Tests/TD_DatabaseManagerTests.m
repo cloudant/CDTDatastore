@@ -34,20 +34,20 @@
     TD_DatabaseManager* dbm = [TD_DatabaseManager createEmptyAtTemporaryPath: @"TD_DatabaseManagerTest"];
     TD_Database* db = [dbm databaseNamed: @"foo"];
     
-    STAssertNotNil(db, @"TD_Database is nil in %s", __PRETTY_FUNCTION__);
-    STAssertEqualObjects(db.name, @"foo", @"TD_Database.name is not \"foo\" in %s", __PRETTY_FUNCTION__);
-    STAssertEqualObjects(db.path.stringByDeletingLastPathComponent, dbm.directory, @"TD_Database path is not equal to path supplied by TD_DatabaseManager in %s", __PRETTY_FUNCTION__);
+    XCTAssertNotNil(db, @"TD_Database is nil in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(db.name, @"foo", @"TD_Database.name is not \"foo\" in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(db.path.stringByDeletingLastPathComponent, dbm.directory, @"TD_Database path is not equal to path supplied by TD_DatabaseManager in %s", __PRETTY_FUNCTION__);
     
-    STAssertTrue(!db.exists, @"TD_Database already exists in %s", __PRETTY_FUNCTION__);
+    XCTAssertTrue(!db.exists, @"TD_Database already exists in %s", __PRETTY_FUNCTION__);
     
-    STAssertEquals([dbm databaseNamed: @"foo"], db, @"TD_DatabaseManager is not aware of a database named \"foo\" in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqual([dbm databaseNamed: @"foo"], db, @"TD_DatabaseManager is not aware of a database named \"foo\" in %s", __PRETTY_FUNCTION__);
     
-    STAssertEqualObjects(dbm.allDatabaseNames, @[], @"TD_DatabaseManager reports some database already exists in %s", __PRETTY_FUNCTION__);    // because foo doesn't exist yet
+    XCTAssertEqualObjects(dbm.allDatabaseNames, @[], @"TD_DatabaseManager reports some database already exists in %s", __PRETTY_FUNCTION__);    // because foo doesn't exist yet
     
-    STAssertTrue([db open], @"TD_Database.open returned NO in %s", __PRETTY_FUNCTION__);
-    STAssertTrue(db.exists, @"TD_Database does not exist in %s", __PRETTY_FUNCTION__);
+    XCTAssertTrue([db open], @"TD_Database.open returned NO in %s", __PRETTY_FUNCTION__);
+    XCTAssertTrue(db.exists, @"TD_Database does not exist in %s", __PRETTY_FUNCTION__);
     
-    STAssertEqualObjects(dbm.allDatabaseNames, @[@"foo"], @"TD_DatabaseManager reports some database other than \"foo\" in %s", __PRETTY_FUNCTION__);  // because foo should now exist and be the only database here
+    XCTAssertEqualObjects(dbm.allDatabaseNames, @[@"foo"], @"TD_DatabaseManager reports some database other than \"foo\" in %s", __PRETTY_FUNCTION__);  // because foo should now exist and be the only database here
 }
 
 

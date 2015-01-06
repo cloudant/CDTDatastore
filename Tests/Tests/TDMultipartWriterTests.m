@@ -34,16 +34,16 @@
         TDMultipartWriter* mp = [[TDMultipartWriter alloc] initWithContentType: @"foo/bar"
                                                                       boundary: @"BOUNDARY"];
         
-        STAssertEqualObjects(mp.contentType, @"foo/bar; boundary=\"BOUNDARY\"", @"ContentType not equal in %s", __PRETTY_FUNCTION__);
-        STAssertEqualObjects(mp.boundary, @"BOUNDARY", @"Boundary not equal in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqualObjects(mp.contentType, @"foo/bar; boundary=\"BOUNDARY\"", @"ContentType not equal in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqualObjects(mp.boundary, @"BOUNDARY", @"Boundary not equal in %s", __PRETTY_FUNCTION__);
         
         [mp addData: [@"<part the first>" dataUsingEncoding: NSUTF8StringEncoding]];
         [mp setNextPartsHeaders: $dict({@"Content-Type", @"something"})];
         [mp addData: [@"<2nd part>" dataUsingEncoding: NSUTF8StringEncoding]];
 
-        STAssertEquals((NSUInteger)mp.length, expectedOutput.length, @"Unexpected Writer output length in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqual((NSUInteger)mp.length, expectedOutput.length, @"Unexpected Writer output length in %s", __PRETTY_FUNCTION__);
         
-        STAssertEqualObjects([[mp allOutput] my_UTF8ToString], expectedOutput, @"Unexpected Writer output content in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqualObjects([[mp allOutput] my_UTF8ToString], expectedOutput, @"Unexpected Writer output content in %s", __PRETTY_FUNCTION__);
         [mp close];
     }
 

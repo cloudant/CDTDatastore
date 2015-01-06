@@ -31,9 +31,9 @@
 //    NSLog(@"%@ --> `%@`", [obj description], [json my_UTF8ToString]);
     NSError* error;
     id reconstituted = [NSJSONSerialization JSONObjectWithData: json options:NSJSONReadingAllowFragments error: &error];
-    STAssertNotNil(reconstituted, @"Canonical JSON `%@` was unparseable: %@",
+    XCTAssertNotNil(reconstituted, @"Canonical JSON `%@` was unparseable: %@",
             [json my_UTF8ToString], error);
-    STAssertEqualObjects(reconstituted, obj, @"Canonical JSON object and reconstructed objec were not equal in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(reconstituted, obj, @"Canonical JSON object and reconstructed objec were not equal in %s", __PRETTY_FUNCTION__);
 }
 
 - (void)roundtripFloat:(double) n
@@ -41,19 +41,19 @@
     NSData* json = [TDCanonicalJSON canonicalData: @(n)];
     NSError* error;
     id reconstituted = [NSJSONSerialization JSONObjectWithData: json options:NSJSONReadingAllowFragments error: &error];
-    STAssertNotNil(reconstituted, @"`%@` was unparseable: %@",
+    XCTAssertNotNil(reconstituted, @"`%@` was unparseable: %@",
             [json my_UTF8ToString], error);
     double delta = [reconstituted doubleValue] / n - 1.0;
 //    NSLog(@"%g --> `%@` (error = %g)", n, [json my_UTF8ToString], delta);
-    STAssertTrue(fabs(delta) < 1.0e-15, @"`%@` had floating point roundoff error of %g (%g vs %g)",
+    XCTAssertTrue(fabs(delta) < 1.0e-15, @"`%@` had floating point roundoff error of %g (%g vs %g)",
             [json my_UTF8ToString], delta, [reconstituted doubleValue], n);
 }
 
 - (void)testEncoding
 {
-    STAssertEqualObjects([TDCanonicalJSON canonicalString: $true], @"true", @"Canonical JSON $true is not \"true\" in %s", __PRETTY_FUNCTION__);
-    STAssertEqualObjects([TDCanonicalJSON canonicalString: $false], @"false", @"Canonical JSON $false is not \"false\" in %s", __PRETTY_FUNCTION__);
-    STAssertEqualObjects([TDCanonicalJSON canonicalString: $null], @"null", @"Canonical JSON $null is not \"null\" in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects([TDCanonicalJSON canonicalString: $true], @"true", @"Canonical JSON $true is not \"true\" in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects([TDCanonicalJSON canonicalString: $false], @"false", @"Canonical JSON $false is not \"false\" in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects([TDCanonicalJSON canonicalString: $null], @"null", @"Canonical JSON $null is not \"null\" in %s", __PRETTY_FUNCTION__);
 }
 
 - (void)testReconstruction

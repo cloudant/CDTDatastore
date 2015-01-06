@@ -13,7 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <Foundation/Foundation.h>
 #import <MRDatabaseContentChecker.h>
 
@@ -54,7 +54,7 @@
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
     self.dbutil =[[DBQueryUtils alloc] initWithDbPath:[self pathForDBName:self.datastore.name]];
     
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 }
 
 - (void)tearDown
@@ -94,20 +94,20 @@
     NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
     
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
 
-    STAssertEqualObjects(body, rev.body, @"Body was different");
-    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqualObjects(body, rev.body, @"Body was different");
+    XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
     
 }
 
@@ -126,20 +126,20 @@
                             };
 
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
     
-    STAssertEqualObjects(@{}, rev.body, @"Body should be empty");
-    STAssertTrue(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqualObjects(@{}, rev.body, @"Body should be empty");
+    XCTAssertTrue(rev.deleted, @"Document is not marked as deleted");
 }
 
 -(void)testDocumentRevisionValidDataDeletedDocWithoutBody{
@@ -150,20 +150,20 @@
                             };
     
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e", rev.revId, @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",rev.revId);
     
-    STAssertEqualObjects([NSDictionary dictionary], rev.body, @"Body should be empty");
-    STAssertTrue(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqualObjects([NSDictionary dictionary], rev.body, @"Body should be empty");
+    XCTAssertTrue(rev.deleted, @"Document is not marked as deleted");
 }
 
 -(void) testDocumentRevisionInvalidData{
@@ -175,15 +175,15 @@
                             @"_invalidKey":@"someValue"
                             };
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNotNil(error, @"Error did not occur whencreating document with invalid data");
-    STAssertNil(rev, @"Revision was not nil");
+    XCTAssertNotNil(error, @"Error did not occur whencreating document with invalid data");
+    XCTAssertNil(rev, @"Revision was not nil");
 
 }
 
@@ -203,26 +203,26 @@
                             };
     NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere",
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere",
                          rev.docId,
                          @"docId was different, expected someIdHere actual %@",
                          rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
                          rev.revId,
                          @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
                          rev.revId);
     
-    STAssertEqualObjects(body, rev.body, @"Body was different");
-    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqualObjects(body, rev.body, @"Body was different");
+    XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
     
 }
 
@@ -242,8 +242,8 @@
     doc.docId = testDocId;
     doc.body = [@{key:value} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @1};
     
@@ -259,7 +259,7 @@
                                   @[testDocId]
                                   ];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -277,7 +277,7 @@
             @[@(1),      @1,          revId,    @YES,       @NO,        json]
         ];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -299,9 +299,9 @@
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNotNil(error, @"No Error creating document!");
-    STAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
-    STAssertNil(ob, @"CDTDocumentRevision object was not nil");
+    XCTAssertNotNil(error, @"No Error creating document!");
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertNil(ob, @"CDTDocumentRevision object was not nil");
     
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
 
@@ -318,8 +318,8 @@
     rev.body = [@{key:value,@"_id":testDocId} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNotNil(error, @"Error creating document");
-    STAssertNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNotNil(error, @"Error creating document");
+    XCTAssertNil(ob, @"CDTDocumentRevision object was nil");
 }
 
 -(void)testCannotCreateNewDocWithoutUniqueID
@@ -333,17 +333,17 @@
     doc.docId = testDocId;
     doc.body = [@{key:value} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     error = nil;
     doc = [CDTMutableDocumentRevision revision];
     doc.docId = testDocId;
     doc.body = [@{key:value} mutableCopy];
     ob = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNotNil(error, @"Error was nil when creating second doc with same doc_id");
-    STAssertTrue(error.code == 409, @"Error was not a 409. Found %ld", error.code);
-    STAssertNil(ob, @"CDTDocumentRevision object was not nil when creating second doc with same doc_id");
+    XCTAssertNotNil(error, @"Error was nil when creating second doc with same doc_id");
+    XCTAssertTrue(error.code == 409, @"Error was not a 409. Found %ld", error.code);
+    XCTAssertNil(ob, @"CDTDocumentRevision object was not nil when creating second doc with same doc_id");
 }
 
 -(void)testAddDocument
@@ -353,8 +353,8 @@
     doc.body = [@{@"hello": @"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
 }
 
 -(void)testCreateDocumentWithId
@@ -366,21 +366,21 @@
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
-    STAssertEqualObjects(@"document_id_for_test", ob.docId, @"Document ID was not as set in test");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertEqualObjects(@"document_id_for_test", ob.docId, @"Document ID was not as set in test");
     
     error = nil;
     NSString *docId = ob.docId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId error:&error];
     
-    STAssertNil(error, @"Error retrieving document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertNil(error, @"Error retrieving document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
     const NSUInteger expected_count = 1;
-    STAssertEquals(ob.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
+    XCTAssertEqual(ob.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
 }
 
 -(void)testCannotCreateConflict
@@ -391,8 +391,8 @@
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
     doc.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     error = nil;
     NSString *key2 = @"hi";
@@ -402,8 +402,8 @@
     doc.body = [@{key2:value2} mutableCopy];
     
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:doc error:&error];
-    STAssertNil(error, @"Error updating document");
-    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error updating document");
+    XCTAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     //now create a conflict
     error = nil;
@@ -414,8 +414,8 @@
     doc.body = [@{key3:value3} mutableCopy];
     
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:doc error:&error];
-    STAssertTrue(error.code == 409, @"Incorrect error code: %@", error);
-    STAssertNil(ob3, @"CDTDocumentRevision object was not nil");
+    XCTAssertTrue(error.code == 409, @"Incorrect error code: %@", error);
+    XCTAssertNil(ob3, @"CDTDocumentRevision object was not nil");
     
 }
 
@@ -426,7 +426,7 @@
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
     doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertTrue(saved, @"Failed to save new document");
+    XCTAssertTrue(saved, @"Failed to save new document");
     
 }
 
@@ -435,7 +435,7 @@
     NSError *error;
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNil(saved, @"Document was created without a body");
+    XCTAssertNil(saved, @"Document was created without a body");
 }
 
 -(void)testCreateWithaDocumentIdNoBodyCDTMutableDocumentRevision{
@@ -443,7 +443,7 @@
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
     doc.docId = @"doc1";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertNil(saved, @"Document with Id but no body created");
+    XCTAssertNil(saved, @"Document with Id but no body created");
 }
 
 -(void)testCreateWithOnlyBodyCDTMutableDocumentRevision{
@@ -451,7 +451,7 @@
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
     doc.body = [@{@"DocumentBodyItem1":@"Hi",@"Hello":@"World"} mutableCopy];
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
-    STAssertTrue(saved, @"Document was not created");
+    XCTAssertTrue(saved, @"Document was not created");
 }
 
 #pragma mark - READ tests
@@ -465,20 +465,20 @@
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     error = nil;
     NSString *docId = ob.docId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId error:&error];
     
-    STAssertNil(error, @"Error retrieving document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertNil(error, @"Error retrieving document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
     const NSUInteger expected_count = 1;
-    STAssertEquals(ob.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
+    XCTAssertEqual(ob.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
 }
 
 -(void)testGetDocumentWithIdAndRev
@@ -489,20 +489,20 @@
     rev.body = [@{@"hello":@"world"} mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
+    XCTAssertNil(error, @"Error creating document");
     
     error = nil;
     NSString *docId = ob.docId;
     NSString *revId = ob.revId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId rev:revId error:&error];
-    STAssertNil(error, @"Error retrieving document");
+    XCTAssertNil(error, @"Error retrieving document");
     
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
     const NSUInteger expected_count = 1;
-    STAssertEquals(ob.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
+    XCTAssertEqual(ob.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(ob.body[@"hello"], @"world", @"Object from database has wrong data");
 }
 
 -(void)testGetDocumentsWithIds
@@ -515,7 +515,7 @@
         CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
         rev.body = [@{@"hello":@"world",@"index":[NSNumber numberWithInt:i]} mutableCopy];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Error creating document");
+        XCTAssertNil(error, @"Error creating document");
         
         NSString *docId = ob.docId;
         [docIds addObject:docId];
@@ -523,19 +523,19 @@
     
     NSArray *retrivedDocIds = @[docIds[5], docIds[7], docIds[12], docIds[170]];
     NSArray *obs = [self.datastore getDocumentsWithIds:retrivedDocIds];
-    STAssertNotNil(obs, @"Error getting documents");
+    XCTAssertNotNil(obs, @"Error getting documents");
     
     int ob_index = 0;
     for (NSNumber *index in @[@5, @7, @12, @170]) {
         NSString *docId = [docIds objectAtIndex:[index intValue]];
         CDTDocumentRevision *retrieved = [obs objectAtIndex:ob_index];
         
-        STAssertNotNil(retrieved, @"retrieved object was nil");
-        STAssertEqualObjects(retrieved.docId, docId, @"Object retrieved from database has wrong docid");
+        XCTAssertNotNil(retrieved, @"retrieved object was nil");
+        XCTAssertEqualObjects(retrieved.docId, docId, @"Object retrieved from database has wrong docid");
         const NSUInteger expected_count = 2;
-        STAssertEquals(retrieved.body.count, expected_count, @"Object from database has != 2 keys");
-        STAssertEqualObjects(retrieved.body[@"hello"], @"world", @"Object from database has wrong data");
-        STAssertEqualObjects(retrieved.body[@"index"], index, @"Object from database has wrong data");
+        XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 2 keys");
+        XCTAssertEqualObjects(retrieved.body[@"hello"], @"world", @"Object from database has wrong data");
+        XCTAssertEqualObjects(retrieved.body[@"index"], index, @"Object from database has wrong data");
         
         ob_index++;
     }
@@ -548,15 +548,15 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = [@{@"hello":@"world"}mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
+    XCTAssertNil(error, @"Error creating document");
     
     error = nil;
     NSString *docId = @"i_do_not_exist";
     NSString *revId = ob.revId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId rev:revId error:&error];
-    STAssertNotNil(error, @"Error should not be nil.");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(retrieved, @"retrieved object was nil");
+    XCTAssertNotNil(error, @"Error should not be nil.");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(retrieved, @"retrieved object was nil");
     
 }
 
@@ -591,20 +591,20 @@
         error = nil;
         if([lastDocForId[randomId][@"numUpdates"] intValue] == 0) {
             cdt_rev = [self.datastore createDocumentFromRevision:rev error:&error];
-            STAssertNil(error, @"Error creating document. %@", error);
-            STAssertNotNil(cdt_rev, @"CDTDocumentRevision was nil");
+            XCTAssertNil(error, @"Error creating document. %@", error);
+            XCTAssertNotNil(cdt_rev, @"CDTDocumentRevision was nil");
         }
         else{
             cdt_rev = [self.datastore getDocumentWithId:randomId
                                                   error:&error];
             CDTMutableDocumentRevision *update = [cdt_rev mutableCopy];
             update.body = rev.body;
-            STAssertNil(error, @"Error getting document");
-            STAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
+            XCTAssertNil(error, @"Error getting document");
+            XCTAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
             error = nil;
             cdt_rev = [self.datastore updateDocumentFromRevision:update error:&error];
-            STAssertNil(error, @"Error updating document");
-            STAssertNotNil(cdt_rev, @"updated CDTDocumentRevision was nil");
+            XCTAssertNil(error, @"Error updating document");
+            XCTAssertNotNil(cdt_rev, @"updated CDTDocumentRevision was nil");
         }
         
         //update our dictionary that is recording the last "event" for each doc id
@@ -613,7 +613,7 @@
         lastDocForId[randomId][@"lastrev"] =  cdt_rev.revId;
         lastDocForId[randomId][@"json"] = dict;
         
-        STAssertTrue([lastDocForId[randomId][@"numUpdates"] unsignedIntegerValue] == [TD_Revision generationFromRevID:cdt_rev.revId],
+        XCTAssertTrue([lastDocForId[randomId][@"numUpdates"] unsignedIntegerValue] == [TD_Revision generationFromRevID:cdt_rev.revId],
                        @"rev prefix value does not equal expected number of updates");
     }
     
@@ -623,7 +623,7 @@
     //now compact and check that all old revs obtained via CDTDatastore contain empty JSON.
     //note: I have to #import "TD_Database+Insertion.h" in order to compact.
     TDStatus statusResults = [self.datastore.database compact];
-    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200,
+    XCTAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200,
                  @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
     
     //number of table rows shouldn't have changed by compaction as all tombstones should be present
@@ -637,11 +637,11 @@
         NSUInteger numUpdates = [lastDocForId[aDocId][@"numUpdates"] unsignedIntegerValue];
         if(numUpdates > 0){
             cdt_rev = [self.datastore getDocumentWithId:aDocId error:&error];
-            STAssertNil(error, @"Error getting document");
-            STAssertNotNil(cdt_rev, @"retrieved object was nil");
-            STAssertEqualObjects(lastRev, cdt_rev.revId, @"Object retrieved from database has wrong revid");
-            STAssertEqualObjects(cdt_rev.body, lastRecordedJsonDoc, @"Object from database has wrong data");
-            STAssertTrue(numUpdates == [TD_Revision generationFromRevID:cdt_rev.revId], @"rev prefix value does not equal expected number of updates");
+            XCTAssertNil(error, @"Error getting document");
+            XCTAssertNotNil(cdt_rev, @"retrieved object was nil");
+            XCTAssertEqualObjects(lastRev, cdt_rev.revId, @"Object retrieved from database has wrong revid");
+            XCTAssertEqualObjects(cdt_rev.body, lastRecordedJsonDoc, @"Object from database has wrong data");
+            XCTAssertTrue(numUpdates == [TD_Revision generationFromRevID:cdt_rev.revId], @"rev prefix value does not equal expected number of updates");
         }
     }
     
@@ -656,23 +656,23 @@
             bool foundJSON = NO;
             
             while([result next]){
-                STAssertEqualObjects([result stringForColumn:@"docid"], aDocId,
+                XCTAssertEqualObjects([result stringForColumn:@"docid"], aDocId,
                                      @"Document ID mismatch: %@", [result stringForColumn:@"docid"]);
                 
                 NSString *revid = [result stringForColumn:@"revid"];
-                STAssertTrue([TD_Revision generationFromRevID:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
+                XCTAssertTrue([TD_Revision generationFromRevID:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
                 revPrefix = [TD_Revision generationFromRevID:revid];
                 
-                STAssertFalse([result boolForColumn:@"deleted"], @"deleted? %@", [result stringForColumn:@"deleted"]);
+                XCTAssertFalse([result boolForColumn:@"deleted"], @"deleted? %@", [result stringForColumn:@"deleted"]);
                 
                 //this should be the first row in the result
                 if(docNum == -1){
                     docNum = [result intForColumn:@"docnum"]; //make sure docNum is always the same
-                    STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"parent: %@", [result objectForColumnName:@"parent"]);
+                    XCTAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"parent: %@", [result objectForColumnName:@"parent"]);
                 }
                 else{
-                    STAssertTrue([result intForColumn:@"docnum"] == docNum, @"%@", [result stringForColumn:@"docnum"]);
-                    STAssertTrue([result intForColumn:@"docnum"] <= ids.count, @"%@", [result stringForColumn:@"docnum"]);
+                    XCTAssertTrue([result intForColumn:@"docnum"] == docNum, @"%@", [result stringForColumn:@"docnum"]);
+                    XCTAssertTrue([result intForColumn:@"docnum"] <= ids.count, @"%@", [result stringForColumn:@"docnum"]);
                 }
                 
                 //only the last rev should have valid JSON data
@@ -682,20 +682,20 @@
                     NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                                options: TDJSONReadingMutableContainers
                                                                  error: &error];
-                    STAssertTrue([jsonDoc isEqualToDictionary:lastDocForId[aDocId][@"json"]], @"Found: %@", jsonDoc);
+                    XCTAssertTrue([jsonDoc isEqualToDictionary:lastDocForId[aDocId][@"json"]], @"Found: %@", jsonDoc);
                     if(jsonDoc)
                         foundJSON = YES;
                 }
                 else{
                     //This was slightly unexpected. When TD_Database deletes, the JSON becomes an empty NSData
                     //object. But when compacting, it sets it to null. See TD_Database+Insertion compact.
-                    STAssertEqualObjects([result objectForColumnName:@"json"], [NSNull null],
+                    XCTAssertEqualObjects([result objectForColumnName:@"json"], [NSNull null],
                                          @"Expected revs.json to be empty NSData. Found %@", [result objectForColumnName:@"json"]);
                 }
                 
             }
             
-            STAssertTrue(foundJSON, @"didn't find json");
+            XCTAssertTrue(foundJSON, @"didn't find json");
             [result close];
         }];
     }
@@ -718,7 +718,7 @@
         rev.docId = docId;
         rev.body = bodies[i];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Error creating document");
+        XCTAssertNil(error, @"Error creating document");
         [dbObjects addObject:ob];
     }
     //    NSArray* reversedObjects = [[dbObjects reverseObjectEnumerator] allObjects];
@@ -730,15 +730,15 @@
 
 -(void)assertIdAndRevisionAndShallowContentExpected:(CDTDocumentRevision *)expected actual:(CDTDocumentRevision *)actual
 {
-    STAssertEqualObjects([actual docId], [expected docId], @"docIDs don't match");
-    STAssertEqualObjects([actual revId], [expected revId], @"revIDs don't match");
+    XCTAssertEqualObjects([actual docId], [expected docId], @"docIDs don't match");
+    XCTAssertEqualObjects([actual revId], [expected revId], @"revIDs don't match");
     
     NSDictionary *expectedDict = expected.body;
     NSDictionary *actualDict = actual.body;
     
     for (NSString *key in [expectedDict keyEnumerator]) {
-        STAssertNotNil([actualDict objectForKey:key], @"Actual didn't contain key %s", key);
-        STAssertEqualObjects([actualDict objectForKey:key], [expectedDict objectForKey:key], @"Actual value didn't match expected value");
+        XCTAssertNotNil([actualDict objectForKey:key], @"Actual didn't contain key %s", key);
+        XCTAssertEqualObjects([actualDict objectForKey:key], [expectedDict objectForKey:key], @"Actual value didn't match expected value");
     }
 }
 
@@ -828,7 +828,7 @@
 -(void)getAllDocuments_compareResultExpected:(NSArray*)expectedDbObjects actual:(NSArray*)result count:(int)count offset:(int)offset
 {
     NSUInteger expected = (NSUInteger)count;
-    STAssertEquals(result.count, expected, @"expectedDbObject count didn't match result count");
+    XCTAssertEqual(result.count, expected, @"expectedDbObject count didn't match result count");
     for (int i = 0; i < result.count; i++) {
         CDTDocumentRevision *actual = result[i];
         CDTDocumentRevision *expected = expectedDbObjects[i + offset];
@@ -848,8 +848,8 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
 
@@ -862,9 +862,9 @@
 
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     
-    STAssertNotNil(error, @"No error when updating document with bad id");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(ob2, @"CDTDocumentRevision object was not nil after update with bad rev");
+    XCTAssertNotNil(error, @"No error when updating document with bad id");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil after update with bad rev");
     
     //expect the database to be unmodified
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
@@ -885,8 +885,8 @@
     rev.body = [@{key1:value1} mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     
     NSString *docId = ob.docId;
@@ -897,29 +897,29 @@
     rev.body = [@{key2:value2} mutableCopy];
 
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    XCTAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     // Check new revision
     const NSUInteger expected_count = 1;
     CDTDocumentRevision *retrieved;
     error = nil;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
-    STAssertNil(error, @"Error getting document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-    STAssertEquals(retrieved.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
+    XCTAssertNil(error, @"Error getting document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
     
     // Check we can get old revision
     error = nil;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob.revId error:&error];
-    STAssertNil(error, @"Error getting document using old rev");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-    STAssertEquals(retrieved.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(retrieved.body[key1], value1, @"Object from database has wrong data");
+    XCTAssertNil(error, @"Error getting document using old rev");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(retrieved.body[key1], value1, @"Object from database has wrong data");
     
     
     //now test the content of docs/revs tables explicitely.
@@ -938,7 +938,7 @@
             @[@"doc_id",      @"docid"],
             @[expectedDoc_id, docId]
             ];
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -962,7 +962,7 @@
             @[expectedDoc_id, @2,          revId2,   @YES,       @NO,        json2],
             ];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -981,8 +981,8 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = [@{@"hello":@"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
 
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
@@ -991,9 +991,9 @@
     rev = [ob mutableCopy];
     rev.body = nil;
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNotNil(error, @"No Error updating document with nil CDTDocumentBody");
-    STAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
-    STAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil CDTDocumentBody");
+    XCTAssertNotNil(error, @"No Error updating document with nil CDTDocumentBody");
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil CDTDocumentBody");
     
     NSDictionary *modifiedCount = nil;
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];
@@ -1007,7 +1007,7 @@
     NSString *dbPath = [self pathForDBName:self.datastore.name];
     
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
+    XCTAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
     
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
 
@@ -1019,21 +1019,21 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = bodies[0];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
-    STAssertNotNil(ob.docId, @"doc id is nil");
-    STAssertNotNil(ob.revId, @"rev id is nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNotNil(ob.docId, @"doc id is nil");
+    XCTAssertNotNil(ob.revId, @"rev id is nil");
     
     for(int i = 0; i < numOfUpdates; i++){
         error = nil;
         rev = [ob mutableCopy];
         rev.body = bodies[i+1];
         ob = [self.datastore updateDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Error creating document. Update Number %d", i);
-        STAssertNotNil(ob, @"CDTDocumentRevision object was nil. Update Number %d", i);
+        XCTAssertNil(error, @"Error creating document. Update Number %d", i);
+        XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil. Update Number %d", i);
         
-        STAssertNotNil(ob.docId, @"doc id is nil");
-        STAssertNotNil(ob.revId, @"rev id is nil");
+        XCTAssertNotNil(ob.docId, @"doc id is nil");
+        XCTAssertNotNil(ob.revId, @"rev id is nil");
     }
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": [[NSNumber alloc] initWithInt:numOfUpdates + 1]};
@@ -1047,7 +1047,7 @@
                                   @[@"docId"],
                                   @[ob.docId]
                                   ];
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -1101,7 +1101,7 @@
         }
         
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -1137,7 +1137,7 @@
     rev.body = [@{key1:value1} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:nil];
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     // Attempt to update with a _deleted key in the body
     NSString *docId = ob.docId;
@@ -1150,10 +1150,10 @@
     rev = [ob mutableCopy];
     rev.body = [body2dict mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNil(ob2, @"CDTDocumentRevision object was not nil");
-    STAssertNotNil(error, @"Error wasn't set");
-    STAssertEquals(error.code, (NSInteger)400, @"Wrong error code");
-    STAssertEquals([error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey], 
+    XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil");
+    XCTAssertNotNil(error, @"Error wasn't set");
+    XCTAssertEqual(error.code, (NSInteger)400, @"Wrong error code");
+    XCTAssertEqual([error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey], 
                    @"Bodies may not contain _ prefixed fields. Use CDTDocumentRevision properties.", 
                    @"Incorrect error message");
     
@@ -1170,7 +1170,7 @@
                                   @[@"doc_id", @"docid"],
                                   @[@1,        docId]
                                   ];
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"docs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -1188,7 +1188,7 @@
                                   @[@(1),      @1,          revId,    @YES,        @NO,        json],
                                   ];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
@@ -1205,12 +1205,12 @@
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
     doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertTrue(saved, @"Failed to save new document");
+    XCTAssertTrue(saved, @"Failed to save new document");
     
     CDTMutableDocumentRevision *update = [saved mutableCopy];
     [update.body setObject:@"UpdatedDocValue" forKey:@"UpdatedDoc"];
     CDTDocumentRevision *updated = [self.datastore updateDocumentFromRevision:update error:&error];
-    STAssertTrue(updated, @"Object did not update");
+    XCTAssertTrue(updated, @"Object did not update");
 }
 
 #pragma mark - DELETE tests
@@ -1229,8 +1229,8 @@
     CDTDocumentRevision *tmp = [self.datastore getDocumentWithId:rev.docId
                                                            error:&error];
 
-    STAssertNil(tmp, @"deleted doc returned");
-    STAssertEquals((NSInteger)404, [error code], @"Wrong error code for deleted item.");
+    XCTAssertNil(tmp, @"deleted doc returned");
+    XCTAssertEqual((NSInteger)404, [error code], @"Wrong error code for deleted item.");
 }
 
 - (void)testDeletedFlagOnDocumentRevision
@@ -1248,8 +1248,8 @@
                                         rev:rev.revId
                                       error:&error];
 
-    STAssertNotNil(tmp, @"Deleted doc not returned when queried with rev ID");
-    STAssertTrue(tmp.deleted, @"Deleted document was not flagged deleted");
+    XCTAssertNotNil(tmp, @"Deleted doc not returned when queried with rev ID");
+    XCTAssertTrue(tmp.deleted, @"Deleted document was not flagged deleted");
 }
 
 -(void)testDeleteDocument
@@ -1264,28 +1264,28 @@
     rev.body = [@{@"hello": @"world"} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     error = nil;
     NSString *docId = ob.docId;
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:ob error:&error];
-    STAssertNil(error, @"Error deleting document: %@", error);
-    STAssertNotNil(deleted, @"Error deleting document: %@", error);
+    XCTAssertNil(error, @"Error deleting document: %@", error);
+    XCTAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
-    STAssertNotNil(error, @"No Error getting deleted document");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(retrieved, @"retrieved object was not nil");
+    XCTAssertNotNil(error, @"No Error getting deleted document");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     //Now try deleting it again.
     error = nil;
     deleted = [self.datastore deleteDocumentFromRevision:ob error:&error];
-    STAssertNil(deleted, @"CDTRevsision was not nil on Error deleting document: %@", error);
-    STAssertNotNil(error, @"No Error trying to delete already deleted document");
+    XCTAssertNil(deleted, @"CDTRevsision was not nil on Error deleting document: %@", error);
+    XCTAssertNotNil(error, @"No Error trying to delete already deleted document");
     //CouchDB/Cloudant returns 409, But CloudantSync returns a 404.
     //STAssertTrue(error.code == 409, @"Found %@", error);
     
@@ -1293,12 +1293,12 @@
     error = nil;
     const NSUInteger expected_count = 1;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob.revId error:&error];
-    STAssertNil(error, @"Error getting document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-    STAssertEquals(retrieved.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(retrieved.body[@"hello"], @"world", @"Object from database has wrong data");
+    XCTAssertNil(error, @"Error getting document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(retrieved.body[@"hello"], @"world", @"Object from database has wrong data");
     
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @2};
@@ -1309,9 +1309,9 @@
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
-        STAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
+        XCTAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
         doc_id_inDocsTable = [result intForColumn:@"doc_id"];
-        STAssertFalse([result next], @"There are too many rows in docs");
+        XCTAssertFalse([result next], @"There are too many rows in docs");
         [result close];
     }];
     
@@ -1322,38 +1322,38 @@
         
         NSError *error;
         
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        STAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
-        STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
-        STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
-        STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
+        XCTAssertEqual(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        XCTAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
+        XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
+        XCTAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
         NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                    options: TDJSONReadingMutableContainers
                                                      error: &error];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{@"hello": @"world"}],@"JSON %@. NSError %@", jsonDoc, error);
+        XCTAssertTrue([jsonDoc isEqualToDictionary:@{@"hello": @"world"}],@"JSON %@. NSError %@", jsonDoc, error);
         
         //next row
-        STAssertTrue([result next], @"Didn't find the second row in the revs table");
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        STAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
-        STAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
-        STAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
-        STAssertTrue([result intForColumn:@"parent"] == 1, @"Found %@", [result intForColumn:@"parent"]);
+        XCTAssertTrue([result next], @"Didn't find the second row in the revs table");
+        XCTAssertEqual(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        XCTAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
+        XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
+        XCTAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertTrue([result intForColumn:@"parent"] == 1, @"Found %@", [result intForColumn:@"parent"]);
         
         //TD_Database+Insertion inserts an empty NSData object instead of NSNull on delete
-        STAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
+        XCTAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
         error = nil;
         jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                      options: TDJSONReadingMutableContainers
                                        error: NULL];
-        STAssertNil(jsonDoc, @"Expected revs.json to be nil: %@",jsonDoc);
+        XCTAssertNil(jsonDoc, @"Expected revs.json to be nil: %@",jsonDoc);
         
         //shouldn't be any more rows.
-        STAssertFalse([result next], @"There are too many rows in revs");
-        STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);
-        STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid is %@", [result stringForColumn:@"revid"]);
+        XCTAssertFalse([result next], @"There are too many rows in revs");
+        XCTAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);
+        XCTAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid is %@", [result stringForColumn:@"revid"]);
         
         [result close];
     }];
@@ -1372,8 +1372,8 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = [@{@"hello":@"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     //update document
     error = nil;
@@ -1383,33 +1383,33 @@
     rev = [ob mutableCopy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error updating document");
-    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error updating document");
+    XCTAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     //delete doc.
     error = nil;
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:ob2 error:&error];
-    STAssertNil(error, @"Error deleting document: %@", error);
-    STAssertNotNil(deleted, @"Error deleting document: %@", error);
+    XCTAssertNil(error, @"Error deleting document: %@", error);
+    XCTAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
-    STAssertNotNil(error, @"No Error getting deleted document");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(retrieved, @"retrieved object was not nil");
+    XCTAssertNotNil(error, @"No Error getting deleted document");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     // Check we can get the updated revision before it was deleted (ob2)
     error = nil;
     const NSUInteger expected_count = 1;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob2.revId error:&error];
-    STAssertNil(error, @"Error getting document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-    STAssertEquals(retrieved.body.count, expected_count, @"Object from database has != 1 key");
-    STAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
+    XCTAssertNil(error, @"Error getting document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 1 key");
+    XCTAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
     
     
     NSDictionary *modifiedCount = @{@"docs": @1, @"revs": @3};
@@ -1420,9 +1420,9 @@
     [self.dbutil.queue inDatabase:^(FMDatabase *db) {
         FMResultSet *result = [db executeQuery:@"select * from docs"];
         [result next];
-        STAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
+        XCTAssertEqualObjects(docId, [result stringForColumn:@"docid"],@"%@ != %@", docId,[result stringForColumn:@"docid"]);
         doc_id_inDocsTable = [result intForColumn:@"doc_id"];
-        STAssertFalse([result next], @"There are too many rows in docs");
+        XCTAssertFalse([result next], @"There are too many rows in docs");
         [result close];
     }];
     
@@ -1432,57 +1432,57 @@
         [result next];
             
         //initial doc
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        STAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
-        STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
-        STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
-        STAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
+        XCTAssertEqual(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        XCTAssertTrue([result intForColumn:@"sequence"] == 1, @"%d", [result intForColumn:@"sequence"]);
+        XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 1, @"rev: %@", [result stringForColumn:@"revid"] );
+        XCTAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
+        XCTAssertEqualObjects([result objectForColumnName:@"parent"], [NSNull null], @"Found %@", [result objectForColumnName:@"parent"]);
 
         NSError *error;
         NSDictionary* jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                    options: TDJSONReadingMutableContainers
                                                      error: &error];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{@"hello": @"world"}],@"JSON %@. NSError %@", jsonDoc, error);
+        XCTAssertTrue([jsonDoc isEqualToDictionary:@{@"hello": @"world"}],@"JSON %@. NSError %@", jsonDoc, error);
         
         //updated doc
-        STAssertTrue([result next], @"Didn't find the second row in the revs table");
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        STAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
-        STAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
-        STAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
-        STAssertTrue([result intForColumn:@"parent"] == 1, @"Found %d", [result intForColumn:@"parent"]);
+        XCTAssertTrue([result next], @"Didn't find the second row in the revs table");
+        XCTAssertEqual(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        XCTAssertTrue([result intForColumn:@"sequence"] == 2, @"%d", [result intForColumn:@"sequence"]);
+        XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
+        XCTAssertFalse([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertFalse([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"deleted"]);
+        XCTAssertTrue([result intForColumn:@"parent"] == 1, @"Found %d", [result intForColumn:@"parent"]);
         
         error = nil;
         jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                      options: TDJSONReadingMutableContainers
                                        error: &error];
-        STAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}],@"JSON %@. NSError %@", jsonDoc, error);
+        XCTAssertTrue([jsonDoc isEqualToDictionary:@{key2: value2}],@"JSON %@. NSError %@", jsonDoc, error);
    
         
         //deleted doc
-        STAssertTrue([result next], @"Didn't find the third row in the revs table");
-        STAssertEquals(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
-        STAssertTrue([result intForColumn:@"sequence"] == 3, @"%d", [result intForColumn:@"sequence"]);
-        STAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 3, @"rev: %@", [result stringForColumn:@"revid"] );
-        STAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
-        STAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
-        STAssertTrue([result intForColumn:@"parent"] == 2, @"Found %d", [result intForColumn:@"parent"]);
+        XCTAssertTrue([result next], @"Didn't find the third row in the revs table");
+        XCTAssertEqual(doc_id_inDocsTable, [result intForColumn:@"doc_id"], @"%d != %d", doc_id_inDocsTable, [result intForColumn:@"doc_id"]);
+        XCTAssertTrue([result intForColumn:@"sequence"] == 3, @"%d", [result intForColumn:@"sequence"]);
+        XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 3, @"rev: %@", [result stringForColumn:@"revid"] );
+        XCTAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
+        XCTAssertTrue([result intForColumn:@"parent"] == 2, @"Found %d", [result intForColumn:@"parent"]);
         
         //TD_Database+Insertion inserts an empty NSData object instead of NSNull
-        STAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
+        XCTAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
         
         error = nil;
         jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                      options: TDJSONReadingMutableContainers
                                        error: &error];
-        STAssertNil(jsonDoc, @"Expected json dictionary to be nil: %@. Error %@",jsonDoc, error);
+        XCTAssertNil(jsonDoc, @"Expected json dictionary to be nil: %@. Error %@",jsonDoc, error);
         
         //should be done
-        STAssertFalse([result next], @"There are too many rows in revs");
-        STAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);
-        STAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid is %@", [result stringForColumn:@"revid"]);
+        XCTAssertFalse([result next], @"There are too many rows in revs");
+        XCTAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);
+        XCTAssertNil([result stringForColumn:@"revid"], @"after [result next],  revid is %@", [result stringForColumn:@"revid"]);
         
         [result close];
     }];
@@ -1498,8 +1498,8 @@
     rev.body = [@{@"hello": @"world"}mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     //update document rev 2-
     error = nil;
@@ -1509,33 +1509,33 @@
     rev = [ob mutableCopy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error updating document");
-    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error updating document");
+    XCTAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     //delete doc. rev 3-
     error = nil;
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:ob2 error:&error];
-    STAssertNil(error, @"Error deleting document: %@", error);
-    STAssertNotNil(deleted, @"Error deleting document: %@", error);
+    XCTAssertNil(error, @"Error deleting document: %@", error);
+    XCTAssertNotNil(deleted, @"Error deleting document: %@", error);
     
     // Check new revision isn't found
     error = nil;
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
-    STAssertNotNil(error, @"No Error getting deleted document");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(retrieved, @"retrieved object was not nil");
+    XCTAssertNotNil(error, @"No Error getting deleted document");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     //now try updating rev 2-
     
     //get update rev 2-
     error = nil;
     retrieved = [self.datastore getDocumentWithId:docId rev:ob2.revId error:&error];
-    STAssertNil(error, @"Error getting document");
-    STAssertNotNil(retrieved, @"retrieved object was nil");
-    STAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
-    STAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
-    STAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
+    XCTAssertNil(error, @"Error getting document");
+    XCTAssertNotNil(retrieved, @"retrieved object was nil");
+    XCTAssertEqualObjects(ob.docId, retrieved.docId, @"Object retrieved from database has wrong docid");
+    XCTAssertEqualObjects(ob2.revId, retrieved.revId, @"Object retrieved from database has wrong revid");
+    XCTAssertEqualObjects(retrieved.body[key2], value2, @"Object from database has wrong data");
     
     //try updating rev 2-
     error = nil;
@@ -1544,10 +1544,10 @@
     rev = [ob2 mutableCopy];
     rev.body = [@{key3:value3} mutableCopy];
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNotNil(error, @"No Error updating deleted document");
+    XCTAssertNotNil(error, @"No Error updating deleted document");
     //inconsitent with error reported by cloudant/couchdb. cloudant/couch returns 409, TD* retunrs 404
 //    STAssertTrue(error.code == 409, @"Error was not a 409. Found %ld", error.code);
-    STAssertNil(ob3, @"retrieved object was not nil");
+    XCTAssertNil(ob3, @"retrieved object was not nil");
 }
 
 -(void)testGetAllDocsDoesntFindDeletedDocs
@@ -1565,7 +1565,7 @@
         rev.docId = docId;
         rev.body = bodies[i];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Error creating document");
+        XCTAssertNil(error, @"Error creating document");
         [dbObjects addObject:ob];
     }
     
@@ -1580,7 +1580,7 @@
             CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:ob
                                                                                 error:&error];
 
-            STAssertNotNil(deleted, @"Error deleting document: %@", error);
+            XCTAssertNotNil(deleted, @"Error deleting document: %@", error);
             [deletedDbObjects addObject:ob];
             [deletedDbDicts addObject:ob.body];
         }
@@ -1601,31 +1601,31 @@
     //make sure none of the deleted documents are found in the results.
     for(CDTDocumentRevision* aRev in result){
         for(NSDictionary *aDeletedDict in deletedDbDicts){
-            STAssertFalse(aDeletedDict == aRev.body, @"Found equal pointers. %d == %d", aRev.body, aDeletedDict );
-            STAssertFalse([aDeletedDict isEqualToDictionary:aRev.body], @"Found deleted dictionary in results");
+            XCTAssertFalse(aDeletedDict == aRev.body, @"Found equal pointers. %d == %d", aRev.body, aDeletedDict );
+            XCTAssertFalse([aDeletedDict isEqualToDictionary:aRev.body], @"Found deleted dictionary in results");
         }
         //is this the same as above?
-        STAssertNil([deletedDbDicts member:aRev.body], @"Found result in deleted set: %@", aRev.body);
+        XCTAssertNil([deletedDbDicts member:aRev.body], @"Found result in deleted set: %@", aRev.body);
     }
 
     //get all of the previous revisions of the deleted docs and make sure they are deleted.
     [self.datastore documentCount];
     NSString *dbPath = [self pathForDBName:self.datastore.name];
     FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:dbPath];
-    STAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
+    XCTAssertNotNil(queue, @"FMDatabaseQueue was nil: %@", queue);
     
     for(CDTDocumentRevision *aRev in deletedDbObjects){
         NSError *error;
         CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:aRev.docId rev:aRev.revId error:&error];
-        STAssertNil(error, @"Error getting retreived doc. %@, %@", aRev.docId, aRev.revId);
-        STAssertNotNil(retrieved, @"CDTDocumentRevision was nil");
+        XCTAssertNil(error, @"Error getting retreived doc. %@, %@", aRev.docId, aRev.revId);
+        XCTAssertNotNil(retrieved, @"CDTDocumentRevision was nil");
         
         BOOL found = NO;
         for(NSDictionary *aDeletedDict in deletedDbDicts){
             if([aDeletedDict isEqualToDictionary:retrieved.body])
                 found = YES;
         }
-        STAssertTrue(found, @"didn't find %@", aRev.body);
+        XCTAssertTrue(found, @"didn't find %@", aRev.body);
         
         //query the database to ensure it has the proper structure
         [queue inDatabase:^(FMDatabase *db){
@@ -1636,20 +1636,20 @@
             while([result next]){
                 count++;
                 if(count == 2){
-                    STAssertTrue([result boolForColumn:@"deleted"], @"not deleted");
-                    STAssertTrue([result boolForColumn:@"current"], @"this rev is not current");
+                    XCTAssertTrue([result boolForColumn:@"deleted"], @"not deleted");
+                    XCTAssertTrue([result boolForColumn:@"current"], @"this rev is not current");
                 }
                 else{
-                    STAssertFalse([result boolForColumn:@"deleted"], @"wrong rev is deleted");
-                    STAssertFalse([result boolForColumn:@"current"], @"wrong rev is current");
+                    XCTAssertFalse([result boolForColumn:@"deleted"], @"wrong rev is deleted");
+                    XCTAssertFalse([result boolForColumn:@"current"], @"wrong rev is current");
                     NSError *error;
                     NSDictionary *jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
                                                  options: TDJSONReadingMutableContainers
                                                    error: &error];
-                    STAssertTrue([jsonDoc isEqualToDictionary:aRev.body],@"JSON %@. NSError %@", jsonDoc, error);
+                    XCTAssertTrue([jsonDoc isEqualToDictionary:aRev.body],@"JSON %@. NSError %@", jsonDoc, error);
                 }
             }
-            STAssertTrue(count == 2, @"found more than %d rows", count);
+            XCTAssertTrue(count == 2, @"found more than %d rows", count);
             [result close];
         }];
     }
@@ -1673,7 +1673,7 @@
         rev.docId = docId;
         rev.body = bodies[i];
         CDTDocumentRevision *aRev = [self.datastore createDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Error creating document");
+        XCTAssertNil(error, @"Error creating document");
         [dbObjects addObject:aRev];
     }
     
@@ -1684,15 +1684,15 @@
     error = nil;
     NSString *docId = @"idonotexist";
     CDTDocumentRevision *aRev = [self.datastore getDocumentWithId:docId error:&error ];
-    STAssertNotNil(error, @"No Error getting document that doesn't exist");
-    STAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
-    STAssertNil(aRev, @"CDTDocumentRevision should be nil after getting document that doesn't exist");
+    XCTAssertNotNil(error, @"No Error getting document that doesn't exist");
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertNil(aRev, @"CDTDocumentRevision should be nil after getting document that doesn't exist");
     
     error = nil;
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:aRev error:&error];
-    STAssertNotNil(error, @"No Error deleting document that doesn't exist");
-    STAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
-    STAssertNil(deleted, @"CDTDocumentRevision* was not nil. Deletion successful?: %@", error);
+    XCTAssertNotNil(error, @"No Error deleting document that doesn't exist");
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertNil(deleted, @"CDTDocumentRevision* was not nil. Deletion successful?: %@", error);
     
     
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
@@ -1706,10 +1706,10 @@
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
     doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
-    STAssertTrue(saved, @"Failed to save new document");
+    XCTAssertTrue(saved, @"Failed to save new document");
     
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:saved error:&error];
-    STAssertTrue(deleted && deleted.deleted, @"Document was not deleted");
+    XCTAssertTrue(deleted && deleted.deleted, @"Document was not deleted");
 }
 
 -(void) testDeleteDocumentUsingIdHasMultipleLeafNodesInTree
@@ -1721,14 +1721,14 @@
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
     
-    STAssertNotNil(rev, @"Document was not created");
+    XCTAssertNotNil(rev, @"Document was not created");
     
     mutableRev = [rev  mutableCopy];
     [mutableRev.body setObject:@"objc" forKey:@"writtenIn"];
     
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:mutableRev error:&error];
     
-    STAssertNotNil(rev2, @"Failed performing update");
+    XCTAssertNotNil(rev2, @"Failed performing update");
     
     //now need to force insert into the DB little messy though
     
@@ -1750,7 +1750,7 @@
     
     NSArray * deleted = [self.datastore deleteDocumentWithId:mutableRev.docId error:&error];
     
-    STAssertTrue([deleted count] == 2, @"Number of deletions do not match");
+    XCTAssertTrue([deleted count] == 2, @"Number of deletions do not match");
     
 }
 
@@ -1766,8 +1766,8 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error creating document");
-    STAssertNotNil(ob, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error creating document");
+    XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
@@ -1775,11 +1775,11 @@
     rev = [ob mutableCopy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    STAssertNil(error, @"Error updating document");
-    STAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
+    XCTAssertNil(error, @"Error updating document");
+    XCTAssertNotNil(ob2, @"CDTDocumentRevision object was nil");
     
     TDStatus statusResults = [self.datastore.database compact];
-    STAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
+    XCTAssertTrue([TDStatusToNSError( statusResults, nil) code] == 200, @"TDStatusAsNSError: %@", TDStatusToNSError( statusResults, nil));
     
 }
 @end

@@ -98,7 +98,7 @@
 - (void)testCreateWriter
 {
     TDMultiStreamWriter* stream = [self createWriter:128];
-    STAssertEquals(stream.length, (SInt64)self.expectedOutputString.length, @"unexpected string length in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqual(stream.length, (SInt64)self.expectedOutputString.length, @"unexpected string length in %s", __PRETTY_FUNCTION__);
 }
 
 - (void)testSynchronousWriter
@@ -106,12 +106,12 @@
     for (unsigned bufSize = 1; bufSize < 128; ++bufSize) {
 //        NSLog(@"Buffer size = %u", bufSize);
         TDMultiStreamWriter* mp = [self createWriter:bufSize];
-        STAssertNotNil(mp, @"multistream writer is nil in %s", __PRETTY_FUNCTION__);
+        XCTAssertNotNil(mp, @"multistream writer is nil in %s", __PRETTY_FUNCTION__);
         NSData* outputBytes = [mp allOutput];
-        STAssertEqualObjects(outputBytes.my_UTF8ToString, self.expectedOutputString, @"unexpected string in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqualObjects(outputBytes.my_UTF8ToString, self.expectedOutputString, @"unexpected string in %s", __PRETTY_FUNCTION__);
         // Run it a second time to make sure re-opening works:
         outputBytes = [mp allOutput];
-        STAssertEqualObjects(outputBytes.my_UTF8ToString, self.expectedOutputString, @"unexpected string (2) in %s", __PRETTY_FUNCTION__);
+        XCTAssertEqualObjects(outputBytes.my_UTF8ToString, self.expectedOutputString, @"unexpected string (2) in %s", __PRETTY_FUNCTION__);
     }
 }
 
@@ -120,7 +120,7 @@
     TDMultiStreamWriter* writer = [self createWriter:16];
     //NSLog(@"writer output %@", [[writer allOutput] my_UTF8ToString] );
     NSInputStream* input = [writer openForInputStream];
-    STAssertNotNil(input, @"NSInputStream is NIL in %s", __PRETTY_FUNCTION__);
+    XCTAssertNotNil(input, @"NSInputStream is NIL in %s", __PRETTY_FUNCTION__);
     MyMultiStreamWriterTester *tester = [[MyMultiStreamWriterTester alloc] initWithStream: input];
     NSRunLoop* rl = [NSRunLoop currentRunLoop];
     [input scheduleInRunLoop: rl forMode: NSDefaultRunLoopMode];
@@ -136,7 +136,7 @@
 //    NSLog(@"Closing stream");
     [input close];
     [writer close];
-    STAssertEqualObjects(tester->_output.my_UTF8ToString, self.expectedOutputString, @"unexpected string in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(tester->_output.my_UTF8ToString, self.expectedOutputString, @"unexpected string in %s", __PRETTY_FUNCTION__);
 }
 
 

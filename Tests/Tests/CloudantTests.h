@@ -6,8 +6,8 @@
 //
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
-@interface CloudantTests : SenTestCase
+@interface CloudantTests : XCTestCase
 
 @end

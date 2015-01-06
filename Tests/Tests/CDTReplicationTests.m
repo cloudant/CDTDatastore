@@ -12,7 +12,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
 #import "CloudantSyncTests.h"
@@ -53,8 +53,8 @@
     
     error = nil;
     NSDictionary *pullDict = [pull dictionaryForReplicatorDocument:&error];
-    STAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, pull);
-    STAssertEqualObjects(pullDict, expectedDictionary, @"pull dictionary: %@", pullDict);
+    XCTAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, pull);
+    XCTAssertEqualObjects(pullDict, expectedDictionary, @"pull dictionary: %@", pullDict);
     
     //ensure that TDReplicatorManager makes the appropriate TDPuller object
     //The code to do this, seems, a bit precarious and this guards against any future
@@ -64,7 +64,7 @@
                                               initWithDatabaseManager:self.factory.manager];
     TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pullDict
                                                                              error:&error];
-    STAssertEqualObjects([tdreplicator class], [TDPuller class], @"Wrong Type of TDReplicator. %@", error);
+    XCTAssertEqualObjects([tdreplicator class], [TDPuller class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 -(void)testDictionaryForPushReplicationDocument
@@ -82,8 +82,8 @@
     
     error = nil;
     NSDictionary *pushDict = [push dictionaryForReplicatorDocument:&error];
-    STAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);
-    STAssertEqualObjects(pushDict, expectedDictionary, @"push dictionary: %@", pushDict);
+    XCTAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);
+    XCTAssertEqualObjects(pushDict, expectedDictionary, @"push dictionary: %@", pushDict);
     
     //ensure that TDReplicatorManager makes the appropriate TDPuller object
     //The code to do this, seems, a bit precarious and this guards against any future
@@ -93,7 +93,7 @@
                                               initWithDatabaseManager:self.factory.manager];
     TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDict
                                                                              error:&error];
-    STAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
+    XCTAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 
@@ -117,13 +117,13 @@
     
     error = nil;
     CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
-    STAssertNotNil(replicator, @"%@", push);
-    STAssertNil(error, @"%@", error);
+    XCTAssertNotNil(replicator, @"%@", push);
+    XCTAssertNil(error, @"%@", error);
 
     NSDictionary *pushDoc = [push dictionaryForReplicatorDocument:nil];
     
-    STAssertTrue(push.filter != nil, @"No filter set in CDTPushReplication");
-    STAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
+    XCTAssertTrue(push.filter != nil, @"No filter set in CDTPushReplication");
+    XCTAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
     
     //ensure that TDReplicatorManager makes the appropriate TDPuller object
     //The code to do this, seems, a bit precarious and this guards against any future
@@ -133,7 +133,7 @@
                                               initWithDatabaseManager:self.factory.manager];
     TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDoc
                                                                              error:&error];
-    STAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
+    XCTAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
 }
 
 -(CDTAbstractReplication *)buildReplicationObject:(Class)aClass remoteUrl:(NSURL *)url
@@ -160,7 +160,7 @@
 {
     CDTAbstractReplication *pr = [self buildReplicationObject:prClass remoteUrl:url];
     NSError *error = nil;
-    STAssertTrue([pr validateRemoteDatastoreURL:url error:&error], @"\nerror: %@ \nurl: %@", error, url);
+    XCTAssertTrue([pr validateRemoteDatastoreURL:url error:&error], @"\nerror: %@ \nurl: %@", error, url);
 }
 
 -(void)urlTestExpectFalse:(Class)prClass
@@ -170,8 +170,8 @@
     NSError *error = nil;
     CDTAbstractReplication *pr = [self buildReplicationObject:prClass remoteUrl:url];
     
-    STAssertFalse([pr validateRemoteDatastoreURL:url error:&error], @"\nerror: %@ \nurl: %@", error, url);
-    STAssertTrue(error.code == code, @"\nerror: %@  \nurl: %@", error, url);
+    XCTAssertFalse([pr validateRemoteDatastoreURL:url error:&error], @"\nerror: %@ \nurl: %@", error, url);
+    XCTAssertTrue(error.code == code, @"\nerror: %@  \nurl: %@", error, url);
 }
 
 -(void)runUrlTestFor:(Class)prClass
@@ -278,15 +278,15 @@
     
     error = nil;
     CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
-    STAssertNotNil(replicator, @"%@", push);
-    STAssertNil(error, @"%@", error);
+    XCTAssertNotNil(replicator, @"%@", push);
+    XCTAssertNil(error, @"%@", error);
     
-    STAssertEquals(replicator.state, CDTReplicatorStatePending, @"Unexpected state: %@",
+    XCTAssertEqual(replicator.state, CDTReplicatorStatePending, @"Unexpected state: %@",
                    [CDTReplicator stringForReplicatorState:replicator.state ]);
     
     [replicator stop];
     
-    STAssertEquals(replicator.state, CDTReplicatorStateStopped, @"Unexpected state: %@",
+    XCTAssertEqual(replicator.state, CDTReplicatorStateStopped, @"Unexpected state: %@",
                    [CDTReplicator stringForReplicatorState:replicator.state ]);
     
 }
@@ -315,10 +315,10 @@
     pull = [self createPullReplicationWithHeaders:optionalHeaders];
     error = nil;
     pullDoc = [pull dictionaryForReplicatorDocument:&error];
-    STAssertNotNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument failed with "
+    XCTAssertNotNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument failed with "
                    @"header: %@", optionalHeaders);
     
-    STAssertTrue([pullDoc[@"headers"][@"User-Agent"] isEqualToString:@"My Agent"],
+    XCTAssertTrue([pullDoc[@"headers"][@"User-Agent"] isEqualToString:@"My Agent"],
                  @"Bad headers: %@", pullDoc[@"headers"]);
     
     
@@ -337,10 +337,10 @@
         pull = [self createPullReplicationWithHeaders:optionalHeaders];
         error = nil;
         pullDoc = [pull dictionaryForReplicatorDocument:&error];
-        STAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
+        XCTAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
                        @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
-        STAssertNotNil(error, @"Error was not set");
-        STAssertEquals(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
+        XCTAssertNotNil(error, @"Error was not set");
+        XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %@", error.code);
     }
     //make sure the lower case versions fail too
@@ -349,10 +349,10 @@
         pull = [self createPullReplicationWithHeaders:optionalHeaders];
         error = nil;
         pullDoc = [pull dictionaryForReplicatorDocument:&error];
-        STAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
+        XCTAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
                     @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
-        STAssertNotNil(error, @"Error was not set");
-        STAssertEquals(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
+        XCTAssertNotNil(error, @"Error was not set");
+        XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %@", error.code);
     }
 }
