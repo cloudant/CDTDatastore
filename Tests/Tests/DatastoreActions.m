@@ -13,7 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import "CloudantSyncTests.h"
 #import "CDTDatastore.h"
@@ -34,8 +34,8 @@
 {
     NSError *error;
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
-    STAssertNotNil(tmp, @"Could not create test database");
-    STAssertTrue([tmp isKindOfClass:[CDTDatastore class]], @"Returned database not CDTDatastore");
+    XCTAssertNotNil(tmp, @"Could not create test database");
+    XCTAssertTrue([tmp isKindOfClass:[CDTDatastore class]], @"Returned database not CDTDatastore");
 }
 
 - (NSString*)createTemporaryFileAndReturnPath
@@ -48,7 +48,7 @@
     char *result = mktemp(tempFileNameCString);
     if (!result)
     {
-        STFail(@"Couldn't create temporary file");
+        XCTFail(@"Couldn't create temporary file");
     }
     
     NSString *path = [[NSFileManager defaultManager]
@@ -57,7 +57,7 @@
     
     BOOL fileCreated = [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
     
-    STAssertTrue(fileCreated, @"File %@ not created in %s", path, __PRETTY_FUNCTION__);
+    XCTAssertTrue(fileCreated, @"File %@ not created in %s", path, __PRETTY_FUNCTION__);
     
     free(tempFileNameCString);
     
@@ -70,11 +70,11 @@
     NSString *localFilePath = [self createTemporaryFileAndReturnPath];
     
     CDTDatastoreManager *localFactory = [[CDTDatastoreManager alloc] initWithDirectory:localFilePath error:&error];
-    STAssertNil(localFactory, @"CDTDatastoreManager should fail with a pre-existing file at path in %s", __PRETTY_FUNCTION__);
+    XCTAssertNil(localFactory, @"CDTDatastoreManager should fail with a pre-existing file at path in %s", __PRETTY_FUNCTION__);
 
     error = nil;
     [[NSFileManager defaultManager] removeItemAtPath:localFilePath error:&error];
-    STAssertNil(error, @"Error deleting temporary directory.");
+    XCTAssertNil(error, @"Error deleting temporary directory.");
     
 }
 
@@ -84,11 +84,11 @@
     NSString *localDirPath = [self createTemporaryDirectoryAndReturnPath];
     
     CDTDatastoreManager *localFactory = [[CDTDatastoreManager alloc] initWithDirectory:localDirPath error:&error];
-    STAssertNotNil(localFactory, @"CDTDatastoreManager should not fail with a pre-existing directory at path in %s", __PRETTY_FUNCTION__);
+    XCTAssertNotNil(localFactory, @"CDTDatastoreManager should not fail with a pre-existing directory at path in %s", __PRETTY_FUNCTION__);
     
     error = nil;
     [[NSFileManager defaultManager] removeItemAtPath:localDirPath error:&error];
-    STAssertNil(error, @"Error deleting temporary directory.");
+    XCTAssertNil(error, @"Error deleting temporary directory.");
     
 }
 
@@ -107,8 +107,8 @@
     rev.body = @{ @"hello" : @"world", @"test" : @"testy" };
     revision = [datastore updateDocumentFromRevision:rev error:&error];
     
-    STAssertTrue([datastore compactWithError:&error],@"Compaction failed");
-    STAssertNil(error, @"Error compacting datastore, %@", error);
+    XCTAssertTrue([datastore compactWithError:&error],@"Compaction failed");
+    XCTAssertNil(error, @"Error compacting datastore, %@", error);
     
     NSArray *previsousRevs = [datastore getRevisionHistory:revision];
 
@@ -122,10 +122,10 @@
         if([prevRev.body count] == 0){
             compacted++;
         } else {
-            STAssertEqualObjects(rev.body, prevRev.body, @"Unexpected body, wrong revision compacted?");
+            XCTAssertEqualObjects(rev.body, prevRev.body, @"Unexpected body, wrong revision compacted?");
         }
     }
-    STAssertEquals(1, compacted, @"Wrong number of docs compacted");
+    XCTAssertEqual(1, compacted, @"Wrong number of docs compacted");
 }
 
 @end

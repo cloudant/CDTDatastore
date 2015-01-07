@@ -6,11 +6,11 @@
 //
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 @class CDTDatastoreManager;
 
-@interface CloudantReplicationBase : SenTestCase
+@interface CloudantReplicationBase : XCTestCase
 
 +(NSString*)generateRandomString:(int)num;
 

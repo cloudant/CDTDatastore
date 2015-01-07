@@ -13,7 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <CommonCrypto/CommonDigest.h>
 
 #import <CloudantSync.h>
@@ -55,7 +55,7 @@
     self.dbutil =[[DBQueryUtils alloc]
                   initWithDbPath:[self pathForDBName:self.datastore.name]];
 
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 }
 
 - (void)tearDown
@@ -125,27 +125,27 @@
     NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
     
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere",
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere",
                          rev.docId,
                          @"docId was different, expected someIdHere actual %@",
                          rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
                          rev.revId,
                          @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
                          rev.revId);
     
-    STAssertEqualObjects(body, rev.body, @"Body was different");
-    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
-    STAssertEquals([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
+    XCTAssertEqualObjects(body, rev.body, @"Body was different");
+    XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqual([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
     
 }
 
@@ -179,27 +179,27 @@
     NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
     
     
-    STAssertNil(error, @"Error should have been nil");
+    XCTAssertNil(error, @"Error should have been nil");
     
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:attachmentDir
                                                                       error:&error];
     
-    STAssertNil(error, @"Error occured creating document with valid data");
-    STAssertNotNil(rev, @"Revision was nil");
-    STAssertEqualObjects(@"someIdHere",
+    XCTAssertNil(error, @"Error occured creating document with valid data");
+    XCTAssertNotNil(rev, @"Revision was nil");
+    XCTAssertEqualObjects(@"someIdHere",
                          rev.docId,
                          @"docId was different, expected someIdHere actual %@",
                          rev.docId);
-    STAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
+    XCTAssertEqualObjects(@"3-750dac460a6cc41e6999f8943b8e603e",
                          rev.revId,
                          @"Revision was different expected 3-750dac460a6cc41e6999f8943b8e603e actual %@",
                          rev.revId);
     
-    STAssertEqualObjects(body, rev.body, @"Body was different");
-    STAssertFalse(rev.deleted, @"Document is not marked as deleted");
-    STAssertEquals([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
-    STAssertEqualObjects(data, [[rev.attachments objectForKey:@"bonsai-boston.jpg"]dataFromAttachmentContent],@"data was not the same");
+    XCTAssertEqualObjects(body, rev.body, @"Body was different");
+    XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
+    XCTAssertEqual([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
+    XCTAssertEqualObjects(data, [[rev.attachments objectForKey:@"bonsai-boston.jpg"]dataFromAttachmentContent],@"data was not the same");
     
 }
 
@@ -221,7 +221,7 @@
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
 
-    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    XCTAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
 
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
@@ -237,15 +237,15 @@
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
-    STAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
+    XCTAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
 
     NSDictionary *attachments = rev3.attachments;
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
     CDTSavedAttachment *savedAttachment = [attachments objectForKey:attachmentName];
-    STAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
+    XCTAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
 
     // Check db and fs
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -256,11 +256,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                                @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -282,7 +283,7 @@
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
     
-    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    XCTAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
@@ -298,16 +299,16 @@
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
     
-    STAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
+    XCTAssertNotNil(rev3, @"Updating with a non-empty attachments array gave nil response");
     
     NSDictionary *attachments = rev3.attachments;
     CDTSavedAttachment *savedAttachment = [attachments objectForKey:attachmentName];
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
-    STAssertEqualObjects(savedAttachment.name, attachmentName,
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqualObjects(savedAttachment.name, attachmentName,
                          @"Attachment wasn't in document");
     
     // Check db and fs
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -318,11 +319,12 @@
         
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -352,13 +354,13 @@
 
     NSDictionary *attachments = rev.attachments;
     CDTSavedAttachment *savedAttachment = [attachments objectForKey:@"bonsai-boston"];
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
-    STAssertEqualObjects(savedAttachment.name, @"bonsai-boston",
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqualObjects(savedAttachment.name, @"bonsai-boston",
                          @"Attachment wasn't in document");
 
     // Check db and fs
 
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -369,11 +371,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -411,7 +414,7 @@
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
     
 
-    STAssertEquals((NSUInteger)2,
+    XCTAssertEqual((NSUInteger)2,
                    [[rev attachments ] count],
                    @"Wrong number of attachments");
 
@@ -427,7 +430,7 @@
     rev = [self.datastore updateDocumentFromRevision:document error:&error];
 
     NSDictionary *attachments = rev.attachments;
-    STAssertEquals((NSUInteger)3, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqual((NSUInteger)3, [attachments count], @"Wrong number of attachments");
 
     // Confirm each attachment has the correct data
 
@@ -445,14 +448,14 @@
         NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
         NSData *retrievedMD5 = [self MD5:attachmentData];
 
-        STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+        XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
     }
 
     // Check db and fs
 
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");  // image
-    STAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
+    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
                  @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -470,12 +473,13 @@
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
         NSArray * orderBy = @[@"sequence", @"filename"];
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                orderBy:orderBy
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -514,7 +518,7 @@
     
     CDTDocumentRevision *revision = [self.datastore getDocumentWithId:rev.docId
                                                                 error:&error];
-    STAssertEquals((NSUInteger)2, [revision.attachments count],
+    XCTAssertEqual((NSUInteger)2, [revision.attachments count],
                    @"Wrong number of attachments");
 
     for (NSArray *item in @[ @[@"bonsai-boston", imageData], @[@"lorem", txtData] ]) {
@@ -528,14 +532,14 @@
         NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
         NSData *retrievedMD5 = [self MD5:attachmentData];
 
-        STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+        XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
     }
 
     // Check db and fs
 
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");  // image
-    STAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
+    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
                  @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -548,11 +552,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
-                                 error:&validationError],
-                     [dc formattedErrors:validationError]);
+                                  error:&validationError],
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -586,16 +591,16 @@
 
     NSDictionary *attachments = rev2.attachments;
     CDTSavedAttachment * savedAttachment = [attachments objectForKey:attachmentName];
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
-    STAssertEqualObjects([savedAttachment name], attachmentName, @"Attachment wasn't in document");
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqualObjects([savedAttachment name], attachmentName, @"Attachment wasn't in document");
 
     CDTAttachment *retrievedAttachment = [attachments objectForKey:attachmentName];
-    STAssertNotNil(retrievedAttachment, @"retrievedAttachment was nil");
+    XCTAssertNotNil(retrievedAttachment, @"retrievedAttachment was nil");
 
     NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
     NSData *retrievedMD5 = [self MD5:attachmentData];
 
-    STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+    XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
 }
 
 - (void)testUpdate
@@ -647,15 +652,15 @@
     NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
     NSData *retrievedMD5 = [self MD5:attachmentData];
 
-    STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+    XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
 
     // Check db and fs
 
     // Both files will remain until a -compact, even though the
     // image was "overwritten"
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");  // image
-    STAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
+    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
                  @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -667,11 +672,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -703,8 +709,8 @@
 
     attachments = rev2.attachments;
     CDTSavedAttachment *savedAttachment = [attachments objectForKey:attachmentName];
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
-    STAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
 
     //
     // Delete the attachment we added
@@ -717,17 +723,17 @@
     // rev2 should still have an attachment
     attachments = [self.datastore getDocumentWithId:rev2.docId rev:rev2.revId error:&error]
                     .attachments;
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
 
     // whereas rev3 should not
     attachments = rev3.attachments;
-    STAssertEquals((NSUInteger)0, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqual((NSUInteger)0, [attachments count], @"Wrong number of attachments");
 
     // Check db and fs
 
     // The file will remain until a -compact, even though the
     // attachment was deleted
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");  // image
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
@@ -738,11 +744,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -779,20 +786,20 @@
 
     NSDictionary *attachments = rev2.attachments;
     CDTSavedAttachment * savedAttachment = [attachments objectForKey:attachmentName];
-    STAssertEquals((NSUInteger)1, [attachments count], @"Wrong number of attachments");
-    STAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
+    XCTAssertEqual((NSUInteger)1, [attachments count], @"Wrong number of attachments");
+    XCTAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
 
     CDTAttachment *retrievedAttachment = [attachments objectForKey:attachmentName];
 
-    STAssertNotNil(retrievedAttachment, @"retrievedAttachment was nil");
+    XCTAssertNotNil(retrievedAttachment, @"retrievedAttachment was nil");
 
     NSData *attachmentData = [retrievedAttachment dataFromAttachmentContent];
     NSData *retrievedMD5 = [self MD5:attachmentData];
 
-    STAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
+    XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
 
     // Check file exists, but we've checked DB several times so assume okay
-    STAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
+    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
                  @"Attachment file doesn't exist");  // image
 }
 
@@ -804,7 +811,7 @@
                                  initWithData:nil
                                          name:@"test_attachment"
                                          type:@"image/jpg"];
-    STAssertNil(attachment, @"Shouldn't be able to create attachment with nil data");
+    XCTAssertNil(attachment, @"Shouldn't be able to create attachment with nil data");
 }
 
 - (void) testBadFilePathPreventsInitAttachment
@@ -813,7 +820,7 @@
                                  initWithPath:@"/non_existant"
                                          name:@"test_attachment"
                                          type:@"text/plain"];
-    STAssertNil(attachment, @"Shouldn't be able to create attachment with bad file path");
+    XCTAssertNil(attachment, @"Shouldn't be able to create attachment with bad file path");
 }
 
 - (void) testFileDeletedAfterAttachmentCreatedGivesNilStream
@@ -822,7 +829,7 @@
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *tempPath = [self tempFileName];
 
-    STAssertTrue([fm copyItemAtPath:[bundle pathForResource:@"bonsai-boston" ofType:@"jpg"]
+    XCTAssertTrue([fm copyItemAtPath:[bundle pathForResource:@"bonsai-boston" ofType:@"jpg"]
                              toPath:tempPath
                               error:nil],
                  @"File couldn't be copied");
@@ -832,18 +839,18 @@
                                          name:@"test_attachment"
                                          type:@"text/plain"];
     
-    STAssertNotNil(attachment, @"File path should exist");
+    XCTAssertNotNil(attachment, @"File path should exist");
 
-    STAssertTrue([fm removeItemAtPath:tempPath
+    XCTAssertTrue([fm removeItemAtPath:tempPath
                                 error:nil],
                  @"File couldn't be deleted");
 
     NSData *attachmentData = [attachment dataFromAttachmentContent];
-    STAssertNil(attachmentData, @"File deleted, input stream should be nil");
+    XCTAssertNil(attachmentData, @"File deleted, input stream should be nil");
 
     // Check fs and db -- file shouldn't exist, database should be empty
 
-    STAssertTrue([self attachmentsPathIsEmpty], @"Attachments directory wasn't empty");
+    XCTAssertTrue([self attachmentsPathIsEmpty], @"Attachments directory wasn't empty");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -852,11 +859,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 }
 
@@ -882,15 +890,15 @@
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:mutableRev error:&error];
 
     // Should fail, we shouldn't get a revision and should get a decent error
-    STAssertNil(rev2, @"rev2 should be nil");
-    STAssertNotNil(error, @"error shouldn't have been nil");
-    STAssertEquals((NSInteger)kTDStatusAttachmentStreamError,
+    XCTAssertNil(rev2, @"rev2 should be nil");
+    XCTAssertNotNil(error, @"error shouldn't have been nil");
+    XCTAssertEqual((NSInteger)kTDStatusAttachmentStreamError,
                    error.code,
                    @"Error should be kTDStatusAttachmentStreamError");
 
     // Database should be empty
 
-    STAssertTrue([self attachmentsPathIsEmpty], @"Attachments directory wasn't empty");
+    XCTAssertTrue([self attachmentsPathIsEmpty], @"Attachments directory wasn't empty");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -899,11 +907,12 @@
 
         MRDatabaseContentChecker *dc = [[MRDatabaseContentChecker alloc] init];
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
     }];
 
 }
@@ -938,9 +947,9 @@
     
 
     
-    STAssertNil(rev2, @"Updating with broken attachment didn't give null response");
-    STAssertNotNil(error, @"error shouldn't have been nil");
-    STAssertEquals((NSInteger)kTDStatusAttachmentStreamError,
+    XCTAssertNil(rev2, @"Updating with broken attachment didn't give null response");
+    XCTAssertNotNil(error, @"error shouldn't have been nil");
+    XCTAssertEqual((NSInteger)kTDStatusAttachmentStreamError,
                    error.code,
                    @"Error should be kTDStatusAttachmentStreamError");
 
@@ -954,21 +963,23 @@
                                   ];
         
         NSError *validationError;
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"revs"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                      @"%@",
+                      [dc formattedErrors:validationError]);
         
         // Check the attachments table is empty
         expectedRows = @[
                          @[@"sequence"],
                          ];
-        STAssertTrue([dc checkDatabase:db
+        XCTAssertTrue([dc checkDatabase:db
                                  table:@"attachments"
                                hasRows:expectedRows
                                  error:&validationError],
-                     [dc formattedErrors:validationError]);
+                       @"%@",
+                       [dc formattedErrors:validationError]);
     }];
 }
 
@@ -994,8 +1005,8 @@
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev  error:&error];
     
     
-    STAssertNil(error,@"An error occured saving the document");
-    STAssertNotNil(rev, @"First document was not created");
+    XCTAssertNil(error,@"An error occured saving the document");
+    XCTAssertNotNil(rev, @"First document was not created");
     
     mutableRev = [CDTMutableDocumentRevision revision];
     mutableRev.body = dict;
@@ -1003,8 +1014,8 @@
     
     CDTDocumentRevision *doc2 = [self.datastore createDocumentFromRevision:mutableRev error:&error];
     
-    STAssertNil(error, @"An error occured saving the document");
-    STAssertNotNil(doc2, @"New document was nil");
+    XCTAssertNil(error, @"An error occured saving the document");
+    XCTAssertNotNil(doc2, @"New document was nil");
     
 
 }
@@ -1027,7 +1038,7 @@
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
     
-    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    XCTAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
@@ -1048,7 +1059,7 @@
     NSArray * allDocuuments = [self.datastore getAllDocuments];
     
     for(CDTDocumentRevision * revision in allDocuuments){
-        STAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
     }
 }
 
@@ -1070,7 +1081,7 @@
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
     
-    STAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
+    XCTAssertNotNil(rev2, @"Updating with an empty attachments array gave nil response");
     
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
@@ -1090,12 +1101,12 @@
     
     NSArray * allDocuuments = [self.datastore getDocumentsWithIds:@[rev.docId]];
     
-    STAssertTrue([allDocuuments count] == 1,
+    XCTAssertTrue([allDocuuments count] == 1,
                  @"Unexpected number of documents 1 expected got %d",
                  [allDocuuments count]);
     
     for(CDTDocumentRevision * revision in allDocuuments){
-        STAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
     }
 }
 

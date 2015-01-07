@@ -27,7 +27,7 @@
     NSError *err = nil;
     
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
-    STAssertNotNil(im, @"indexManager is nil");
+    XCTAssertNotNil(im, @"indexManager is nil");
 }
 
 - (void)testAddFieldIndex
@@ -37,8 +37,8 @@
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     
     BOOL ok = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&err];
-    STAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
-    STAssertNil(err, @"error is not nil");
+    XCTAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertNil(err, @"error is not nil");
 }
 
 - (void)testAddInvalidFieldIndex
@@ -48,8 +48,8 @@
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     
     BOOL ok = [im ensureIndexedWithIndexName:@"abc123^&*^&%^^*^&(; drop table customer;" fieldName:@"name" error:&err];
-    STAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
-    STAssertNotNil(err, @"error is nil");
+    XCTAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
+    XCTAssertNotNil(err, @"error is nil");
 }
 
 
@@ -61,13 +61,13 @@
     
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
-    STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
-    STAssertNil(error1, @"error is not nil");
+    XCTAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertNil(error1, @"error is not nil");
     
     NSError *error2 = nil;
     BOOL ok2 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
-    STAssertFalse(ok2, @"ensureIndexedWithIndexName did not return false");
-    STAssertNotNil(error2, @"error is nil");
+    XCTAssertFalse(ok2, @"ensureIndexedWithIndexName did not return false");
+    XCTAssertNotNil(error2, @"error is nil");
 }
 
 - (void)testDeleteNonexistantIndex
@@ -77,8 +77,8 @@
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&err];
     
     BOOL ok = [im deleteIndexWithIndexName:@"index1" error:&err];
-    STAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
-    STAssertNotNil(err, @"error is nil");
+    XCTAssertFalse(ok, @"ensureIndexedWithIndexName did not return false");
+    XCTAssertNotNil(err, @"error is nil");
 }
 
 - (void)testIndexSomeDocuments
@@ -97,8 +97,8 @@
     
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
-    STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
-    STAssertNil(error1, @"error is not nil");
+    XCTAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertNil(error1, @"error is not nil");
 }
 
 - (void)testIndexSomeDocumentsWithUpdate
@@ -117,8 +117,8 @@
     
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
-    STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
-    STAssertNil(error1, @"error is not nil");
+    XCTAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertNil(error1, @"error is not nil");
     
     // create some more docs after creating index
     nDocs = 1000;
@@ -134,8 +134,8 @@
     unsigned long count1 = [[res1 documentIds] count];
     unsigned long count2 = [[res2 documentIds] count];
     
-    STAssertEquals(count1, 1000UL, @"Query should return 1000 documents");
-    STAssertEquals(count2, 1000UL, @"Query should return 1000 documents");
+    XCTAssertEqual(count1, 1000UL, @"Query should return 1000 documents");
+    XCTAssertEqual(count2, 1000UL, @"Query should return 1000 documents");
 }
 
 - (void)testIndexSingleCriteria
@@ -168,7 +168,7 @@
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom"} error:&error];
     unsigned long count = [[res documentIds] count];
-    STAssertEquals(count, 3UL, @"Query should return 3 documents");
+    XCTAssertEqual(count, 3UL, @"Query should return 3 documents");
 }
 
 - (void)testIndexMultipleCriteria
@@ -200,7 +200,7 @@
     [im ensureIndexedWithIndexName:@"surname" fieldName:@"surname" error:&error];
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"name":@"Tom",@"surname":@"Blench"} error:&error];
-    STAssertEquals([[res documentIds] count], (NSUInteger)1, @"Query should return 1 document");
+    XCTAssertEqual([[res documentIds] count], (NSUInteger)1, @"Query should return 1 document");
 }
 
 
@@ -249,7 +249,7 @@
     //    NSLog(@"end query");
     unsigned long count=[[res documentIds] count];
     // NB this is dependent on lrand48 implementation
-    STAssertEquals(count, 98UL, @"Query should return 98 documents");
+    XCTAssertEqual(count, 98UL, @"Query should return 98 documents");
 }
 
 - (void)testResultEnumerator
@@ -268,14 +268,14 @@
     
     NSError *error1 = nil;
     BOOL ok1 = [im ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
-    STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
-    STAssertNil(error1, @"error is not nil");
+    XCTAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertNil(error1, @"error is not nil");
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"index1":@"tom"} error:&error];
     
     // helper fn countResults is a for loop which tests enumerator
     int count=[self countResults:res];
-    STAssertEquals(count, nDocs, @"counts not equal");
+    XCTAssertEqual(count, nDocs, @"counts not equal");
 }
 
 - (void)testCreateAndDeleteIndex
@@ -289,8 +289,8 @@
     [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error1];
     [im deleteIndexWithIndexName:@"name" error:&error2];
     
-    STAssertNil(error1, @"ensureIndexedWithIndexName should not return error");
-    STAssertNil(error2, @"deleteIndexWithIndexName should not return error");
+    XCTAssertNil(error1, @"ensureIndexedWithIndexName should not return error");
+    XCTAssertNil(error2, @"deleteIndexWithIndexName should not return error");
 }
 
 - (void)test2IndexManagers
@@ -303,8 +303,8 @@
         
         NSError *error1 = nil;
         BOOL ok1 = [im1 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error1];
-        STAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
-        STAssertNil(error1, @"error is not nil");
+        XCTAssertTrue(ok1, @"ensureIndexedWithIndexName did not return true");
+        XCTAssertNil(error1, @"error is not nil");
     }
     
     {
@@ -312,8 +312,8 @@
         
         NSError *error2 = nil;
         BOOL ok2 = [im2 ensureIndexedWithIndexName:@"index1" fieldName:@"name" error:&error2];
-        STAssertTrue(ok2, @"ensureIndexedWithIndexName did not return true");
-        STAssertNil(error2, @"error is not nil");
+        XCTAssertTrue(ok2, @"ensureIndexedWithIndexName did not return true");
+        XCTAssertNil(error2, @"error is not nil");
     }
 }
 
@@ -355,9 +355,9 @@
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
     
-    STAssertEquals(count1, 1UL, @"Query for prefix 'd' should return 1 document");
+    XCTAssertEqual(count1, 1UL, @"Query for prefix 'd' should return 1 document");
     
-    STAssertEquals(count2, 2UL, @"Query for prefix 'du' should return 2 documents");
+    XCTAssertEqual(count2, 2UL, @"Query for prefix 'du' should return 2 documents");
 }
 
 - (void)testNumericIndexers
@@ -404,8 +404,8 @@
     unsigned long count1=[[res1 documentIds] count];
     unsigned long count2=[[res2 documentIds] count];
     
-    STAssertEquals(count1, 3UL, @"Didn't get expected number of results");
-    STAssertEquals(count2, 6UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count1, 3UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count2, 6UL, @"Didn't get expected number of results");
 }
 
 - (void)testUniqueValues
@@ -454,8 +454,8 @@
     unsigned long count1=[res1 count];
     unsigned long count2=[res2 count];
     
-    STAssertEquals(count1, 6UL, @"Didn't get expected number of results");
-    STAssertEquals(count2, 9UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count1, 6UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count2, 9UL, @"Didn't get expected number of results");
 }
 
 - (void)testComplexQuery
@@ -480,7 +480,7 @@
                                             error:&error];
     
     unsigned long count=[[res documentIds] count];
-    STAssertEquals(count, 1UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count, 1UL, @"Didn't get expected number of results");
 }
 
 - (void)testOrderQuery1
@@ -500,12 +500,12 @@
                                             error:&error];
     int lastVal = 100000000;
     
-    STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
+    XCTAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
     
     for(CDTDocumentRevision *doc in res) {
         NSNumber *val = [doc.body objectForKey:@"area"];
         int valInt = [val intValue];
-        STAssertTrue(valInt <= lastVal, @"Not sorted");
+        XCTAssertTrue(valInt <= lastVal, @"Not sorted");
         lastVal = valInt;
     }
 }
@@ -527,12 +527,12 @@
                                             error:&error];
     NSString *lastName = @"Zzzzzzzzistan"; // probably the last country in the alphabet
     
-    STAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
+    XCTAssertTrue([[res documentIds] count] > 0, @"Query yielded nothing!");
     
     for(CDTDocumentRevision *doc in res) {
         NSString *val = [doc.body objectForKey:@"name"];
         
-        STAssertTrue([val compare:lastName] < 0, @"Not sorted correctly");
+        XCTAssertTrue([val compare:lastName] < 0, @"Not sorted correctly");
         lastName = val;
     }
 }
@@ -586,14 +586,14 @@
     unsigned long count7=[[res7 documentIds] count];
     unsigned long count8=[[res8 documentIds] count];
     
-    STAssertEquals(count1, 10UL, @"Didn't get expected number of results");
-    STAssertEquals(count2, 4UL, @"Didn't get expected number of results");
-    STAssertEquals(count3, 1UL, @"Didn't get expected number of results");
-    STAssertEquals(count4, 0UL, @"Didn't get expected number of results");
-    STAssertEquals(count5, 0UL, @"Didn't get expected number of results");
-    STAssertEquals(count6, 184UL, @"Didn't get expected number of results");
-    STAssertEquals(count7, 194UL, @"Didn't get expected number of results");
-    STAssertEquals(count8, 0UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count1, 10UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count2, 4UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count3, 1UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count4, 0UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count5, 0UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count6, 184UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count7, 194UL, @"Didn't get expected number of results");
+    XCTAssertEqual(count8, 0UL, @"Didn't get expected number of results");
 }
 
 - (void)testQueryError1
@@ -607,8 +607,8 @@
     CDTQueryResult *res = [im queryWithDictionary:@{@"index2": @"value"}
                                             error:&error];
     
-    STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
-    STAssertNil(res, @"Result was not nil");
+    XCTAssertEqual([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
+    XCTAssertNil(res, @"Result was not nil");
 }
 
 - (void)testQueryError2
@@ -622,8 +622,8 @@
     CDTQueryResult *res = [im queryWithDictionary:@{@"abc123^&*^&%^^*^&(; drop table customer": @"value"}
                                             error:&error];
     
-    STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
-    STAssertNil(res, @"Result was not nil");
+    XCTAssertEqual([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
+    XCTAssertNil(res, @"Result was not nil");
 }
 
 - (void)testQueryError3
@@ -638,8 +638,8 @@
                                           options:@{kCDTQueryOptionSortBy: @"index2"}
                                             error:&error];
     
-    STAssertEquals([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
-    STAssertNil(res, @"Result was not nil");
+    XCTAssertEqual([error code], CDTIndexErrorIndexDoesNotExist, @"Did not get CDTIndexErrorIndexDoesNotExist error");
+    XCTAssertNil(res, @"Result was not nil");
 }
 
 - (void)testQueryError4
@@ -654,8 +654,8 @@
                                           options:@{kCDTQueryOptionSortBy: @"abc123^&*^&%^^*^&(; drop table customer"}
                                             error:&error];
     
-    STAssertEquals([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
-    STAssertNil(res, @"Result was not nil");
+    XCTAssertEqual([error code], CDTIndexErrorInvalidIndexName, @"Did not get CDTIndexErrorInvalidIndexName error");
+    XCTAssertNil(res, @"Result was not nil");
 }
 
 - (void)testIndexerTypes
@@ -683,30 +683,30 @@
     // standard string query
     CDTQueryResult *res1 = [im queryWithDictionary:@{@"string": @"Ipsem lorem"}
                                              error:&error];
-    STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res1 documentIds] count], (NSUInteger)1, @"Didn't get expected number of results");
+    XCTAssertNil(error, @"Error was not nil");
+    XCTAssertEqual([[res1 documentIds] count], (NSUInteger)1, @"Didn't get expected number of results");
     
     // test that "2" converts to string
     CDTQueryResult *res2 = [im queryWithDictionary:@{@"number": @[@1,@2]}
                                              error:&error];
-    STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res2 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
+    XCTAssertNil(error, @"Error was not nil");
+    XCTAssertEqual([[res2 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
     
     // test that array indexed correctly
     CDTQueryResult *res3 = [im queryWithDictionary:@{@"list": @[@"a",@"b",@"d"]}
                                              error:&error];
-    STAssertNil(error, @"Error was not nil");
-    STAssertEquals([[res3 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
+    XCTAssertNil(error, @"Error was not nil");
+    XCTAssertEqual([[res3 documentIds] count], (NSUInteger)2, @"Didn't get expected number of results");
     
     // nothing should be indexed for a dictionary
     NSArray *res4 = [im uniqueValuesForIndex:@"dictionary" error:&error];
-    STAssertNil(error, @"Error was not nil");
-    STAssertEquals([res4 count], (NSUInteger)0, @"Didn't get expected number of results");
+    XCTAssertNil(error, @"Error was not nil");
+    XCTAssertEqual([res4 count], (NSUInteger)0, @"Didn't get expected number of results");
     
     // nothing should be indexed since we can't convert string to int
     NSArray *res5 = [im uniqueValuesForIndex:@"stringAsInt" error:&error];
-    STAssertNil(error, @"Error was not nil");
-    STAssertEquals([res5 count], (NSUInteger)0, @"Didn't get expected number of results");
+    XCTAssertNil(error, @"Error was not nil");
+    XCTAssertEqual([res5 count], (NSUInteger)0, @"Didn't get expected number of results");
 }
 
 - (void)testQueryingForDeletedItem
@@ -743,10 +743,10 @@
     count = 0;
     for (CDTDocumentRevision *result in [im queryWithDictionary:@{@"name": @"Zambia"} error:&error]) {
         // Check we don't get a deleted document
-        STAssertFalse(result.deleted, @"Query returned deleted document");
+        XCTAssertFalse(result.deleted, @"Query returned deleted document");
         count++;
     }
-    STAssertEquals(count, 1, @"Query returned the wrong number of results");
+    XCTAssertEqual(count, 1, @"Query returned the wrong number of results");
 }
 
 - (void)testIndexManagerConcurrentUpdated
@@ -767,7 +767,7 @@
             usleep(500*1000);
         }
     }
-    STAssertEquals([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], (NSUInteger)500, @"Query returned the wrong number of results");
+    XCTAssertEqual([[[im queryWithDictionary:@{@"name": @"made in thread"} error:nil] documentIds] count], (NSUInteger)500, @"Query returned the wrong number of results");
 }
 
 
@@ -792,13 +792,13 @@
     
     CDTMutableDocumentRevision * rev = [CDTMutableDocumentRevision revision];
     rev.body = @{@"name": @"mike"};
-    STAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
+    XCTAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
     
     resultCount = 0;
     CDTQueryResult *result = [im queryWithDictionary:@{@"name": @"mike"}
                                                error:nil];
     for (_ in result) { resultCount++; }
-    STAssertEquals(resultCount, 1, @"Query didn't find the document");
+    XCTAssertEqual(resultCount, 1, @"Query didn't find the document");
     
     // Tear down the original datastore objects
     [im shutdown];
@@ -806,25 +806,25 @@
     // Fire up a new indexManager without the objects
     CDTIndexManager *im2 = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
     
-    STAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
+    XCTAssertNotNil([datastore createDocumentFromRevision:rev error:nil], @"Doc not created");
     
     [im2 ensureIndexedWithIndexName:@"name" fieldName:@"name" error:nil];
     
     CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
     mutableRev.body = @{@"name": @"fred"};
-    STAssertNotNil([datastore createDocumentFromRevision:mutableRev error:nil], @"Doc not created");
+    XCTAssertNotNil([datastore createDocumentFromRevision:mutableRev error:nil], @"Doc not created");
     
     resultCount = 0;
     result = [im2 queryWithDictionary:@{@"name": @"mike"}
                                 error:nil];
     for (_ in result) { resultCount++; }
-    STAssertEquals(resultCount, 2, @"Query didn't find the document");
+    XCTAssertEqual(resultCount, 2, @"Query didn't find the document");
     
     resultCount = 0;
     result = [im2 queryWithDictionary:@{@"name": @"fred"}
                                 error:nil];
     for (_ in result) { resultCount++; }
-    STAssertEquals(resultCount, 1, @"Query didn't find the document");
+    XCTAssertEqual(resultCount, 1, @"Query didn't find the document");
     
     // Still broken even if we updateAllIndexes
     [im2 updateAllIndexes:nil];
@@ -833,7 +833,7 @@
     result = [im2 queryWithDictionary:@{@"name": @"mike"}
                                 error:nil];
     for (_ in result) { resultCount++; }
-    STAssertEquals(resultCount, 2, @"Query didn't find the document");
+    XCTAssertEqual(resultCount, 2, @"Query didn't find the document");
     
     
     [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:nil];
@@ -1096,7 +1096,7 @@
     [super setUp];
     NSError *error = nil;
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 }
 
 - (void)tearDown

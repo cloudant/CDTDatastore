@@ -8,7 +8,7 @@
 
 #import "ReplicationAcceptance.h"
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import <CloudantSync.h>
 #import <UNIRest.h>
@@ -64,7 +64,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     NSError *error;
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 
     self.primaryRemoteDatabaseName = [NSString stringWithFormat:@"%@-test-database-%@",
                                     self.remoteDbPrefix,
@@ -107,12 +107,12 @@ static NSUInteger largeRevTreeSize = 1500;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
-    STAssertNil(error, @"%@",error);
-    STAssertNotNil(replicator, @"CDTReplicator is nil");
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
     
     NSLog(@"Replicating from %@", [pull.source absoluteString]);
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
     
     while (replicator.isActive) {
@@ -143,12 +143,12 @@ static NSUInteger largeRevTreeSize = 1500;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
-    STAssertNil(error, @"%@",error);
-    STAssertNotNil(replicator, @"CDTReplicator is nil");
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
     
     NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
    
     while (replicator.isActive) {
@@ -171,7 +171,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create docs in local store
     NSLog(@"Creating documents...");
     [self createLocalDocs:n_docs];
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     CDTReplicator *replicator = [self pushToRemote];
 
@@ -180,10 +180,10 @@ static NSUInteger largeRevTreeSize = 1500;
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 
-    STAssertEquals(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
-    STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
+    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 /**
@@ -201,15 +201,15 @@ static NSUInteger largeRevTreeSize = 1500;
 
     CDTReplicator *replicator = [self pullFromRemote];
 
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
     
-    STAssertEquals(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
     
-    STAssertEquals(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
+    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 -(void) testPullErrorsWhenLocalDatabaseIsDeleted
@@ -230,7 +230,7 @@ static NSUInteger largeRevTreeSize = 1500;
     replicator.delegate = mydel;
     
     error = nil;
-    STAssertTrue([replicator startWithError:&error], @"CDTReplicator -startWithError: %@", error);
+    XCTAssertTrue([replicator startWithError:&error], @"CDTReplicator -startWithError: %@", error);
     
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
@@ -238,17 +238,17 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 
     
-    STAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
                  replicator.changesTotal, n_docs);
     
-    STAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
                    replicator.changesProcessed, n_docs);
     
-    STAssertEquals(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+    XCTAssertEqual(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:replicator.state],
                    [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
 
-    STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
                    @"Wrong error code: %ld", mydel.error.code);
     
     //have to wait for the threadsto completely stop executing
@@ -256,9 +256,9 @@ static NSUInteger largeRevTreeSize = 1500;
         [NSThread sleepForTimeInterval:1.0f];
     }
 
-    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
-    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
+    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    XCTAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
     
 }
 
@@ -281,7 +281,7 @@ static NSUInteger largeRevTreeSize = 1500;
     
     error = nil;
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
     
     while (replicator.isActive) {
@@ -290,17 +290,17 @@ static NSUInteger largeRevTreeSize = 1500;
     }
     
     
-    STAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
                  replicator.changesTotal, n_docs);
     
-    STAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
                  replicator.changesProcessed, n_docs);
     
-    STAssertEquals(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+    XCTAssertEqual(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:replicator.state],
                    [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
 
-    STAssertEquals(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
+    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
                    @"Wrong error code: %ld", mydel.error.code);
     
     //have to wait for the threadsto completely stop executing
@@ -308,9 +308,9 @@ static NSUInteger largeRevTreeSize = 1500;
         [NSThread sleepForTimeInterval:1.0f];
     }
     
-    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
-    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
+    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    XCTAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
 }
 
 /**
@@ -332,14 +332,14 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self pullFromRemote];
     
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
     
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
     
     CDTQueryResult *res = [im queryWithDictionary:@{@"hello":@"world"} error:&error];
-    STAssertEquals([[res documentIds] count], n_docs, @"Index does not return correct count");
+    XCTAssertEqual([[res documentIds] count], n_docs, @"Index does not return correct count");
 }
 
 -(void) testPullFilteredReplication {
@@ -383,9 +383,9 @@ static NSUInteger largeRevTreeSize = 1500;
                         [NSString stringWithFormat:@"doc-%i", 23]];
     
     NSArray *localDocs = [self.datastore getDocumentsWithIds:docids];
-    STAssertNotNil(localDocs, @"nil");
-    STAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %@",localDocs.count);
-    STAssertTrue(self.datastore.documentCount == totalReplicated,
+    XCTAssertNotNil(localDocs, @"nil");
+    XCTAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %@",localDocs.count);
+    XCTAssertTrue(self.datastore.documentCount == totalReplicated,
                  @"Incorrect number of documents created %lu", self.datastore.documentCount);
     
 }
@@ -413,8 +413,8 @@ static NSUInteger largeRevTreeSize = 1500;
         [request setHeaders:headers];
     }] asJson];
     NSDictionary *jsonResponse = response.body.object;
-    STAssertTrue([jsonResponse[@"_id"] isEqual:@"doc-3"], @"%@", jsonResponse);
-    STAssertTrue([jsonResponse[@"docnum"] isEqual:@3], @"%@", jsonResponse);
+    XCTAssertTrue([jsonResponse[@"_id"] isEqual:@"doc-3"], @"%@", jsonResponse);
+    XCTAssertTrue([jsonResponse[@"docnum"] isEqual:@3], @"%@", jsonResponse);
     
 }
 
@@ -452,29 +452,29 @@ static NSUInteger largeRevTreeSize = 1500;
     
     NSError *error;
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
     
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
     }
 
-    STAssertEquals(replicator.state, CDTReplicatorStateStopped, @"expected a different state: %d (%@)",
+    XCTAssertEqual(replicator.state, CDTReplicatorStateStopped, @"expected a different state: %d (%@)",
                    replicator.state, [CDTReplicator stringForReplicatorState:replicator.state]);
     
     BOOL docComparison = [self compareDocCount:self.datastore
       expectFewerDocsInRemoteDatabase:self.primaryRemoteDatabaseURL];
     
-    STAssertTrue(docComparison, @"Remote database doesn't have fewer docs than local.");
+    XCTAssertTrue(docComparison, @"Remote database doesn't have fewer docs than local.");
     
     //have to wait for the threadsto completely stop executing
     while(replicator.threadExecuting) {
         [NSThread sleepForTimeInterval:1.0f];
     }
     
-    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
-    STAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
+    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    XCTAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
     
 }
 
@@ -486,7 +486,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create the initial rev
     NSString *docId = @"doc-0";
     [self createLocalDocWithId:docId revs:largeRevTreeSize];
-    STAssertEquals(self.datastore.documentCount, (NSUInteger)1, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)1, @"Incorrect number of documents created");
 
     [self pushToRemote];
 
@@ -506,12 +506,12 @@ static NSUInteger largeRevTreeSize = 1500;
     NSDictionary *jsonResponse = response.body.object;
 
     // default couchdb revs_limit is 1000
-    STAssertEquals([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)1000, @"Wrong number of revs");
-    STAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"1500"], @"Not all revs seem to be replicated");
+    XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)1000, @"Wrong number of revs");
+    XCTAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"1500"], @"Not all revs seem to be replicated");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 /**
@@ -529,14 +529,14 @@ static NSUInteger largeRevTreeSize = 1500;
 
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
                                                            error:&error];
-    STAssertNil(error, @"Error getting replicated doc: %@", error);
-    STAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
+    XCTAssertNil(error, @"Error getting replicated doc: %@", error);
+    XCTAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
 
-    STAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
+    XCTAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 /**
@@ -553,13 +553,13 @@ static NSUInteger largeRevTreeSize = 1500;
     NSLog(@"Creating documents...");
     [self createRemoteDocs:n_docs];
     [self pullFromRemote];
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
     for (int i = 1; i < n_docs+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
-        STAssertNil(error, @"Couldn't get document");
+        XCTAssertNil(error, @"Couldn't get document");
         [self addRevsToDocumentRevision:rev count:n_mods];
     }
 
@@ -582,14 +582,14 @@ static NSUInteger largeRevTreeSize = 1500;
         }] asJson];
         NSDictionary *jsonResponse = response.body.object;
 
-        STAssertEquals([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)n_mods, @"Wrong number of revs");
-        STAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"10"], @"Not all revs seem to be replicated");
+        XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)n_mods, @"Wrong number of revs");
+        XCTAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"10"], @"Not all revs seem to be replicated");
     }
 
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 
@@ -606,7 +606,7 @@ static NSUInteger largeRevTreeSize = 1500;
     NSLog(@"Creating documents...");
     [self createRemoteDocs:n_docs];
     [self pullFromRemote];
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
 
     // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
     for (int i = 1; i < n_docs+1; i++) {
@@ -614,7 +614,7 @@ static NSUInteger largeRevTreeSize = 1500;
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
 
         [self.datastore deleteDocumentFromRevision:rev error:&error];
-        STAssertNil(error, @"Couldn't delete document");
+        XCTAssertNil(error, @"Couldn't delete document");
     }
 
     // Replicate the changes
@@ -626,7 +626,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 /**
@@ -651,7 +651,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) pushDocsAsWritingThem_pullReplicateThenSignal:(TRVSMonitor*)monitor
@@ -670,7 +670,7 @@ static NSUInteger largeRevTreeSize = 1500;
 -(void) pushDocsAsWritingThem_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
 {
     [self createLocalDocs:n_docs];
-    STAssertEquals(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
     [monitor signal];
 }
 
@@ -701,13 +701,13 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [monitor wait];
 
-    STAssertEquals(self.datastore.documentCount, (NSUInteger)n_docs*2, @"Wrong number of local docs");
+    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)n_docs*2, @"Wrong number of local docs");
 
     [self pushToRemote];
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) pullDocsWhileWritingOthers_pullReplicateThenSignal:(TRVSMonitor*)monitor
@@ -762,7 +762,7 @@ static NSUInteger largeRevTreeSize = 1500;
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
     NSError *error;
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
     
     while (replicator.isActive) {
@@ -772,7 +772,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:thirdDatabase];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 
     [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 }
@@ -809,11 +809,11 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [self pushToRemote];
 
-    STAssertEquals(self.datastore.documentCount, (NSUInteger)n_docs, @"Wrong number of local docs");
+    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)n_docs, @"Wrong number of local docs");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 -(void) pullDocsWhileWritingSame_pullReplicateThenSignal:(TRVSMonitor*)monitor
@@ -871,7 +871,7 @@ static NSUInteger largeRevTreeSize = 1500;
     NSLog(@"Replicating to %@", [thirdDatabase absoluteString]);
     NSError *error;
     if (![replicator startWithError:&error]) {
-        STFail(@"CDTReplicator -startWithError: %@", error);
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
     }
     
     while (replicator.isActive) {
@@ -881,7 +881,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:thirdDatabase];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 
     [self deleteRemoteDatabase:thirdDatabaseName instanceURL:self.remoteRootURL];
 }
@@ -934,7 +934,7 @@ static NSUInteger largeRevTreeSize = 1500;
     
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 
@@ -957,7 +957,7 @@ static NSUInteger largeRevTreeSize = 1500;
     
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
-    STAssertTrue(same, @"Remote and local databases differ");
+    XCTAssertTrue(same, @"Remote and local databases differ");
 }
 
 /**
@@ -978,10 +978,10 @@ static NSUInteger largeRevTreeSize = 1500;
     pull.optionalHeaders = extraHeaders;
     
     NSDictionary *pullDoc = [pull dictionaryForReplicatorDocument:nil];
-    STAssertEqualObjects(pullDoc[@"headers"][@"SpecialHeader"], @"foo", @"Bad headers: %@",
+    XCTAssertEqualObjects(pullDoc[@"headers"][@"SpecialHeader"], @"foo", @"Bad headers: %@",
                          pullDoc[@"headers"]);
     
-    STAssertEqualObjects(pullDoc[@"headers"][@"user-agent"], userAgent, @"Bad headers: %@",
+    XCTAssertEqualObjects(pullDoc[@"headers"][@"user-agent"], userAgent, @"Bad headers: %@",
                          pullDoc[@"headers"]);
 
     
@@ -1004,11 +1004,11 @@ static NSUInteger largeRevTreeSize = 1500;
     [NSURLProtocol unregisterClass:[ReplicatorURLProtocol class]];
     [ReplicatorURLProtocol setTestDelegate:nil];
     
-    STAssertNil(tester.headerFailures, @"Errors found in headers.");
+    XCTAssertNil(tester.headerFailures, @"Errors found in headers.");
     
     for (NSString *headerName in tester.headerFailures) {
         
-        STAssertTrue([tester.headerFailures[headerName] integerValue] == [@0 integerValue],
+        XCTAssertTrue([tester.headerFailures[headerName] integerValue] == [@0 integerValue],
                      @"Found %ld failures with the header \"%@\"", 
                      [tester.headerFailures[headerName] integerValue], headerName);
         
@@ -1034,29 +1034,29 @@ static NSUInteger largeRevTreeSize = 1500;
     replicator.delegate = tester;
     secondReplicator.delegate = tester;
     
-    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    STAssertFalse(replicator.threadFinished, @"First replicator thread finished");
-    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertFalse(replicator.threadFinished, @"First replicator thread finished");
+    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
 
-    STAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
-    STAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
-    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    XCTAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
+    XCTAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
+    XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
     NSError *error;
-    STAssertTrue([replicator startWithError:&error],
+    XCTAssertTrue([replicator startWithError:&error],
                 @"First replicator started with error: %@", error);
     error = nil;
-    STAssertTrue([secondReplicator startWithError:&error],
+    XCTAssertTrue([secondReplicator startWithError:&error],
                 @"Second replicator started with error: %@", error);
 
     
-    STAssertTrue(replicator.threadExecuting, @"First replicator thread NOT executing");
-    STAssertFalse(replicator.threadFinished, @"First replicator thread finished");
-    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    XCTAssertTrue(replicator.threadExecuting, @"First replicator thread NOT executing");
+    XCTAssertFalse(replicator.threadFinished, @"First replicator thread finished");
+    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
     
-    STAssertTrue(secondReplicator.threadExecuting, @"Second replicator thread NOT executing");
-    STAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
-    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    XCTAssertTrue(secondReplicator.threadExecuting, @"Second replicator thread NOT executing");
+    XCTAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
+    XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
     while (replicator.isActive || secondReplicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
@@ -1067,20 +1067,20 @@ static NSUInteger largeRevTreeSize = 1500;
         
     }
     
-    STAssertTrue(tester.multiThreaded, @"Delegate didn't find multithreading evidence.");
+    XCTAssertTrue(tester.multiThreaded, @"Delegate didn't find multithreading evidence.");
 
     //wait for the threads to completely stop executing
     while(replicator.threadExecuting || secondReplicator.threadExecuting) {
         [NSThread sleepForTimeInterval:1.0f];
     }
 
-    STAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    STAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
-    STAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
+    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
     
-    STAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
-    STAssertTrue(secondReplicator.threadFinished, @"Second replicator thread NOT finished");
-    STAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
+    XCTAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
+    XCTAssertTrue(secondReplicator.threadFinished, @"Second replicator thread NOT finished");
+    XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
 }
 

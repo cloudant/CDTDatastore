@@ -37,7 +37,7 @@
     char *result = mkdtemp(tempDirectoryNameCString);
     if (!result)
     {
-        STFail(@"Couldn't create temporary directory");
+        XCTFail(@"Couldn't create temporary directory");
     }
     
     NSString *path = [[NSFileManager defaultManager]
@@ -65,8 +65,8 @@
     NSError *error;
     self.factory = [[CDTDatastoreManager alloc] initWithDirectory:self.factoryPath error:&error];
     
-    STAssertNil(error, @"CDTDatastoreManager had error");
-    STAssertNotNil(self.factory, @"Factory is nil");
+    XCTAssertNil(error, @"CDTDatastoreManager had error");
+    XCTAssertNotNil(self.factory, @"Factory is nil");
     
 }
 
@@ -76,7 +76,7 @@
     
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:self.factoryPath error:&error];
-    STAssertNil(error, @"Error deleting temporary directory.");
+    XCTAssertNil(error, @"Error deleting temporary directory.");
 
     // Put teardown code here; it will be run once, after the last test case.
     [super tearDown];

@@ -39,7 +39,7 @@
     [self.factory deleteDatastoreNamed:@"test" error:&error];
     self.datastore = [self.factory datastoreNamed:@"test" error:&error];
     
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 }
 
 
@@ -254,11 +254,11 @@
                                                                options: options
                                                                  error: &error];
     
-    STAssertEqualObjects(query.sql, sqlToVerify, nil);
-    STAssertEquals([query.values count], [valuesToVerify count], nil);
-    STAssertEqualObjects(query.values, valuesToVerify, nil);
-    STAssertEquals([query.usedIndexes count], [indexReferencesToVerify count], nil);
-    STAssertEqualObjects(query.usedIndexes, indexReferencesToVerify, nil);
+    XCTAssertEqualObjects(query.sql, sqlToVerify);
+    XCTAssertEqual([query.values count], [valuesToVerify count]);
+    XCTAssertEqualObjects(query.values, valuesToVerify);
+    XCTAssertEqual([query.usedIndexes count], [indexReferencesToVerify count]);
+    XCTAssertEqualObjects(query.usedIndexes, indexReferencesToVerify);
     
 }
 
@@ -272,8 +272,8 @@
                                     options: options
                                     error: &error];
     
-    STAssertTrue(query.sql == nil, nil);
-    STAssertTrue([error code] == codeToVerify, nil);
+    XCTAssertTrue(query.sql == nil);
+    XCTAssertTrue([error code] == codeToVerify);
     
 }
 
@@ -306,30 +306,30 @@
     }
     
     BOOL ok = [im ensureIndexedWithIndexName:@"name" fieldName:@"name" error:&error];
-    STAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
     
     ok = [im ensureIndexedWithIndexName: @"field"
                               fieldName: @"field"
                                    type: CDTIndexTypeInteger error:&error];
-    STAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
+    XCTAssertTrue(ok, @"ensureIndexedWithIndexName did not return true");
   
     CDTQueryResult* result = [im
                               queryWithPredicate: [NSPredicate predicateWithFormat:@"name = 'tom'"]
                                          options: nil error:&error];
-    STAssertTrue(result != nil, @"Result shouldn't be nil");
-    STAssertTrue([[result documentIds] count] == 1000,
+    XCTAssertTrue(result != nil, @"Result shouldn't be nil");
+    XCTAssertTrue([[result documentIds] count] == 1000,
                  @"Should have 1000 records with name = 'tom'");
   
     result = [im queryWithPredicate: [NSPredicate predicateWithFormat:@"field = 5" ]
                             options: nil
                               error: &error];
-    STAssertTrue([[result documentIds] count]==2, @"Should have two records with field value 5");
+    XCTAssertTrue([[result documentIds] count]==2, @"Should have two records with field value 5");
     
     result = [im
               queryWithPredicate:
                 [NSPredicate predicateWithFormat:@"(field = 5) and (name = 'tom')" ]
                            error: &error];
-    STAssertTrue([[result documentIds] count]==1,
+    XCTAssertTrue([[result documentIds] count]==1,
                  @"Should have one record with field value 5 and name = 'tom'");
     
     // use the convenience method without providing an options
@@ -337,7 +337,7 @@
               queryWithPredicate: [NSPredicate predicateWithFormat:@"(field = 5) or (name = 'tom')"]
                          options: nil
                            error: &error];
-    STAssertTrue([[result documentIds] count]==1001,
+    XCTAssertTrue([[result documentIds] count]==1001,
                  @"Should have 1001 records with field value 5 or name = 'tom' "
                   "(all tom plus one mary)");
     
@@ -347,7 +347,7 @@
               [NSPredicate predicateWithFormat:@"(field < 50) and (name = 'tom')" ]
                             options: options
                               error: &error];
-    STAssertTrue([[result documentIds] count]==50,
+    XCTAssertTrue([[result documentIds] count]==50,
                  @"Should have 50 (0 to 49) records with field value <50 and name = 'tom'");
     
     // I set offset without a limit first since the SQL Lite syntax requires a limit setting
@@ -358,7 +358,7 @@
               [NSPredicate predicateWithFormat:@"(field < 50) and (name = 'tom')" ]
                             options: options
                               error: &error];
-    STAssertTrue([[result documentIds] count]==40,
+    XCTAssertTrue([[result documentIds] count]==40,
                  @"Should have 40 (skip 1st 10) records with field value <50 and name = 'tom'");
     
     // Now put the limit in as well
@@ -368,7 +368,7 @@
                 [NSPredicate predicateWithFormat:@"(field < 50) and (name = 'tom')" ]
                                          options: options
                                            error: &error];
-    STAssertTrue([[result documentIds] count]==10,
+    XCTAssertTrue([[result documentIds] count]==10,
                  @"Should have 10 (limit to 10) records with field value <50 and name = 'tom'");
     
     // check sort results
@@ -377,10 +377,10 @@
         NSDictionary *object = [revision body];
         [queryResults addObject:object];
     }
-    STAssertTrue(([[[queryResults firstObject] objectForKey:@"field"] integerValue] == 10),
+    XCTAssertTrue(([[[queryResults firstObject] objectForKey:@"field"] integerValue] == 10),
                  @"1st obj should be 10");
     
-    STAssertTrue(([[[queryResults lastObject] objectForKey:@"field"] integerValue] == 19),
+    XCTAssertTrue(([[[queryResults lastObject] objectForKey:@"field"] integerValue] == 19),
                  @"last obj should be 19");
     
 }
@@ -396,9 +396,9 @@
                               queryWithPredicate: [NSPredicate predicateWithFormat:@"foo = 'tom'"]
                                          options: nil
                                            error: &error];
-    STAssertNil(result, @"Result should be nil since the index does not exist");
-    STAssertNotNil(error, @"Error should be populated with the right message");
-    STAssertTrue([error code] == CDTIndexErrorIndexDoesNotExist, @"Error should be Index does not "
+    XCTAssertNil(result, @"Result should be nil since the index does not exist");
+    XCTAssertNotNil(error, @"Error should be populated with the right message");
+    XCTAssertTrue([error code] == CDTIndexErrorIndexDoesNotExist, @"Error should be Index does not "
                  "exist");
     
     // try it with an index name that isn't valid
@@ -406,9 +406,9 @@
                 queryWithPredicate: [NSPredicate predicateWithFormat:@"_foo = 'tom'"]
                            options: nil
                              error: &error];
-    STAssertNil(result, @"Result should be nil since the index does not exist");
-    STAssertNotNil(error, @"Error should be populated with the right message");
-    STAssertTrue([error code] == CDTIndexErrorInvalidIndexName, @"Error should be Index name is "
+    XCTAssertNil(result, @"Result should be nil since the index does not exist");
+    XCTAssertNotNil(error, @"Error should be populated with the right message");
+    XCTAssertTrue([error code] == CDTIndexErrorInvalidIndexName, @"Error should be Index name is "
                  "invalid");
     
 }

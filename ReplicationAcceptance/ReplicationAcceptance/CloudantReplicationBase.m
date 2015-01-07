@@ -25,8 +25,8 @@
     NSError *error;
     self.factory = [[CDTDatastoreManager alloc] initWithDirectory:self.factoryPath error:&error];
 
-    STAssertNil(error, @"CDTDatastoreManager had error");
-    STAssertNotNil(self.factory, @"Factory is nil");
+    XCTAssertNil(error, @"CDTDatastoreManager had error");
+    XCTAssertNotNil(self.factory, @"Factory is nil");
 
     self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
     self.remoteDbPrefix = @"replication-acceptance";
@@ -38,7 +38,7 @@
 
     NSError *error;
     [[NSFileManager defaultManager] removeItemAtPath:self.factoryPath error:&error];
-    STAssertNil(error, @"Error deleting temporary directory.");
+    XCTAssertNil(error, @"Error deleting temporary directory.");
 
     // Put teardown code here; it will be run once, after the last test case.
     [super tearDown];
@@ -65,7 +65,7 @@
     char *result = mkdtemp(tempDirectoryNameCString);
     if (!result)
     {
-        STFail(@"Couldn't create temporary directory");
+        XCTFail(@"Couldn't create temporary directory");
     }
     
     NSString *path = [[NSFileManager defaultManager]
@@ -94,7 +94,7 @@
         [request setHeaders:headers];
         [request setBody:[NSData data]];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
 }
 
 /**
@@ -110,7 +110,7 @@
         [request setUrl:[remoteDatabaseURL absoluteString]];
         [request setHeaders:headers];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db delete failed");
 }
 
 
@@ -131,7 +131,7 @@
                                                          options:0
                                                            error:nil]];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Create document failed");
     NSString *revId = [response.body.object objectForKey:@"rev"];
     return revId;
 }
@@ -158,7 +158,7 @@
         [request setHeaders:headers];
         [request setBody:data];
     }] asJson];
-    STAssertTrue([response.body.object objectForKey:@"rev"] != nil, @"Adding attachment failed");
+    XCTAssertTrue([response.body.object objectForKey:@"rev"] != nil, @"Adding attachment failed");
     NSString *newRevId = [response.body.object objectForKey:@"rev"];
     return newRevId;
 }
@@ -180,7 +180,7 @@
                                                               headers:headers
                                                              username:nil 
                                                              password:nil] asJson];
-    STAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Copy document failed");
+    XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Copy document failed");
     NSString *revId = [response.body.object objectForKey:@"rev"];
     return revId;
 }

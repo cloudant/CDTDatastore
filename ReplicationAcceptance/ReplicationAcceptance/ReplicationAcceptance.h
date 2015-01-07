@@ -6,7 +6,7 @@
 //
 //
 
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 
 #import "CloudantReplicationBase.h"
 #import "ReplicatorURLProtocol.h"

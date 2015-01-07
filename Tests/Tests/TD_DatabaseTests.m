@@ -36,14 +36,14 @@ extern NSDictionary* makeRevisionHistoryDict(NSArray* history);
 - (void) testRevisionDictionary
 {
     NSArray* revs = @[[self mkrev:@"4-jkl"], [self mkrev:@"3-ghi"], [self mkrev:@"2-def"]];
-    STAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"jkl", @"ghi", @"def"]},
+    XCTAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"jkl", @"ghi", @"def"]},
                                                       {@"start", @4}), @"4-3-2 revs failed in %s", __PRETTY_FUNCTION__);
     
     revs = @[[self mkrev:@"4-jkl"], [self mkrev:@"2-def"]];
-    STAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"4-jkl", @"2-def"]}), @"4-2 revs failed in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"4-jkl", @"2-def"]}), @"4-2 revs failed in %s", __PRETTY_FUNCTION__);
     
     revs = @[[self mkrev:@"12345"], [self mkrev:@"6789"]];
-    STAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"12345", @"6789"]}), @"12345-6789 revs failed in %s", __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(makeRevisionHistoryDict(revs), $dict({@"ids", @[@"12345", @"6789"]}), @"12345-6789 revs failed in %s", __PRETTY_FUNCTION__);
 }
 
 

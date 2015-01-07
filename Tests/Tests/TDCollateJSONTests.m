@@ -34,7 +34,7 @@ extern char convertEscape(const char**);
     // encodes an object to a C string in JSON format. JSON fragments are allowed.
     NSString* str = [TDJSON stringWithJSONObject: obj
                                          options: TDJSONWritingAllowFragments error: NULL];
-    STAssertNotNil(str, @"string object is nil in %s", __PRETTY_FUNCTION__);
+    XCTAssertNotNil(str, @"string object is nil in %s", __PRETTY_FUNCTION__);
     return [str UTF8String];
 }
 
@@ -43,9 +43,9 @@ extern char convertEscape(const char**);
 - (void)escapeTest:(const char*) source decodeChar:(char)decoded
 {
     const char* pos = source;
-    STAssertEquals(convertEscape(&pos), decoded,
+    XCTAssertEqual(convertEscape(&pos), decoded,
                    @"Decoder characters aren't equal (%c, %c) in %s", convertEscape(&pos), decoded, __PRETTY_FUNCTION__);
-    STAssertEquals((size_t)pos, (size_t)(source + strlen(source) - 1),
+    XCTAssertEqual((size_t)pos, (size_t)(source + strlen(source) - 1),
                    @"Decoder character positions aren't equal in %s", __PRETTY_FUNCTION__);
 }
 
@@ -77,7 +77,7 @@ extern char convertEscape(const char**);
 
 - (void)scalarTest:(void *)mode str1:(const char *)str1 str2:(const char *)str2 retVal:(int)val arrayLimit:(unsigned)arrayLimit
 {
-    STAssertEquals([self collateLimited:mode str1:(const void*)str1 str2:(const void*)str2 arrayLimit:arrayLimit],
+    XCTAssertEqual([self collateLimited:mode str1:(const void*)str1 str2:(const void*)str2 arrayLimit:arrayLimit],
                    val,
                    @"with mode:%d and arrayLimit:%d, %s and %s do not collate to %d in %s", *(unsigned*)mode, arrayLimit, str1, str2, val, __PRETTY_FUNCTION__);
     

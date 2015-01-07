@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		009D4E71AED34A54853B7F51 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BBD8D50209E84CD981F3FA7A /* libPods-osx.a */; };
 		270ED44E19D165BB007E08C4 /* CDTQueryBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9985C74819AE5D8300636AB6 /* CDTQueryBuilderTests.m */; };
-		27389E10185345FD0027A404 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E0F185345FD0027A404 /* SenTestingKit.framework */; };
 		27389E12185345FD0027A404 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E11185345FD0027A404 /* Foundation.framework */; };
 		27389E14185345FD0027A404 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E13185345FD0027A404 /* UIKit.framework */; };
 		27389E1A185345FD0027A404 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27389E18185345FD0027A404 /* InfoPlist.strings */; };
@@ -17,7 +16,6 @@
 		27389E3618534E050027A404 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
 		27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
-		27CCEDC7187AD64F006F3C66 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27389E0F185345FD0027A404 /* SenTestingKit.framework */; };
 		27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CCEDCB187AD64F006F3C66 /* InfoPlist.strings */; };
 		27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E2E18534E050027A404 /* CloudantSyncTests.m */; };
 		27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
@@ -80,8 +78,7 @@
 
 /* Begin PBXFileReference section */
 		03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
-		27389E0C185345FD0027A404 /* Tests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		27389E0F185345FD0027A404 /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		27389E0C185345FD0027A404 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27389E11185345FD0027A404 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		27389E13185345FD0027A404 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		27389E17185345FD0027A404 /* Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests-Info.plist"; sourceTree = "<group>"; };
@@ -91,7 +88,7 @@
 		27389E2E18534E050027A404 /* CloudantSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantSyncTests.m; sourceTree = "<group>"; };
 		27389E3018534E050027A404 /* DatastoreActions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreActions.m; sourceTree = "<group>"; };
 		27651C6319001B54006FEF7F /* bonsai-boston.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "bonsai-boston.jpg"; path = "Assets/bonsai-boston.jpg"; sourceTree = "<group>"; };
-		27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CCEDCA187AD64F006F3C66 /* Tests OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests OSX-Info.plist"; sourceTree = "<group>"; };
 		27CCEDCC187AD64F006F3C66 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27CCEDCE187AD64F006F3C66 /* Tests_OSX.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests_OSX.m; sourceTree = "<group>"; };
@@ -142,7 +139,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27389E10185345FD0027A404 /* SenTestingKit.framework in Frameworks */,
 				27389E14185345FD0027A404 /* UIKit.framework in Frameworks */,
 				27389E12185345FD0027A404 /* Foundation.framework in Frameworks */,
 				640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */,
@@ -154,7 +150,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9F0D23E918888C6C00D3D04E /* Foundation.framework in Frameworks */,
-				27CCEDC7187AD64F006F3C66 /* SenTestingKit.framework in Frameworks */,
 				009D4E71AED34A54853B7F51 /* libPods-osx.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -177,8 +172,8 @@
 		27389E0D185345FD0027A404 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				27389E0C185345FD0027A404 /* Tests.octest */,
-				27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */,
+				27389E0C185345FD0027A404 /* Tests.xctest */,
+				27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -187,7 +182,6 @@
 			isa = PBXGroup;
 			children = (
 				9F0D23E818888C6C00D3D04E /* Foundation.framework */,
-				27389E0F185345FD0027A404 /* SenTestingKit.framework */,
 				27389E11185345FD0027A404 /* Foundation.framework */,
 				27389E13185345FD0027A404 /* UIKit.framework */,
 				635BE7F70A3A4DFFA9455CDC /* libPods.a */,
@@ -331,8 +325,8 @@
 			);
 			name = Tests;
 			productName = Tests;
-			productReference = 27389E0C185345FD0027A404 /* Tests.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productReference = 27389E0C185345FD0027A404 /* Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		27CCEDC5187AD64F006F3C66 /* Tests OSX */ = {
 			isa = PBXNativeTarget;
@@ -350,8 +344,8 @@
 			);
 			name = "Tests OSX";
 			productName = "Tests OSX";
-			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.octest */;
-			productType = "com.apple.product-type.bundle.ocunit-test";
+			productReference = 27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -624,7 +618,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -668,7 +661,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
@@ -715,7 +707,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -756,7 +747,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};

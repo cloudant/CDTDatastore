@@ -9,7 +9,7 @@
 #import "CloudantSyncTests.h"
 
 #import <CloudantSync.h>
-#import <SenTestingKit/SenTestingKit.h>
+#import <XCTest/XCTest.h>
 #import <TD_Body.h>
 #import <TD_Revision.h>
 #import <TD_Database.h>
@@ -76,7 +76,7 @@
                                                  name:CDTDatastoreChangeNotification
                                                object:other];
     
-    STAssertNotNil(self.datastore, @"datastore is nil");
+    XCTAssertNotNil(self.datastore, @"datastore is nil");
 }
 
 - (void)tearDown
@@ -91,14 +91,14 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = @{@"hello": @"world"};
     
-    STAssertNotNil([self.datastore createDocumentFromRevision:rev error:nil],
+    XCTAssertNotNil([self.datastore createDocumentFromRevision:rev error:nil],
                    @"Document wasn't created");
     
     // Events happen syncronously on update
     
-    STAssertEquals(self.watcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
 }
 
 - (void)testEventFiredOnUpdate
@@ -107,22 +107,22 @@
     mutableRev.body = @{@"hello": @"world"};
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
-    STAssertNotNil(rev1, @"Document wasn't created");
+    XCTAssertNotNil(rev1, @"Document wasn't created");
     
     // Events happen syncronously on update
     
-    STAssertEquals(self.watcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
     
     mutableRev = rev1.mutableCopy;
     mutableRev.body = @{@"hello2": @"world2"};
-    STAssertNotNil([self.datastore updateDocumentFromRevision:mutableRev error:nil],
+    XCTAssertNotNil([self.datastore updateDocumentFromRevision:mutableRev error:nil],
                    @"Document wasn't updated");
     
-    STAssertEquals(self.watcher.counter, (NSInteger)2, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)2, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)2, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)2, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
 }
 
 - (void)testEventFiredOnDelete
@@ -131,20 +131,20 @@
     mutableRev.body = @{@"hello": @"world"};
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
-    STAssertNotNil(rev1, @"Document wasn't created");
+    XCTAssertNotNil(rev1, @"Document wasn't created");
     
     // Events happen syncronously on update
     
-    STAssertEquals(self.watcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
     
-    STAssertNotNil([self.datastore deleteDocumentFromRevision:rev1 error:nil],
+    XCTAssertNotNil([self.datastore deleteDocumentFromRevision:rev1 error:nil],
                    @"Document wasn't updated");
     
-    STAssertEquals(self.watcher.counter, (NSInteger)2, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)2, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)2, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)2, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
 }
 
 - (void)testEventFiredOnMultipleDelete
@@ -156,7 +156,7 @@
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
     
-    STAssertNotNil(rev, @"Document was not created");
+    XCTAssertNotNil(rev, @"Document was not created");
     
     mutableRev = [rev  mutableCopy];
     [mutableRev.body setObject:@"objc" forKey:@"writtenIn"];
@@ -183,9 +183,9 @@
    [self.datastore deleteDocumentWithId:mutableRev.docId error:&error];
 
     //3 notifications get fired for the set up, another one for the double delete
-    STAssertEquals(self.watcher.counter, (NSInteger)4, @"Event not fired");
-    STAssertEquals(self.globalWatcher.counter, (NSInteger)4, @"Event not fired");
-    STAssertEquals(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
+    XCTAssertEqual(self.watcher.counter, (NSInteger)4, @"Event not fired");
+    XCTAssertEqual(self.globalWatcher.counter, (NSInteger)4, @"Event not fired");
+    XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
     
 }
 

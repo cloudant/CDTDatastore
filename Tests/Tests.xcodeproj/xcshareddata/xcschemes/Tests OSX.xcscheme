@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.xctest"
-               BlueprintName = "RA_Tests_OSX"
-               ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
+               BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
+               BuildableName = "Tests OSX.xctest"
+               BlueprintName = "Tests OSX"
+               ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,20 +32,20 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.xctest"
-               BlueprintName = "RA_Tests_OSX"
-               ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
+               BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
+               BuildableName = "Tests OSX.xctest"
+               BlueprintName = "Tests OSX"
+               ReferencedContainer = "container:Tests.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-            BuildableName = "RA_Tests_OSX.xctest"
-            BlueprintName = "RA_Tests_OSX"
-            ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
+            BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
+            BuildableName = "Tests OSX.xctest"
+            BlueprintName = "Tests OSX"
+            ReferencedContainer = "container:Tests.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -61,19 +61,12 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-            BuildableName = "RA_Tests_OSX.xctest"
-            BlueprintName = "RA_Tests_OSX"
-            ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
+            BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
+            BuildableName = "Tests OSX.xctest"
+            BlueprintName = "Tests OSX"
+            ReferencedContainer = "container:Tests.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "OBJC_DISABLE_GC"
-            value = "YES"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -86,10 +79,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-            BuildableName = "RA_Tests_OSX.xctest"
-            BlueprintName = "RA_Tests_OSX"
-            ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
+            BlueprintIdentifier = "27CCEDC5187AD64F006F3C66"
+            BuildableName = "Tests OSX.xctest"
+            BlueprintName = "Tests OSX"
+            ReferencedContainer = "container:Tests.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
