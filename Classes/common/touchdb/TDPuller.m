@@ -83,7 +83,10 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void)startChangeTracker
 {
     Assert(!_changeTracker);
-    TDChangeTrackerMode mode = (_continuous && _caughtUp) ? kLongPoll : kOneShot;
+    //continuous / longpoll modes are not supported or available at the CDT* level.
+    //As such, the new TDURLConnectionChangeTracker also only supports one-shot query
+    //to the _changes feed. 
+    TDChangeTrackerMode mode = kOneShot;
 
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ starting ChangeTracker: mode=%d, since=%@", self, mode,
             _lastSequence);
@@ -101,8 +104,20 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     unsigned heartbeat = $castIf(NSNumber, _options[@"heartbeat"]).unsignedIntValue;
     if (heartbeat >= 15000) _changeTracker.heartbeat = heartbeat / 1000.0;
 
-    NSMutableDictionary* headers = $mdict({ @"User-Agent", [TDRemoteRequest userAgentHeader] });
-    [headers addEntriesFromDictionary:_requestHeaders];
+    //make sure we don't overwrite a custom user-agent header
+    BOOL hasUserAgentHeader = NO;
+    for (NSString *key in self.requestHeaders) {
+        if ([[key lowercaseString] isEqualToString:@"user-agent"]) {
+            hasUserAgentHeader = YES;
+            break;
+        }
+    }
+    NSMutableDictionary* headers = [NSMutableDictionary dictionaryWithDictionary:_requestHeaders];
+    NSString *userAgent = [TDRemoteRequest userAgentHeader];
+    if (!hasUserAgentHeader && userAgent) {
+        headers[@"User-Agent"] = userAgent;
+    }
+   
     _changeTracker.requestHeaders = headers;
 
     [_changeTracker start];

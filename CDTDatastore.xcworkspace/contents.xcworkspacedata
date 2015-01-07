@@ -185,6 +185,12 @@
                <FileRef
                   location = "group:TDSocketChangeTracker.h">
                </FileRef>
+               <FileRef
+                  location = "group:TDURLConnectionChangeTracker.m">
+               </FileRef>
+               <FileRef
+                  location = "group:TDURLConnectionChangeTracker.h">
+               </FileRef>
             </Group>
             <FileRef
                location = "group:TD_Database+Attachments.h">

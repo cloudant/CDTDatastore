@@ -30,8 +30,14 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
-#import "CDTLogging.h"
-@interface ReplicationAcceptance ()
+#import "TDURLConnectionChangeTracker.h"
+#import "TDAuthorizer.h"
+#import "CollectionUtils.h"
+#import "TDRemoteRequest.h"
+#import "ChangeTrackerDelegate.h"
+#import "ChangeTrackerNSURLProtocolTimedOut.h"
+
+@interface ReplicationAcceptance () 
 
 /** This database is used as the primary remote database. Some tests create further
  databases, but all use this one.
@@ -1289,5 +1295,310 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
 }
+
+#pragma mark -- ChangeTracker tests
+
+
+-(void) testBasicURLConnectionChangeTracker
+{
+    
+    [self createRemoteDocs:1001]; //the extra 1 docment ensures that the last request to the
+    //changes feed doesn't return 0.
+    
+    __block BOOL changeTrackerStopped = NO;
+    __block BOOL changeTrackerGotChanges = NO;
+    unsigned int limitSize = 100;
+    
+    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+    
+    delegate.changesBlock = ^(NSArray *changes){
+        changeTrackerGotChanges = YES;
+        
+        NSUInteger changeCount = changes.count;
+        XCTAssertTrue(changeCount > 0, @"Expected changes.");
+        XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
+        
+        for (NSDictionary* change in changes) {
+            XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
+        }
+
+    };
+    
+    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+        changeTrackerStopped = YES;
+    };
+    
+    delegate.changeBlock = ^(NSDictionary *change) {
+        XCTFail(@"Should not be called");
+    };
+    
+    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
+                                                                             mode:kOneShot
+                                                                        conflicts:YES
+                                                                     lastSequence:nil
+                                                                           client:delegate];
+    changeTracker.limit = limitSize;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [changeTracker start];
+        while(!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate distantFuture]];
+        }
+    });
+    
+    while (!changeTrackerStopped) {
+        [NSThread sleepForTimeInterval:5.0f];
+    }
+    
+    XCTAssertTrue(changeTrackerGotChanges);
+}
+
+
+-(NSURL*)sharedDemoURL {
+    // Shared database for demo purposes -- anyone can put stuff here...
+    NSString *username = @"iessidesseepromanownessi";
+    NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
+    NSString *db_name = @"shared_todo_sample";
+    
+    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
+                     username,
+                     password,
+                     db_name];
+    return [NSURL URLWithString:url];
+}
+
+-(NSURL*)badCredentialsDemoURL {
+    // Shared database for demo purposes -- anyone can put stuff here...
+    NSString *username = @"iessidesseepromanownessi";
+    NSString *password = @"badpassword";
+    NSString *db_name = @"shared_todo_sample";
+    
+    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
+                     username,
+                     password,
+                     db_name];
+    return [NSURL URLWithString:url];
+}
+
+-(void) testURLConnectionChangeTrackerWithRealRemote
+{
+    
+    __block BOOL changeTrackerStopped = NO;
+    __block BOOL changeTrackerGotChanges = NO;
+    unsigned int limitSize = 100;
+    
+    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+    
+    delegate.changesBlock = ^(NSArray *changes){
+        changeTrackerGotChanges = YES;
+        
+        NSUInteger changeCount = changes.count;
+        XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
+        //while the test above assures that changeCount > 0,
+        //there's no guarantee this is true in real-life, so
+        //that XCTAssertTrue is not included here.
+        
+        for (NSDictionary* change in changes) {
+            XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
+        }
+    };
+    
+    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+        changeTrackerStopped = YES;
+    };
+    
+    delegate.changeBlock = ^(NSDictionary *change) {
+        XCTFail(@"Should not be called");
+    };
+    
+    NSURL *url = [self sharedDemoURL];
+    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
+                                                                             mode:kOneShot
+                                                                        conflicts:YES
+                                                                     lastSequence:nil
+                                                                           client:delegate];
+    changeTracker.limit = limitSize;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [changeTracker start];
+        while(!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate distantFuture]];
+        }
+    });
+    
+    while (!changeTrackerStopped) {
+        [NSThread sleepForTimeInterval:5.0f];
+    }
+    
+    XCTAssertTrue(changeTrackerGotChanges);
+}
+
+-(void) testURLConnectionChangeTrackerWithRealRemoteUsingAuthorizer
+{
+    
+    __block BOOL changeTrackerStopped = NO;
+    __block BOOL changeTrackerGotChanges = NO;
+    unsigned int limitSize = 100;
+    
+    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+    
+    delegate.changesBlock = ^(NSArray *changes){
+        changeTrackerGotChanges = YES;
+        
+        NSUInteger changeCount = changes.count;
+        XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
+        //while the test above assures that changeCount > 0,
+        //there's no guarantee this is true in real-life, so
+        //that XCTAssertTrue is not included here.
+        
+        for (NSDictionary* change in changes) {
+            XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
+        }
+    };
+    
+    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+        changeTrackerStopped = YES;
+    };
+    
+    delegate.changeBlock = ^(NSDictionary *change) {
+        XCTFail(@"Should not be called");
+    };
+    
+    NSURL *url = [NSURL URLWithString:@"https://mikerhodescloudant.cloudant.com/shared_todo_sample"];
+    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
+                                                                             mode:kOneShot
+                                                                        conflicts:YES
+                                                                     lastSequence:nil
+                                                                           client:delegate];
+    changeTracker.limit = limitSize;
+    
+    NSURLCredential *cred = [NSURLCredential credentialWithUser: [[self sharedDemoURL] user]
+                                                       password: [[self sharedDemoURL] password]
+                                                    persistence: NSURLCredentialPersistenceForSession];
+    TDBasicAuthorizer *auth = [[TDBasicAuthorizer alloc] initWithCredential:cred];
+    
+    changeTracker.authorizer = auth;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [changeTracker start];
+        while(!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate distantFuture]];
+        }
+    });
+    
+    while (!changeTrackerStopped) {
+        [NSThread sleepForTimeInterval:5.0f];
+    }
+    
+    XCTAssertTrue(changeTrackerGotChanges);
+}
+
+-(void) testURLConnectionChangeTrackerWithBadCredentials
+{
+    
+    __block BOOL changeTrackerStopped = NO;
+    __block BOOL changeTrackerGotChanges = NO;
+    unsigned int limitSize = 100;
+    
+    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+    
+    delegate.changesBlock = ^(NSArray *changes){
+        changeTrackerGotChanges = YES;
+    };
+    
+    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+        changeTrackerStopped = YES;
+    };
+    
+    delegate.changeBlock = ^(NSDictionary *change) {
+        XCTFail(@"Should not be called");
+    };
+    
+    NSURL *url = [self badCredentialsDemoURL];
+    
+    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
+                                                                             mode:kOneShot
+                                                                        conflicts:YES
+                                                                     lastSequence:nil
+                                                                           client:delegate];
+    changeTracker.limit = limitSize;
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [changeTracker start];
+        while(!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate distantFuture]];
+        }
+    });
+    
+    while (!changeTrackerStopped) {
+        [NSThread sleepForTimeInterval:5.0f];
+    }
+    
+    XCTAssertFalse(changeTrackerGotChanges);
+    XCTAssertNotNil(changeTracker.authorizer, @"Authorizer object should be not nil. "
+                    @"The change tracker should build one when attempting to complete an "
+                    @"authentication challenge.");
+}
+
+
+-(void) testURLConnectionChangeTrackerForRetry
+{
+    
+    __block BOOL changeTrackerStopped = NO;
+    __block BOOL changeTrackerGotChanges = NO;
+    unsigned int limitSize = 100;
+    
+    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+    
+    delegate.changesBlock = ^(NSArray *changes){
+        changeTrackerGotChanges = YES;
+    };
+    
+    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+        changeTrackerStopped = YES;
+    };
+    
+    delegate.changeBlock = ^(NSDictionary *change) {
+        XCTFail(@"Should not be called");
+    };
+    
+    NSURL *url = [self badCredentialsDemoURL];
+    
+    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
+                                                                             mode:kOneShot
+                                                                        conflicts:YES
+                                                                     lastSequence:nil
+                                                                           client:delegate];
+    changeTracker.limit = limitSize;
+    
+    [ChangeTrackerNSURLProtocolTimedOut setURL:changeTracker.changesFeedURL];
+    
+    [NSURLProtocol registerClass:[ChangeTrackerNSURLProtocolTimedOut class]];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [changeTracker start];
+        while(!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                     beforeDate:[NSDate distantFuture]];
+        }
+    });
+    
+    while (!changeTrackerStopped) {
+        [NSThread sleepForTimeInterval:5.0f];
+    }
+    
+    [NSURLProtocol unregisterClass:[ChangeTrackerNSURLProtocolTimedOut class]];
+    
+    XCTAssertFalse(changeTrackerGotChanges);
+    NSUInteger retryCount = [(TDURLConnectionChangeTracker *)changeTracker totalRetries];
+    XCTAssertTrue(retryCount == 6, @"Expected kMaxRetries(6) retries, found %ld",
+                  (unsigned long)retryCount);
+}
+
+
 
 @end

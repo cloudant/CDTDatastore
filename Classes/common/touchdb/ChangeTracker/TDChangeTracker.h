@@ -28,7 +28,7 @@ typedef enum TDChangeTrackerMode { kOneShot, kLongPoll, kContinuous } TDChangeTr
 
 /** Reads the continuous-mode _changes feed of a database, and sends the individual change entries
  * to its client.  */
-@interface TDChangeTracker : NSObject <NSStreamDelegate> {
+@interface TDChangeTracker : NSObject {
    @protected
     NSURL* _databaseURL;
     id<TDChangeTrackerClient> __weak _client;
