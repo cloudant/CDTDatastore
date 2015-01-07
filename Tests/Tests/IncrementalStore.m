@@ -13,25 +13,24 @@
 #import "CDTIncrementalStore.h"
 
 #ifdef CDTDATASTORE_SUPPORTS_COMPOUND_PREDICATES
-static BOOL SupportCompoundPredicates =
-    YES
+static BOOL SupportCompoundPredicates = YES;
 #else
 static BOOL SupportCompoundPredicates = NO;
 #endif
 
-    /*
-     *  ##Start Ripoff:
-     *  The following code segment, that creates a managed object model
-     *  programmatically, has been derived from:
-     *  >
-     *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
-     *
-     *  Which at the time of pilferage had the following license:
-     *  > http://www.apache.org/licenses/LICENSE-2.0
-     */
+/*
+ *  ##Start Ripoff:
+ *  The following code segment, that creates a managed object model
+ *  programmatically, has been derived from:
+ *  >
+ *https://github.com/couchbase/couchbase-lite-ios/blob/master/Source/API/Extras/CBLIncrementalStoreTests.m
+ *
+ *  Which at the time of pilferage had the following license:
+ *  > http://www.apache.org/licenses/LICENSE-2.0
+ */
 
-    @interface Entry : NSManagedObject @property(nonatomic, retain) NSNumber *
-                       check;
+@interface Entry : NSManagedObject
+@property (nonatomic, retain) NSNumber *check;
 @property (nonatomic, retain) NSDate *created_at;
 @property (nonatomic, retain) NSString *text;
 @property (nonatomic, retain) NSString *text2;
@@ -45,7 +44,7 @@ static BOOL SupportCompoundPredicates = NO;
 @property (nonatomic, retain) NSSet *files;
 @end
 
-    @class Subentry;
+@class Subentry;
 @class File;
 
 @interface Entry (CoreDataGeneratedAccessors)
@@ -84,6 +83,7 @@ NSAttributeDescription *MakeAttribute(NSString *name, BOOL optional, NSAttribute
     }
     return attribute;
 }
+
 NSRelationshipDescription *MakeRelationship(NSString *name, BOOL optional, BOOL toMany,
                                             NSDeleteRule deletionRule,
                                             NSEntityDescription *destinationEntity)
@@ -301,8 +301,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
-                  [results count]);
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %@", max / 2,
+                  @([results count]));
 
     for (Entry *e in results) {
         XCTAssertTrue([e.check boolValue], @"not even?");
@@ -320,8 +320,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
-                  [results count]);
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %@", max / 2,
+                  @([results count]));
 
     for (Entry *e in results) {
         XCTAssertFalse([e.check boolValue], @"not odd?");
@@ -340,8 +340,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 1, @"results count should be %d is %d", max / 2,
-                  [results count]);
+    XCTAssertTrue([results count] == 1, @"results count should be %d is %@", max / 2,
+                  @([results count]));
 
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
@@ -358,8 +358,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == ((max / 2) + 1), @"results count should be %d is %d",
-                  (max / 2) + 1, [results count]);
+    XCTAssertTrue([results count] == ((max / 2) + 1), @"results count should be %d is %@",
+                  (max / 2) + 1, @([results count]));
 
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
@@ -376,8 +376,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %d", max / 2,
-                  [results count]);
+    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %@", max / 2,
+                  @([results count]));
 
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
@@ -405,8 +405,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == (max / 2) + 1, @"results count should be %d is %d", max / 2,
-                  [results count]);
+    XCTAssertTrue([results count] == (max / 2) + 1, @"results count should be %d is %@", max / 2,
+                  @([results count]));
 
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
@@ -444,8 +444,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == count, @"results count should be %d is %d", count,
-                  [results count]);
+    XCTAssertTrue([results count] == count, @"results count should be %@ is %@", @(count),
+                  @([results count]));
 
     for (Entry *e in results) {
         XCTAssertTrue([nums containsObject:e.i64], @"entry.i64: %@ should be in set", e.i64);
@@ -474,8 +474,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == count, @"results count should be %d is %d", count,
-                  [results count]);
+    XCTAssertTrue([results count] == count, @"results count should be %@ is %@", @(count),
+                  @([results count]));
 
     for (Entry *e in results) {
         XCTAssertTrue([nums containsObject:e.i64], @"entry.i64: %@ should be in set", e.i64);
@@ -517,8 +517,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == max, @"results count should be %d is %d", max,
-                  [results count]);
+    XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
+                  @([results count]));
 
     /**
      *  Fetch none with AND, yes I know this is nonsense
@@ -529,7 +529,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 0, @"results count should be %d is %d", 0, [results count]);
+    XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0, @([results count]));
 }
 
 - (void)testFetchConstraints
@@ -570,14 +570,14 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
-                  [results count]);
+    XCTAssertTrue([results count] == limit, @"results count should be %d is %@", limit,
+                  @([results count]));
     long long last = offset - 1;
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
         XCTAssertTrue(val >= offset && val < offset + limit,
                       @"entry is out of range [%d, %d): %lld", offset, offset + limit, val);
-        XCTAssertTrue(val == last + 1, @"unexpected entry %d: %@", val, e);
+        XCTAssertTrue(val == last + 1, @"unexpected entry %@: %@", @(val), e);
         ++last;
     }
 
@@ -590,14 +590,14 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == limit, @"results count should be %d is %d", limit,
-                  [results count]);
+    XCTAssertTrue([results count] == limit, @"results count should be %d is %@", limit,
+                  @([results count]));
     last = offset;
     for (Entry *e in results) {
         long long val = [e.i64 longLongValue];
         XCTAssertTrue(val >= offset - limit && val < offset,
                       @"entry is out of range [%d, %d): %lld", offset - limit, offset, val);
-        XCTAssertTrue(val == last - 1, @"unexpected entry %d: %@", val, e);
+        XCTAssertTrue(val == last - 1, @"unexpected entry %@: %@", @(val), e);
         --last;
     }
 }
