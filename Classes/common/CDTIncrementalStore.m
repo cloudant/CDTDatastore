@@ -1367,7 +1367,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return NO;
     }
 
-    CDTReplicator *puller = [repFactory oneWay:pushRep error:&err];
+    CDTReplicator *puller = [repFactory oneWay:pullRep error:&err];
     if (!puller) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replicator for pull: %@",
                     kCDTISType, clean, err);
