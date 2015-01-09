@@ -7,6 +7,7 @@
 //
 
 #import <CoreData/CoreData.h>
+#import <UNIRest.h>
 
 #import "ReplicatorCoreData.h"
 #import "CDTIncrementalStore.h"
@@ -16,7 +17,7 @@
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-
+@property (nonatomic, strong) NSURL *storeURL;
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
 
 @end
@@ -175,6 +176,9 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
                                                                options:nil
                                                                  error:&err];
     XCTAssertNotNil(theStore, @"could not get theStore: %@", err);
+
+    self.storeURL = storeURL;
+
     return _persistentStoreCoordinator;
 }
 
@@ -265,13 +269,15 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     XCTAssertTrue([moc save:&err], @"MOC save failed");
     XCTAssertNil(err, @"MOC save failed with error: %@", err);
 
+    // there is actually `max` docs plut the metadata document
+    int docs = max + 1;
+
     /**
      *  Push
      */
     NSInteger count = [self replicate:push];
 
-    // count will include storing the metadata file
-    XCTAssertTrue(count == max + 1, @"unexpected processed objects: %@ != %@", @(max), @(count));
+    XCTAssertTrue(count == docs, @"push: unexpected processed objects: %@ != %d", @(count), docs);
 
     /**
      *  blow away the local database
@@ -289,15 +295,26 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     }
 
     /**
+     *  Out of band tally of the number of documents in the remote replicant
+     */
+    NSString *all_docs =
+        [NSString stringWithFormat:@"%@/_all_docs?limit=0", [self.storeURL absoluteString]];
+    UNIHTTPRequest *req = [UNIRest get:^(UNISimpleRequest *request) { [request setUrl:all_docs]; }];
+    UNIHTTPJsonResponse *json = [req asJson];
+    UNIJsonNode *body = json.body;
+    NSDictionary *dic = body.object;
+    NSNumber *total_rows = dic[@"total_rows"];
+    count = [total_rows integerValue];
+    XCTAssertTrue(count == docs, @"oob: unexpected number of objects: %@ != %d", @(count), docs);
+
+    /**
      *  New context for pull
      */
     moc = self.managedObjectContext;
     XCTAssertNotNil(moc, @"could not create Context");
 
     count = [self replicate:pull];
-
-    // count will include storing the metadata file
-    XCTAssertTrue(count == max + 1, @"unexpected processed objects: %@ != %@", @(max), @(count));
+    XCTAssertTrue(count == docs, @"pull: unexpected processed objects: %@ != %d", @(count), docs);
 }
 
 @end
