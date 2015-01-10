@@ -244,10 +244,6 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     [super tearDown];
 }
 
-/**
- *  Tests are run in alphabetical order and we need push to run before pull
- *  So we number them accordingly
- */
 - (void)testCoreDataReplication
 {
     int max = 100;
