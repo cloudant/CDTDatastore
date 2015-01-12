@@ -311,6 +311,29 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     count = [self replicate:pull];
     XCTAssertTrue(count == docs, @"pull: unexpected processed objects: %@ != %d", @(count), docs);
+
+    /**
+     *  Read it back
+     */
+    NSArray *results;
+    NSSortDescriptor *sd = [NSSortDescriptor sortDescriptorWithKey:@"number" ascending:YES];
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+    fr.sortDescriptors = @[ sd ];
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+    count = [results count];
+    XCTAssertTrue(count == max, @"fetch: unexpected processed objects: %@ != %d", @(count), max);
+
+    long long last = -1;
+    for (Entry *e in results) {
+        long long val = [e.number longLongValue];
+        XCTAssertTrue(val < max, @"entry is out of range [0, %d): %lld", max, val);
+        XCTAssertTrue(val == last + 1, @"unexpected entry %@: %@", @(val), e);
+        ++last;
+    }
 }
 
 @end
