@@ -1770,14 +1770,13 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // go directly to super
     [super setMetadata:metaData];
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_3_0
-    // must exclude anything but iOS
-    /* FIXME
-     * caches are either garbage or out of sync some how.
-     * so we just delete them?
-     */
-    [NSFetchedResultsController deleteCacheWithName:nil];
-#endif
+    // this class only exists in iOS
+    Class frc = NSClassFromString(@"NSFetchedResultsController");
+    if (frc) {
+        // If there is a cache for this, it is likely stale.
+        // Sadly, we do not know the name of it, so we blow them all away
+        [frc performSelector:@selector(deleteCacheWithName:) withObject:nil];
+    }
 
     return YES;
 }
