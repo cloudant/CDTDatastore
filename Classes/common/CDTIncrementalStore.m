@@ -1210,7 +1210,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 {
     NSError *err = nil;
 
-    CDTReplicatorState state = self.pusher.state;
+    CDTReplicatorState state = rep.state;
     // we can only start from pending
     if (state != CDTReplicatorStatePending) {
         NSString *stateName = nil;
