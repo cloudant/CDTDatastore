@@ -17,7 +17,7 @@
 #import "CloudantReplicationBase.h"
 #import "CloudantReplicationBase+CompareDb.h"
 #import "ReplicationAcceptance+CRUD.h"
-#import "ReplicatorDelegates.h"
+#import "CDTRunBlocksForReplicatorDelegate.h"
 #import "ReplicatorURLProtocol.h"
 #import "ReplicatorURLProtocolTester.h"
 
@@ -30,7 +30,7 @@
 #import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
-
+#import "CDTLogging.h"
 @interface ReplicationAcceptance ()
 
 /** This database is used as the primary remote database. Some tests create further
@@ -222,12 +222,21 @@ static NSUInteger largeRevTreeSize = 1500;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
-    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
-                                            [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
-    mydel.databaseToDelete = self.datastore.name;
-    mydel.dsManager = self.factory;
     
-    replicator.delegate = mydel;
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
+    
+    delegate.changeProgressBlock = ^(CDTReplicator *replicator) {
+        if (replicator.state == CDTReplicatorStateStarted && replicator.changesProcessed > 0) {
+            [self.factory deleteDatastoreNamed:self.datastore.name error:nil];
+        }
+    };
+    
+    __block NSError *delegateError = nil;
+    delegate.errorBlock = ^(CDTReplicator *rep, NSError *info) {
+        delegateError = info;
+    };
+    
+    replicator.delegate = delegate;
     
     error = nil;
     XCTAssertTrue([replicator startWithError:&error], @"CDTReplicator -startWithError: %@", error);
@@ -248,8 +257,8 @@ static NSUInteger largeRevTreeSize = 1500;
                    [CDTReplicator stringForReplicatorState:replicator.state],
                    [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
 
-    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
-                   @"Wrong error code: %ld", mydel.error.code);
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
     
     //have to wait for the threadsto completely stop executing
     while(replicator.threadExecuting) {
@@ -272,12 +281,21 @@ static NSUInteger largeRevTreeSize = 1500;
     
     NSError *error;
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
-    CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart *mydel =
-                                            [[CDTTestReplicatorDelegateDeleteLocalDatastoreAfterStart alloc] init];
-    mydel.databaseToDelete = self.datastore.name;
-    mydel.dsManager = self.factory;
+
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
     
-    replicator.delegate = mydel;
+    delegate.changeProgressBlock = ^(CDTReplicator *replicator) {
+        if (replicator.state == CDTReplicatorStateStarted && replicator.changesProcessed > 0) {
+            [self.factory deleteDatastoreNamed:self.datastore.name error:nil];
+        }
+    };
+    
+    __block NSError *delegateError = nil;
+    delegate.errorBlock = ^(CDTReplicator *rep, NSError *info) {
+        delegateError = info;
+    };
+    
+    replicator.delegate = delegate;
     
     error = nil;
     if (![replicator startWithError:&error]) {
@@ -300,8 +318,8 @@ static NSUInteger largeRevTreeSize = 1500;
                    [CDTReplicator stringForReplicatorState:replicator.state],
                    [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
 
-    XCTAssertEqual(mydel.error.code, CDTReplicatorErrorLocalDatabaseDeleted,
-                   @"Wrong error code: %ld", mydel.error.code);
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
     
     //have to wait for the threadsto completely stop executing
     while(replicator.threadExecuting) {
@@ -312,6 +330,177 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
     XCTAssertTrue(replicator.threadCanceled, @"First replicator thread NOT canceled");
 }
+
+-(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pushDelegateDeletes
+{
+    //create unique set of docs on local and remote databases.
+    //set up both a push and pull replication and then effectively
+    //cancel the replications by deleting the local database with one
+    //of the replicator's delegates. then we check to ensure that
+    //replicators quit as expected.
+    //
+    //this test uses the push replicator's delegate to delete the local
+    //datastore
+    
+    //2000 docs should be sufficient to start a replication and delete the local
+    //store before the replicators pull/push all of the remote/local docs
+    //If this test fails because the replicators complete their job, then
+    //increase increase the number of docs.
+    [self createLocalDocs:2000];
+    [self createRemoteDocs:2000 suffixFrom:2000];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *pullReplicator =  [self.replicatorFactory oneWay:pull error:nil];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    CDTReplicator *pushReplicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
+    
+    delegate.changeProgressBlock = ^(CDTReplicator *replicator) {
+        if (replicator.state == CDTReplicatorStateStarted && replicator.changesProcessed > 0) {
+            [self.factory deleteDatastoreNamed:self.datastore.name error:nil];
+        }
+    };
+    
+    __block NSError *delegateError = nil;
+    delegate.errorBlock = ^(CDTReplicator *rep, NSError *info) {
+        delegateError = info;
+    };
+    
+    pushReplicator.delegate = delegate;
+
+    NSError *error;
+    if (![pushReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    if (![pullReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (pushReplicator.threadExecuting || pullReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    
+    //check pull replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pullReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pullReplicator.changesProcessed, n_docs);
+
+    XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pullReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
+
+    
+    //check push replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pushReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pushReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pushReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
+}
+
+
+-(void) testSyncReplicationErrorsWhenLocalDatabaseDeleted_pullDelegateDeletes
+{
+    //create unique set of docs on local and remote databases.
+    //set up both a push and pull replication and then effectively
+    //cancel the replications by deleting the local database with one
+    //of the replicator's delegates. then we check to ensure that
+    //replicators quit as expected.
+    //
+    //this test uses the pull replicator's delegate to delete the local
+    //datastore
+    
+    //2000 docs should be sufficient to start a replication and delete the local
+    //store before the replicators pull/push all of the remote/local docs
+    //If this test fails because the replicators complete their job, then
+    //increase increase the number of docs.
+    [self createLocalDocs:2000];
+    [self createRemoteDocs:2000 suffixFrom:2000];
+
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *pullReplicator =  [self.replicatorFactory oneWay:pull error:nil];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    CDTReplicator *pushReplicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
+    
+    delegate.changeProgressBlock = ^(CDTReplicator *replicator) {
+        if (replicator.state == CDTReplicatorStateStarted && replicator.changesProcessed > 0) {
+            [self.factory deleteDatastoreNamed:self.datastore.name error:nil];
+        }
+    };
+    
+    __block NSError *delegateError = nil;
+    delegate.errorBlock = ^(CDTReplicator *rep, NSError *info) {
+        delegateError = info;
+    };
+    
+    pullReplicator.delegate = delegate;
+    
+    NSError *error;
+    if (![pushReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    if (![pullReplicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (pushReplicator.threadExecuting || pullReplicator.threadExecuting) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    
+    //check pull replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                  pullReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                  pullReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pullReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
+    
+    //check push replicator
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
+                 pushReplicator.changesTotal, n_docs);
+    
+    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
+                 pushReplicator.changesProcessed, n_docs);
+    
+    XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
+                   [CDTReplicator stringForReplicatorState:pushReplicator.state],
+                   [CDTReplicator stringForReplicatorState:CDTReplicatorStateError]);
+    
+    XCTAssertEqual(delegateError.code, CDTReplicatorErrorLocalDatabaseDeleted,
+                   @"Wrong error code: %ld", delegateError.code);
+}
+
+
 
 /**
  As per testPullLotsOfOneRevDocuments but ensuring indexes are updated.
@@ -447,8 +636,14 @@ static NSUInteger largeRevTreeSize = 1500;
     
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:nil];
     
-    CDTTestReplicatorDelegateStopAfterStart *myDelegate = [[CDTTestReplicatorDelegateStopAfterStart alloc] init];
-    replicator.delegate = myDelegate;
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
+    delegate.changeStateBlock = ^(CDTReplicator *replicator) {
+        if (replicator.state == CDTReplicatorStateStarted) {
+            [replicator stop];
+        }
+    };
+    
+    replicator.delegate = delegate;
     
     NSError *error;
     if (![replicator startWithError:&error]) {
@@ -1019,7 +1214,7 @@ static NSUInteger largeRevTreeSize = 1500;
 {
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
-    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
+    CDTReplicator *firstReplicator =  [self.replicatorFactory oneWay:pull error:nil];
     
     CDTDatastore *secondDatastore = [self.factory datastoreNamed:@"test2" error:nil];
     CDTPullReplication *secondPull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
@@ -1028,55 +1223,66 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self createRemoteDocs:2000];
     
-    CDTTestReplicatorMultiThreaded *tester = [[CDTTestReplicatorMultiThreaded alloc] init];
-    tester.firstReplicator = replicator;
-    tester.secondReplicator = secondReplicator;
-    replicator.delegate = tester;
-    secondReplicator.delegate = tester;
+    CDTRunBlocksForReplicatorDelegate *delegate = [[CDTRunBlocksForReplicatorDelegate alloc] init];
+    __block BOOL multiThreaded = NO;
+    delegate.changeProgressBlock = ^(CDTReplicator *replicator) {
+        @synchronized(self) {
+            if (firstReplicator.state == CDTReplicatorStateStarted &&
+                secondReplicator.state == CDTReplicatorStateStarted &&
+                firstReplicator.changesProcessed > 0 && secondReplicator.changesProcessed > 0
+                && firstReplicator.threadExecuting && secondReplicator.threadExecuting) {
+                
+                multiThreaded = YES;
+            }
+        }
+    };
     
-    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    XCTAssertFalse(replicator.threadFinished, @"First replicator thread finished");
-    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    firstReplicator.delegate = delegate;
+    secondReplicator.delegate = delegate;
+    
+    XCTAssertFalse(firstReplicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertFalse(firstReplicator.threadFinished, @"First replicator thread finished");
+    XCTAssertFalse(firstReplicator.threadCanceled, @"First replicator thread canceled");
 
     XCTAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
     XCTAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
     XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
     NSError *error;
-    XCTAssertTrue([replicator startWithError:&error],
+    XCTAssertTrue([firstReplicator startWithError:&error],
                 @"First replicator started with error: %@", error);
     error = nil;
     XCTAssertTrue([secondReplicator startWithError:&error],
                 @"Second replicator started with error: %@", error);
 
     
-    XCTAssertTrue(replicator.threadExecuting, @"First replicator thread NOT executing");
-    XCTAssertFalse(replicator.threadFinished, @"First replicator thread finished");
-    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    XCTAssertTrue(firstReplicator.threadExecuting, @"First replicator thread NOT executing");
+    XCTAssertFalse(firstReplicator.threadFinished, @"First replicator thread finished");
+    XCTAssertFalse(firstReplicator.threadCanceled, @"First replicator thread canceled");
     
     XCTAssertTrue(secondReplicator.threadExecuting, @"Second replicator thread NOT executing");
     XCTAssertFalse(secondReplicator.threadFinished, @"Second replicator thread finished");
     XCTAssertFalse(secondReplicator.threadCanceled, @"Second replicator thread canceled");
     
-    while (replicator.isActive || secondReplicator.isActive) {
+    while (firstReplicator.isActive || secondReplicator.isActive) {
         [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" 1st replicator -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-        NSLog(@"    changes Processed: %ld", replicator.changesProcessed);
+        NSLog(@" 1st replicator -> %@", [CDTReplicator stringForReplicatorState:firstReplicator.state]);
+        NSLog(@"    changes Processed: %ld", firstReplicator.changesProcessed);
         NSLog(@" 2nd replicator -> %@", [CDTReplicator stringForReplicatorState:secondReplicator.state]);
         NSLog(@"    changes Processed: %ld", secondReplicator.changesProcessed);
         
     }
     
-    XCTAssertTrue(tester.multiThreaded, @"Delegate didn't find multithreading evidence.");
+    XCTAssertTrue(multiThreaded, @"Did not find multithreading evidence.");
 
     //wait for the threads to completely stop executing
-    while(replicator.threadExecuting || secondReplicator.threadExecuting) {
+    while(firstReplicator.threadExecuting || secondReplicator.threadExecuting) {
         [NSThread sleepForTimeInterval:1.0f];
     }
 
-    XCTAssertFalse(replicator.threadExecuting, @"First replicator thread executing");
-    XCTAssertTrue(replicator.threadFinished, @"First replicator thread NOT finished");
-    XCTAssertFalse(replicator.threadCanceled, @"First replicator thread canceled");
+    XCTAssertFalse(firstReplicator.threadExecuting, @"First replicator thread executing");
+    XCTAssertTrue(firstReplicator.threadFinished, @"First replicator thread NOT finished");
+    XCTAssertFalse(firstReplicator.threadCanceled, @"First replicator thread canceled");
     
     XCTAssertFalse(secondReplicator.threadExecuting, @"Second replicator thread executing");
     XCTAssertTrue(secondReplicator.threadFinished, @"Second replicator thread NOT finished");

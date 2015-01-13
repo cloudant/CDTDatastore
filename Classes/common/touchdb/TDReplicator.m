@@ -112,9 +112,13 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void)databaseClosing
 {
-    [self saveLastSequence];
-    [self stop];
-    [self clearDbRef];
+    //this can be called from another thread, but we need to execute it the replicator's thread
+    [self queue:^{
+        [self saveLastSequence];
+        [self stop];
+        [self clearDbRef];
+    }];
+    
 }
 
 - (NSString*) description {
@@ -281,19 +285,21 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 // Notified that our database is being deleted; stop replication
 - (void) databaseWasDeleted: (NSNotification*)n {
     
-    TD_Database* db = n.object;
-    Assert(db == _db, @"database objects should be the same!");
+    //this can be called from another thread, but we need to execute it the replicator's thread
+    [self queue:^{
+        
+        TD_Database* db = n.object;
+        Assert(db == _db, @"database objects should be the same!");
 
-    NSString *msg =[NSString stringWithFormat:@"Replicator stopped: %@ (%@).",
-                    [self class], self.sessionID];
-    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
-    
-    self.error = [NSError errorWithDomain:TDInternalErrorDomain
-                                     code:TDReplicatorErrorLocalDatabaseDeleted
-                                 userInfo:userInfo];
-    
-    [self stop];
-    
+        NSString *msg = @"Local database deleted during synchronization.";
+        NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+        self.error = [NSError errorWithDomain:TDInternalErrorDomain
+                                         code:TDReplicatorErrorLocalDatabaseDeleted
+                                     userInfo:userInfo];
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"During replication %@. databaseWasDeleted block. "
+                   @"setting error: %@", self, self.error);
+        [self stop];
+    }];
 }
 
 - (void) startReplicatorTasks {
