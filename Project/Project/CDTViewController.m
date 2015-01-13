@@ -24,6 +24,7 @@
 @interface CDTViewController ()
 
 @property (readonly) CDTDatastore *datastore;
+@property (readonly) CDTTodoReplicator *todoReplicator;
 @property (nonatomic,strong) NSArray *taskRevisions;
 @property (nonatomic,readonly) BOOL showOnlyCompleted;
 
@@ -153,6 +154,11 @@
     return delegate.datastore;
 }
 
+-(CDTTodoReplicator *)todoReplicator {
+    CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
+    return delegate.todoReplicator;
+}
+
 -(BOOL)showOnlyCompleted {
     return self.showCompletedSegmentedControl.selectedSegmentIndex != 0;
 }
@@ -180,7 +186,7 @@
     NSLog(@"Replicate");
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [[[CDTTodoReplicator alloc] init] sync];
+        [self.todoReplicator sync];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self reloadTasks];
             [self.tableView reloadData];
