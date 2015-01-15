@@ -35,7 +35,7 @@
 
 - (id)initWithURL:(NSURL*)url
 {
-    CDTLogDebug(CDTTD_REMOTE_REQUEST_CONTEXT, @"TDBasicAuthorizer initWith <%@>", url);  // TEMP
+    CDTLogDebug(CDTTD_REMOTE_REQUEST_CONTEXT, @"TDBasicAuthorizer initWith <%@>", TDCleanURLtoString(url));  // TEMP
     NSURLCredential* cred =
         [url my_credentialForRealm:nil authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
     if (!cred) return nil;
@@ -66,7 +66,7 @@
     return nil;
 }
 
-- (NSString*)description { return $sprintf(@"%@[%@/****]", self.class, _credential.user); }
+- (NSString*)description { return $sprintf(@"%@", self.class); }
 
 #if 0
 // If enabled, these methods would make TouchDB use cookie-based login intstead of basic auth;

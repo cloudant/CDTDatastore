@@ -125,7 +125,7 @@
 
 - (NSString *)description
 {
-    return $sprintf(@"%@[%@ %@]", [self class], _request.HTTPMethod, _request.URL);
+    return $sprintf(@"%@[%@ %@]", [self class], _request.HTTPMethod, TDCleanURLtoString(_request.URL));
 }
 
 - (NSMutableDictionary *)statusInfo
@@ -337,7 +337,7 @@
 {
     if (!(_dontLog404 && error.code == kTDStatusNotFound &&
           $equal(error.domain, TDHTTPErrorDomain)))
-        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got error %@", self, error);
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got error. domain %@, code %@", self, error.domain, error.code);
 
     // If the error is likely transient, retry:
     if (TDMayBeTransientError(error) && [self retry]) return;
@@ -395,7 +395,7 @@
         result = [TDJSON JSONObjectWithData:_jsonBuffer options:0 error:NULL];
         if (!result) {
             CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: %@ %@ returned unparseable data '%@'", self,
-                    _request.HTTPMethod, _request.URL, [_jsonBuffer my_UTF8ToString]);
+                    _request.HTTPMethod, TDCleanURLtoString(_request.URL), [_jsonBuffer my_UTF8ToString]);
             error = TDStatusToNSError(kTDStatusUpstreamError, _request.URL);
         }
     } else {

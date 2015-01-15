@@ -105,27 +105,9 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         //report error
         NSError *deallocError;
         
-        NSString *replicationType;
-        NSString *source;
-        NSString *target;
-        
-        if ( [self.tdReplicator isPush] ) {
-            replicationType = @"push" ;
-            source = self.tdReplicator.db.name;
-            target = [self cleanRemote];
-        }
-        else {
-            replicationType = @"pull" ;
-            source = [self cleanRemote];
-            target = self.tdReplicator.db.name;
-        }
-        
         NSString *message = [NSString stringWithFormat: @"Object deallocated before completed "
                              @"replication. Keep a strong reference to the replicator object to "
-                             @"avoid this.\n CDTReplicator %@, source: %@, target: %@ "
-                             @"filter name: %@, filter parameters %@, unique replication session "
-                             @"ID: %@", replicationType, source, target, self.tdReplicator.filterName,
-                             self.tdReplicator.filterParameters, self.tdReplicator.sessionID];
+                             @"avoid this.\n %@", self];
         
         NSDictionary *userInfo = @{
                                    NSLocalizedDescriptionKey :
@@ -143,12 +125,32 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (NSString*) cleanRemote
+- (NSString*) description
 {
-    NSURL *remote = self.tdReplicator.remote;
-    return [NSString stringWithFormat:@"%@://%@:****@%@%@", remote.scheme, remote.user,
-            remote.host, remote.path ];
+    NSString *replicationType;
+    NSString *source;
+    NSString *target;
+    
+    if ( self.tdReplicator.isPush ) {
+        replicationType = @"push" ;
+        source = self.tdReplicator.db.name;
+        target = TDCleanURLtoString(self.tdReplicator.remote);
+        
+    }
+    else {
+        replicationType = @"pull" ;
+        source = TDCleanURLtoString(self.tdReplicator.remote);
+        target = self.tdReplicator.db.name;
+    }
+    
+    NSString *fullinfo = [NSString stringWithFormat: @"CDTReplicator %@, source: %@, target: %@ "
+                          @"filter name: %@, filter parameters %@, unique replication session "
+                          @"ID: %@", replicationType, source, target, self.tdReplicator.filterName,
+                          self.tdReplicator.filterParameters, self.tdReplicator.sessionID];
+    
+    return fullinfo;
 }
+
 
 #pragma mark Lifecycle
 

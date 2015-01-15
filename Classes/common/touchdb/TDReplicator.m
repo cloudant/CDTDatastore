@@ -122,8 +122,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 }
 
 - (NSString*) description {
-    return $sprintf(@"%@ [%@://%@:****@%@\%@]", [self class], _remote.scheme, _remote.user,
-                    _remote.host, _remote.path);
+    return $sprintf(@"%@ [%@]", [self class], TDCleanURLtoString(_remote));
 }
 
 
