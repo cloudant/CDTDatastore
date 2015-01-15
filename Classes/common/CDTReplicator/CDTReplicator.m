@@ -249,7 +249,6 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                                  name:TDReplicatorStartedNotification
                                                object:self.tdReplicator];
 
-    // queues the replication on the TDReplicator's replication thread
     [self.tdReplicator start];
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: Replicator starting %@, sessionID %@",

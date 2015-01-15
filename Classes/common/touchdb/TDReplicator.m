@@ -113,12 +113,16 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 - (void)databaseClosing
 {
     //this can be called from another thread, but we need to execute it the replicator's thread
-    [self queue:^{
-        [self saveLastSequence];
-        [self stop];
-        [self clearDbRef];
-    }];
-    
+    [self performSelector:@selector(databaseClosingOnMyThread)
+                 onThread:_replicatorThread
+               withObject:nil
+            waitUntilDone:NO];
+}
+- (void)databaseClosingOnMyThread
+{
+    [self saveLastSequence];
+    [self stop];
+    [self clearDbRef];
 }
 
 - (NSString*) description {
@@ -218,22 +222,23 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                                                  name: TD_DatabaseWillBeDeletedNotification
                                                object: _db];
 
-    __weak TDReplicator *weakSelf = self;
+    [self performSelector:@selector(checkIfNotCanceledThenStart)
+                 onThread:_replicatorThread
+               withObject:nil
+            waitUntilDone:NO];
     
-    [self queue:^{
-        __strong TDReplicator *strongSelf = weakSelf;
-        @synchronized(strongSelf) {
-            if(strongSelf.cancelReplicator){
-                return;
-            }
-            strongSelf.replicatorStarted = YES;
+}
+
+-(void) checkIfNotCanceledThenStart
+{
+    @synchronized(self) {
+        if(self.cancelReplicator){
+            return;
         }
-        
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Replicator: %@ (%@) was queued.",
-                [strongSelf class], strongSelf.sessionID );
-        
-        [strongSelf startReplicatorTasks];
-    }];
+        self.replicatorStarted = YES;
+    }
+    
+    [self startReplicatorTasks];
 }
 
 - (BOOL) cancelIfNotStarted
@@ -267,7 +272,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         CFRelease(source);
 #endif
         
-        // Now run:
+        // Now run until stopped:
         while (!_stopRunLoop && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
                                                          beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
@@ -276,29 +281,30 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     }
 }
 
-- (void) queue: (void(^)())block {
-    Assert(_replicatorThread, @"-queue: called after -stop");
-    MYOnThread(_replicatorThread, block);
-}
 
 // Notified that our database is being deleted; stop replication
 - (void) databaseWasDeleted: (NSNotification*)n {
     
     //this can be called from another thread, but we need to execute it the replicator's thread
-    [self queue:^{
-        
-        TD_Database* db = n.object;
-        Assert(db == _db, @"database objects should be the same!");
+    [self performSelector:@selector(databaseWasDeletedOnMyThread:)
+                 onThread:_replicatorThread
+               withObject:n
+            waitUntilDone:NO];
+}
+-(void) databaseWasDeletedOnMyThread:(id)n
+{
+    TD_Database* db = ((NSNotification*)n).object;
+    Assert(db == _db, @"database objects should be the same!");
+    
+    NSString *msg = @"Local database deleted during synchronization.";
+    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+    self.error = [NSError errorWithDomain:TDInternalErrorDomain
+                                     code:TDReplicatorErrorLocalDatabaseDeleted
+                                 userInfo:userInfo];
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"During replication %@. databaseWasDeleted block. "
+               @"setting error: %@", self, self.error);
+    [self stop];
 
-        NSString *msg = @"Local database deleted during synchronization.";
-        NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
-        self.error = [NSError errorWithDomain:TDInternalErrorDomain
-                                         code:TDReplicatorErrorLocalDatabaseDeleted
-                                     userInfo:userInfo];
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"During replication %@. databaseWasDeleted block. "
-                   @"setting error: %@", self, self.error);
-        [self stop];
-    }];
 }
 
 - (void) startReplicatorTasks {
