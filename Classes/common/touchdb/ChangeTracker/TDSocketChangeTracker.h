@@ -10,7 +10,7 @@
 
 /** TDChangeTracker implementation that uses a raw TCP socket to read the chunk-mode HTTP response.
  */
-@interface TDSocketChangeTracker : TDChangeTracker {
+@interface TDSocketChangeTracker : TDChangeTracker <NSStreamDelegate> {
    @private
     NSInputStream* _trackingInput;
 

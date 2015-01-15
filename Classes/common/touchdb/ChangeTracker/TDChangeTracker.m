@@ -19,6 +19,7 @@
 
 #import "TDChangeTracker.h"
 #import "TDSocketChangeTracker.h"
+#import "TDURLConnectionChangeTracker.h"
 #import "TDAuthorizer.h"
 #import "TDMisc.h"
 #import "TDStatus.h"
@@ -54,11 +55,11 @@
     if (self) {
         if ([self class] == [TDChangeTracker class]) {
             // TDChangeTracker is abstract; instantiate a concrete subclass instead.
-            return [[TDSocketChangeTracker alloc] initWithDatabaseURL:databaseURL
-                                                                 mode:mode
-                                                            conflicts:includeConflicts
-                                                         lastSequence:lastSequenceID
-                                                               client:client];
+            return [[TDURLConnectionChangeTracker alloc] initWithDatabaseURL:databaseURL
+                                                                        mode:mode
+                                                                   conflicts:includeConflicts
+                                                                lastSequence:lastSequenceID
+                                                                      client:client];
         }
         _databaseURL = databaseURL;
         _client = client;
