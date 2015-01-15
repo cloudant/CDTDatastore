@@ -87,7 +87,7 @@
 
     if (!self.connection) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@ failed to create NSURLConnection",
-                   self, url.resourceSpecifier);
+                   self, TDCleanURLtoString(url));
         return NO;
     }
     [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
@@ -96,8 +96,7 @@
     self.inputBuffer = [NSMutableData dataWithCapacity:0];
         
     self.startTime = [NSDate date];
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, self.changesFeedURL);
-    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@", self, url.resourceSpecifier);
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, TDCleanURLtoString(url));
 
     return YES;
 }
@@ -315,7 +314,8 @@
     
     if (!match) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: Unparseable response from %@. Did not find "
-                    @"start of the expected response: %@", self, self.request.URL, prefixString);
+                    @"start of the expected response: %@", self,
+                    TDCleanURLtoString(self.request.URL), prefixString);
     }
     
     return match;
