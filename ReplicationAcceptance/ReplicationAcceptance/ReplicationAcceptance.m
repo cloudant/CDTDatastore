@@ -36,6 +36,8 @@
 #import "TDRemoteRequest.h"
 #import "ChangeTrackerDelegate.h"
 #import "ChangeTrackerNSURLProtocolTimedOut.h"
+#import "TD_DatabaseManager.h"
+#import "TDInternal.h"
 
 @interface ReplicationAcceptance () 
 
@@ -1296,6 +1298,95 @@ static NSUInteger largeRevTreeSize = 1500;
     
 }
 
+- (void) testRemoteLastSequenceValueAfterPullReplication
+{
+    // number of remote docs is not a mutliple of 200, which is the default batch size of docs fetched
+    // during replication. This gives a more realistic simulation. The changes feed tracker
+    // will fire off one more request to _changes when the returned number of changes does
+    // not equal it's limit. 
+    [self createRemoteDocs:3005];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
+    
+    [replicator startWithError:nil];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:3.0f];
+    }
+    
+    //now explicitly check equality between local and remote checkpoint docs.
+    TDReplicatorManager * tdrepman = [[TDReplicatorManager alloc]
+                                      initWithDatabaseManager:self.factory.manager];
+    NSDictionary *pullConfig = [pull dictionaryForReplicatorDocument:nil];
+    TDReplicator *tdrep = [tdrepman createReplicatorWithProperties:pullConfig error:nil];
+    
+    TD_Database *tdb = self.datastore.database;
+    
+    NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
+    NSString *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+    
+    //make sure the remote database has the appropriate document
+    NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
+    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:remoteCheckpointPath];
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    NSDictionary *jsonResponse = response.body.object;
+    
+    XCTAssertEqualObjects(localLastSequence, jsonResponse[@"lastSequence"],
+                          @"local: %@, remote response %@", localLastSequence, jsonResponse);
+    
+}
+
+- (void) testRemoteLastSequenceValueAfterPushReplication
+{
+    // number of remote docs is not a multiple of 200, which is the default batch size of docs fetched
+    // during replication. This gives a more realistic simulation. The changes feed tracker
+    // will fire off one more request to _changes when the returned number of changes does
+    // not equal it's limit.
+    [self createLocalDocs:3005];
+    
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:nil];
+    
+    [replicator startWithError:nil];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:3.0f];
+    }
+    
+    //now explicitly check equality between local and remote checkpoint docs.
+    TDReplicatorManager * tdrepman = [[TDReplicatorManager alloc]
+                                      initWithDatabaseManager:self.factory.manager];
+    NSDictionary *pushConfig = [push dictionaryForReplicatorDocument:nil];
+    TDReplicator *tdrep = [tdrepman createReplicatorWithProperties:pushConfig error:nil];
+    
+    TD_Database *tdb = self.datastore.database;
+    
+    NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
+    NSString *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+    
+    //make sure the remote database has the appropriate document
+    NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
+    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:remoteCheckpointPath];
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:headers];
+    }] asJson];
+    NSDictionary *jsonResponse = response.body.object;
+    
+    XCTAssertEqualObjects(localLastSequence, jsonResponse[@"lastSequence"],
+                          @"local: %@, remote response %@", localLastSequence, jsonResponse);
+}
+
 #pragma mark -- ChangeTracker tests
 
 
@@ -1598,7 +1689,5 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertTrue(retryCount == 6, @"Expected kMaxRetries(6) retries, found %ld",
                   (unsigned long)retryCount);
 }
-
-
 
 @end
