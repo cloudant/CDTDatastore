@@ -2023,6 +2023,65 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     return [NSDictionary dictionaryWithDictionary:query];
 }
 
+- (NSArray *)fetchDictionaryResult:(NSFetchRequest *)fetchRequest withHits:(CDTQueryResult *)hits
+{
+    // we only support one grouping
+    if ([fetchRequest.propertiesToGroupBy count] > 1) {
+        oops(@"can only group by 1 property");
+    }
+
+    id groupProp = [fetchRequest.propertiesToGroupBy firstObject];
+
+    // we only support grouping by an existing property, no expressions or
+    // aggregates
+    if (![groupProp isKindOfClass:[NSPropertyDescription class]]) {
+        oops(@"can only handle properties for groupings");
+    }
+
+    // use a dictionary so we can track repeates
+    NSString *groupKey = [groupProp name];
+    NSMutableDictionary *group = [NSMutableDictionary dictionary];
+    for (CDTDocumentRevision *rev in hits) {
+        id obj = rev.body[groupKey];
+        NSArray *revList = group[obj];
+        if (revList) {
+            group[obj] = [revList arrayByAddingObject:rev];
+        } else {
+            group[obj] = @[ rev ];
+        }
+    }
+
+    // get the results ready
+    NSMutableArray *results = [NSMutableArray array];
+
+    // for every entry in group, build the dictionary of elements
+    for (id g in group) {
+        NSArray *ga = group[g];
+        CDTDocumentRevision *rev = [ga firstObject];
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        for (id prop in fetchRequest.propertiesToFetch) {
+            if ([prop isKindOfClass:[NSAttributeDescription class]]) {
+                NSAttributeDescription *a = prop;
+                dic[a.name] = rev.body[a.name];
+            } else if ([prop isKindOfClass:[NSExpressionDescription class]]) {
+                NSExpressionDescription *ed = prop;
+                NSExpression *e = ed.expression;
+                if (e.expressionType != NSFunctionExpressionType) {
+                    oops(@"not a function");
+                }
+                if (![e.function isEqualToString:@"count:"]) {
+                    oops(@"not count function");
+                }
+                dic[ed.name] = @([ga count]);
+            } else {
+                oops(@"what?!");
+            }
+        }
+        [results addObject:[NSDictionary dictionaryWithDictionary:dic]];
+    }
+    return [NSArray arrayWithArray:results];
+}
+
 - (id)executeFetchRequest:(NSFetchRequest *)fetchRequest
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
@@ -2079,8 +2138,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
 
         case NSDictionaryResultType:
-            oops(@"NSDictionaryResultType: no idea");
-            break;
+            return [self fetchDictionaryResult:fetchRequest withHits:hits];
 
         case NSCountResultType: {
             NSArray *docIDs = [hits documentIds];
