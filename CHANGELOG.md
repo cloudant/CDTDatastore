@@ -1,11 +1,21 @@
 # CDTDatastore CHANGELOG
 
-## master
-  - [FIX] The behavior and documentation regarding the CDTReplicator's
+## 0.13.0 (2015-01-16)
+
+- [NEW] CDTDatastoreManager has an -allDatastores which returns the names of
+  all the datastores in the folder it's manges.
+- [NEW] Reading the _changes feed now uses NSURLConnection rather than
+  CFNetworking calls. This hopefully starts to map our way forward to
+  NSURLSession.
+- [FIX] Passwords are now obscured in log messages during replication.
+- [FIX] The behavior and documentation regarding the CDTReplicator's
   fire-and-forget it have been updated. At the moment, CDTReplicator
   is not fire-and-forget. Strong references to CDTReplicators must be
   retained in order for replication to complete. Premature deallocation 
   will stop replication and call it's delegate's -replicatorDidError method. 
+  See the example application for details on using the CDTReplicator.
+- [FIX] A crash during push replication if the local database disappears.
+- [NOTE] CocoaLumberjack is bumped to 2.0.0-rc
 
 ## 0.12.1 (2014-12-10)
 
