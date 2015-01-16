@@ -29,6 +29,7 @@
 @interface Entry : NSManagedObject
 @property (nonatomic, retain) NSNumber *number;
 @property (nonatomic, retain) NSString *string;
+@property (nonatomic, retain) NSDate *created;
 @property (nonatomic, retain) NSSet *stuff;
 @end
 
@@ -96,6 +97,7 @@ NSManagedObjectModel *MakeCoreDataModel(void)
     [entry setProperties:@[
         MakeAttribute(@"number", YES, NSInteger32AttributeType, @(0)),
         MakeAttribute(@"string", YES, NSStringAttributeType, nil),
+        MakeAttribute(@"created", YES, NSDateAttributeType, nil),
         entryStuff
     ]];
 
@@ -111,7 +113,7 @@ NSManagedObjectModel *MakeCoreDataModel(void)
 }
 
 @implementation Entry
-@dynamic number, string, stuff;
+@dynamic number, string, created, stuff;
 @end
 
 @implementation Stuff
@@ -244,10 +246,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     [super tearDown];
 }
 
-- (void)testCoreDataReplication
+- (NSManagedObjectContext *)createNumbersAndSave:(int)max
 {
-    int max = 100;
-
     NSError *err = nil;
     // This will create the database
     NSManagedObjectContext *moc = self.managedObjectContext;
@@ -259,21 +259,19 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         // check will indicate if value is an even number
         e.number = @(i);
         e.string = [NSString stringWithFormat:@"%u", (max * 10) + i];
+        e.created = [NSDate dateWithTimeIntervalSinceNow:0];
     }
 
     // save to backing store
     XCTAssertTrue([moc save:&err], @"MOC save failed");
     XCTAssertNil(err, @"MOC save failed with error: %@", err);
 
-    // there is actually `max` docs plut the metadata document
-    int docs = max + 1;
+    return moc;
+}
 
-    /**
-     *  Push
-     */
-    NSInteger count = [self replicate:push];
-
-    XCTAssertTrue(count == docs, @"push: unexpected processed objects: %@ != %d", @(count), docs);
+- (void)removeLocalDatabase
+{
+    NSError *err = nil;
 
     /**
      *  blow away the local database
@@ -289,6 +287,26 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         XCTAssertTrue(err.code != NSFileNoSuchFileError,
                       @"removal of database directory failed: %@", err);
     }
+}
+
+- (void)testCoreDataPushPull
+{
+    int max = 100;
+    NSError *err = nil;
+
+    NSManagedObjectContext *moc = [self createNumbersAndSave:max];
+
+    // there is actually `max` docs plus the metadata document
+    int docs = max + 1;
+
+    /**
+     *  Push
+     */
+    NSInteger count = [self replicate:push];
+
+    XCTAssertTrue(count == docs, @"push: unexpected processed objects: %@ != %d", @(count), docs);
+
+    [self removeLocalDatabase];
 
     /**
      *  Out of band tally of the number of documents in the remote replicant
@@ -334,6 +352,155 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         XCTAssertTrue(val == last + 1, @"unexpected entry %@: %@", @(val), e);
         ++last;
     }
+}
+
+- (void)testCoreDataDuplication
+{
+    int max = 100;
+    NSError *err = nil;
+
+    NSManagedObjectContext *moc = [self createNumbersAndSave:max];
+
+    // there is actually `max` docs plus the metadata document
+    int docs = max + 1;
+
+    // push
+    NSInteger count = [self replicate:push];
+    XCTAssertTrue(count == docs, @"push: unexpected processed objects: %@ != %d", @(count), docs);
+
+    [self removeLocalDatabase];
+
+    // make another core data set with the exact same series
+    moc = [self createNumbersAndSave:max];
+
+    // now pull
+    count = [self replicate:pull];
+    XCTAssertTrue(count == docs, @"pull: unexpected processed objects: %@ != %d", @(count), docs);
+
+    // Read it back
+    NSArray *results;
+    NSSortDescriptor *sd = [NSSortDescriptor sortDescriptorWithKey:@"number" ascending:YES];
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+    fr.sortDescriptors = @[ sd ];
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+    count = [results count];
+    XCTAssertTrue(count == max * 2, @"fetch: unexpected processed objects: %@ != %d", @(count),
+                  max * 2);
+
+    // Find dupes
+    // see:
+    // https://developer.apple.com/library/ios/documentation/DataManagement/Conceptual/UsingCoreDataWithiCloudPG/UsingSQLiteStoragewithiCloud/UsingSQLiteStoragewithiCloud.html#//apple_ref/doc/uid/TP40013491-CH3-SW8
+
+    /**
+     *  1. Choose a property or a hash of multiple properties to use as a
+     *     unique ID for each record.
+     */
+    NSString *uniquePropertyKey = @"number";
+    NSExpression *countExpression =
+        [NSExpression expressionWithFormat:@"count:(%@)", uniquePropertyKey];
+    NSExpressionDescription *countExpressionDescription = [[NSExpressionDescription alloc] init];
+    [countExpressionDescription setName:@"count"];
+    [countExpressionDescription setExpression:countExpression];
+    [countExpressionDescription setExpressionResultType:NSInteger64AttributeType];
+    NSManagedObjectContext *context = moc;
+    NSEntityDescription *entity =
+        [NSEntityDescription entityForName:@"Entry" inManagedObjectContext:context];
+    NSAttributeDescription *uniqueAttribute =
+        [[entity attributesByName] objectForKey:uniquePropertyKey];
+
+    /**
+     *  2. Fetch the number of times each unique value appears in the store.
+     *     The context returns an array of dictionaries, each containing
+     *     a unique value and the number of times that value appeared in
+     *     the store.
+     */
+    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    [fetchRequest setPropertiesToFetch:@[ uniqueAttribute, countExpressionDescription ]];
+    [fetchRequest setPropertiesToGroupBy:@[ uniqueAttribute ]];
+    [fetchRequest setResultType:NSDictionaryResultType];
+    NSArray *fetchedDictionaries = [moc executeFetchRequest:fetchRequest error:&err];
+
+    // check
+    XCTAssertNotNil(fetchedDictionaries, @"fetch request failed: %@", err);
+    count = [fetchedDictionaries count];
+    XCTAssertTrue(count == max, @"fetch: unexpected processed objects: %@ != %d", @(count), max);
+
+    /**
+     *  3. Filter out unique values that have no duplicates.
+     */
+    NSMutableArray *valuesWithDupes = [NSMutableArray array];
+    for (NSDictionary *dict in fetchedDictionaries) {
+        NSNumber *count = dict[@"count"];
+        if ([count integerValue] > 1) {
+            [valuesWithDupes addObject:dict[@"number"]];
+        }
+    }
+
+    /**
+     *  4. Use a predicate to fetch all of the records with duplicates.
+     *     Use a sort descriptor to properly order the results for the
+     *     winner algorithm in the next step.
+     */
+    NSFetchRequest *dupeFetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    [dupeFetchRequest setIncludesPendingChanges:NO];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"number IN (%@)", valuesWithDupes];
+    [dupeFetchRequest setPredicate:predicate];
+
+    sd = [NSSortDescriptor sortDescriptorWithKey:@"number" ascending:YES];
+    [dupeFetchRequest setSortDescriptors:@[ sd ]];
+    NSArray *dupes = [moc executeFetchRequest:dupeFetchRequest error:&err];
+
+    // check
+    XCTAssertNotNil(dupes, @"fetch request failed: %@", err);
+    count = [dupes count];
+    XCTAssertTrue(count == max * 2, @"fetch: unexpected processed objects: %@ != %d", @(count),
+                  max * 2);
+
+    /**
+     *  5. Choose the winner.
+     *     After retrieving all of the duplicates, your app decides which
+     *     ones to keep. This decision must be deterministic, meaning that
+     *     every peer should always choose the same winner. Among other
+     *     methods, your app could store a created or last-changed timestamp
+     *     for each record and then decide based on that.
+     */
+    Entry *prevObject;
+    for (Entry *duplicate in dupes) {
+        if (prevObject) {
+            if (duplicate.number == prevObject.number) {
+                if ([duplicate.created compare:prevObject.created] == NSOrderedAscending) {
+                    [moc deleteObject:duplicate];
+                } else {
+                    [moc deleteObject:prevObject];
+                    prevObject = duplicate;
+                }
+            } else {
+                prevObject = duplicate;
+            }
+        } else {
+            prevObject = duplicate;
+        }
+    }
+    /**
+     *  Remember to set a batch size on the fetch and whenever you reach
+     *  the end of a batch, save the context.
+     */
+    XCTAssertTrue([moc save:&err], @"MOC save failed");
+    XCTAssertNil(err, @"MOC save failed with error: %@", err);
+
+    // read it back
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+    count = [results count];
+    XCTAssertTrue(count == max, @"fetch: unexpected processed objects: %@ != %d", @(count), max);
+
+    count = [self replicate:push];
+    XCTAssertTrue(count == docs + max, @"push: unexpected processed objects: %@ != %d", @(count),
+                  docs + max);
 }
 
 @end
