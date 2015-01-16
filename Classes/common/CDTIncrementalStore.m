@@ -305,26 +305,27 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return CDTIndexTypeString;
     }
 
-    id prop = props[key];
-    if (![prop isKindOfClass:[NSAttributeDescription class]]) {
-        oops(@"expected attribute");
-    }
-    NSAttributeDescription *attr = prop;
+    NSAttributeDescription *attr = props[key];
 
     NSAttributeType type = attr.attributeType;
-
-    CDTIndexType it;
+    NSString *name;
     switch (type) {
         default:
         case NSUndefinedAttributeType:
+            name = @"NSUndefinedAttributeType";
+            break;
         case NSBinaryDataAttributeType:
+            name = @"NSBinaryDataAttributeType";
+            break;
         case NSTransformableAttributeType:
+            name = @"NSTransformableAttributeType";
+            break;
         case NSObjectIDAttributeType:
-            oops(@"can't index on these!");
+            name = @"NSObjectIDAttributeType";
             break;
 
         case NSStringAttributeType:
-            it = CDTIndexTypeString;
+            return CDTIndexTypeString;
             break;
 
         case NSBooleanAttributeType:
@@ -335,9 +336,10 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         case NSDecimalAttributeType:
         case NSDoubleAttributeType:
         case NSFloatAttributeType:
-            it = CDTIndexTypeInteger;
+            return CDTIndexTypeInteger;
     }
-    return it;
+    [NSException raise:kCDTISException format:@"can't index on %@", name];
+    return 0;
 }
 
 - (NSString *)cleanURL:(NSURL *)url
@@ -495,10 +497,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             };
         }
         case NSObjectIDAttributeType: {
-            // I'm guessing here
-            if (![obj isKindOfClass:[NSManagedObjectID class]]) {
-                oops(@"I guessed wrong");
-            }
             // I don't think converting to a ref is needed, besides we
             // would need the entity id to decode.
             NSManagedObjectID *oid = obj;
@@ -744,11 +742,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             NSRelationshipDescription *rel = prop;
             enc = [self encodeRelation:rel withObject:obj error:&err];
         } else {
-            oops(@"unknown property: %@", prop);
+            [NSException raise:kCDTISException format:@"unknown property: %@", prop];
         }
 
         if (!enc) {
-            oops(@"There should always be an encoding: %@: %@", prop, err);
+            [NSException raise:kCDTISException format:@"There should always be an encoding: %@: %@", prop, err];
         }
 
         [props addEntriesFromDictionary:enc];
@@ -828,7 +826,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         } break;
         case NSObjectIDAttributeType: {
             NSString *str = prop;
-            oops(@"guessing");
             NSURL *uri = [NSURL URLWithString:str];
             NSManagedObjectID *moid =
                 [self.persistentStoreCoordinator managedObjectIDForURIRepresentation:uri];
@@ -879,8 +876,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             }
         } break;
         case CDTISRelationToManyType:
-            // we actually should do this here, but we hope to eventually
-            // use a Cloudant View?
             oops(@"this is deferred to newValueForRelationship");
             break;
         default:
@@ -1111,7 +1106,10 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // If we get nil here, it just means we have never seen it.
     NSString *revID = self.revIDFromDocID[docID];
     // If we have never seen it before.. should we be deleting it?
-    if (!revID) oops(@"Trying to delete an unknown object");
+    if (!revID) {
+        [NSException raise:kCDTISException
+                    format:@"Trying to delete an unknown object"];
+    }
 
     if (![oldRev.revId isEqualToString:revID]) {
         if (error) {
@@ -1167,7 +1165,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID error:&err];
     if (!rev) {
         if (error) *error = err;
-        oops(@"no properties: %@", err);
         return nil;
     }
     NSMutableDictionary *values = [NSMutableDictionary dictionary];
@@ -1661,7 +1658,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 }
 
 /**
- *  Out own setter for metadata
+ *  Our own setter for metadata
  *  Quote the docs:
  *  > Subclasses must override this property to provide storage and
  *  > persistence for the store metadata.
@@ -1672,7 +1669,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 {
     NSError *err = nil;
     if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID error:&err]) {
-        oops(@"update metadata error: %@", err);
+        [NSException raise:kCDTISException format:@"update metadata error: %@", err];
     }
     [super setMetadata:metadata];
 }
@@ -1765,7 +1762,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return NO;
     }
     if (![self checkMetaData:metaData error:error]) {
-        oops(@"failed metaData check");
+        [NSException raise:kCDTISException format:@"failed metaData check"];
     }
     // go directly to super
     [super setMetadata:metaData];
@@ -1795,12 +1792,15 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
     NSArray *sds = [fetchRequest sortDescriptors];
     if (sds.count) {
-        if (sds.count > 1) oops(@"not sure what to do here");
+        if (sds.count > 1) {
+            oops(@"not sure what to do here");
+        }
 
         for (NSSortDescriptor *sd in sds) {
             NSString *sel = NSStringFromSelector([sd selector]);
             if (![sel isEqualToString:@"compare:"]) {
-                oops(@"we do not allow custom compares");
+                [NSException raise:kCDTISException
+                            format:@"we do not allow custom compares"];
             }
             NSString *key = [sd key];
 
@@ -1811,7 +1811,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
             if (![self ensureIndexExists:key fieldName:key type:type error:&err]) {
                 if (error) *error = err;
-                oops(@"fail to ensure index: %@: %@", key, err);
                 return nil;
             }
             sdOpts[kCDTQueryOptionSortBy] = key;
@@ -1937,7 +1936,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     CDTIndexType type = [self indexTypeForKey:keyStr inProperties:props];
 
     if (![self ensureIndexExists:keyStr fieldName:keyStr type:type error:&err]) {
-        oops(@"failed at creating index for key %@", keyStr);
+        [NSException raise:kCDTISException format:@"failed at creating index for key %@", keyStr];
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
     }
@@ -1957,7 +1956,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
         switch (predType) {
             case NSAndPredicateType: {
-                oops(@"can we do this?");
+                oops(@"can we do this? I don't think so. need a test.");
                 NSMutableDictionary *ands = [NSMutableDictionary dictionary];
                 for (NSPredicate *sub in [cp subpredicates]) {
                     [ands
@@ -1967,10 +1966,12 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             }
             case NSOrPredicateType:
             case NSNotPredicateType:
-                oops(@"Predicate with unsupported compound operator: %@", @(predType));
+                [NSException raise:kCDTISException
+                            format:@"Predicate with unsupported compound operator: %@", @(predType)];
                 break;
             default:
-                oops(@"Predicate with unrecognized compound operator: %@", @(predType));
+                [NSException raise:kCDTISException
+                            format:@"Predicate with unrecognized compound operator: %@", @(predType)];
         }
 
         return nil;
@@ -1979,7 +1980,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         NSComparisonPredicate *cp = (NSComparisonPredicate *)p;
         return [self comparisonPredicate:cp withProperties:props];
     }
-    oops(@"bad predicate class?");
     return nil;
 }
 
@@ -2027,7 +2027,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 {
     // we only support one grouping
     if ([fetchRequest.propertiesToGroupBy count] > 1) {
-        oops(@"can only group by 1 property");
+        [NSException raise:kCDTISException format:@"can only group by 1 property"];
     }
 
     id groupProp = [fetchRequest.propertiesToGroupBy firstObject];
@@ -2035,7 +2035,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // we only support grouping by an existing property, no expressions or
     // aggregates
     if (![groupProp isKindOfClass:[NSPropertyDescription class]]) {
-        oops(@"can only handle properties for groupings");
+        [NSException raise:kCDTISException format:@"can only handle properties for groupings"];
     }
 
     // use a dictionary so we can track repeates
@@ -2067,14 +2067,14 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                 NSExpressionDescription *ed = prop;
                 NSExpression *e = ed.expression;
                 if (e.expressionType != NSFunctionExpressionType) {
-                    oops(@"not a function");
+                    [NSException raise:kCDTISException format:@"expression type is not a function"];
                 }
                 if (![e.function isEqualToString:@"count:"]) {
-                    oops(@"not count function");
+                    [NSException raise:kCDTISException format:@"count: is the only function currently supported"];
                 }
                 dic[ed.name] = @([ga count]);
             } else {
-                oops(@"what?!");
+                [NSException raise:kCDTISException format:@"unsupported property descriptor"];
             }
         }
         [results addObject:[NSDictionary dictionaryWithDictionary:dic]];
@@ -2108,7 +2108,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     err = nil;
     CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:options error:&err];
     // hits == nil is valie, get rid of this once tested
-    if (!hits) oops(@"no hits");
     if (!hits && err) {
         if (error) *error = err;
         return nil;
@@ -2127,7 +2126,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
 
         case NSManagedObjectIDResultType: {
-            oops(@"NSManagedObjectIDResultType: guessing");
             NSMutableArray *results = [NSMutableArray array];
             for (CDTDocumentRevision *rev in hits) {
                 NSManagedObjectID *moid =
@@ -2168,27 +2166,30 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSSet *insertedObjects = [saveRequest insertedObjects];
     for (NSManagedObject *mo in insertedObjects) {
         if (![self insertManagedObject:mo error:&err]) {
-            oops(@"inserted: %@", err);
+            if (error) *error = err;
+            return nil;
         }
     }
     // Todo: Not sure how to deal with errors here
     NSSet *updatedObjects = [saveRequest updatedObjects];
     for (NSManagedObject *mo in updatedObjects) {
         if (![self updateManagedObject:mo error:&err]) {
-            oops(@"update: %@", err);
+            if (error) *error = err;
+            return nil;
         }
     }
     NSSet *deletedObjects = [saveRequest deletedObjects];
     for (NSManagedObject *mo in deletedObjects) {
         if (![self deleteManagedObject:mo error:&err]) {
-            oops(@"delete");
-            (void)mo;
+            if (error) *error = err;
+            return nil;
         }
     }
     NSSet *optLockObjects = [saveRequest lockedObjects];
     for (NSManagedObject *mo in optLockObjects) {
         if (![self optLockManagedObject:mo error:&err]) {
-            oops(@"optObject")
+            if (error) *error = err;
+            return nil;
         }
     }
 
@@ -2233,7 +2234,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                                      code:CDTISErrorExectueRequestTypeUnkown
                                  userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
     }
-    oops(@"%@", s);
     return nil;
 }
 
@@ -2264,15 +2264,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                   withContext:(NSManagedObjectContext *)context
                         error:(NSError **)error
 {
-    /* FIXME
-     * Very Inefficient
-     */
     NSError *err = nil;
     NSString *docID = [self stringReferenceObjectForObjectID:objectID];
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID error:&err];
     if (!rev) {
         if (error) *error = err;
-        oops(@"no attributes: %@", err);
         return nil;
     }
 
@@ -2309,7 +2305,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             return [NSArray arrayWithArray:moids];
         } break;
     }
-    oops(@"unexpected type: %@", type);
     return nil;
 }
 
