@@ -53,7 +53,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 @property (nonatomic) BOOL replicatorStarted;
 
 @property (nonatomic, strong) NSThread *replicatorThread;
-@property (nonatomic) BOOL stopRunLoop;
+@property (nonatomic) BOOL replicatorStopped;
 
 - (void) updateActive;
 - (void) fetchRemoteCheckpointDoc;
@@ -88,7 +88,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         static int sLastSessionID = 0;
         _sessionID = [$sprintf(@"repl%03d", ++sLastSessionID) copy];
         _replicatorThread = nil;
-        _stopRunLoop = NO;
+        _replicatorStopped = NO;
     }
     return self;
 }
@@ -196,9 +196,21 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void)setError:(NSError*)error
 {
-    if (error.code == NSURLErrorCancelled && $equal(error.domain, NSURLErrorDomain)) return;
+    BOOL canSetError = YES;
+    
+    // protect against setting certain errors
+    if (error.code == NSURLErrorCancelled && $equal(error.domain, NSURLErrorDomain)) {
+        canSetError = NO;
+    }
 
-    if (_error != error) {
+    // don't overwrite previously set errors that we know are fatal and need to retain
+    // for proper error reporting
+    if (_error.code == TDReplicatorErrorLocalDatabaseDeleted &&
+        $equal(_error.domain, TDInternalErrorDomain)) {
+        canSetError = NO;
+    }
+    
+    if (_error != error && canSetError) {
         _error = error;
         [self postProgressChanged];
     }
@@ -272,9 +284,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         CFRelease(source);
 #endif
         
-        // Now run until stopped:
-        while (!_stopRunLoop && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
+        // Now run until stopped and async task count is zero:
+        while ((!_replicatorStopped || _asyncTaskCount > 0) &&
+               [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                        beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
         
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread exiting");
@@ -398,7 +411,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     //our responsibility to actually stop the thread.
     [_replicatorThread cancel];
     
-    [self stopped];
+    if (_running && _asyncTaskCount == 0) {
+        [self stopped];
+    }
+    
 }
 
 - (void)stopped
@@ -420,7 +436,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver: self];
-    _stopRunLoop = YES;
+    _replicatorStopped = YES;
 }
 
 -(BOOL) threadExecuting
@@ -780,6 +796,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
     _savingCheckpoint = YES;
     NSString* checkpointID = self.remoteCheckpointDocID;
+    [self asyncTaskStarted];
     [self sendAsyncRequest:@"PUT"
                       path:[@"_local/" stringByAppendingString:checkpointID]
                       body:body
@@ -796,6 +813,16 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                       self.remoteCheckpoint = body;
                       [_db setLastSequence:_lastSequence withCheckpointID:checkpointID];
                   }
+
+                  CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,
+                                @"PUT last sequence %@ to checkpoint doc response: %@",
+                                _lastSequence, response);
+                  [self asyncTasksFinished:1];
+                  if (_replicatorStopped) {
+                      CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,
+                                    @"%@ Final PUT checkpoint. Run loop will be stopped.", self);
+                  }
+
                   if (_db && _overdueForSave)
                       [self saveLastSequence];  // start a save that was waiting on me
               }];
