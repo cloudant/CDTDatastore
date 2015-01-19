@@ -183,7 +183,7 @@ static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
  */
 #define oops(fmt, ...)                                                            \
     do {                                                                          \
-        NSLog(@"%s:%u OOPS: %@", __FILE__, __LINE__, NSStringFromSelector(_cmd)); \
+        NSLog(@"%s:%u OOPS: %s", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
         NSLog(fmt, ##__VA_ARGS__);                                                \
         fflush(stderr);                                                           \
         __builtin_trap();                                                         \
