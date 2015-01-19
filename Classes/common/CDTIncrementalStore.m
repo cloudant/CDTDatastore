@@ -278,6 +278,44 @@ static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
     return [NSString stringWithFormat:@"%@-%@-%llu", kCDTISPrefix, self.run, val];
 }
 
+static NSString *stringFromData(NSData *data)
+{
+    NSMutableString *s = [NSMutableString string];
+    const unsigned char *d = (const unsigned char *)[data bytes];
+    size_t sz = [data length];
+
+    for (size_t i = 0; i < sz; i++) {
+        [s appendString:[NSString stringWithFormat:@"%02x", d[i]]];
+    }
+    return [NSString stringWithString:s];
+}
+
+static NSData *dataFromString(NSString *str)
+{
+    char buf[3] = { 0 };
+
+    size_t sz = [str length];
+
+    if (sz % 2) {
+        oops(@"must be even number of characters (%zd): %@", sz, str);
+    }
+
+    unsigned char *bytes = malloc(sz / 2);
+    unsigned char *bp = bytes;
+    for (size_t i = 0; i < sz; i += 2) {
+        buf[0] = [str characterAtIndex:i];
+        buf[1] = [str characterAtIndex:i + 1];
+        char *chk = NULL;
+        *bp = strtol(buf, &chk, 16);
+        if (chk != buf + 2) {
+            oops(@"bad character around %zd: %@", i, str);
+        }
+        ++bp;
+    }
+
+    return [NSData dataWithBytesNoCopy:bytes length:sz / 2 freeWhenDone:YES];
+}
+
 /**
  * It appears that CoreData will convert an NSString reference object to an
  * NSNumber if it can, so we make sure we always use a string.
@@ -1484,7 +1522,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
 /**
  *  Encode version hashes, which come to us as a dictionary of inline data
- *  objects, so we just base64 them.
+ *  objects, so we encode them as a hex string.
  *
  *  @param hashes hashes
  *
@@ -1495,7 +1533,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
         NSData *h = hashes[hash];
-        NSString *s = [h base64EncodedStringWithOptions:0];
+        NSString *s = stringFromData(h);
         newHashes[hash] = s;
     }
     return [NSDictionary dictionaryWithDictionary:newHashes];
@@ -1543,7 +1581,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 }
 
 /**
- *  Decode version hashes, which come to us as a dictionary of base64 strings
+ *  Decode version hashes, which come to us as a dictionary of hex strings
  *  that we convert back into NSData objects.
  *
  *  @param hashes hashes
@@ -1555,7 +1593,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
         NSString *s = hashes[hash];
-        NSData *h = [[NSData alloc] initWithBase64EncodedString:s options:0];
+        NSData *h = dataFromString(s);
         newHashes[hash] = h;
     }
     return [NSDictionary dictionaryWithDictionary:newHashes];
