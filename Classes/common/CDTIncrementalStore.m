@@ -181,12 +181,12 @@ static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
  *  @param fmt A format string
  *  @param ... A comma-separated list of arguments to substitute into format.
  */
-#define oops(fmt, ...)                                                            \
-    do {                                                                          \
+#define oops(fmt, ...)                                                     \
+    do {                                                                   \
         NSLog(@"%s:%u OOPS: %s", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-        NSLog(fmt, ##__VA_ARGS__);                                                \
-        fflush(stderr);                                                           \
-        __builtin_trap();                                                         \
+        NSLog(fmt, ##__VA_ARGS__);                                         \
+        fflush(stderr);                                                    \
+        __builtin_trap();                                                  \
     } while (NO);
 
 @implementation CDTIncrementalStore
@@ -784,7 +784,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
 
         if (!enc) {
-            [NSException raise:kCDTISException format:@"There should always be an encoding: %@: %@", prop, err];
+            [NSException raise:kCDTISException
+                        format:@"There should always be an encoding: %@: %@", prop, err];
         }
 
         [props addEntriesFromDictionary:enc];
@@ -1145,8 +1146,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSString *revID = self.revIDFromDocID[docID];
     // If we have never seen it before.. should we be deleting it?
     if (!revID) {
-        [NSException raise:kCDTISException
-                    format:@"Trying to delete an unknown object"];
+        [NSException raise:kCDTISException format:@"Trying to delete an unknown object"];
     }
 
     if (![oldRev.revId isEqualToString:revID]) {
@@ -1639,6 +1639,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                         kCDTISType, self.databaseName, err);
             return nil;
         }
+
         return metaData;
     }
 
@@ -1837,8 +1838,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         for (NSSortDescriptor *sd in sds) {
             NSString *sel = NSStringFromSelector([sd selector]);
             if (![sel isEqualToString:@"compare:"]) {
-                [NSException raise:kCDTISException
-                            format:@"we do not allow custom compares"];
+                [NSException raise:kCDTISException format:@"we do not allow custom compares"];
             }
             NSString *key = [sd key];
 
@@ -2004,12 +2004,14 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             }
             case NSOrPredicateType:
             case NSNotPredicateType:
-                [NSException raise:kCDTISException
-                            format:@"Predicate with unsupported compound operator: %@", @(predType)];
+                [NSException
+                     raise:kCDTISException
+                    format:@"Predicate with unsupported compound operator: %@", @(predType)];
                 break;
             default:
-                [NSException raise:kCDTISException
-                            format:@"Predicate with unrecognized compound operator: %@", @(predType)];
+                [NSException
+                     raise:kCDTISException
+                    format:@"Predicate with unrecognized compound operator: %@", @(predType)];
         }
 
         return nil;
@@ -2108,7 +2110,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                     [NSException raise:kCDTISException format:@"expression type is not a function"];
                 }
                 if (![e.function isEqualToString:@"count:"]) {
-                    [NSException raise:kCDTISException format:@"count: is the only function currently supported"];
+                    [NSException raise:kCDTISException
+                                format:@"count: is the only function currently supported"];
                 }
                 dic[ed.name] = @([ga count]);
             } else {
