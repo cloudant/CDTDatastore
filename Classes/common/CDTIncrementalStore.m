@@ -579,19 +579,19 @@ static NSData *dataFromString(NSString *str)
  *
  *  @return A unique ID
  */
-- (NSString *)uniqueID
+- (NSString *)uniqueID:(NSString *)label
 {
     /**
      *  @See CDTISReadableUUIDs
      */
     if (!CDTISReadableUUIDs) {
-        return [NSString stringWithFormat:@"%@-%@", kCDTISPrefix, TDCreateUUID()];
+        return [NSString stringWithFormat:@"%@-%@-%@", kCDTISPrefix, label, TDCreateUUID()];
     }
 
     static volatile int64_t uniqueCounter;
     uint64_t val = OSAtomicIncrement64(&uniqueCounter);
 
-    return [NSString stringWithFormat:@"%@-%@-%llu", kCDTISPrefix, self.run, val];
+    return [NSString stringWithFormat:@"%@-%@-%@-%llu", kCDTISPrefix, label, self.run, val];
 }
 
 /**
@@ -1806,7 +1806,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     if (!rev) {
         self.run = @"1";
 
-        NSString *uuid = [self uniqueID];
+        NSString *uuid = [self uniqueID:@"NSStore"];
         NSDictionary *metaData = @{NSStoreUUIDKey : uuid, NSStoreTypeKey : [self type]};
 
         NSPersistentStoreCoordinator *psc = self.persistentStoreCoordinator;
@@ -2547,8 +2547,9 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 {
     NSMutableArray *objectIDs = [NSMutableArray arrayWithCapacity:[array count]];
     for (NSManagedObject *mo in array) {
+        NSEntityDescription *e = [mo entity];
         NSManagedObjectID *moid =
-            [self newObjectIDForEntity:[mo entity] referenceObject:[self uniqueID]];
+            [self newObjectIDForEntity:e referenceObject:[self uniqueID:e.name]];
         [objectIDs addObject:moid];
     }
     return objectIDs;
