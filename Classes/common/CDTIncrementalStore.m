@@ -36,11 +36,6 @@
 @property (nonatomic, strong) NSString *run;
 
 /**
- *  Don't think we need this but we keep it for now
- */
-@property (nonatomic, strong) NSMutableDictionary *revIDFromDocID;
-
-/**
  *  This holds the "dot" directed graph, see [dotMe](@ref dotMe)
  */
 @property (nonatomic, strong) NSData *dotData;
@@ -520,15 +515,6 @@ static NSData *dataFromString(NSString *str)
 @end
 
 @implementation CDTIncrementalStore
-
-#pragma mark - getters/setters
-- (NSMutableDictionary *)revIDFromDocID
-{
-    if (!_revIDFromDocID) {
-        _revIDFromDocID = [NSMutableDictionary dictionary];
-    }
-    return _revIDFromDocID;
-}
 
 #pragma mark - Init
 /**
@@ -1273,8 +1259,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSError *err = nil;
     NSManagedObjectID *moid = [mo objectID];
     NSString *docID = [self stringReferenceObjectForObjectID:moid];
-    NSString *revID = self.revIDFromDocID[docID];
-    if (!revID) oops(@"revID is nil");
 
     NSEntityDescription *entity = [mo entity];
     NSDictionary *propDic = [entity propertiesByName];
@@ -1308,18 +1292,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return NO;
     }
 
-    if (![oldRev.revId isEqualToString:revID]) {
-        if (error) {
-            NSString *s = [NSString
-                localizedStringWithFormat:@"RevisionID mismatch %@: %@", oldRev.revId, revID];
-            NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                         code:CDTISErrorRevisionIDMismatch
-                                     userInfo:ui];
-        }
-        return NO;
-    }
-
     // TODO: version HACK
     NSString *oldVersion = oldRev.body[kCDTISObjectVersionKey];
     uint64_t version = [oldVersion longLongValue];
@@ -1338,8 +1310,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         if (error) *error = err;
         return NO;
     }
-    // does not appear that I have to do this since we fetch it all again?
-    self.revIDFromDocID[docID] = upedRev.revId;
 
     if (CDTISReadItBack) {
         /**
@@ -1385,25 +1355,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
     if (!oldRev) {
         if (error) *error = err;
-        return NO;
-    }
-
-    // If we get nil here, it just means we have never seen it.
-    NSString *revID = self.revIDFromDocID[docID];
-    // If we have never seen it before.. should we be deleting it?
-    if (!revID) {
-        [NSException raise:kCDTISException format:@"Trying to delete an unknown object"];
-    }
-
-    if (![oldRev.revId isEqualToString:revID]) {
-        if (error) {
-            NSString *s = [NSString
-                localizedStringWithFormat:@"RevisionID mismatch %@: %@", oldRev.revId, revID];
-            NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
-                                         code:CDTISErrorRevisionIDMismatch
-                                     userInfo:ui];
-        }
         return NO;
     }
 
@@ -1471,8 +1422,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
         values[name] = obj;
     }
-
-    self.revIDFromDocID[docID] = rev.revId;
 
     return [NSDictionary dictionaryWithDictionary:values];
 }
