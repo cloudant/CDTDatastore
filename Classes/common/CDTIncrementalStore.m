@@ -972,8 +972,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSError *err = nil;
     NSEntityDescription *entity = [mo entity];
     NSDictionary *propDic = [entity propertiesByName];
-    NSArray *names = [propDic allKeys];
-
     NSMutableDictionary *props = [NSMutableDictionary dictionary];
 
     /* TODO
@@ -982,7 +980,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
      * everything inline, otherwise we just add another unnecessary reference.
      */
 
-    for (NSString *name in names) {
+    for (NSString *name in propDic) {
         id prop = propDic[name];
         if ([prop isTransient]) {
             continue;
@@ -1403,8 +1401,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return nil;
     }
     NSMutableDictionary *values = [NSMutableDictionary dictionary];
-    NSArray *keys = [rev.body allKeys];
-    for (NSString *name in keys) {
+    for (NSString *name in rev.body) {
         if ([name isEqualToString:kCDTISObjectVersionKey]) {
             *version = [rev.body[name] longLongValue];
             continue;
