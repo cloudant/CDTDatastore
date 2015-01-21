@@ -78,7 +78,7 @@ static NSString *const kCDTISFPNegInfinityKey = @"-infinity";
 static NSString *const kCDTISFPNaNKey = @"nan";
 
 static NSString *const kCDTISPropertiesKey = @"properties";
-static NSString *const kCDTISTypeNameKey = @"name";
+static NSString *const kCDTISPropertyNameKey = @"name";
 static NSString *const kCDTISTypeStringKey = @"type";
 static NSString *const kCDTISTypeCodeKey = @"code";
 static NSString *const kCDTISTransformerClassKey = @"xform";
@@ -341,7 +341,7 @@ static NSData *dataFromString(NSString *str)
 - (NSDictionary *)dictionary
 {
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    dic[kCDTISTypeNameKey] = self.name;
+    dic[kCDTISPropertyNameKey] = self.name;
     dic[kCDTISTypeCodeKey] = @(self.code);
     dic[kCDTISVersionHashKey] = stringFromData(self.versionHash);
 
@@ -356,7 +356,7 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISProperty *)initWithDictionary:(NSDictionary *)dic
 {
-    self.name = dic[kCDTISRelationNameKey];
+    self.name = dic[kCDTISPropertyNameKey];
     NSNumber *code = dic[kCDTISTypeCodeKey];
     self.code = [code integerValue];
 
