@@ -723,6 +723,18 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 }
 
 #pragma mark - property encode
+
+- (NSString *)encodeBlob:(NSData *)blob
+                withName:(NSString *)name
+                 inStore:(NSMutableDictionary *)store
+            withMIMEType:(NSString *)mt
+{
+    CDTUnsavedDataAttachment *at =
+        [[CDTUnsavedDataAttachment alloc] initWithData:blob name:name type:mt];
+    store[name] = at;
+    return name;
+}
+
 /**
  *  Create a dictionary (for JSON) that encodes an attribute.
  *  The array represents a tuple of strings:
@@ -738,6 +750,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
  */
 - (NSDictionary *)encodeAttribute:(NSAttributeDescription *)attribute
                        withObject:(id)obj
+                        blobStore:(NSMutableDictionary *)blobStore
                             error:(NSError **)error
 {
     NSAttributeType type = attribute.attributeType;
@@ -783,11 +796,13 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
         case NSBinaryDataAttributeType: {
             NSData *data = obj;
+            NSString *mimeType = @"application/octet-stream";
+            NSString *bytes =
+                [self encodeBlob:data withName:name inStore:blobStore withMIMEType:mimeType];
             return @{
-                name : [data base64EncodedDataWithOptions:0],
+                name : bytes,
                 MakeMeta(name) : @{kCDTISMIMETypeKey : @"application/octet-stream"}
             };
-            break;
         }
         case NSTransformableAttributeType: {
             NSString *xname = [attribute valueTransformerName];
@@ -800,7 +815,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             id xform = [[myClass alloc] init];
             // use reverseTransformedValue to come back
             NSData *save = [xform transformedValue:obj];
-            NSString *bytes = [save base64EncodedStringWithOptions:0];
+            NSString *bytes =
+                [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
 
             return @{
                 name : bytes,
@@ -968,6 +984,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
  *  @return dictionary
  */
 - (NSDictionary *)propertiesFromManagedObject:(NSManagedObject *)mo
+                                withBlobStore:(NSMutableDictionary *)blobStore
 {
     NSError *err = nil;
     NSEntityDescription *entity = [mo entity];
@@ -996,7 +1013,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
                 // don't even process nil objects
                 continue;
             }
-            enc = [self encodeAttribute:att withObject:obj error:&err];
+            enc = [self encodeAttribute:att withObject:obj blobStore:blobStore error:&err];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
             enc = [self encodeRelation:rel withObject:obj error:&err];
@@ -1044,6 +1061,12 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     return moid;
 }
 
+- (NSData *)decodeBlob:(NSString *)name fromStore:(NSDictionary *)store
+{
+    CDTSavedAttachment *att = store[name];
+    return [att dataFromAttachmentContent];
+}
+
 /**
  *  Get the object from the encoded property
  *
@@ -1055,6 +1078,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
  */
 - (id)decodeProperty:(NSString *)name
              fromDoc:(NSDictionary *)body
+       withBlobStore:(NSDictionary *)blobStore
          withContext:(NSManagedObjectContext *)context
 {
     NSInteger type = [self propertyTypeFromDoc:body withName:name];
@@ -1079,17 +1103,14 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             obj = [NSDate dateWithTimeIntervalSince1970:[since doubleValue]];
         } break;
         case NSBinaryDataAttributeType: {
-            NSString *str = prop;
-            obj = [[NSData alloc] initWithBase64EncodedString:str options:0];
+            NSString *uname = prop;
+            obj = [self decodeBlob:uname fromStore:blobStore];
         } break;
         case NSTransformableAttributeType: {
             NSString *xname = meta[kCDTISTransformerClassKey];
             id xform = [[NSClassFromString(xname) alloc] init];
-            NSString *base64 = prop;
-            NSData *restore = nil;
-            if ([base64 length]) {
-                restore = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
-            }
+            NSString *uname = prop;
+            NSData *restore = [self decodeBlob:uname fromStore:blobStore];
             // is the xform guaranteed to handle nil?
             obj = [xform reverseTransformedValue:restore];
         } break;
@@ -1213,14 +1234,18 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     if (moid.isTemporaryID) oops(@"tmp");
 
     CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
+    NSMutableDictionary *blobStore = [NSMutableDictionary dictionary];
 
     // do the actual attributes first
     newRev.docId = docID;
-    newRev.body = [self propertiesFromManagedObject:mo];
+    newRev.body = [self propertiesFromManagedObject:mo withBlobStore:blobStore];
     newRev.body[kCDTISTypeKey] = kCDTISTypeProperties;
     newRev.body[kCDTISObjectVersionKey] = @"1";
     newRev.body[kCDTISEntityNameKey] = [entity name];
     newRev.body[kCDTISIdentifierKey] = [[[mo objectID] URIRepresentation] absoluteString];
+    if ([blobStore count]) {
+        newRev.attachments = blobStore;
+    }
 
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:newRev error:&err];
     if (!rev) {
@@ -1262,6 +1287,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSDictionary *propDic = [entity propertiesByName];
 
     NSMutableDictionary *props = [NSMutableDictionary dictionary];
+    NSMutableDictionary *blobStore = [NSMutableDictionary dictionary];
     NSDictionary *changed = [mo changedValues];
 
     for (NSString *name in changed) {
@@ -1272,8 +1298,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         }
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
-
-            enc = [self encodeAttribute:att withObject:changed[name] error:&err];
+            enc =
+                [self encodeAttribute:att withObject:changed[name] blobStore:blobStore error:&err];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
             enc = [self encodeRelation:rel withObject:changed[name] error:&err];
@@ -1283,7 +1309,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         [props addEntriesFromDictionary:enc];
     }
 
-    // :( It makes me very sad that I have to fetch it
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
     if (!oldRev) {
         if (error) *error = err;
@@ -1299,6 +1324,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
+    // update attachments first
+    if ([blobStore count]) {
+        [upRev.attachments addEntriesFromDictionary:blobStore];
+    }
+
     // delete all changed properties, in case they are being removed.
     [upRev.body removeObjectsForKeys:[props allKeys]];
     [upRev.body addEntriesFromDictionary:props];
@@ -1307,6 +1337,13 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     if (!upedRev) {
         if (error) *error = err;
         return NO;
+    }
+
+    if ([blobStore count]) {
+        if (![self.datastore compactWithError:&err]) {
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: datastore compact failed: %@", kCDTISType,
+                       err);
+        }
     }
 
     if (CDTISReadItBack) {
@@ -1410,7 +1447,10 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             continue;
         }
 
-        id obj = [self decodeProperty:name fromDoc:rev.body withContext:context];
+        id obj = [self decodeProperty:name
+                              fromDoc:rev.body
+                        withBlobStore:rev.attachments
+                          withContext:context];
         if (!obj) {
             // Dictionaries do not take nil, but Values can't have NSNull.
             // Apparently we just skip it and the properties faults take care
