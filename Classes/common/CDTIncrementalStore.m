@@ -83,8 +83,6 @@ static NSString *const kCDTISTypeStringKey = @"type";
 static NSString *const kCDTISTypeCodeKey = @"code";
 static NSString *const kCDTISTransformerClassKey = @"xform";
 static NSString *const kCDTISMIMETypeKey = @"mime-type";
-static NSString *const kCDTISRelationNameKey = @"name";
-static NSString *const kCDTISRelationReferenceKey = @"reference";
 static NSString *const kCDTISFloatImageKey = @"ieee754_single";
 static NSString *const kCDTISDoubleImageKey = @"ieee754_double";
 static NSString *const kCDTISDecimalImageKey = @"nsdecimal";
@@ -92,7 +90,7 @@ static NSString *const kCDTISMetaDataKey = @"metaData";
 static NSString *const kCDTISRunKey = @"run";
 static NSString *const kCDTISObjectModelKey = @"objectModel";
 static NSString *const kCDTISVersionHashKey = @"versionHash";
-static NSString *const kCDTISRelationDesitinationKey = @"desintation";
+static NSString *const kCDTISRelationDesitinationKey = @"destintation";
 
 static NSString *const kCDTISDecimalAttributeType = @"decimal";
 static NSString *const kCDTISStringAttributeType = @"utf8";
@@ -511,6 +509,13 @@ static NSData *dataFromString(NSString *str)
     return prop.code;
 }
 
+- (NSString *)destinationWithName:(NSString *)name withEntityName:(NSString *)ent
+{
+    CDTISEntity *ents = self.entities[ent];
+    CDTISProperty *prop = ents.properties[name];
+    return prop.destination;
+}
+
 - (NSString *)description { return [self.entities description]; }
 @end
 
@@ -620,6 +625,15 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSString *entityName = body[kCDTISEntityNameKey];
     NSInteger ptype = [self.objectModel propertyTypeWithName:name withEntityName:entityName];
     return ptype;
+}
+
+- (NSString *)destinationFromDoc:(NSDictionary *)body withName:(NSString *)name
+{
+    if (!self.objectModel) oops(@"no object model exists yet");
+
+    NSString *entityName = body[kCDTISEntityNameKey];
+    NSString *dest = [self.objectModel destinationWithName:name withEntityName:entityName];
+    return dest;
 }
 
 - (CDTIndexType)indexTypeForKey:(NSString *)key inProperties:(NSDictionary *)props
@@ -926,20 +940,19 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
  *
  *  @return dictionary
  */
-- (NSDictionary *)encodeRelationFromManagedObject:(NSManagedObject *)mo
+- (NSString *)encodeRelationFromManagedObject:(NSManagedObject *)mo
 {
     if (!mo) {
-        return @{ kCDTISRelationNameKey : @"", kCDTISRelationReferenceKey : @"" };
+        return @"";
     }
 
     NSEntityDescription *entity = [mo entity];
-    NSString *entityName = [entity name];
     NSManagedObjectID *moid = [mo objectID];
 
     if (moid.isTemporaryID) oops(@"tmp");
 
     NSString *ref = [self referenceObjectForObjectID:moid];
-    return @{kCDTISRelationNameKey : entityName, kCDTISRelationReferenceKey : ref};
+    return ref;
 }
 
 /**
@@ -1149,12 +1162,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             obj = num;
         } break;
         case CDTISRelationToOneType: {
-            NSDictionary *enc = prop;
-            NSString *entityName = enc[kCDTISRelationNameKey];
+            NSString *ref = prop;
+            NSString *entityName = [self destinationFromDoc:body withName:name];
             if (entityName.length == 0) {
                 obj = [NSNull null];
             } else {
-                NSString *ref = enc[kCDTISRelationReferenceKey];
                 NSManagedObjectID *moid =
                     [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
                 // we cannot return nil
@@ -2547,12 +2559,11 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
     NSString *name = [relationship name];
     NSInteger type = [self propertyTypeFromDoc:rev.body withName:name];
+    NSString *entityName = [self destinationFromDoc:rev.body withName:name];
 
     switch (type) {
         case CDTISRelationToOneType: {
-            NSDictionary *rel = rev.body[name];
-            NSString *entityName = rel[kCDTISRelationNameKey];
-            NSString *ref = rel[kCDTISRelationReferenceKey];
+            NSString *ref = rev.body[name];
             NSManagedObjectID *moid =
                 [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
             if (!moid) {
@@ -2563,9 +2574,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         case CDTISRelationToManyType: {
             NSMutableArray *moids = [NSMutableArray array];
             NSArray *oids = rev.body[name];
-            for (NSDictionary *oid in oids) {
-                NSString *entityName = oid[kCDTISRelationNameKey];
-                NSString *ref = oid[kCDTISRelationReferenceKey];
+            for (NSString *ref in oids) {
                 NSManagedObjectID *moid =
                     [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
                 // if we get nil, don't add it, this should get us an empty array
@@ -2657,8 +2666,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
                 size_t idx = [props count] + 1;
                 switch (ptype) {
                     case CDTISRelationToOneType: {
-                        NSDictionary *rel = value;
-                        NSString *str = rel[kCDTISRelationReferenceKey];
+                        NSString *str = value;
                         [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
                         DotWrite(
                             out,
@@ -2672,8 +2680,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
                         [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
                         DotWrite(out,
                                  [NSString stringWithFormat:@"  \"%@\":%zu -> { ", rev.docId, idx]);
-                        for (NSDictionary *rel in rels) {
-                            NSString *str = rel[kCDTISRelationReferenceKey];
+                        for (NSString *str in rels) {
                             DotWrite(out, [NSString stringWithFormat:@"\"%@\":0 ", str]);
                         }
                         DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
