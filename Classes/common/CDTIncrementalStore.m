@@ -516,6 +516,13 @@ static NSData *dataFromString(NSString *str)
     return prop.destination;
 }
 
+- (NSString *)xformWithName:(NSString *)name withEntityName:(NSString *)ent
+{
+    CDTISEntity *ents = self.entities[ent];
+    CDTISProperty *prop = ents.properties[name];
+    return prop.xform;
+}
+
 - (NSString *)description { return [self.entities description]; }
 @end
 
@@ -635,6 +642,16 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSString *dest = [self.objectModel destinationWithName:name withEntityName:entityName];
     return dest;
 }
+
+- (NSString *)xformFromDoc:(NSDictionary *)body withName:(NSString *)name
+{
+    if (!self.objectModel) oops(@"no object model exists yet");
+
+    NSString *entityName = body[kCDTISEntityNameKey];
+    NSString *xform = [self.objectModel xformWithName:name withEntityName:entityName];
+    return xform;
+}
+
 
 - (CDTIndexType)indexTypeForKey:(NSString *)key inProperties:(NSDictionary *)props
 {
@@ -834,7 +851,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
             return @{
                 name : bytes,
-                MakeMeta(name) : @{kCDTISTransformerClassKey : xname, kCDTISMIMETypeKey : mimeType}
+                MakeMeta(name) : @{kCDTISMIMETypeKey : mimeType}
             };
         }
         case NSObjectIDAttributeType: {
@@ -1120,7 +1137,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             obj = [self decodeBlob:uname fromStore:blobStore];
         } break;
         case NSTransformableAttributeType: {
-            NSString *xname = meta[kCDTISTransformerClassKey];
+            NSString *xname = [self xformFromDoc:body withName:name];
             id xform = [[NSClassFromString(xname) alloc] init];
             NSString *uname = prop;
             NSData *restore = [self decodeBlob:uname fromStore:blobStore];
