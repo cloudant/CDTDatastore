@@ -100,16 +100,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [_host stop];
 }
 
-- (void)clearDbRef
-{
-    // If we're in the middle of saving the checkpoint and waiting for a response, by the time the
-    // response arrives _db will be nil, so there won't be any way to save the checkpoint locally.
-    // To avoid that, pre-emptively save the local checkpoint now.
-    if (_savingCheckpoint && _lastSequence)
-        [_db setLastSequence:_lastSequence withCheckpointID:self.remoteCheckpointDocID];
-    _db = nil;
-}
-
 - (void)databaseClosing
 {
     //this can be called from another thread, but we need to execute it the replicator's thread
@@ -120,9 +110,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 }
 - (void)databaseClosingOnMyThread
 {
-    [self saveLastSequence];
     [self stop];
-    [self clearDbRef];
 }
 
 - (NSString*) description {
@@ -290,6 +278,9 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
             ;
         
+        // clear the reference to the db
+        _db = nil;
+        
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread exiting");
     }
 }
@@ -431,8 +422,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     _batcher = nil;
     [_host stop];
     _host = nil;
-
-    [self clearDbRef];  // _db no longer tracks me so it won't notify me when it closes; clear ref now
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver: self];
