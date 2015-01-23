@@ -78,9 +78,8 @@ static NSString *const kCDTISFPNegInfinityKey = @"-infinity";
 static NSString *const kCDTISFPNaNKey = @"nan";
 
 static NSString *const kCDTISPropertiesKey = @"properties";
-static NSString *const kCDTISPropertyNameKey = @"name";
+static NSString *const kCDTISPropertyNameKey = @"typeName";
 static NSString *const kCDTISTypeStringKey = @"type";
-static NSString *const kCDTISTypeCodeKey = @"code";
 static NSString *const kCDTISTransformerClassKey = @"xform";
 static NSString *const kCDTISMIMETypeKey = @"mime-type";
 static NSString *const kCDTISFloatImageKey = @"ieee754_single";
@@ -96,7 +95,7 @@ static NSString *const kCDTISDecimalAttributeType = @"decimal";
 static NSString *const kCDTISStringAttributeType = @"utf8";
 static NSString *const kCDTISBooleanAttributeType = @"bool";
 static NSString *const kCDTISDateAttributeType = @"date1970";
-static NSString *const kCDTISBinaryDataAttributeType = @"base64";
+static NSString *const kCDTISBinaryDataAttributeType = @"binary";
 static NSString *const kCDTISTransformableAttributeType = @"xform";
 static NSString *const kCDTISObjectIDAttributeType = @"id";
 static NSString *const kCDTISRelationToOneType = @"relation-to-one";
@@ -231,8 +230,8 @@ static NSData *dataFromString(NSString *str)
 @interface CDTISProperty : NSObject
 // Information about the object
 @property (nonatomic) BOOL isRelationship;
-@property (strong, nonatomic) NSString *name;
-@property (nonatomic) NSInteger code;
+@property (strong, nonatomic) NSString *typeName;
+@property (nonatomic) NSInteger typeCode;
 @property (strong, nonatomic) NSString *xform;
 @property (strong, nonatomic) NSString *destination;
 @property (strong, nonatomic) NSData *versionHash;
@@ -255,61 +254,61 @@ static NSData *dataFromString(NSString *str)
 {
     self.isRelationship = NO;
     NSAttributeType type = attribute.attributeType;
-    self.code = type;
+    self.typeCode = type;
     self.versionHash = attribute.versionHash;
 
     switch (type) {
         case NSUndefinedAttributeType:
-            self.name = @"NSUndefinedAttributeType";
+            self.typeName = @"NSUndefinedAttributeType";
             break;
 
         case NSStringAttributeType:
-            self.name = kCDTISStringAttributeType;
+            self.typeName = kCDTISStringAttributeType;
             break;
 
         case NSBooleanAttributeType:
-            self.name = kCDTISBooleanAttributeType;
+            self.typeName = kCDTISBooleanAttributeType;
             break;
 
         case NSDateAttributeType:
-            self.name = kCDTISDateAttributeType;
+            self.typeName = kCDTISDateAttributeType;
             break;
 
         case NSBinaryDataAttributeType:
-            self.name = kCDTISBinaryDataAttributeType;
+            self.typeName = kCDTISBinaryDataAttributeType;
             break;
 
         case NSTransformableAttributeType:
-            self.name = kCDTISTransformableAttributeType;
+            self.typeName = kCDTISTransformableAttributeType;
             self.xform = [attribute valueTransformerName];
             break;
 
         case NSObjectIDAttributeType:
-            self.name = kCDTISObjectIDAttributeType;
+            self.typeName = kCDTISObjectIDAttributeType;
             break;
 
         case NSDecimalAttributeType:
-            self.name = kCDTISDecimalAttributeType;
+            self.typeName = kCDTISDecimalAttributeType;
             break;
 
         case NSDoubleAttributeType:
-            self.name = kCDTISDoubleAttributeType;
+            self.typeName = kCDTISDoubleAttributeType;
             break;
 
         case NSFloatAttributeType:
-            self.name = kCDTISFloatAttributeType;
+            self.typeName = kCDTISFloatAttributeType;
             break;
 
         case NSInteger16AttributeType:
-            self.name = kCDTISInteger16AttributeType;
+            self.typeName = kCDTISInteger16AttributeType;
             break;
 
         case NSInteger32AttributeType:
-            self.name = kCDTISInteger32AttributeType;
+            self.typeName = kCDTISInteger32AttributeType;
             break;
 
         case NSInteger64AttributeType:
-            self.name = kCDTISInteger64AttributeType;
+            self.typeName = kCDTISInteger64AttributeType;
             break;
 
         default:
@@ -327,11 +326,11 @@ static NSData *dataFromString(NSString *str)
     self.destination = [ent name];
 
     if (relationship.isToMany) {
-        self.name = kCDTISRelationToManyType;
-        self.code = CDTISRelationToManyType;
+        self.typeName = kCDTISRelationToManyType;
+        self.typeCode = CDTISRelationToManyType;
     } else {
-        self.name = kCDTISRelationToOneType;
-        self.code = CDTISRelationToOneType;
+        self.typeName = kCDTISRelationToOneType;
+        self.typeCode = CDTISRelationToOneType;
     }
     return self;
 }
@@ -339,8 +338,7 @@ static NSData *dataFromString(NSString *str)
 - (NSDictionary *)dictionary
 {
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    dic[kCDTISPropertyNameKey] = self.name;
-    dic[kCDTISTypeCodeKey] = @(self.code);
+    dic[kCDTISPropertyNameKey] = self.typeName;
     dic[kCDTISVersionHashKey] = stringFromData(self.versionHash);
 
     if (self.xform) {
@@ -352,12 +350,52 @@ static NSData *dataFromString(NSString *str)
     return [NSDictionary dictionaryWithDictionary:dic];
 }
 
+- (NSInteger)typeCodeFromName:(NSString *)name
+{
+    if ([name isEqualToString:kCDTISStringAttributeType]) {
+        return NSStringAttributeType;
+    }
+    if ([name isEqualToString:kCDTISBooleanAttributeType]) {
+        return NSBooleanAttributeType;
+    }
+    if ([name isEqualToString:kCDTISDateAttributeType]) {
+        return NSDateAttributeType;
+    }
+    if ([name isEqualToString:kCDTISBinaryDataAttributeType]) {
+        return NSBinaryDataAttributeType;
+    }
+    if ([name isEqualToString:kCDTISTransformableAttributeType]) {
+        return NSTransformableAttributeType;
+    }
+    if ([name isEqualToString:kCDTISObjectIDAttributeType]) {
+        return NSObjectIDAttributeType;
+    }
+    if ([name isEqualToString:kCDTISDecimalAttributeType]) {
+        return NSDecimalAttributeType;
+    }
+    if ([name isEqualToString:kCDTISInteger16AttributeType]) {
+        return NSInteger16AttributeType;
+    }
+    if ([name isEqualToString:kCDTISInteger32AttributeType]) {
+        return NSInteger16AttributeType;
+    }
+    if ([name isEqualToString:kCDTISInteger64AttributeType]) {
+        return NSInteger16AttributeType;
+    }
+    if ([name isEqualToString:kCDTISRelationToOneType]) {
+        return CDTISRelationToOneType;
+    }
+    if ([name isEqualToString:kCDTISRelationToManyType]) {
+        return CDTISRelationToManyType;
+    }
+
+    return 0;
+}
+
 - (CDTISProperty *)initWithDictionary:(NSDictionary *)dic
 {
-    self.name = dic[kCDTISPropertyNameKey];
-    NSNumber *code = dic[kCDTISTypeCodeKey];
-    self.code = [code integerValue];
-
+    self.typeName = dic[kCDTISPropertyNameKey];
+    self.typeCode = [self typeCodeFromName:self.typeName];
     self.versionHash = dataFromString(dic[kCDTISVersionHashKey]);
 
     self.xform = dic[kCDTISTransformerClassKey];
@@ -506,7 +544,7 @@ static NSData *dataFromString(NSString *str)
 {
     CDTISEntity *ents = self.entities[ent];
     CDTISProperty *prop = ents.properties[name];
-    return prop.code;
+    return prop.typeCode;
 }
 
 - (NSString *)destinationWithName:(NSString *)name withEntityName:(NSString *)ent
@@ -651,7 +689,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSString *xform = [self.objectModel xformWithName:name withEntityName:entityName];
     return xform;
 }
-
 
 - (CDTIndexType)indexTypeForKey:(NSString *)key inProperties:(NSDictionary *)props
 {
@@ -849,10 +886,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
             NSString *bytes =
                 [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
 
-            return @{
-                name : bytes,
-                MakeMeta(name) : @{kCDTISMIMETypeKey : mimeType}
-            };
+            return @{ name : bytes, MakeMeta(name) : @{kCDTISMIMETypeKey : mimeType} };
         }
         case NSObjectIDAttributeType: {
             // I don't think converting to a ref is needed, besides we
@@ -963,7 +997,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return @"";
     }
 
-    NSEntityDescription *entity = [mo entity];
     NSManagedObjectID *moid = [mo objectID];
 
     if (moid.isTemporaryID) oops(@"tmp");
@@ -989,7 +1022,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 
     if (!rel.isToMany) {
         NSManagedObject *mo = obj;
-        NSDictionary *enc = [self encodeRelationFromManagedObject:mo];
+        NSString *enc = [self encodeRelationFromManagedObject:mo];
         return @{
             name : enc,
         };
@@ -998,7 +1031,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     for (NSManagedObject *mo in obj) {
         if (!mo) oops(@"nil mo");
 
-        NSDictionary *enc = [self encodeRelationFromManagedObject:mo];
+        NSString *enc = [self encodeRelationFromManagedObject:mo];
         [ids addObject:enc];
     }
     return @{
@@ -1908,7 +1941,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSString *run = rev.body[kCDTISRunKey];
     uint64_t runVal = [run longLongValue];
     ++runVal;
-    self.run = [NSString stringWithFormat:@"%llu", runVal];
+    self.run = [NSString stringWithFormat:@"run-%llu", runVal];
 
     CDTMutableDocumentRevision *upRev = [rev mutableCopy];
     upRev.body[kCDTISRunKey] = self.run;
