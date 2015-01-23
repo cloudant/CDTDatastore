@@ -286,6 +286,171 @@ ID is "CDTISMetaData" and it is described in the following JSON [Schema], draft 
 }
 ```
 
+### Entity Data
+All other documents should follow the following schema:
+
+```json
+{
+    "title": "CDTISObject",
+    "definitions": {
+        "symbolicName": {
+            "id": "#symbolicName",
+            "type": "string",
+            "pattern": "^[^ ]+$"
+        },
+
+        // The actual storage of a scalar value. In JSON it always
+        // comes down to either a number or a string
+        "attribute": {
+            "id": "#attribute",
+            "oneOf": [
+                {"type": "string"},
+                {"type": "number"}
+            ]
+        },
+
+        // The string is a Document ID in the database
+        "relationToOne": {
+            "id": "#relationToOne",
+            "type": "string"
+        },
+
+        // This is array of Document IDs in the database
+        "relationToMany": {
+            "id": "#relationToMany",
+            "type": "array",
+            "items": {"$ref": "#/definitions/relationToOne" }
+        },
+
+        // A property is either an attribute or a relation
+        "property": {
+            "id": "#property",
+            "oneOf": [
+                { "$ref": "#/definitions/attribute" },
+                { "$ref": "#/definitions/relationToOne" },
+                { "$ref": "#/definitions/relationToMany" }
+            ]
+        },
+
+        // The properties that are prefixed with "CDTISMeta_" are
+        // objects that contain additional information to support the
+        // accurate storage of the data.
+
+        // Binary and Transformable objects have a MIME type
+        "metaDataForBinary": {
+            "id": "#metaDataForBinary",
+            "type": "object",
+            "required": [ "mime-type" ],
+            "properties": {
+                "mime-type": { "type": "string" }
+            }
+        },
+
+        // Floating Point Special values like NaN and +/-Infinity
+        // cannot be sotred as JSON, so we have added extra properties
+        // to capture this.
+		// JX: I don't know how to reference this correctly so I have
+		// it blown out below
+        "metaDataForFloatSpecial": {
+            "id": "#metaDataForFloatSpecial",
+            "type": "object",
+            "properties": {
+                "infinity": { "type": "boolean" },
+                "-infinity": { "type": "boolean" },
+                "nan": { "type": "boolean" }
+            }
+        },
+
+        // IEEE single precision floating point values are
+        // additionally represented as an integer that captures the
+        // 32-bit image.  In C this is can be expressed as:
+        //   uint32_t img = *((uint32_t *)&double_num);
+        "metaDataForFloatSingle": {
+            "id": "#metaDataForFloatSingle",
+            "type": "object",
+            "required": [ "ieee754_single" ],
+            "properties": {
+                "infinity": { "type": "boolean" },
+                "-infinity": { "type": "boolean" },
+                "nan": { "type": "boolean" },
+                "ieee754_single": {"type": "integer" }
+            }
+        },
+
+        // IEEE double precision floating point values are
+        // additionally represented as an integer that captures the
+        // 64-bit image.  In C this is can be expressed as:
+        //   uint64_t img = *((uint64_t *)&double_num);
+        "metaDataForFloatDouble": {
+            "id": "#metaDataForFloatDouble",
+            "type": "object",
+            "required": [ "ieee754_double" ],
+            "properties": {
+                "infinity": { "type": "boolean" },
+                "-infinity": { "type": "boolean" },
+                "nan": { "type": "boolean" },
+                "ieee754_double": {"type": "integer" }
+            }
+        },
+
+        // Apple has a type called NSDecimal, we discourage its use
+        // since it is not portable, but we allow it incase the
+        // application does not care.
+        // The image is a base64 encoding of the structure binary
+        "metaDataForNSDecimal": {
+            "id": "#metaDataForNSDecimal",
+            "type": "object",
+            "required": [ "nsdecimal" ],
+            "properties": {
+                "infinity": { "type": "boolean" },
+                "-infinity": { "type": "boolean" },
+                "nan": { "type": "boolean" },
+                "nsdecimal": {"type": "string" }
+            }
+        },
+
+        "metaData": {
+            "id": "#metaData",
+            "oneOf": [
+                { "$ref": "#/definitions/metaDataForBinary" },
+                { "$ref": "#/definitions/metaDataForFloatSingle" },
+                { "$ref": "#/definitions/metaDataForFloatDouble" },
+                { "$ref": "#/definitions/metaDataForNSDecimal" }
+            ]
+        }
+    },
+
+    "type": "object",
+    "required": [
+        "CDTISEntityName",
+        "CDTISIdentifier"
+    ],
+
+    "properties" : {
+        // The entity that this data propery belongs to
+        "CDTISEntityName": { "$ref": "#/definitions/symbolicName" },
+
+        // URI Generated by Core Data to track this object.  Should
+        // never be removed, but this document is not created by Core
+        // Data, it can be missing and will be generated once a core
+        // data application sees it... I hope
+        "CDTISIdentifier": { "type": "string" },
+
+        // I'm only guessing I need this.. probably don't
+        "CDTISObjectVersion": { "type": "string" },
+
+        // Not sure this is useful either
+        "CDTISType": { "type": "string" }
+    },
+    "patternProperties": {
+        // Regular properties need to be excluded, is there a better way?
+        "^!(CDTIS)[^ ]+$": { "$ref": "#/definitions/property" },
+        "^CDTISMeta_[^ ]+$": { "$ref": "#/definitions/metaData" }
+    }
+}
+
+```
+
 ## Portability Issues
 To do this we try to
 use more generic descriptions for the "meta" information.  Here we
