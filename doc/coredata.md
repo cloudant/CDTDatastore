@@ -273,15 +273,16 @@ ID is "CDTISMetaData" and it is described in the following JSON [Schema], draft 
         "APPLCoreDataMetaData": {
             "title": "Core Data Meta Data Object",
             "type": "object"
-    },
+        },
 
-    "type": "object",
-    "required": [ "metaData", "objectModel" ],
-    "properties": {
-        "metaData": { "$ref": "#/definitions/APPLCoreDataMetaData" },
-                "objectModel": { "$ref": "#/definitions/objectModel" },
-                "run": { "type": "string" },
-                "CDTISType": { "type": "string" }
+        "type": "object",
+        "required": [ "metaData", "objectModel" ],
+        "properties": {
+            "metaData": { "$ref": "#/definitions/APPLCoreDataMetaData" },
+            "objectModel": { "$ref": "#/definitions/objectModel" },
+            "run": { "type": "string" },
+            "CDTISType": { "type": "string" }
+        }
     }
 }
 ```
