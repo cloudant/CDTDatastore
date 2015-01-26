@@ -102,4 +102,20 @@ typedef NS_ENUM(NSInteger, CDTISReplicateDirection) {
  */
 + (NSArray *)storesFromCoordinator:(NSPersistentStoreCoordinator *)coordinator;
 
+typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
+    CDTISErrorBadURL = 1,
+    CDTISErrorBadPath,
+    CDTISErrorNilObject,
+    CDTISErrorUndefinedAttributeType,
+    CDTISErrorObjectIDAttributeType,
+    CDTISErrorNaN,
+    CDTISErrorRevisionIDMismatch,
+    CDTISErrorExectueRequestTypeUnkown,
+    CDTISErrorExectueRequestFetchTypeUnkown,
+    CDTISErrorMetaDataMismatch,
+    CDTISErrorNoRemoteDB,
+    CDTISErrorSyncBusy,
+    CDTISErrorNotSupported
+};
+
 @end

@@ -105,23 +105,6 @@ static NSString *const kCDTISRelationToManyType = @"relation-to-many";
 static NSInteger const CDTISRelationToOneType = -1;
 static NSInteger const CDTISRelationToManyType = -2;
 
-#pragma mark - error codes
-typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
-    CDTISErrorBadURL = 1,
-    CDTISErrorBadPath,
-    CDTISErrorNilObject,
-    CDTISErrorUndefinedAttributeType,
-    CDTISErrorObjectIDAttributeType,
-    CDTISErrorNaN,
-    CDTISErrorRevisionIDMismatch,
-    CDTISErrorExectueRequestTypeUnkown,
-    CDTISErrorExectueRequestFetchTypeUnkown,
-    CDTISErrorMetaDataMismatch,
-    CDTISErrorNoRemoteDB,
-    CDTISErrorSyncBusy,
-    CDTISErrorNotSupported
-};
-
 #pragma mark - Code selection
 // allows selection of different code paths
 // Use this instead of ifdefs so the code are actually gets compiled
