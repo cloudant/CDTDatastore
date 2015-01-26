@@ -22,24 +22,15 @@
 
 @end
 
-/**
- *  Create a CoreData Managed Object Model for testing
- */
-
 @interface Entry : NSManagedObject
-@property (nonatomic, retain) NSNumber *number;
-@property (nonatomic, retain) NSString *string;
-@property (nonatomic, retain) NSDate *created;
-@property (nonatomic, retain) NSSet *stuff;
+@property (nonatomic, strong) NSNumber *number;
+@property (nonatomic, strong) NSString *string;
+@property (nonatomic, strong) NSDate *created;
+@property (nonatomic, strong) NSSet *stuff;
 @end
 
-@class Stuff;
-
-@interface Entry (CoreDataGeneratedAccessors)
-- (void)addStuffObject:(Stuff *)value;
-- (void)removeStuffObject:(Stuff *)value;
-- (void)addStuff:(NSSet *)values;
-- (void)removeStuff:(NSSet *)values;
+@implementation Entry
+@dynamic number, string, created, stuff;
 @end
 
 @interface Stuff : NSManagedObject
@@ -48,92 +39,19 @@
 @property (nonatomic, retain) Entry *entry;
 @end
 
-NSAttributeDescription *MakeAttribute(NSString *name, BOOL optional, NSAttributeType type,
-                                      id defaultValue)
-{
-    NSAttributeDescription *attribute = [NSAttributeDescription new];
-    [attribute setName:name];
-    [attribute setOptional:optional];
-    [attribute setAttributeType:type];
-    if (defaultValue) {
-        [attribute setDefaultValue:defaultValue];
-    }
-    return attribute;
-}
-NSRelationshipDescription *MakeRelationship(NSString *name, BOOL optional, BOOL toMany,
-                                            NSDeleteRule deletionRule,
-                                            NSEntityDescription *destinationEntity)
-{
-    NSRelationshipDescription *relationship = [NSRelationshipDescription new];
-    [relationship setName:name];
-    [relationship setOptional:optional];
-    [relationship setMinCount:optional ? 0 : 1];
-    [relationship setMaxCount:toMany ? 0 : 1];
-    [relationship setDeleteRule:deletionRule];
-    [relationship setDestinationEntity:destinationEntity];
-    return relationship;
-}
-
-NSManagedObjectModel *MakeCoreDataModel(void)
-{
-    NSManagedObjectModel *model = [NSManagedObjectModel new];
-
-    NSEntityDescription *entry = [NSEntityDescription new];
-    [entry setName:@"Entry"];
-    [entry setManagedObjectClassName:@"Entry"];
-
-    NSEntityDescription *stuff = [NSEntityDescription new];
-    [stuff setName:@"Stuff"];
-    [stuff setManagedObjectClassName:@"Stuff"];
-
-    NSRelationshipDescription *entryStuff =
-        MakeRelationship(@"stuff", YES, YES, NSCascadeDeleteRule, stuff);
-    NSRelationshipDescription *stuffEntry =
-        MakeRelationship(@"entry", YES, NO, NSNullifyDeleteRule, entry);
-
-    [entryStuff setInverseRelationship:stuffEntry];
-    [stuffEntry setInverseRelationship:entryStuff];
-
-    [entry setProperties:@[
-        MakeAttribute(@"number", YES, NSInteger32AttributeType, @(0)),
-        MakeAttribute(@"string", YES, NSStringAttributeType, nil),
-        MakeAttribute(@"created", YES, NSDateAttributeType, nil),
-        entryStuff
-    ]];
-
-    [stuff setProperties:@[
-        MakeAttribute(@"size", YES, NSInteger32AttributeType, nil),
-        MakeAttribute(@"data", YES, NSStringAttributeType, nil),
-        stuffEntry
-    ]];
-
-    [model setEntities:@[ entry, stuff ]];
-
-    return model;
-}
-
-@implementation Entry
-@dynamic number, string, created, stuff;
-@end
-
 @implementation Stuff
 @dynamic size, data, entry;
 @end
 
-/**
- *  Convenience function to create an CoreData Entry
- *
- *  @param moc Managed object context
- *
- *  @return A useable entry or nil if fail
- */
-Entry *MakeEntry(NSManagedObjectContext *moc)
-{
-    return
-        [NSEntityDescription insertNewObjectForEntityForName:@"Entry" inManagedObjectContext:moc];
-}
-
 @implementation ReplicatorCoreData
+
+- (Entry *)makeEntry:(NSManagedObjectContext *)moc
+{
+    Entry *e =
+        [NSEntityDescription insertNewObjectForEntityForName:@"Entry" inManagedObjectContext:moc];
+    XCTAssertNotNil(e, "could not get entity");
+    return e;
+}
 
 #pragma mark - getters
 - (NSManagedObjectModel *)managedObjectModel
@@ -141,8 +59,13 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     if (_managedObjectModel != nil) {
         return _managedObjectModel;
     }
-    _managedObjectModel = MakeCoreDataModel();
 
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSURL *url = [bundle URLForResource:@"CoreDataEntry" withExtension:@"momd"];
+    XCTAssertNotNil(url, @"could not find CoreDataEntry resource");
+
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    XCTAssertTrue(([[_managedObjectModel entities] count] > 0), @"no entities");
     return _managedObjectModel;
 }
 
@@ -255,8 +178,8 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
     // create some entries
     for (int i = 0; i < max; i++) {
-        Entry *e = MakeEntry(moc);
-        // check will indicate if value is an even number
+        Entry *e = [self makeEntry:moc];
+
         e.number = @(i);
         e.string = [NSString stringWithFormat:@"%u", (max * 10) + i];
         e.created = [NSDate dateWithTimeIntervalSinceNow:0];
