@@ -2088,7 +2088,9 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     if (frc) {
         // If there is a cache for this, it is likely stale.
         // Sadly, we do not know the name of it, so we blow them all away
+#pragma clang diagnostic ignored "-Wundeclared-selector"
         [frc performSelector:@selector(deleteCacheWithName:) withObject:nil];
+#pragma clang diagnostic pop
     }
 
     return YES;
