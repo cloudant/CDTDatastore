@@ -281,7 +281,6 @@ ID is "CDTISMetaData" and it is described in the following JSON [Schema], draft 
             "metaData": { "$ref": "#/definitions/APPLCoreDataMetaData" },
             "objectModel": { "$ref": "#/definitions/objectModel" },
             "run": { "type": "string" },
-            "CDTISType": { "type": "string" }
         }
     }
 }
@@ -424,8 +423,7 @@ All other documents should follow the following schema:
 
     "type": "object",
     "required": [
-        "CDTISEntityName",
-        "CDTISIdentifier"
+        "CDTISEntityName"
     ],
 
     "properties" : {
@@ -440,9 +438,6 @@ All other documents should follow the following schema:
 
         // I'm only guessing I need this.. probably don't
         "CDTISObjectVersion": { "type": "string" },
-
-        // Not sure this is useful either
-        "CDTISType": { "type": "string" }
     },
     "patternProperties": {
         // Regular properties need to be excluded, is there a better way?

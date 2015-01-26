@@ -58,11 +58,6 @@ static NSString *const kCDTISObjectVersionKey = @"CDTISObjectVersion";
 static NSString *const kCDTISEntityNameKey = @"CDTISEntityName";
 static NSString *const kCDTISIdentifierKey = @"CDTISIdentifier";
 
-#pragma mark - types
-static NSString *const kCDTISTypeKey = @"CDTISType";
-static NSString *const kCDTISTypeProperties = @"attributes";
-static NSString *const kCDTISTypeMetadata = @"metaData";
-
 #pragma mark - property string type for backing store
 static NSString *const kCDTISUndefinedAttributeType = @"undefined";
 
@@ -1284,7 +1279,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // do the actual attributes first
     newRev.docId = docID;
     newRev.body = [self propertiesFromManagedObject:mo withBlobStore:blobStore];
-    newRev.body[kCDTISTypeKey] = kCDTISTypeProperties;
     newRev.body[kCDTISObjectVersionKey] = @"1";
     newRev.body[kCDTISEntityNameKey] = [entity name];
     newRev.body[kCDTISIdentifierKey] = [[[mo objectID] URIRepresentation] absoluteString];
@@ -1881,7 +1875,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     return [NSDictionary dictionaryWithDictionary:newHashes];
 }
 
-
 /**
  *  @see -encodeCoreDataMeta
  *
@@ -1898,7 +1891,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     if (hashes) {
         metadata[NSStoreModelVersionHashesKey] = [self decodeVersionHashes:hashes];
     }
-    
+
     return [NSDictionary dictionaryWithDictionary:metadata];
 }
 
@@ -1934,7 +1927,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
         newRev.docId = kCDTISMetaDataDocID;
         newRev.body = @{
-            kCDTISTypeKey : kCDTISTypeMetadata,
             kCDTISMetaDataKey : metaData,
             kCDTISObjectModelKey : omd,
             kCDTISRunKey : self.run,
@@ -2112,8 +2104,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // this class only exists in iOS
     Class frc = NSClassFromString(@"NSFetchedResultsController");
     if (frc) {
-        // If there is a cache for this, it is likely stale.
-        // Sadly, we do not know the name of it, so we blow them all away
+// If there is a cache for this, it is likely stale.
+// Sadly, we do not know the name of it, so we blow them all away
 #pragma clang diagnostic ignored "-Wundeclared-selector"
         [frc performSelector:@selector(deleteCacheWithName:) withObject:nil];
 #pragma clang diagnostic pop
@@ -2706,104 +2698,93 @@ static void DotWrite(NSMutableData *out, NSString *s)
     DotWrite(out, @"  splines=true;\n");
 
     for (CDTDocumentRevision *rev in all) {
-        NSString *type = rev.body[kCDTISTypeKey];
-        if ([type isEqualToString:kCDTISTypeProperties]) {
-            NSString *entity = nil;
-            NSMutableArray *props = [NSMutableArray array];
-
-            for (NSString *name in rev.body) {
-                if ([name isEqual:kCDTISEntityNameKey]) {
-                    // the node
-                    entity = rev.body[name];
-                }
-
-                if ([name hasPrefix:kCDTISPrefix]) {
-                    continue;
-                }
-                id value = rev.body[name];
-                NSDictionary *meta = rev.body[MakeMeta(name)];
-                NSInteger ptype = [self propertyTypeFromDoc:rev.body withName:name];
-
-                size_t idx = [props count] + 1;
-                switch (ptype) {
-                    case CDTISRelationToOneType: {
-                        NSString *str = value;
-                        [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
-                        DotWrite(
-                            out,
-                            [NSString
-                                stringWithFormat:
-                                    @"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
-                                    rev.docId, idx, str]);
-                    } break;
-                    case CDTISRelationToManyType: {
-                        NSArray *rels = value;
-                        [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
-                        DotWrite(out,
-                                 [NSString stringWithFormat:@"  \"%@\":%zu -> { ", rev.docId, idx]);
-                        for (NSString *str in rels) {
-                            DotWrite(out, [NSString stringWithFormat:@"\"%@\":0 ", str]);
-                        }
-                        DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
-                    } break;
-                    case NSDecimalAttributeType: {
-                        NSString *str = value;
-                        NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
-                        double dbl = [dec doubleValue];
-                        [props
-                            addObject:[NSString stringWithFormat:@"<%zu> %@:%e", idx, name, dbl]];
-                    } break;
-                    case NSInteger16AttributeType:
-                    case NSInteger32AttributeType:
-                    case NSInteger64AttributeType: {
-                        NSNumber *num = value;
-                        [props
-                            addObject:[NSString stringWithFormat:@"<%zu> %@:%@", idx, name, num]];
-                    } break;
-                    case NSFloatAttributeType: {
-                        NSNumber *i32Num = meta[kCDTISFloatImageKey];
-                        int32_t i32 = (int32_t)[i32Num integerValue];
-                        float flt = *(float *)&i32;
-                        [props
-                            addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, flt]];
-                    } break;
-                    case NSDoubleAttributeType: {
-                        NSNumber *i64Num = meta[kCDTISDoubleImageKey];
-                        int64_t i64 = [i64Num integerValue];
-                        double dbl = *(double *)&i64;
-                        [props
-                            addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, dbl]];
-                    } break;
-                    case NSStringAttributeType: {
-                        NSString *str = value;
-                        if ([str length] > 16) {
-                            str = [NSString stringWithFormat:@"%@...", [str substringToIndex:16]];
-                        }
-                        str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-                        [props
-                            addObject:[NSString stringWithFormat:@"<%zu> %@: %@", idx, name, str]];
-                    } break;
-                    default:
-                        [props addObject:[NSString stringWithFormat:@"<%zu> %@:*", idx, name]];
-                        break;
-                }
-            }
-
-            if (!entity) oops(@"no entity name?");
-            DotWrite(out, [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
-                                                     rev.docId, entity]);
-
-            for (NSString *p in props) {
-                DotWrite(out, [NSString stringWithFormat:@"| %@ ", p]);
-            }
-            DotWrite(out, @"}\" ];\n");
-
-        } else if ([type isEqualToString:kCDTISTypeMetadata]) {
-            // DotWrite(out, node);
-
-        } else {
-            oops(@"unknown type: %@", type);
+        if ([rev.docId isEqualToString:kCDTISMetaDataDocID]) {
+            // we do not plot the metadata document
+            continue;
         }
+        NSString *entity = nil;
+        NSMutableArray *props = [NSMutableArray array];
+
+        for (NSString *name in rev.body) {
+            if ([name isEqual:kCDTISEntityNameKey]) {
+                // the node
+                entity = rev.body[name];
+            }
+
+            if ([name hasPrefix:kCDTISPrefix]) {
+                continue;
+            }
+            id value = rev.body[name];
+            NSDictionary *meta = rev.body[MakeMeta(name)];
+            NSInteger ptype = [self propertyTypeFromDoc:rev.body withName:name];
+
+            size_t idx = [props count] + 1;
+            switch (ptype) {
+                case CDTISRelationToOneType: {
+                    NSString *str = value;
+                    [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
+                    DotWrite(out,
+                             [NSString
+                                 stringWithFormat:
+                                     @"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
+                                     rev.docId, idx, str]);
+                } break;
+                case CDTISRelationToManyType: {
+                    NSArray *rels = value;
+                    [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
+                    DotWrite(out,
+                             [NSString stringWithFormat:@"  \"%@\":%zu -> { ", rev.docId, idx]);
+                    for (NSString *str in rels) {
+                        DotWrite(out, [NSString stringWithFormat:@"\"%@\":0 ", str]);
+                    }
+                    DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
+                } break;
+                case NSDecimalAttributeType: {
+                    NSString *str = value;
+                    NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
+                    double dbl = [dec doubleValue];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%e", idx, name, dbl]];
+                } break;
+                case NSInteger16AttributeType:
+                case NSInteger32AttributeType:
+                case NSInteger64AttributeType: {
+                    NSNumber *num = value;
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@", idx, name, num]];
+                } break;
+                case NSFloatAttributeType: {
+                    NSNumber *i32Num = meta[kCDTISFloatImageKey];
+                    int32_t i32 = (int32_t)[i32Num integerValue];
+                    float flt = *(float *)&i32;
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, flt]];
+                } break;
+                case NSDoubleAttributeType: {
+                    NSNumber *i64Num = meta[kCDTISDoubleImageKey];
+                    int64_t i64 = [i64Num integerValue];
+                    double dbl = *(double *)&i64;
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, dbl]];
+                } break;
+                case NSStringAttributeType: {
+                    NSString *str = value;
+                    if ([str length] > 16) {
+                        str = [NSString stringWithFormat:@"%@...", [str substringToIndex:16]];
+                    }
+                    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@: %@", idx, name, str]];
+                } break;
+                default:
+                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:*", idx, name]];
+                    break;
+            }
+        }
+
+        if (!entity) oops(@"no entity name?");
+        DotWrite(out, [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
+                                                 rev.docId, entity]);
+
+        for (NSString *p in props) {
+            DotWrite(out, [NSString stringWithFormat:@"| %@ ", p]);
+        }
+        DotWrite(out, @"}\" ];\n");
     }
     DotWrite(out, @"}\n");
 
