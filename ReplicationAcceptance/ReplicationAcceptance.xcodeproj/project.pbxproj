@@ -39,8 +39,8 @@
 		27ED10AE192CF8FF00F75E95 /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
 		27ED10AF192CF8FF00F75E95 /* ReplicationAcceptance+CRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */; };
 		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
-		4D3CBFDF1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld */; };
-		4D3CBFE01A76BDFB00153940 /* CoreDataEntry.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld */; };
+		4D3CBFDF1A76BDFB00153940 /* CDE.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */; };
+		4D3CBFE01A76BDFB00153940 /* CDE.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */; };
 		4D3E3EF51A44602800972659 /* ReplicatorCoreData.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */; };
 		4D3E3EF61A44602800972659 /* ReplicatorCoreData.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */; };
 		86A30343408047EEBBF8EC4C /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
@@ -112,7 +112,8 @@
 		27ED1097192CF8DB00F75E95 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		27ED109F192CF8DB00F75E95 /* ReplicationAcceptanceAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReplicationAcceptanceAppTests-Info.plist"; sourceTree = "<group>"; };
 		27ED10A1192CF8DB00F75E95 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		4D3CBFDE1A76BDFB00153940 /* CoreDataEntry.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoreDataEntry.xcdatamodel; sourceTree = "<group>"; };
+		4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CDEv1.0.xcdatamodel; sourceTree = "<group>"; };
+		4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CDEv1.1.xcdatamodel; sourceTree = "<group>"; };
 		4D3E3EF31A44602800972659 /* ReplicatorCoreData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorCoreData.h; sourceTree = "<group>"; };
 		4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorCoreData.m; sourceTree = "<group>"; };
 		5E90CA923A123284AF6B8CE0 /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
@@ -265,7 +266,7 @@
 				27A7E67C189973EE007FAF1C /* InfoPlist.strings */,
 				27A7E681189973EE007FAF1C /* ReplicationAcceptance-Prefix.pch */,
 				984775071AB888F40024B64C /* ReplicationSettings.plist */,
-				4D3CBFDD1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld */,
+				4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -641,7 +642,7 @@
 				9F8CA2C71A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775051AB886790024B64C /* ReplicationSettings.m in Sources */,
-				4D3CBFDF1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld in Sources */,
+				4D3CBFDF1A76BDFB00153940 /* CDE.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -661,7 +662,7 @@
 				9F8CA2C81A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775061AB886790024B64C /* ReplicationSettings.m in Sources */,
-				4D3CBFE01A76BDFB00153940 /* CoreDataEntry.xcdatamodeld in Sources */,
+				4D3CBFE01A76BDFB00153940 /* CDE.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1174,13 +1175,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		4D3CBFDD1A76BDFB00153940 /* CoreDataEntry.xcdatamodeld */ = {
+		4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				4D3CBFDE1A76BDFB00153940 /* CoreDataEntry.xcdatamodel */,
+				4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */,
+				4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */,
 			);
-			currentVersion = 4D3CBFDE1A76BDFB00153940 /* CoreDataEntry.xcdatamodel */;
-			path = CoreDataEntry.xcdatamodeld;
+			currentVersion = 4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */;
+			path = CDE.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

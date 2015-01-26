@@ -61,7 +61,7 @@
     }
 
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSURL *url = [bundle URLForResource:@"CoreDataEntry" withExtension:@"momd"];
+    NSURL *url = [bundle URLForResource:@"CDEv1.0" withExtension:@"momd"];
     XCTAssertNotNil(url, @"could not find CoreDataEntry resource");
 
     _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
