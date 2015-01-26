@@ -1809,6 +1809,27 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 }
 
 /**
+ *  The version hashes are inline `NSData` and so they need to be encoded
+ *  We may have to consider that Apple may have other non encodable items
+ *  other than the hashes.
+ *
+ *  @param metadata metadata from Core Data
+ *
+ *  @return encoded dictionary
+ */
+- (NSDictionary *)encodeCoreDataMeta:(NSDictionary *)metadata
+{
+    NSMutableDictionary *metaData = [[self metadata] mutableCopy];
+    NSDictionary *hashes = metaData[NSStoreModelVersionHashesKey];
+
+    // hashes are inline data and need to be converted
+    if (hashes) {
+        metaData[NSStoreModelVersionHashesKey] = [self encodeVersionHashes:hashes];
+    }
+    return [NSDictionary dictionaryWithDictionary:metaData];
+}
+
+/**
  *  Update the metaData for CoreData in our own database
  *
  *  @param docID The docID for the metaData object in our database
@@ -1828,15 +1849,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
-    // need to fix up the version hashed
-    NSMutableDictionary *metaData = [[self metadata] mutableCopy];
-    NSDictionary *hashes = metaData[NSStoreModelVersionHashesKey];
-
-    // hashes are inline data and need to be converted
-    if (hashes) {
-        metaData[NSStoreModelVersionHashesKey] = [self encodeVersionHashes:hashes];
-    }
-    upRev.body[kCDTISMetaDataKey] = [NSDictionary dictionaryWithDictionary:metaData];
+    upRev.body[kCDTISMetaDataKey] = [self encodeCoreDataMeta:[self metadata]];
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
@@ -1866,6 +1879,27 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         newHashes[hash] = h;
     }
     return [NSDictionary dictionaryWithDictionary:newHashes];
+}
+
+
+/**
+ *  @see -encodeCoreDataMeta
+ *
+ *  @param storedMetaData <#storedMetaData description#>
+ *
+ *  @return <#return value description#>
+ */
+- (NSDictionary *)decodeCoreDataMeta:(NSDictionary *)storedMetaData
+{
+    NSMutableDictionary *metadata = [storedMetaData mutableCopy];
+    NSMutableDictionary *hashes = [metadata[NSStoreModelVersionHashesKey] mutableCopy];
+
+    // hashes are encoded and need to be inline data
+    if (hashes) {
+        metadata[NSStoreModelVersionHashesKey] = [self decodeVersionHashes:hashes];
+    }
+    
+    return [NSDictionary dictionaryWithDictionary:metadata];
 }
 
 /**
@@ -1920,7 +1954,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     NSDictionary *omd = rev.body[kCDTISObjectModelKey];
     self.objectModel = [[CDTISObjectModel alloc] initWithDictionary:omd];
 
-    NSDictionary *oldMetaData = rev.body[kCDTISMetaDataKey];
+    NSDictionary *storedMetaData = rev.body[kCDTISMetaDataKey];
     NSString *run = rev.body[kCDTISRunKey];
     uint64_t runVal = [run longLongValue];
     ++runVal;
@@ -1936,15 +1970,7 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         return nil;
     }
 
-    NSMutableDictionary *newMetaData = [oldMetaData mutableCopy];
-    NSMutableDictionary *hashes = [newMetaData[NSStoreModelVersionHashesKey] mutableCopy];
-
-    // hashes are encoded and need to be inline data
-    if (hashes) {
-        newMetaData[NSStoreModelVersionHashesKey] = [self decodeVersionHashes:hashes];
-    }
-
-    NSDictionary *metaData = [NSDictionary dictionaryWithDictionary:newMetaData];
+    NSDictionary *metaData = [self decodeCoreDataMeta:storedMetaData];
     return metaData;
 }
 
