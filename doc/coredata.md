@@ -166,7 +166,7 @@ Each initialized database will contain at least one document that
 describes the object model and the [Core Data] Meta Data. The document
 ID is "CDTISMetaData" and it is described in the following JSON [Schema], draft v4:
 
-```json
+```javascript
 // validated by https://json-schema-validator.herokuapp.com/
 {
     "id": "CDTISMetaData#",
@@ -290,7 +290,8 @@ ID is "CDTISMetaData" and it is described in the following JSON [Schema], draft 
 ### Entity Data
 All other documents should follow the following schema:
 
-```json
+```javascript
+// validated by https://json-schema-validator.herokuapp.com/
 {
     "title": "CDTISObject",
     "definitions": {
