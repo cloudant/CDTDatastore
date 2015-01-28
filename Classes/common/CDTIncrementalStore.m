@@ -853,14 +853,19 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         case NSTransformableAttributeType: {
             NSString *xname = [attribute valueTransformerName];
             NSString *mimeType = @"application/octet-stream";
-            Class myClass = NSClassFromString(xname);
-            // Yes, we could try/catch here.. but why?
-            if ([myClass respondsToSelector:@selector(MIMEType)]) {
-                mimeType = [myClass performSelector:@selector(MIMEType)];
+            NSData *save;
+            if (xname) {
+                Class myClass = NSClassFromString(xname);
+                // Yes, we could try/catch here.. but why?
+                if ([myClass respondsToSelector:@selector(MIMEType)]) {
+                    mimeType = [myClass performSelector:@selector(MIMEType)];
+                }
+                id xform = [[myClass alloc] init];
+                // use reverseTransformedValue to come back
+                save = [xform transformedValue:obj];
+            } else {
+                save = [NSKeyedArchiver archivedDataWithRootObject:obj];
             }
-            id xform = [[myClass alloc] init];
-            // use reverseTransformedValue to come back
-            NSData *save = [xform transformedValue:obj];
             NSString *bytes =
                 [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
 
@@ -1149,11 +1154,15 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         } break;
         case NSTransformableAttributeType: {
             NSString *xname = [self xformFromDoc:body withName:name];
-            id xform = [[NSClassFromString(xname) alloc] init];
             NSString *uname = prop;
             NSData *restore = [self decodeBlob:uname fromStore:blobStore];
-            // is the xform guaranteed to handle nil?
-            obj = [xform reverseTransformedValue:restore];
+            if (xname) {
+                id xform = [[NSClassFromString(xname) alloc] init];
+                // is the xform guaranteed to handle nil?
+                obj = [xform reverseTransformedValue:restore];
+            } else {
+                obj = [NSKeyedUnarchiver unarchiveObjectWithData:restore];
+            }
         } break;
         case NSObjectIDAttributeType: {
             NSString *str = prop;
