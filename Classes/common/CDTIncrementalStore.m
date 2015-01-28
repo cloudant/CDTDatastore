@@ -435,9 +435,6 @@ static NSData *dataFromString(NSString *str)
         if ([prop isTransient]) {
             continue;
         }
-        if ([prop userInfo].count) {
-            oops(@"there is user info.. what to do?");
-        }
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
             enc = [[CDTISProperty alloc] initWithAttribute:att];
@@ -1070,9 +1067,6 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
         id prop = propDic[name];
         if ([prop isTransient]) {
             continue;
-        }
-        if ([prop userInfo].count) {
-            oops(@"there is user info.. what to do?");
         }
         id obj = [mo valueForKey:name];
         NSDictionary *enc = nil;
