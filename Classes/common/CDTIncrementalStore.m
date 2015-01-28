@@ -140,6 +140,29 @@ static BOOL CDTISSupportCompoundPredicates = NO;
 static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
 
 /**
+ *  CoreData says to _only_ store the UUID, Type and Hashes
+ */
+static BOOL CDTISStoreAllCoreDataMetaData = NO;
+
+/**
+ *  Detect if the hashes changed and update the stored object model.
+ *  Turn this on if you would like to migrate objects into the same store.
+ *
+ *  > ***Warning***: Use with care
+ */
+static BOOL CDTISUpdateStoredObjectModel = NO;
+
+/**
+ *  Check entity version mismatches which could cause problems
+ */
+static BOOL CDTISCheckEntityVersions = NO;
+
+/**
+ *  Fix given database name to fit backing store constraints
+ */
+static BOOL CDTISFixUpDatabaseName = NO;
+
+/**
  *  This is how I like to assert, it stops me in the debugger.
  *
  *  *Why not use exceptions?*
@@ -1703,6 +1726,34 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     self.puller = nil;
 }
 
+static NSString *fixupName(NSString *name)
+{
+    if (!CDTISFixUpDatabaseName) return name;
+    
+    // http://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
+    static NSString *kLegalChars = @"abcdefghijklmnopqrstuvwxyz0123456789_$()+-/";
+    static NSCharacterSet *kIllegalNameChars;
+    if (!kIllegalNameChars) {
+        kIllegalNameChars =
+            [[NSCharacterSet characterSetWithCharactersInString:kLegalChars] invertedSet];
+    }
+    NSMutableString *fix = [NSMutableString stringWithString:[name lowercaseString]];
+    // must start with a letter
+    NSUInteger first = [fix characterAtIndex:0];
+    if ('0' <= first && first <= '9') {
+        [fix insertString:@"db_" atIndex:0];
+    }
+    NSRange srch = NSMakeRange(0, [fix length]);
+    for (;;) {
+        NSRange r = [fix rangeOfCharacterFromSet:kIllegalNameChars options:0 range:srch];
+        if (r.location == NSNotFound) break;
+        [fix replaceCharactersInRange:r withString:@"_"];
+        NSUInteger l = r.location + r.length;
+        srch = NSMakeRange(l, [fix length] - l);
+    }
+    return [NSString stringWithString:fix];
+}
+
 /**
  *  Initialize database
  *  > *Note*: only does local right now
@@ -1722,7 +1773,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
      *  We use the last path component to name the database in the local
      *  directory.
      */
-    NSString *databaseName = [remoteURL lastPathComponent];
+    NSString *last = [remoteURL lastPathComponent];
+    NSString *databaseName = fixupName(last);
     NSString *path = [self pathToDBDirectory:&err];
     if (!path) {
         if (error) *error = err;
