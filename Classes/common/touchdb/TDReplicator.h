@@ -122,4 +122,7 @@ extern NSString* TDReplicatorStoppedNotification;
 /** JSON-compatible array of status info about active remote HTTP requests. */
 @property (readonly) NSArray* activeRequestsStatus;
 
+/** Exposed for testing. Returns the doc ID for the checkpoint document. */
+- (NSString *)remoteCheckpointDocID;
+
 @end
