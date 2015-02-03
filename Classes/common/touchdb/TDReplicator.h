@@ -32,7 +32,7 @@ extern NSString* TDReplicatorStoppedNotification;
     NSString* _filterName;
     NSDictionary* _filterParameters;
     NSArray* _docIDs;
-    NSString* _lastSequence;
+    NSObject* _lastSequence;
     BOOL _lastSequenceChanged;
     NSDictionary* _remoteCheckpoint;
     BOOL _savingCheckpoint, _overdueForSave;

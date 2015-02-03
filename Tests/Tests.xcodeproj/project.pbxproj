@@ -24,6 +24,8 @@
 		27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
+		8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
+		8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188919D2CCEB000283E9 /* DatastoreConflicts.m */; };
@@ -98,6 +100,7 @@
 		27F43D4818E99C31003E8422 /* AmazonMD5Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AmazonMD5Util.m; sourceTree = "<group>"; };
 		5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = schema6to7upgrade.touchdb; path = Assets/schema6to7upgrade.touchdb; sourceTree = "<group>"; };
 		985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		985A188919D2CCEB000283E9 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUD.m; path = Attachments/AttachmentCRUD.m; sourceTree = "<group>"; };
@@ -282,6 +285,7 @@
 			children = (
 				27651C6319001B54006FEF7F /* bonsai-boston.jpg */,
 				27D96E4218E1E0D400DEA006 /* lorem.txt */,
+				8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */,
 			);
 			name = Assets;
 			sourceTree = "<group>";
@@ -385,6 +389,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27D96E4418E1E0D400DEA006 /* lorem.txt in Resources */,
+				8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */,
 				27389E1A185345FD0027A404 /* InfoPlist.strings in Resources */,
 				27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */,
 			);
@@ -395,6 +400,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27D96E4518E1E0D400DEA006 /* lorem.txt in Resources */,
+				8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */,
 				27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */,
 				27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */,
 			);

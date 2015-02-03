@@ -140,9 +140,9 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
            $equal(_requestHeaders, other->_requestHeaders);
 }
 
-- (NSString*)lastSequence { return _lastSequence; }
+- (NSObject*)lastSequence { return _lastSequence; }
 
-- (void)setLastSequence:(NSString*)lastSequence
+- (void)setLastSequence:(NSObject*)lastSequence
 {
     if (!$equal(lastSequence, _lastSequence)) {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Setting lastSequence to %@ (from %@)", self,
@@ -727,7 +727,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 {
     _lastSequenceChanged = NO;
     NSString* checkpointID = self.remoteCheckpointDocID;
-    NSString* localLastSequence = [_db lastSequenceWithCheckpointID:checkpointID];
+    NSObject* localLastSequence = [_db lastSequenceWithCheckpointID:checkpointID];
 
     [self asyncTaskStarted];
     TDRemoteJSONRequest* request = [self
@@ -744,7 +744,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                     if (error.code == kTDStatusNotFound) [self maybeCreateRemoteDB];
                     response = $castIf(NSDictionary, response);
                     self.remoteCheckpoint = response;
-                    NSString* remoteLastSequence = response[@"lastSequence"];
+                    NSObject* remoteLastSequence = response[@"lastSequence"];
 
                     if ($equal(remoteLastSequence, localLastSequence)) {
                         _lastSequence = localLastSequence;
@@ -781,8 +781,8 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ checkpointing sequence=%@", self, _lastSequence);
     NSMutableDictionary* body = [_remoteCheckpoint mutableCopy];
     if (!body) body = $mdict();
-    [body setValue:_lastSequence.description forKey:@"lastSequence"];  // always save as a string
-
+    [body setValue:_lastSequence forKey:@"lastSequence"];
+    
     _savingCheckpoint = YES;
     NSString* checkpointID = self.remoteCheckpointDocID;
     [self asyncTaskStarted];

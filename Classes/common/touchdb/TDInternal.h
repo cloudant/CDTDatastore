@@ -89,8 +89,8 @@
 
 @interface TD_Database (Replication_Internal)
 - (void)stopAndForgetReplicator:(TDReplicator*)repl;
-- (NSString*)lastSequenceWithCheckpointID:(NSString*)checkpointID;
-- (BOOL)setLastSequence:(NSString*)lastSequence withCheckpointID:(NSString*)checkpointID;
+- (NSObject*)lastSequenceWithCheckpointID:(NSString*)checkpointID;
+- (BOOL)setLastSequence:(NSObject*)lastSequence withCheckpointID:(NSString*)checkpointID;
 + (NSString*)joinQuotedStrings:(NSArray*)strings;
 @end
 
@@ -110,7 +110,7 @@
 
 @interface TDReplicator ()
 // protected:
-@property (copy) NSString* lastSequence;
+@property (copy) NSObject* lastSequence;
 @property (readwrite, nonatomic) NSUInteger changesProcessed, changesTotal;
 - (void)maybeCreateRemoteDB;
 - (void)beginReplicating;
