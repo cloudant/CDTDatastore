@@ -1478,10 +1478,13 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 /**
  *  Delete a managed object from the database
  *
+ *  > ***Warning***: it is assumed that CoreData will handle any cascading
+ *  > deletes that are required.
+
  *  @param mo    Managed Object
  *  @param error Error
  *
- *  @return YES/NO
+ *  @return YES/NO, No with error
  */
 - (BOOL)deleteManagedObject:(NSManagedObject *)mo error:(NSError **)error
 {
