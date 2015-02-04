@@ -249,85 +249,91 @@ static NSData *dataFromString(NSString *str)
  */
 - (CDTISProperty *)initWithAttribute:(NSAttributeDescription *)attribute
 {
-    self.isRelationship = NO;
-    NSAttributeType type = attribute.attributeType;
-    self.typeCode = type;
-    self.versionHash = attribute.versionHash;
+    self = [super init];
+    if (self) {
+        _isRelationship = NO;
+        NSAttributeType type = attribute.attributeType;
+        _typeCode = type;
+        _versionHash = attribute.versionHash;
 
-    switch (type) {
-        case NSUndefinedAttributeType:
-            self.typeName = @"NSUndefinedAttributeType";
-            break;
+        switch (type) {
+            case NSUndefinedAttributeType:
+                _typeName = @"NSUndefinedAttributeType";
+                break;
 
-        case NSStringAttributeType:
-            self.typeName = kCDTISStringAttributeType;
-            break;
+            case NSStringAttributeType:
+                _typeName = kCDTISStringAttributeType;
+                break;
 
-        case NSBooleanAttributeType:
-            self.typeName = kCDTISBooleanAttributeType;
-            break;
+            case NSBooleanAttributeType:
+                _typeName = kCDTISBooleanAttributeType;
+                break;
 
-        case NSDateAttributeType:
-            self.typeName = kCDTISDateAttributeType;
-            break;
+            case NSDateAttributeType:
+                _typeName = kCDTISDateAttributeType;
+                break;
 
-        case NSBinaryDataAttributeType:
-            self.typeName = kCDTISBinaryDataAttributeType;
-            break;
+            case NSBinaryDataAttributeType:
+                _typeName = kCDTISBinaryDataAttributeType;
+                break;
 
-        case NSTransformableAttributeType:
-            self.typeName = kCDTISTransformableAttributeType;
-            self.xform = [attribute valueTransformerName];
-            break;
+            case NSTransformableAttributeType:
+                _typeName = kCDTISTransformableAttributeType;
+                _xform = [attribute valueTransformerName];
+                break;
 
-        case NSObjectIDAttributeType:
-            self.typeName = kCDTISObjectIDAttributeType;
-            break;
+            case NSObjectIDAttributeType:
+                _typeName = kCDTISObjectIDAttributeType;
+                break;
 
-        case NSDecimalAttributeType:
-            self.typeName = kCDTISDecimalAttributeType;
-            break;
+            case NSDecimalAttributeType:
+                _typeName = kCDTISDecimalAttributeType;
+                break;
 
-        case NSDoubleAttributeType:
-            self.typeName = kCDTISDoubleAttributeType;
-            break;
+            case NSDoubleAttributeType:
+                _typeName = kCDTISDoubleAttributeType;
+                break;
 
-        case NSFloatAttributeType:
-            self.typeName = kCDTISFloatAttributeType;
-            break;
+            case NSFloatAttributeType:
+                _typeName = kCDTISFloatAttributeType;
+                break;
 
-        case NSInteger16AttributeType:
-            self.typeName = kCDTISInteger16AttributeType;
-            break;
+            case NSInteger16AttributeType:
+                _typeName = kCDTISInteger16AttributeType;
+                break;
 
-        case NSInteger32AttributeType:
-            self.typeName = kCDTISInteger32AttributeType;
-            break;
+            case NSInteger32AttributeType:
+                _typeName = kCDTISInteger32AttributeType;
+                break;
 
-        case NSInteger64AttributeType:
-            self.typeName = kCDTISInteger64AttributeType;
-            break;
+            case NSInteger64AttributeType:
+                _typeName = kCDTISInteger64AttributeType;
+                break;
 
-        default:
-            return nil;
+            default:
+                return nil;
+        }
     }
     return self;
 }
 
 - (CDTISProperty *)initWithRelationship:(NSRelationshipDescription *)relationship
 {
-    self.isRelationship = YES;
-    self.versionHash = relationship.versionHash;
+    self = [super init];
+    if (self) {
+        _isRelationship = YES;
+        _versionHash = relationship.versionHash;
 
-    NSEntityDescription *ent = [relationship destinationEntity];
-    self.destination = [ent name];
+        NSEntityDescription *ent = [relationship destinationEntity];
+        _destination = [ent name];
 
-    if (relationship.isToMany) {
-        self.typeName = kCDTISRelationToManyType;
-        self.typeCode = CDTISRelationToManyType;
-    } else {
-        self.typeName = kCDTISRelationToOneType;
-        self.typeCode = CDTISRelationToOneType;
+        if (relationship.isToMany) {
+            _typeName = kCDTISRelationToManyType;
+            _typeCode = CDTISRelationToManyType;
+        } else {
+            _typeName = kCDTISRelationToOneType;
+            _typeCode = CDTISRelationToOneType;
+        }
     }
     return self;
 }
@@ -347,7 +353,7 @@ static NSData *dataFromString(NSString *str)
     return [NSDictionary dictionaryWithDictionary:dic];
 }
 
-- (NSInteger)typeCodeFromName:(NSString *)name
+static NSInteger typeCodeFromName(NSString *name)
 {
     if ([name isEqualToString:kCDTISStringAttributeType]) {
         return NSStringAttributeType;
@@ -391,15 +397,18 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISProperty *)initWithDictionary:(NSDictionary *)dic
 {
-    self.typeName = dic[kCDTISPropertyNameKey];
-    self.typeCode = [self typeCodeFromName:self.typeName];
-    self.versionHash = dataFromString(dic[kCDTISVersionHashKey]);
+    self = [super init];
+    if (self) {
+        _typeName = dic[kCDTISPropertyNameKey];
+        _typeCode = typeCodeFromName(_typeName);
+        _versionHash = dataFromString(dic[kCDTISVersionHashKey]);
 
-    self.xform = dic[kCDTISTransformerClassKey];
-    self.destination = dic[kCDTISRelationDesitinationKey];
+        _xform = dic[kCDTISTransformerClassKey];
+        _destination = dic[kCDTISRelationDesitinationKey];
 
-    if (self.destination) {
-        self.isRelationship = YES;
+        if (_destination) {
+            _isRelationship = YES;
+        }
     }
     return self;
 }
@@ -425,28 +434,30 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISEntity *)initWithEntities:(NSEntityDescription *)ent
 {
-    CDTISProperty *enc = nil;
-    NSMutableDictionary *props = [NSMutableDictionary dictionary];
-    for (id prop in [ent properties]) {
-        if ([prop isTransient]) {
-            continue;
+    self = [super init];
+    if (self) {
+        CDTISProperty *enc = nil;
+        NSMutableDictionary *props = [NSMutableDictionary dictionary];
+        for (id prop in [ent properties]) {
+            if ([prop isTransient]) {
+                continue;
+            }
+            if ([prop isKindOfClass:[NSAttributeDescription class]]) {
+                NSAttributeDescription *att = prop;
+                enc = [[CDTISProperty alloc] initWithAttribute:att];
+            } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
+                NSRelationshipDescription *rel = prop;
+                enc = [[CDTISProperty alloc] initWithRelationship:rel];
+            } else if ([prop isKindOfClass:[NSFetchedPropertyDescription class]]) {
+                oops(@"unexpected NSFetchedPropertyDescription");
+            } else {
+                oops(@"unknown property: %@", prop);
+            }
+            props[[prop name]] = enc;
         }
-        if ([prop isKindOfClass:[NSAttributeDescription class]]) {
-            NSAttributeDescription *att = prop;
-            enc = [[CDTISProperty alloc] initWithAttribute:att];
-        } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
-            NSRelationshipDescription *rel = prop;
-            enc = [[CDTISProperty alloc] initWithRelationship:rel];
-        } else if ([prop isKindOfClass:[NSFetchedPropertyDescription class]]) {
-            oops(@"unexpected NSFetchedPropertyDescription");
-        } else {
-            oops(@"unknown property: %@", prop);
-        }
-        props[[prop name]] = enc;
+        _properties = props;
+        _versionHash = ent.versionHash;
     }
-    self.properties = props;
-    self.versionHash = ent.versionHash;
-
     return self;
 }
 
@@ -465,18 +476,20 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISEntity *)initWithDictionary:(NSDictionary *)dictionary
 {
-    NSString *vh = dictionary[kCDTISVersionHashKey];
-    self.versionHash = dataFromString(vh);
+    self = [super init];
+    if (self) {
+        NSString *vh = dictionary[kCDTISVersionHashKey];
+        _versionHash = dataFromString(vh);
 
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
 
-    NSDictionary *props = dictionary[kCDTISPropertiesKey];
-    for (NSString *name in props) {
-        NSDictionary *desc = props[name];
-        dic[name] = [[CDTISProperty alloc] initWithDictionary:desc];
+        NSDictionary *props = dictionary[kCDTISPropertiesKey];
+        for (NSString *name in props) {
+            NSDictionary *desc = props[name];
+            dic[name] = [[CDTISProperty alloc] initWithDictionary:desc];
+        }
+        _properties = [NSDictionary dictionaryWithDictionary:dic];
     }
-    self.properties = [NSDictionary dictionaryWithDictionary:dic];
-
     return self;
 }
 
@@ -501,14 +514,17 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISObjectModel *)initWithManagedObjectModel:(NSManagedObjectModel *)mom
 {
-    NSMutableDictionary *ents = [NSMutableDictionary dictionary];
-    for (NSEntityDescription *ent in mom.entities) {
-        if ([ent superentity]) {
-            continue;
+    self = [super init];
+    if (self) {
+        NSMutableDictionary *ents = [NSMutableDictionary dictionary];
+        for (NSEntityDescription *ent in mom.entities) {
+            if ([ent superentity]) {
+                continue;
+            }
+            ents[ent.name] = [[CDTISEntity alloc] initWithEntities:ent];
         }
-        ents[ent.name] = [[CDTISEntity alloc] initWithEntities:ent];
+        _entities = [NSDictionary dictionaryWithDictionary:ents];
     }
-    self.entities = [NSDictionary dictionaryWithDictionary:ents];
     return self;
 }
 
@@ -524,14 +540,16 @@ static NSData *dataFromString(NSString *str)
 
 - (CDTISObjectModel *)initWithDictionary:(NSDictionary *)dictionary
 {
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    self = [super self];
+    if (self) {
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
 
-    for (NSString *name in dictionary) {
-        NSDictionary *desc = dictionary[name];
-        dic[name] = [[CDTISEntity alloc] initWithDictionary:desc];
+        for (NSString *name in dictionary) {
+            NSDictionary *desc = dictionary[name];
+            dic[name] = [[CDTISEntity alloc] initWithDictionary:desc];
+        }
+        _entities = [NSDictionary dictionaryWithDictionary:dic];
     }
-    self.entities = [NSDictionary dictionaryWithDictionary:dic];
-
     return self;
 }
 
@@ -1748,7 +1766,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 static NSString *fixupName(NSString *name)
 {
     if (!CDTISFixUpDatabaseName) return name;
-    
+
     // http://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
     static NSString *kLegalChars = @"abcdefghijklmnopqrstuvwxyz0123456789_$()+-/";
     static NSCharacterSet *kIllegalNameChars;
@@ -2538,7 +2556,8 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSFetchRequestResultType fetchType = [fetchRequest resultType];
 
     /**
-     *  The document, [Responding to Fetch Requests](https://developer.apple.com/library/ios/documentation/DataManagement/Conceptual/IncrementalStorePG/ImplementationStrategy/ImplementationStrategy.html#//apple_ref/doc/uid/TP40010706-CH2-SW6),
+     *  The document, [Responding to Fetch
+     * Requests](https://developer.apple.com/library/ios/documentation/DataManagement/Conceptual/IncrementalStorePG/ImplementationStrategy/ImplementationStrategy.html#//apple_ref/doc/uid/TP40010706-CH2-SW6),
      *  suggests that we get the entity from the fetch request.
      *  Turns out this can be stale so we check it and log it.
      */
