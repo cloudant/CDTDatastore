@@ -84,7 +84,7 @@ static NSString *const kCDTISMetaDataKey = @"metaData";
 static NSString *const kCDTISRunKey = @"run";
 static NSString *const kCDTISObjectModelKey = @"objectModel";
 static NSString *const kCDTISVersionHashKey = @"versionHash";
-static NSString *const kCDTISRelationDesitinationKey = @"destintation";
+static NSString *const kCDTISRelationDesitinationKey = @"destination";
 
 static NSString *const kCDTISDecimalAttributeType = @"decimal";
 static NSString *const kCDTISStringAttributeType = @"utf8";
@@ -102,7 +102,7 @@ static NSInteger const CDTISRelationToManyType = -2;
 
 #pragma mark - Code selection
 // allows selection of different code paths
-// Use this instead of ifdefs so the code are actually gets compiled
+// Use this instead of #ifdef's so the code are actually gets compiled
 /**
  *  This allows UIDs for individual objects to be readable.
  *  Useful for debugging
@@ -167,13 +167,13 @@ static BOOL CDTISFixUpDatabaseName = NO;
  *
  *  *Why not use exceptions?*
  *  1. I can continue from this simply by using `jump +1`
- *  2. I don't need to "Add Exception Breakpoint"
+ *  2. I don't need to "Add Exception Break-point"
  *  3. I don't need to hunt down which exception a test is using in an
  *  expected way
  *
  *  *Why is it a macro?*
  *  I want to stop *at* the `oops` line in the code and not have to "pop up"
- *  the stack if `oops` was not inlines due to optimization issues.
+ *  the stack if `oops` was not inlined due to optimization issues.
  *
  *  @param fmt A format string
  *  @param ... A comma-separated list of arguments to substitute into format.
@@ -241,7 +241,7 @@ static NSData *dataFromString(NSString *str)
 @implementation CDTISProperty
 
 /**
- * Defines tha attribute meta data that is stored in the object.
+ * Defines the attribute meta data that is stored in the object.
  *
  *  @param att
  *
@@ -1083,12 +1083,6 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     NSDictionary *propDic = [entity propertiesByName];
     NSMutableDictionary *props = [NSMutableDictionary dictionary];
 
-    /* TODO
-     * Should we bother with attachments?
-     * I believe that CoreData deals with this and we should just treat
-     * everything inline, otherwise we just add another unnecessary reference.
-     */
-
     for (NSString *name in propDic) {
         id prop = propDic[name];
         if ([prop isTransient]) {
@@ -1511,7 +1505,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 }
 
 /**
- *  Create a dictionary of values for a the attributes of a Managed Object from
+ *  Create a dictionary of values for the attributes of a Managed Object from
  *  a docId/ref.
  *
  *  @param docID   docID
@@ -1861,8 +1855,8 @@ static NSString *fixupName(NSString *name)
                                              fieldName:kCDTISEntityNameKey
                                                  error:&err]) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@",
-                    kCDTISType, self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@", CDTISType,
+                    self.databaseName, err);
         return NO;
     }
 
@@ -2491,7 +2485,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         [NSException raise:kCDTISException format:@"can only handle properties for groupings"];
     }
 
-    // use a dictionary so we can track repeates
+    // use a dictionary so we can track repeats
     NSString *groupKey = [groupProp name];
     NSMutableDictionary *group = [NSMutableDictionary dictionary];
     for (CDTDocumentRevision *rev in hits) {
@@ -2549,7 +2543,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
      *  Turns out this can be stale so we check it and log it.
      */
     NSEntityDescription *entity = [fetchRequest entity];
-    if (badEntityVersion(entity, self.metadata)) oops(@"bad enitity mismatch: %@", entity);
+    if (badEntityVersion(entity, self.metadata)) oops(@"bad entity mismatch: %@", entity);
 
     // Get sort descriptors and add them as options
     err = nil;
@@ -2568,7 +2562,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
     err = nil;
     CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:options error:&err];
-    // hits == nil is valie, get rid of this once tested
+    // hits == nil is valid, get rid of this once tested
     if (!hits && err) {
         if (error) *error = err;
         return nil;
