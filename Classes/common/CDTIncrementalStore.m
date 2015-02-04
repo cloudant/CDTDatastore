@@ -614,6 +614,7 @@ static NSInteger typeCodeFromName(NSString *name)
      *
      *  We are interested in:
      *  - CDTTD_REMOTE_REQUEST_CONTEXT
+     *  - CDTDOCUMENT_REVISION_LOG_CONTEXT
      */
     if (CDTISEnableLogging != DDLogLevelOff) {
         [DDLog addLogger:[DDTTYLogger sharedInstance]];
