@@ -1181,7 +1181,7 @@
 				4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */,
 				4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */,
 			);
-			currentVersion = 4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */;
+			currentVersion = 4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */;
 			path = CDE.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
