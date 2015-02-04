@@ -15,10 +15,16 @@
 @interface ReplicatorCoreData ()
 
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong) NSManagedObjectModel *fromMom;
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (nonatomic, strong) NSURL *storeURL;
+@property (nonatomic, strong) NSURL *fromURL;
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
+@property (nonatomic, strong) NSString *migrateRemoteDatabaseName;
+@property (nonatomic, strong) NSString *fromCDE;
+@property (nonatomic, strong) NSString *toCDE;
+@property (nonatomic, strong) NSMappingModel *mapper;
 
 @end
 
@@ -53,7 +59,6 @@
     return e;
 }
 
-#pragma mark - getters
 - (NSManagedObjectModel *)managedObjectModel
 {
     if (_managedObjectModel != nil) {
@@ -61,11 +66,29 @@
     }
 
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSURL *url = [bundle URLForResource:@"CDEv1.0" withExtension:@"momd"];
-    XCTAssertNotNil(url, @"could not find CoreDataEntry resource");
+    NSURL *dir = [bundle URLForResource:@"CDE" withExtension:@"momd"];
+    XCTAssertNotNil(dir, @"could not find CoreDataEntry resource directory");
 
-    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    NSURL *toURL;
+    if (self.toCDE) {
+        toURL = [NSURL URLWithString:self.toCDE relativeToURL:dir];
+    } else {
+        // take the default defined by the directory
+        toURL = dir;
+    }
+    XCTAssertNotNil(toURL, @"could not find CoreDataEntry model file");
+
+    _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:toURL];
     XCTAssertTrue(([[_managedObjectModel entities] count] > 0), @"no entities");
+
+    if (self.fromCDE) {
+        NSURL *fromURL = [NSURL URLWithString:self.fromCDE relativeToURL:dir];
+        self.fromMom = [[NSManagedObjectModel alloc] initWithContentsOfURL:fromURL];
+        XCTAssertNotNil(self.fromMom, @"Could not create from model");
+    } else {
+        self.fromMom = nil;
+    }
+
     return _managedObjectModel;
 }
 
@@ -88,17 +111,75 @@
     if (_persistentStoreCoordinator != nil) {
         return _persistentStoreCoordinator;
     }
-    _persistentStoreCoordinator =
-        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+
+    NSManagedObjectModel *toMom = self.managedObjectModel;
+
+    NSString *storeType;
+    NSURL *rootURL;
+
+    // quick hack to enable a known store type for testing
+    const BOOL sql = NO;
+    if (sql) {
+        storeType = NSSQLiteStoreType;
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        rootURL = [[fileManager URLsForDirectory:NSDocumentDirectory
+                                       inDomains:NSUserDomainMask] lastObject];
+    } else {
+        storeType = [CDTIncrementalStore type];
+        rootURL = self.remoteRootURL;
+    }
 
     NSError *err = nil;
-    NSURL *storeURL =
-        [NSURL URLWithString:self.primaryRemoteDatabaseName relativeToURL:self.remoteRootURL];
+    NSURL *storeURL;
     NSPersistentStore *theStore;
-    theStore = [_persistentStoreCoordinator addPersistentStoreWithType:[CDTIncrementalStore type]
+
+    if (self.fromMom) {
+        NSError *err = nil;
+        NSMappingModel *mapMom = [NSMappingModel inferredMappingModelForSourceModel:self.fromMom
+                                                                   destinationModel:toMom
+                                                                              error:&err];
+        XCTAssertNotNil(mapMom, @"Failed to create mapping model");
+        XCTAssertNil(err, "Error: %@", err);
+
+        self.migrateRemoteDatabaseName =
+            [self.primaryRemoteDatabaseName stringByAppendingString:@"-migrate"];
+
+        [self createRemoteDatabase:self.migrateRemoteDatabaseName instanceURL:rootURL];
+        NSURL *fromURL = [NSURL URLWithString:self.primaryRemoteDatabaseName relativeToURL:rootURL];
+
+        storeURL = [NSURL URLWithString:self.migrateRemoteDatabaseName relativeToURL:rootURL];
+
+        err = nil;
+        NSMigrationManager *mm =
+            [[NSMigrationManager alloc] initWithSourceModel:self.fromMom destinationModel:toMom];
+        XCTAssertNotNil(mm, @"Failed to create migration manager");
+
+        XCTAssertTrue([mm migrateStoreFromURL:fromURL
+                                         type:storeType
+                                      options:nil
+                             withMappingModel:mapMom
+                             toDestinationURL:storeURL
+                              destinationType:storeType
+                           destinationOptions:nil
+                                        error:&err],
+                      @"migration failed");
+        XCTAssertNil(err, @"error: %@", err);
+    } else {
+        storeURL = [NSURL URLWithString:self.primaryRemoteDatabaseName relativeToURL:rootURL];
+    }
+
+    _persistentStoreCoordinator =
+        [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:toMom];
+
+    XCTAssertNotNil(_persistentStoreCoordinator, @"Failed to create PSC");
+
+    // Since we perform all versioning manually...
+    NSDictionary *options = @{ NSIgnorePersistentStoreVersioningOption : @(YES) };
+
+    theStore = [_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                          configuration:nil
                                                                    URL:storeURL
-                                                               options:nil
+                                                               options:options
                                                                  error:&err];
     XCTAssertNotNil(theStore, @"could not get theStore: %@", err);
 
@@ -107,7 +188,7 @@
     return _persistentStoreCoordinator;
 }
 
-- (CDTIncrementalStore *)getIncrenmentalStore
+- (CDTIncrementalStore *)getIncrementalStore
 {
     NSArray *stores = [CDTIncrementalStore storesFromCoordinator:self.persistentStoreCoordinator];
     XCTAssertNotNil(stores, @"could not get stores");
@@ -119,7 +200,7 @@
 
 - (NSInteger)replicate:(CDTISReplicateDirection)direction
 {
-    CDTIncrementalStore *is = [self getIncrenmentalStore];
+    CDTIncrementalStore *is = [self getIncrementalStore];
     NSError *err = nil;
     NSError *__block repErr = nil;
     BOOL __block done = NO;
@@ -166,6 +247,9 @@
     // Delete remote database
     [self deleteRemoteDatabase:self.primaryRemoteDatabaseName instanceURL:self.remoteRootURL];
 
+    if (self.migrateRemoteDatabaseName) {
+        [self deleteRemoteDatabase:self.migrateRemoteDatabaseName instanceURL:self.remoteRootURL];
+    }
     [super tearDown];
 }
 
@@ -426,4 +510,62 @@
                   docs + max);
 }
 
+- (void)testCoreDataMigration
+{
+    int max = 10;
+    NSError *err = nil;
+
+    // force v1.0
+    self.fromCDE = nil;
+    self.toCDE = @"CDEv1.0.mom";
+
+    NSManagedObjectContext *moc = [self createNumbersAndSave:max];
+
+    // save it
+    XCTAssertTrue([moc save:&err], @"MOC save failed");
+    XCTAssertNil(err, @"MOC save failed with error: %@", err);
+
+    /**
+     *  Read it back
+     */
+    NSArray *results;
+
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+    NSInteger count = [results count];
+    XCTAssertTrue(count == max, @"fetch: unexpected processed objects: %@ != %d", @(count), max);
+
+    NSManagedObject *mo = [results firstObject];
+    XCTAssertNotNil([mo valueForKey:@"number"]);
+    XCTAssertThrows([mo valueForKey:@"checkit"]);
+
+    // drop the store, I think I'm leaking here
+    moc = nil;
+    self.managedObjectModel = nil;
+    self.managedObjectContext = nil;
+    self.persistentStoreCoordinator = nil;
+
+    // force v1.1
+    self.fromCDE = self.toCDE;
+    self.toCDE = @"CDEv1.1.mom";
+
+    // bring it back with this object model
+    moc = self.managedObjectContext;
+
+    // Reload the fetch request becauses it caches info from the old model
+    fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+    count = [results count];
+    XCTAssertTrue(count == max, @"fetch: unexpected processed objects: %@ != %d", @(count), max);
+
+    mo = [results firstObject];
+    XCTAssertNotNil([mo valueForKey:@"number"]);
+    XCTAssertNoThrow([mo valueForKey:@"checkit"]);
+}
 @end
