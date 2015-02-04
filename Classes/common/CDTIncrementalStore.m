@@ -166,11 +166,7 @@ static BOOL CDTISFixUpDatabaseName = NO;
  *  This is how I like to assert, it stops me in the debugger.
  *
  *  *Why not use exceptions?*
- *  1. I can continue from this simply by typing:
- *  ```
- *  strap register write pc `$pc+2`
- *  ```
- *  > Different architectures will use different addend values
+ *  1. I can continue from this simply by using `jump +1`
  *  2. I don't need to "Add Exception Breakpoint"
  *  3. I don't need to hunt down which exception a test is using in an
  *  expected way
