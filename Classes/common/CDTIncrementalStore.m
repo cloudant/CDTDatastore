@@ -498,6 +498,7 @@ static NSData *dataFromString(NSString *str)
 - (CDTISObjectModel *)initWithManagedObjectModel:(NSManagedObjectModel *)mom;
 - (NSDictionary *)dictionary;
 - (NSInteger)propertyTypeWithName:(NSString *)name withEntityName:(NSString *)ent;
+- (NSDictionary *)versionHashes;
 @end
 
 @implementation CDTISObjectModel
@@ -557,6 +558,16 @@ static NSData *dataFromString(NSString *str)
     CDTISEntity *ents = self.entities[ent];
     CDTISProperty *prop = ents.properties[name];
     return prop.xform;
+}
+
+- (NSDictionary *)versionHashes
+{
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    for (NSString *e in self.entities) {
+        CDTISEntity *ent = self.entities[e];
+        dic[e] = ent.versionHash;
+    }
+    return [NSDictionary dictionaryWithDictionary:dic];
 }
 
 - (NSString *)description { return [self.entities description]; }
@@ -660,6 +671,25 @@ static NSData *dataFromString(NSString *str)
 }
 
 static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingString:s]; }
+
+static BOOL badEntityVersion(NSEntityDescription *entity, NSDictionary *metadata)
+{
+    if (!CDTISCheckEntityVersions) return NO;
+
+    NSString *oidName = entity.name;
+    NSData *oidHash = entity.versionHash;
+    NSDictionary *dic = metadata[NSStoreModelVersionHashesKey];
+    NSData *metaHash = dic[oidName];
+
+    if ([oidHash isEqualToData:metaHash]) return NO;
+    return YES;
+}
+
+static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
+{
+    if (!CDTISCheckEntityVersions) return NO;
+    return badEntityVersion(moid.entity, metadata);
+}
 
 - (NSInteger)propertyTypeFromDoc:(NSDictionary *)body withName:(NSString *)name
 {
@@ -1299,6 +1329,8 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
     // I don't think this should never happen
     if (moid.isTemporaryID) oops(@"tmp");
 
+    if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
+
     CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
     NSMutableDictionary *blobStore = [NSMutableDictionary dictionary];
 
@@ -1346,6 +1378,9 @@ static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingStr
 {
     NSError *err = nil;
     NSManagedObjectID *moid = [mo objectID];
+
+    if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
+
     NSString *docID = [self stringReferenceObjectForObjectID:moid];
 
     NSEntityDescription *entity = [mo entity];
@@ -1846,7 +1881,7 @@ static NSString *fixupName(NSString *name)
  *
  *  @return encoded dictionary
  */
-- (NSDictionary *)encodeVersionHashes:(NSDictionary *)hashes
+static NSDictionary *encodeVersionHashes(NSDictionary *hashes)
 {
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
@@ -1866,16 +1901,32 @@ static NSString *fixupName(NSString *name)
  *
  *  @return encoded dictionary
  */
-- (NSDictionary *)encodeCoreDataMeta:(NSDictionary *)metadata
+static NSDictionary *encodeCoreDataMeta(NSDictionary *inMetaData)
 {
-    NSMutableDictionary *metaData = [[self metadata] mutableCopy];
-    NSDictionary *hashes = metaData[NSStoreModelVersionHashesKey];
+    NSDictionary *hashes = inMetaData[NSStoreModelVersionHashesKey];
+    NSMutableDictionary *metaData = [NSMutableDictionary dictionary];
+
+    if (CDTISStoreAllCoreDataMetaData == NO) {
+        metaData[NSStoreUUIDKey] = inMetaData[NSStoreUUIDKey];
+        metaData[NSStoreTypeKey] = inMetaData[NSStoreTypeKey];
+    } else {
+        metaData = [inMetaData mutableCopy];
+    }
 
     // hashes are inline data and need to be converted
     if (hashes) {
-        metaData[NSStoreModelVersionHashesKey] = [self encodeVersionHashes:hashes];
+        metaData[NSStoreModelVersionHashesKey] = encodeVersionHashes(hashes);
     }
     return [NSDictionary dictionaryWithDictionary:metaData];
+}
+
+- (NSDictionary *)updateObjectModel
+{
+    NSPersistentStoreCoordinator *psc = self.persistentStoreCoordinator;
+    NSManagedObjectModel *mom = psc.managedObjectModel;
+    self.objectModel = [[CDTISObjectModel alloc] initWithManagedObjectModel:mom];
+    NSDictionary *omd = [self.objectModel dictionary];
+    return omd;
 }
 
 /**
@@ -1886,7 +1937,7 @@ static NSString *fixupName(NSString *name)
  *
  *  @return YES/NO
  */
-- (BOOL)updateMetaDataWithDocID:(NSString *)docID error:(NSError **)error
+- (BOOL)updateMetadata:(NSDictionary *)metadata withDocID:(NSString *)docID error:(NSError **)error
 {
     NSError *err = nil;
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
@@ -1898,7 +1949,19 @@ static NSString *fixupName(NSString *name)
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
-    upRev.body[kCDTISMetaDataKey] = [self encodeCoreDataMeta:[self metadata]];
+    if (CDTISUpdateStoredObjectModel) {
+        // check it the hashes have changed
+        NSDictionary *newHash = metadata[NSStoreModelVersionHashesKey];
+        NSDictionary *oldHash = [self.objectModel versionHashes];
+
+        if (oldHash && ![oldHash isEqualToDictionary:newHash]) {
+            // recreate the object model
+            NSDictionary *omd = [self updateObjectModel];
+            upRev.body[kCDTISObjectModelKey] = omd;
+        }
+    }
+
+    upRev.body[kCDTISMetaDataKey] = encodeCoreDataMeta(metadata);
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
@@ -1919,7 +1982,7 @@ static NSString *fixupName(NSString *name)
  *
  *  @return encoded dictionary
  */
-- (NSDictionary *)decodeVersionHashes:(NSDictionary *)hashes
+static NSDictionary *decodeVersionHashes(NSDictionary *hashes)
 {
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
@@ -1931,22 +1994,27 @@ static NSString *fixupName(NSString *name)
 }
 
 /**
- *  @see -encodeCoreDataMeta
+ *  @see -encodeCoreDataMeta:metadata
  *
  *  @param storedMetaData <#storedMetaData description#>
  *
  *  @return <#return value description#>
  */
-- (NSDictionary *)decodeCoreDataMeta:(NSDictionary *)storedMetaData
+NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 {
-    NSMutableDictionary *metadata = [storedMetaData mutableCopy];
-    NSMutableDictionary *hashes = [metadata[NSStoreModelVersionHashesKey] mutableCopy];
+    NSMutableDictionary *metadata = [NSMutableDictionary dictionary];
+    NSDictionary *hashes = storedMetaData[NSStoreModelVersionHashesKey];
 
+    if (CDTISStoreAllCoreDataMetaData == NO) {
+        metadata[NSStoreUUIDKey] = storedMetaData[NSStoreUUIDKey];
+        metadata[NSStoreTypeKey] = storedMetaData[NSStoreTypeKey];
+    } else {
+        metadata = [storedMetaData mutableCopy];
+    }
     // hashes are encoded and need to be inline data
     if (hashes) {
-        metadata[NSStoreModelVersionHashesKey] = [self decodeVersionHashes:hashes];
+        metadata[NSStoreModelVersionHashesKey] = decodeVersionHashes(hashes);
     }
-
     return [NSDictionary dictionaryWithDictionary:metadata];
 }
 
@@ -1972,11 +2040,7 @@ static NSString *fixupName(NSString *name)
 
         NSString *uuid = [self uniqueID:@"NSStore"];
         NSDictionary *metaData = @{NSStoreUUIDKey : uuid, NSStoreTypeKey : [self type]};
-
-        NSPersistentStoreCoordinator *psc = self.persistentStoreCoordinator;
-        NSManagedObjectModel *mom = psc.managedObjectModel;
-        self.objectModel = [[CDTISObjectModel alloc] initWithManagedObjectModel:mom];
-        NSDictionary *omd = [self.objectModel dictionary];
+        NSDictionary *omd = [self updateObjectModel];
 
         // store it so we can get it back the next time
         CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
@@ -2017,7 +2081,7 @@ static NSString *fixupName(NSString *name)
         return nil;
     }
 
-    NSDictionary *metaData = [self decodeCoreDataMeta:storedMetaData];
+    NSDictionary *metaData = decodeCoreDataMeta(storedMetaData);
     return metaData;
 }
 
@@ -2057,7 +2121,8 @@ static NSString *fixupName(NSString *name)
 - (void)setMetadata:(NSDictionary *)metadata
 {
     NSError *err = nil;
-    if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID error:&err]) {
+
+    if (![self updateMetadata:metadata withDocID:kCDTISMetaDataDocID error:&err]) {
         [NSException raise:kCDTISException format:@"update metadata error: %@", err];
     }
     [super setMetadata:metadata];
@@ -2481,7 +2546,14 @@ static NSString *fixupName(NSString *name)
 {
     NSError *err;
     NSFetchRequestResultType fetchType = [fetchRequest resultType];
+
+    /**
+     *  The document, [Responding to Fetch Requests](https://developer.apple.com/library/ios/documentation/DataManagement/Conceptual/IncrementalStorePG/ImplementationStrategy/ImplementationStrategy.html#//apple_ref/doc/uid/TP40010706-CH2-SW6),
+     *  suggests that we get the entity from the fetch request.
+     *  Turns out this can be stale so we check it and log it.
+     */
     NSEntityDescription *entity = [fetchRequest entity];
+    if (badEntityVersion(entity, self.metadata)) oops(@"bad enitity mismatch: %@", entity);
 
     // Get sort descriptors and add them as options
     err = nil;
@@ -2596,7 +2668,7 @@ static NSString *fixupName(NSString *name)
      * > you should treat it as a request to save the store metadata.
      */
     if (!insertedObjects && !updatedObjects && !deletedObjects && !optLockObjects) {
-        if (![self updateMetaDataWithDocID:kCDTISMetaDataDocID error:&err]) {
+        if (![self updateMetadata:[self metadata] withDocID:kCDTISMetaDataDocID error:&err]) {
             if (error) *error = err;
             return nil;
         }
@@ -2645,6 +2717,9 @@ static NSString *fixupName(NSString *name)
         if (error) *error = err;
         return nil;
     }
+
+    if (badObjectVersion(objectID, self.metadata)) oops(@"hash mismatch?: %@", objectID);
+
     NSIncrementalStoreNode *node = [[NSIncrementalStoreNode alloc]
         initWithObjectID:objectID
               withValues:[NSDictionary dictionaryWithDictionary:values]
@@ -2704,6 +2779,9 @@ static NSString *fixupName(NSString *name)
         NSEntityDescription *e = [mo entity];
         NSManagedObjectID *moid =
             [self newObjectIDForEntity:e referenceObject:[self uniqueID:e.name]];
+
+        if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
+
         [objectIDs addObject:moid];
     }
     return objectIDs;
