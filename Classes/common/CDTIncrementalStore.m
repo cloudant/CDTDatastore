@@ -233,8 +233,9 @@ static NSData *dataFromString(NSString *str)
 @property (strong, nonatomic) NSString *destination;
 @property (strong, nonatomic) NSData *versionHash;
 
-- (CDTISProperty *)initWithAttribute:(NSAttributeDescription *)attribute;
-- (CDTISProperty *)initWithRelationship:(NSRelationshipDescription *)relationship;
+- (instancetype)initWithAttribute:(NSAttributeDescription *)attribute;
+- (instancetype)initWithRelationship:(NSRelationshipDescription *)relationship;
+- (instancetype)initWithDictionary:(NSDictionary *)dic;
 - (NSDictionary *)dictionary;
 @end
 
@@ -247,7 +248,7 @@ static NSData *dataFromString(NSString *str)
  *
  *  @return initialized object
  */
-- (CDTISProperty *)initWithAttribute:(NSAttributeDescription *)attribute
+- (instancetype)initWithAttribute:(NSAttributeDescription *)attribute
 {
     self = [super init];
     if (self) {
@@ -317,7 +318,7 @@ static NSData *dataFromString(NSString *str)
     return self;
 }
 
-- (CDTISProperty *)initWithRelationship:(NSRelationshipDescription *)relationship
+- (instancetype)initWithRelationship:(NSRelationshipDescription *)relationship
 {
     self = [super init];
     if (self) {
@@ -395,7 +396,7 @@ static NSInteger typeCodeFromName(NSString *name)
     return 0;
 }
 
-- (CDTISProperty *)initWithDictionary:(NSDictionary *)dic
+- (instancetype)initWithDictionary:(NSDictionary *)dic
 {
     self = [super init];
     if (self) {
@@ -425,14 +426,14 @@ static NSInteger typeCodeFromName(NSString *name)
 @property (strong, nonatomic) NSDictionary *properties;
 @property (strong, nonatomic) NSData *versionHash;
 
-- (CDTISEntity *)initWithEntities:(NSEntityDescription *)ent;
-- (CDTISEntity *)initWithDictionary:(NSDictionary *)dictionary;
+- (instancetype)initWithEntities:(NSEntityDescription *)ent;
 - (NSDictionary *)dictionary;
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
 @end
 
 @implementation CDTISEntity : NSObject
 
-- (CDTISEntity *)initWithEntities:(NSEntityDescription *)ent
+- (instancetype)initWithEntities:(NSEntityDescription *)ent
 {
     self = [super init];
     if (self) {
@@ -474,7 +475,7 @@ static NSInteger typeCodeFromName(NSString *name)
     };
 }
 
-- (CDTISEntity *)initWithDictionary:(NSDictionary *)dictionary
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary
 {
     self = [super init];
     if (self) {
@@ -504,15 +505,18 @@ static NSInteger typeCodeFromName(NSString *name)
 @interface CDTISObjectModel : NSObject
 @property (strong, nonatomic) NSDictionary *entities;
 
-- (CDTISObjectModel *)initWithManagedObjectModel:(NSManagedObjectModel *)mom;
+- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)mom;
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
 - (NSDictionary *)dictionary;
 - (NSInteger)propertyTypeWithName:(NSString *)name withEntityName:(NSString *)ent;
+- (NSString *)destinationWithName:(NSString *)name withEntityName:(NSString *)ent;
+- (NSString *)xformWithName:(NSString *)name withEntityName:(NSString *)ent;
 - (NSDictionary *)versionHashes;
 @end
 
 @implementation CDTISObjectModel
 
-- (CDTISObjectModel *)initWithManagedObjectModel:(NSManagedObjectModel *)mom
+- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)mom
 {
     self = [super init];
     if (self) {
@@ -538,7 +542,7 @@ static NSInteger typeCodeFromName(NSString *name)
     return [NSDictionary dictionaryWithDictionary:dic];
 }
 
-- (CDTISObjectModel *)initWithDictionary:(NSDictionary *)dictionary
+- (instancetype)initWithDictionary:(NSDictionary *)dictionary
 {
     self = [super self];
     if (self) {
