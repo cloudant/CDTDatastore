@@ -9,8 +9,8 @@
 #import <CoreData/CoreData.h>
 #import <CloudantSync.h>
 
-extern NSString *const kCDTISErrorDomain;
-extern NSString *const kCDTISException;
+extern NSString *const CDTISErrorDomain;
+extern NSString *const CDTISException;
 
 /**
  *  Block of code to be executed as communication with backing store progresses.

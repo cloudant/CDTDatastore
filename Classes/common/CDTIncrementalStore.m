@@ -44,57 +44,57 @@
 
 #pragma mark - string constants
 // externed
-NSString *const kCDTISErrorDomain = @"CDTIncrementalStoreDomain";
-NSString *const kCDTISException = @"CDTIncrementalStoreException";
+NSString *const CDTISErrorDomain = @"CDTIncrementalStoreDomain";
+NSString *const CDTISException = @"CDTIncrementalStoreException";
 
-static NSString *const kCDTISType = @"CDTIncrementalStore";
-static NSString *const kCDTISDirectory = @"cloudant-sync-datastore-incremental";
-static NSString *const kCDTISPrefix = @"CDTIS";
-static NSString *const kCDTISMeta = @"CDTISMeta_";
-static NSString *const kCDTISMetaDataDocID = @"CDTISMetaData";
+static NSString *const CDTISType = @"CDTIncrementalStore";
+static NSString *const CDTISDirectory = @"cloudant-sync-datastore-incremental";
+static NSString *const CDTISPrefix = @"CDTIS";
+static NSString *const CDTISMeta = @"CDTISMeta_";
+static NSString *const CDTISMetaDataDocID = @"CDTISMetaData";
 
 #pragma mark - private keys
-static NSString *const kCDTISObjectVersionKey = @"CDTISObjectVersion";
-static NSString *const kCDTISEntityNameKey = @"CDTISEntityName";
-static NSString *const kCDTISIdentifierKey = @"CDTISIdentifier";
+static NSString *const CDTISObjectVersionKey = @"CDTISObjectVersion";
+static NSString *const CDTISEntityNameKey = @"CDTISEntityName";
+static NSString *const CDTISIdentifierKey = @"CDTISIdentifier";
 
 #pragma mark - property string type for backing store
-static NSString *const kCDTISUndefinedAttributeType = @"undefined";
+static NSString *const CDTISUndefinedAttributeType = @"undefined";
 
-static NSString *const kCDTISInteger16AttributeType = @"int16";
-static NSString *const kCDTISInteger32AttributeType = @"int32";
-static NSString *const kCDTISInteger64AttributeType = @"int64";
-static NSString *const kCDTISFloatAttributeType = @"float";
-static NSString *const kCDTISDoubleAttributeType = @"double";
+static NSString *const CDTISInteger16AttributeType = @"int16";
+static NSString *const CDTISInteger32AttributeType = @"int32";
+static NSString *const CDTISInteger64AttributeType = @"int64";
+static NSString *const CDTISFloatAttributeType = @"float";
+static NSString *const CDTISDoubleAttributeType = @"double";
 
 // encodings for floating point special values
-static NSString *const kCDTISFPInfinityKey = @"infinity";
-static NSString *const kCDTISFPNegInfinityKey = @"-infinity";
-static NSString *const kCDTISFPNaNKey = @"nan";
+static NSString *const CDTISFPInfinityKey = @"infinity";
+static NSString *const CDTISFPNegInfinityKey = @"-infinity";
+static NSString *const CDTISFPNaNKey = @"nan";
 
-static NSString *const kCDTISPropertiesKey = @"properties";
-static NSString *const kCDTISPropertyNameKey = @"typeName";
-static NSString *const kCDTISTypeStringKey = @"type";
-static NSString *const kCDTISTransformerClassKey = @"xform";
-static NSString *const kCDTISMIMETypeKey = @"mime-type";
-static NSString *const kCDTISFloatImageKey = @"ieee754_single";
-static NSString *const kCDTISDoubleImageKey = @"ieee754_double";
-static NSString *const kCDTISDecimalImageKey = @"nsdecimal";
-static NSString *const kCDTISMetaDataKey = @"metaData";
-static NSString *const kCDTISRunKey = @"run";
-static NSString *const kCDTISObjectModelKey = @"objectModel";
-static NSString *const kCDTISVersionHashKey = @"versionHash";
-static NSString *const kCDTISRelationDesitinationKey = @"destination";
+static NSString *const CDTISPropertiesKey = @"properties";
+static NSString *const CDTISPropertyNameKey = @"typeName";
+static NSString *const CDTISTypeStringKey = @"type";
+static NSString *const CDTISTransformerClassKey = @"xform";
+static NSString *const CDTISMIMETypeKey = @"mime-type";
+static NSString *const CDTISFloatImageKey = @"ieee754_single";
+static NSString *const CDTISDoubleImageKey = @"ieee754_double";
+static NSString *const CDTISDecimalImageKey = @"nsdecimal";
+static NSString *const CDTISMetaDataKey = @"metaData";
+static NSString *const CDTISRunKey = @"run";
+static NSString *const CDTISObjectModelKey = @"objectModel";
+static NSString *const CDTISVersionHashKey = @"versionHash";
+static NSString *const CDTISRelationDesitinationKey = @"destination";
 
-static NSString *const kCDTISDecimalAttributeType = @"decimal";
-static NSString *const kCDTISStringAttributeType = @"utf8";
-static NSString *const kCDTISBooleanAttributeType = @"bool";
-static NSString *const kCDTISDateAttributeType = @"date1970";
-static NSString *const kCDTISBinaryDataAttributeType = @"binary";
-static NSString *const kCDTISTransformableAttributeType = @"xform";
-static NSString *const kCDTISObjectIDAttributeType = @"id";
-static NSString *const kCDTISRelationToOneType = @"relation-to-one";
-static NSString *const kCDTISRelationToManyType = @"relation-to-many";
+static NSString *const CDTISDecimalAttributeTypeStr = @"decimal";
+static NSString *const CDTISStringAttributeTypeStr = @"utf8";
+static NSString *const CDTISBooleanAttributeTypeStr = @"bool";
+static NSString *const CDTISDateAttributeTypeStr = @"date1970";
+static NSString *const CDTISBinaryDataAttributeTypeStr = @"binary";
+static NSString *const CDTISTransformableAttributeTypeStr = @"xform";
+static NSString *const CDTISObjectIDAttributeTypeStr = @"id";
+static NSString *const CDTISRelationToOneTypeStr = @"relation-to-one";
+static NSString *const CDTISRelationToManyTypeStr = @"relation-to-many";
 
 // These are in addition to NSAttributeType, which is unsigned
 static NSInteger const CDTISRelationToOneType = -1;
@@ -263,52 +263,52 @@ static NSData *dataFromString(NSString *str)
                 break;
 
             case NSStringAttributeType:
-                _typeName = kCDTISStringAttributeType;
+                _typeName = CDTISStringAttributeTypeStr;
                 break;
 
             case NSBooleanAttributeType:
-                _typeName = kCDTISBooleanAttributeType;
+                _typeName = CDTISBooleanAttributeTypeStr;
                 break;
 
             case NSDateAttributeType:
-                _typeName = kCDTISDateAttributeType;
+                _typeName = CDTISDateAttributeTypeStr;
                 break;
 
             case NSBinaryDataAttributeType:
-                _typeName = kCDTISBinaryDataAttributeType;
+                _typeName = CDTISBinaryDataAttributeTypeStr;
                 break;
 
             case NSTransformableAttributeType:
-                _typeName = kCDTISTransformableAttributeType;
+                _typeName = CDTISTransformableAttributeTypeStr;
                 _xform = [attribute valueTransformerName];
                 break;
 
             case NSObjectIDAttributeType:
-                _typeName = kCDTISObjectIDAttributeType;
+                _typeName = CDTISObjectIDAttributeTypeStr;
                 break;
 
             case NSDecimalAttributeType:
-                _typeName = kCDTISDecimalAttributeType;
+                _typeName = CDTISDecimalAttributeTypeStr;
                 break;
 
             case NSDoubleAttributeType:
-                _typeName = kCDTISDoubleAttributeType;
+                _typeName = CDTISDoubleAttributeType;
                 break;
 
             case NSFloatAttributeType:
-                _typeName = kCDTISFloatAttributeType;
+                _typeName = CDTISFloatAttributeType;
                 break;
 
             case NSInteger16AttributeType:
-                _typeName = kCDTISInteger16AttributeType;
+                _typeName = CDTISInteger16AttributeType;
                 break;
 
             case NSInteger32AttributeType:
-                _typeName = kCDTISInteger32AttributeType;
+                _typeName = CDTISInteger32AttributeType;
                 break;
 
             case NSInteger64AttributeType:
-                _typeName = kCDTISInteger64AttributeType;
+                _typeName = CDTISInteger64AttributeType;
                 break;
 
             default:
@@ -329,10 +329,10 @@ static NSData *dataFromString(NSString *str)
         _destination = [ent name];
 
         if (relationship.isToMany) {
-            _typeName = kCDTISRelationToManyType;
+            _typeName = CDTISRelationToManyTypeStr;
             _typeCode = CDTISRelationToManyType;
         } else {
-            _typeName = kCDTISRelationToOneType;
+            _typeName = CDTISRelationToOneTypeStr;
             _typeCode = CDTISRelationToOneType;
         }
     }
@@ -342,54 +342,54 @@ static NSData *dataFromString(NSString *str)
 - (NSDictionary *)dictionary
 {
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    dic[kCDTISPropertyNameKey] = self.typeName;
-    dic[kCDTISVersionHashKey] = stringFromData(self.versionHash);
+    dic[CDTISPropertyNameKey] = self.typeName;
+    dic[CDTISVersionHashKey] = stringFromData(self.versionHash);
 
     if (self.xform) {
-        dic[kCDTISTransformerClassKey] = self.xform;
+        dic[CDTISTransformerClassKey] = self.xform;
     }
     if (self.isRelationship && self.destination) {
-        dic[kCDTISRelationDesitinationKey] = self.destination;
+        dic[CDTISRelationDesitinationKey] = self.destination;
     }
     return [NSDictionary dictionaryWithDictionary:dic];
 }
 
 static NSInteger typeCodeFromName(NSString *name)
 {
-    if ([name isEqualToString:kCDTISStringAttributeType]) {
+    if ([name isEqualToString:CDTISStringAttributeTypeStr]) {
         return NSStringAttributeType;
     }
-    if ([name isEqualToString:kCDTISBooleanAttributeType]) {
+    if ([name isEqualToString:CDTISBooleanAttributeTypeStr]) {
         return NSBooleanAttributeType;
     }
-    if ([name isEqualToString:kCDTISDateAttributeType]) {
+    if ([name isEqualToString:CDTISDateAttributeTypeStr]) {
         return NSDateAttributeType;
     }
-    if ([name isEqualToString:kCDTISBinaryDataAttributeType]) {
+    if ([name isEqualToString:CDTISBinaryDataAttributeTypeStr]) {
         return NSBinaryDataAttributeType;
     }
-    if ([name isEqualToString:kCDTISTransformableAttributeType]) {
+    if ([name isEqualToString:CDTISTransformableAttributeTypeStr]) {
         return NSTransformableAttributeType;
     }
-    if ([name isEqualToString:kCDTISObjectIDAttributeType]) {
+    if ([name isEqualToString:CDTISObjectIDAttributeTypeStr]) {
         return NSObjectIDAttributeType;
     }
-    if ([name isEqualToString:kCDTISDecimalAttributeType]) {
+    if ([name isEqualToString:CDTISDecimalAttributeTypeStr]) {
         return NSDecimalAttributeType;
     }
-    if ([name isEqualToString:kCDTISInteger16AttributeType]) {
+    if ([name isEqualToString:CDTISInteger16AttributeType]) {
         return NSInteger16AttributeType;
     }
-    if ([name isEqualToString:kCDTISInteger32AttributeType]) {
+    if ([name isEqualToString:CDTISInteger32AttributeType]) {
         return NSInteger16AttributeType;
     }
-    if ([name isEqualToString:kCDTISInteger64AttributeType]) {
+    if ([name isEqualToString:CDTISInteger64AttributeType]) {
         return NSInteger16AttributeType;
     }
-    if ([name isEqualToString:kCDTISRelationToOneType]) {
+    if ([name isEqualToString:CDTISRelationToOneTypeStr]) {
         return CDTISRelationToOneType;
     }
-    if ([name isEqualToString:kCDTISRelationToManyType]) {
+    if ([name isEqualToString:CDTISRelationToManyTypeStr]) {
         return CDTISRelationToManyType;
     }
 
@@ -400,12 +400,12 @@ static NSInteger typeCodeFromName(NSString *name)
 {
     self = [super init];
     if (self) {
-        _typeName = dic[kCDTISPropertyNameKey];
+        _typeName = dic[CDTISPropertyNameKey];
         _typeCode = typeCodeFromName(_typeName);
-        _versionHash = dataFromString(dic[kCDTISVersionHashKey]);
+        _versionHash = dataFromString(dic[CDTISVersionHashKey]);
 
-        _xform = dic[kCDTISTransformerClassKey];
-        _destination = dic[kCDTISRelationDesitinationKey];
+        _xform = dic[CDTISTransformerClassKey];
+        _destination = dic[CDTISRelationDesitinationKey];
 
         if (_destination) {
             _isRelationship = YES;
@@ -470,8 +470,8 @@ static NSInteger typeCodeFromName(NSString *name)
         dic[name] = [prop dictionary];
     }
     return @{
-        kCDTISPropertiesKey : [NSDictionary dictionaryWithDictionary:dic],
-        kCDTISVersionHashKey : stringFromData(self.versionHash)
+        CDTISPropertiesKey : [NSDictionary dictionaryWithDictionary:dic],
+        CDTISVersionHashKey : stringFromData(self.versionHash)
     };
 }
 
@@ -479,12 +479,12 @@ static NSInteger typeCodeFromName(NSString *name)
 {
     self = [super init];
     if (self) {
-        NSString *vh = dictionary[kCDTISVersionHashKey];
+        NSString *vh = dictionary[CDTISVersionHashKey];
         _versionHash = dataFromString(vh);
 
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
 
-        NSDictionary *props = dictionary[kCDTISPropertiesKey];
+        NSDictionary *props = dictionary[CDTISPropertiesKey];
         for (NSString *name in props) {
             NSDictionary *desc = props[name];
             dic[name] = [[CDTISProperty alloc] initWithDictionary:desc];
@@ -626,14 +626,14 @@ static NSInteger typeCodeFromName(NSString *name)
     }
 }
 
-+ (NSString *)type { return kCDTISType; }
++ (NSString *)type { return CDTISType; }
 
 + (NSURL *)localDir
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSURL *documentsDir =
         [[fileManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-    NSURL *dbDir = [documentsDir URLByAppendingPathComponent:kCDTISDirectory];
+    NSURL *dbDir = [documentsDir URLByAppendingPathComponent:CDTISDirectory];
 
     return dbDir;
 }
@@ -663,13 +663,13 @@ static NSInteger typeCodeFromName(NSString *name)
      *  @See CDTISReadableUUIDs
      */
     if (!CDTISReadableUUIDs) {
-        return [NSString stringWithFormat:@"%@-%@-%@", kCDTISPrefix, label, TDCreateUUID()];
+        return [NSString stringWithFormat:@"%@-%@-%@", CDTISPrefix, label, TDCreateUUID()];
     }
 
     static volatile int64_t uniqueCounter;
     uint64_t val = OSAtomicIncrement64(&uniqueCounter);
 
-    return [NSString stringWithFormat:@"%@-%@-%@-%llu", kCDTISPrefix, label, self.run, val];
+    return [NSString stringWithFormat:@"%@-%@-%@-%llu", CDTISPrefix, label, self.run, val];
 }
 
 /**
@@ -689,7 +689,7 @@ static NSInteger typeCodeFromName(NSString *name)
     return ref;
 }
 
-static NSString *MakeMeta(NSString *s) { return [kCDTISMeta stringByAppendingString:s]; }
+static NSString *MakeMeta(NSString *s) { return [CDTISMeta stringByAppendingString:s]; }
 
 static BOOL badEntityVersion(NSEntityDescription *entity, NSDictionary *metadata)
 {
@@ -714,7 +714,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 {
     if (!self.objectModel) oops(@"no object model exists yet");
 
-    NSString *entityName = body[kCDTISEntityNameKey];
+    NSString *entityName = body[CDTISEntityNameKey];
     NSInteger ptype = [self.objectModel propertyTypeWithName:name withEntityName:entityName];
     return ptype;
 }
@@ -723,7 +723,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 {
     if (!self.objectModel) oops(@"no object model exists yet");
 
-    NSString *entityName = body[kCDTISEntityNameKey];
+    NSString *entityName = body[CDTISEntityNameKey];
     NSString *dest = [self.objectModel destinationWithName:name withEntityName:entityName];
     return dest;
 }
@@ -732,7 +732,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 {
     if (!self.objectModel) oops(@"no object model exists yet");
 
-    NSString *entityName = body[kCDTISEntityNameKey];
+    NSString *entityName = body[CDTISEntityNameKey];
     NSString *xform = [self.objectModel xformWithName:name withEntityName:entityName];
     return xform;
 }
@@ -741,7 +741,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 {
     // our own keys are not in the core data properties
     // but we still want to index on them
-    if ([key hasPrefix:kCDTISPrefix]) {
+    if ([key hasPrefix:CDTISPrefix]) {
         return CDTIndexTypeString;
     }
 
@@ -778,7 +778,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         case NSFloatAttributeType:
             return CDTIndexTypeInteger;
     }
-    [NSException raise:kCDTISException format:@"can't index on %@", name];
+    [NSException raise:CDTISException format:@"can't index on %@", name];
     return 0;
 }
 
@@ -813,11 +813,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSString *s = [NSString localizedStringWithFormat:@"Can't create datastore directory: "
                                                               @"file in the way at %@",
                                                               self.localURL];
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@", kCDTISType, s);
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@", CDTISType, s);
             if (error) {
                 NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : s};
                 *error =
-                    [NSError errorWithDomain:kCDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
+                    [NSError errorWithDomain:CDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
             }
             return nil;
         }
@@ -827,7 +827,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                                     attributes:nil
                                          error:&err]) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Error creating manager directory: %@",
-                        kCDTISType, err);
+                        CDTISType, err);
             if (error) {
                 *error = err;
             }
@@ -879,9 +879,9 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             if (error) {
                 NSString *str =
                     [NSString localizedStringWithFormat:@"%@ attribute type: %@",
-                                                        kCDTISUndefinedAttributeType, @(type)];
+                                                        CDTISUndefinedAttributeType, @(type)];
                 NSDictionary *ui = @{NSLocalizedDescriptionKey : str};
-                *error = [NSError errorWithDomain:kCDTISErrorDomain
+                *error = [NSError errorWithDomain:CDTISErrorDomain
                                              code:CDTISErrorUndefinedAttributeType
                                          userInfo:ui];
             }
@@ -916,7 +916,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 [self encodeBlob:data withName:name inStore:blobStore withMIMEType:mimeType];
             return @{
                 name : bytes,
-                MakeMeta(name) : @{kCDTISMIMETypeKey : @"application/octet-stream"}
+                MakeMeta(name) : @{CDTISMIMETypeKey : @"application/octet-stream"}
             };
         }
         case NSTransformableAttributeType: {
@@ -938,7 +938,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSString *bytes =
                 [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
 
-            return @{ name : bytes, MakeMeta(name) : @{kCDTISMIMETypeKey : mimeType} };
+            return @{ name : bytes, MakeMeta(name) : @{CDTISMIMETypeKey : mimeType} };
         }
         case NSObjectIDAttributeType: {
             // I don't think converting to a ref is needed, besides we
@@ -956,10 +956,10 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSData *data = [NSData dataWithBytes:&val length:sizeof(val)];
             NSString *b64 = [data base64EncodedStringWithOptions:0];
             NSMutableDictionary *meta = [NSMutableDictionary dictionary];
-            meta[kCDTISDecimalImageKey] = b64;
+            meta[CDTISDecimalImageKey] = b64;
 
             if ([dec isEqual:[NSDecimalNumber notANumber]]) {
-                meta[kCDTISFPNaNKey] = @"true";
+                meta[CDTISFPNaNKey] = @"true";
                 desc = @"0";
             }
 
@@ -970,20 +970,20 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             double dbl = [num doubleValue];
             NSNumber *i64 = @(*(int64_t *)&dbl);
             NSMutableDictionary *meta = [NSMutableDictionary dictionary];
-            meta[kCDTISDoubleImageKey] = i64;
+            meta[CDTISDoubleImageKey] = i64;
 
             if ([num isEqual:@(INFINITY)]) {
                 num = @(DBL_MAX);
-                meta[kCDTISFPInfinityKey] = @"true";
+                meta[CDTISFPInfinityKey] = @"true";
             }
             if ([num isEqual:@(-INFINITY)]) {
                 num = @(-DBL_MAX);
-                meta[kCDTISFPNegInfinityKey] = @"true";
+                meta[CDTISFPNegInfinityKey] = @"true";
             }
             if ([num isEqual:@(NAN)]) {
                 num = @(0);  // not sure what to do here
                 dbl = 0.;
-                meta[kCDTISFPNaNKey] = @"true";
+                meta[CDTISFPNaNKey] = @"true";
             }
 
             // NSDecimalNumber "description" is the closest thing we will get
@@ -998,19 +998,19 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             float flt = [num floatValue];
             NSNumber *i32 = @(*(int32_t *)&flt);
             NSMutableDictionary *meta = [NSMutableDictionary dictionary];
-            meta[kCDTISFloatImageKey] = i32;
+            meta[CDTISFloatImageKey] = i32;
 
             if ([num isEqual:@(INFINITY)]) {
                 num = @(FLT_MAX);
-                meta[kCDTISFPInfinityKey] = @"true";
+                meta[CDTISFPInfinityKey] = @"true";
             }
             if ([num isEqual:@(-INFINITY)]) {
                 num = @(-FLT_MAX);
-                meta[kCDTISFPNegInfinityKey] = @"true";
+                meta[CDTISFPNegInfinityKey] = @"true";
             }
             if ([num isEqual:@(NAN)]) {
                 num = @(0);  // not sure what to do here
-                meta[kCDTISFPNaNKey] = @"true";
+                meta[CDTISFPNaNKey] = @"true";
             }
 
             return @{name : num, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
@@ -1024,7 +1024,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         NSString *str = [NSString
             localizedStringWithFormat:@"type %@: is not of " @"NSNumber: %@ = %@", @(type),
                                       attribute.name, NSStringFromClass([obj class])];
-        *error = [NSError errorWithDomain:kCDTISErrorDomain
+        *error = [NSError errorWithDomain:CDTISErrorDomain
                                      code:CDTISErrorNaN
                                  userInfo:@{NSLocalizedDescriptionKey : str}];
     }
@@ -1124,11 +1124,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSRelationshipDescription *rel = prop;
             enc = [self encodeRelation:rel withObject:obj error:&err];
         } else {
-            [NSException raise:kCDTISException format:@"unknown property: %@", prop];
+            [NSException raise:CDTISException format:@"unknown property: %@", prop];
         }
 
         if (!enc) {
-            [NSException raise:kCDTISException
+            [NSException raise:CDTISException
                         format:@"There should always be an encoding: %@: %@", prop, err];
         }
 
@@ -1138,7 +1138,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     // just checking
     NSArray *entitySubs = [[mo entity] subentities];
     if ([entitySubs count] > 0) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: subentities: %@", kCDTISType, entitySubs);
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: subentities: %@", CDTISType, entitySubs);
     }
     return [NSDictionary dictionaryWithDictionary:props];
 }
@@ -1232,7 +1232,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             obj = moid;
         } break;
         case NSDecimalAttributeType: {
-            NSString *b64 = meta[kCDTISDecimalImageKey];
+            NSString *b64 = meta[CDTISDecimalImageKey];
             NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:0];
             NSDecimal val;
             [data getBytes:&val length:sizeof(val)];
@@ -1240,14 +1240,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         } break;
         case NSDoubleAttributeType: {
             // just get the image
-            NSNumber *i64Num = meta[kCDTISDoubleImageKey];
+            NSNumber *i64Num = meta[CDTISDoubleImageKey];
             int64_t i64 = [i64Num longLongValue];
             NSNumber *num = @(*(double *)&i64);
             obj = num;
         } break;
         case NSFloatAttributeType: {
             // just get the image
-            NSNumber *i32Num = meta[kCDTISFloatImageKey];
+            NSNumber *i32Num = meta[CDTISFloatImageKey];
             int32_t i32 = (int32_t)[i32Num integerValue];
             NSNumber *num = @(*(float *)&i32);
             obj = num;
@@ -1350,9 +1350,9 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     // do the actual attributes first
     newRev.docId = docID;
     newRev.body = [self propertiesFromManagedObject:mo withBlobStore:blobStore];
-    newRev.body[kCDTISObjectVersionKey] = @"1";
-    newRev.body[kCDTISEntityNameKey] = [entity name];
-    newRev.body[kCDTISIdentifierKey] = [[[mo objectID] URIRepresentation] absoluteString];
+    newRev.body[CDTISObjectVersionKey] = @"1";
+    newRev.body[CDTISEntityNameKey] = [entity name];
+    newRev.body[CDTISIdentifierKey] = [[[mo objectID] URIRepresentation] absoluteString];
     if ([blobStore count]) {
         newRev.attachments = blobStore;
     }
@@ -1429,11 +1429,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     }
 
     // TODO: version HACK
-    NSString *oldVersion = oldRev.body[kCDTISObjectVersionKey];
+    NSString *oldVersion = oldRev.body[CDTISObjectVersionKey];
     uint64_t version = [oldVersion longLongValue];
     ++version;
     NSNumber *v = [NSNumber numberWithUnsignedLongLong:version];
-    props[kCDTISObjectVersionKey] = [v stringValue];
+    props[CDTISObjectVersionKey] = [v stringValue];
 
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
@@ -1454,7 +1454,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 
     if ([blobStore count]) {
         if (![self.datastore compactWithError:&err]) {
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: datastore compact failed: %@", kCDTISType,
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: datastore compact failed: %@", CDTISType,
                        err);
         }
     }
@@ -1552,11 +1552,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     }
     NSMutableDictionary *values = [NSMutableDictionary dictionary];
     for (NSString *name in rev.body) {
-        if ([name isEqualToString:kCDTISObjectVersionKey]) {
+        if ([name isEqualToString:CDTISObjectVersionKey]) {
             *version = [rev.body[name] longLongValue];
             continue;
         }
-        if ([name hasPrefix:kCDTISPrefix]) {
+        if ([name hasPrefix:CDTISPrefix]) {
             continue;
         }
 
@@ -1606,7 +1606,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSString *s =
                 [NSString localizedStringWithFormat:@"Replicator in state: %@", stateName];
 
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
+            *error = [NSError errorWithDomain:CDTISErrorDomain
                                          code:CDTISErrorSyncBusy
                                      userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
         }
@@ -1618,7 +1618,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSString *s =
                 [NSString localizedStringWithFormat:@"Replicator comm already in progress"];
 
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
+            *error = [NSError errorWithDomain:CDTISErrorDomain
                                          code:CDTISErrorSyncBusy
                                      userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
         }
@@ -1631,7 +1631,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         return YES;
     }
     if (err) {
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Replicator: start: %@: %@", kCDTISType,
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Replicator: start: %@: %@", CDTISType,
                    [self cleanURL:self.remoteURL], err);
     }
     self.progressBlock = nil;
@@ -1646,7 +1646,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         if (error) {
             NSString *s = [NSString localizedStringWithFormat:@"There is no remote defined"];
 
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
+            *error = [NSError errorWithDomain:CDTISErrorDomain
                                          code:CDTISErrorNoRemoteDB
                                      userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
         }
@@ -1663,7 +1663,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         if (error) {
             NSString *s = [NSString localizedStringWithFormat:@"There is no remote defined"];
 
-            *error = [NSError errorWithDomain:kCDTISErrorDomain
+            *error = [NSError errorWithDomain:CDTISErrorDomain
                                          code:CDTISErrorNoRemoteDB
                                      userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
         }
@@ -1702,7 +1702,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     // If remoteURL has a host component, then we have a replication target
     if (![remoteURL host]) {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: no host component, so no replication",
-                   kCDTISType);
+                   CDTISType);
         return NO;
     }
 
@@ -1712,7 +1712,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
     if (!repFactory) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replication factory",
-                    kCDTISType, clean);
+                    CDTISType, clean);
         return NO;
     }
 
@@ -1720,14 +1720,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         [CDTPushReplication replicationWithSource:datastore target:remoteURL];
     if (!pushRep) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create push replication object",
-                    kCDTISType, clean);
+                    CDTISType, clean);
         return NO;
     }
 
     CDTReplicator *pusher = [repFactory oneWay:pushRep error:&err];
     if (!pusher) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replicator for push: %@",
-                    kCDTISType, clean, err);
+                    CDTISType, clean, err);
         return NO;
     }
 
@@ -1735,14 +1735,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         [CDTPullReplication replicationWithSource:remoteURL target:datastore];
     if (!pullRep) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create pull replication object",
-                    kCDTISType, clean);
+                    CDTISType, clean);
         return NO;
     }
 
     CDTReplicator *puller = [repFactory oneWay:pullRep error:&err];
     if (!puller) {
         CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: Could not create replicator for pull: %@",
-                    kCDTISType, clean, err);
+                    CDTISType, clean, err);
         return NO;
     }
 
@@ -1825,7 +1825,7 @@ static NSString *fixupName(NSString *name)
 
     CDTDatastoreManager *manager = [[CDTDatastoreManager alloc] initWithDirectory:path error:&err];
     if (!manager) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating manager: %@", kCDTISType,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating manager: %@", CDTISType,
                     databaseName, err);
         if (error) *error = err;
         return NO;
@@ -1833,7 +1833,7 @@ static NSString *fixupName(NSString *name)
 
     CDTDatastore *datastore = [manager datastoreNamed:databaseName error:&err];
     if (!datastore) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating datastore: %@", kCDTISType,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Error creating datastore: %@", CDTISType,
                     databaseName, err);
         if (error) *error = err;
         return NO;
@@ -1843,7 +1843,7 @@ static NSString *fixupName(NSString *name)
         [[CDTIndexManager alloc] initWithDatastore:datastore error:&err];
     if (!indexManager) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Cannot create indexManager: %@", kCDTISType,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Cannot create indexManager: %@", CDTISType,
                     databaseName, err);
         return NO;
     }
@@ -1855,7 +1855,7 @@ static NSString *fixupName(NSString *name)
     self.indexManager = indexManager;
 
     if (![self setupReplicators:remoteURL manager:manager datastore:datastore]) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: continuing without replication", kCDTISType);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: continuing without replication", CDTISType);
     }
 
     return YES;
@@ -1874,12 +1874,12 @@ static NSString *fixupName(NSString *name)
     NSError *err = nil;
 
     // the big index
-    if (![self.indexManager ensureIndexedWithIndexName:kCDTISEntityNameKey
-                                             fieldName:kCDTISEntityNameKey
+    if (![self.indexManager ensureIndexedWithIndexName:CDTISEntityNameKey
+                                             fieldName:CDTISEntityNameKey
                                                  error:&err]) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@", CDTISType,
-                    self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@",
+                    CDTISType, self.databaseName, err);
         return NO;
     }
 
@@ -1956,7 +1956,7 @@ static NSDictionary *encodeCoreDataMeta(NSDictionary *inMetaData)
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
     if (!oldRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: no metaData?: %@", kCDTISType,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: no metaData?: %@", CDTISType,
                     self.databaseName, err);
         return NO;
     }
@@ -1970,16 +1970,16 @@ static NSDictionary *encodeCoreDataMeta(NSDictionary *inMetaData)
         if (oldHash && ![oldHash isEqualToDictionary:newHash]) {
             // recreate the object model
             NSDictionary *omd = [self updateObjectModel];
-            upRev.body[kCDTISObjectModelKey] = omd;
+            upRev.body[CDTISObjectModelKey] = omd;
         }
     }
 
-    upRev.body[kCDTISMetaDataKey] = encodeCoreDataMeta(metadata);
+    upRev.body[CDTISMetaDataKey] = encodeCoreDataMeta(metadata);
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: could not update metadata: %@", kCDTISType,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: could not update metadata: %@", CDTISType,
                     self.databaseName, err);
         return NO;
     }
@@ -2057,39 +2057,39 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
         // store it so we can get it back the next time
         CDTMutableDocumentRevision *newRev = [CDTMutableDocumentRevision revision];
-        newRev.docId = kCDTISMetaDataDocID;
+        newRev.docId = CDTISMetaDataDocID;
         newRev.body = @{
-            kCDTISMetaDataKey : metaData,
-            kCDTISObjectModelKey : omd,
-            kCDTISRunKey : self.run,
+            CDTISMetaDataKey : metaData,
+            CDTISObjectModelKey : omd,
+            CDTISRunKey : self.run,
         };
 
         rev = [self.datastore createDocumentFromRevision:newRev error:&err];
         if (!rev) {
             if (error) *error = err;
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: unable to store metaData: %@",
-                        kCDTISType, self.databaseName, err);
+                        CDTISType, self.databaseName, err);
             return nil;
         }
 
         return metaData;
     }
 
-    NSDictionary *omd = rev.body[kCDTISObjectModelKey];
+    NSDictionary *omd = rev.body[CDTISObjectModelKey];
     self.objectModel = [[CDTISObjectModel alloc] initWithDictionary:omd];
 
-    NSDictionary *storedMetaData = rev.body[kCDTISMetaDataKey];
-    NSString *run = rev.body[kCDTISRunKey];
+    NSDictionary *storedMetaData = rev.body[CDTISMetaDataKey];
+    NSString *run = rev.body[CDTISRunKey];
     uint64_t runVal = [run longLongValue];
     ++runVal;
     self.run = [NSString stringWithFormat:@"run-%llu", runVal];
 
     CDTMutableDocumentRevision *upRev = [rev mutableCopy];
-    upRev.body[kCDTISRunKey] = self.run;
+    upRev.body[CDTISRunKey] = self.run;
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: upedRev: %@", kCDTISType, self.databaseName,
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: upedRev: %@", CDTISType, self.databaseName,
                     err);
         return nil;
     }
@@ -2111,11 +2111,11 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 - (BOOL)checkMetaData:(NSDictionary *)metaData error:(NSError **)error
 {
     NSString *s = metaData[NSStoreTypeKey];
-    if (![s isEqualToString:kCDTISType]) {
+    if (![s isEqualToString:CDTISType]) {
         NSString *e = [NSString localizedStringWithFormat:@"Unexpected store type %@", s];
         if (error) {
             NSDictionary *ui = @{NSLocalizedFailureReasonErrorKey : e};
-            *error = [NSError errorWithDomain:kCDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
+            *error = [NSError errorWithDomain:CDTISErrorDomain code:CDTISErrorBadPath userInfo:ui];
         }
         return NO;
     }
@@ -2135,8 +2135,8 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 {
     NSError *err = nil;
 
-    if (![self updateMetadata:metadata withDocID:kCDTISMetaDataDocID error:&err]) {
-        [NSException raise:kCDTISException format:@"update metadata error: %@", err];
+    if (![self updateMetadata:metadata withDocID:CDTISMetaDataDocID error:&err]) {
+        [NSException raise:CDTISException format:@"update metadata error: %@", err];
     }
     [super setMetadata:metadata];
 }
@@ -2169,12 +2169,12 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             break;
         default:
             state = @"unknown replicator state";
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", kCDTISType,
+            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", CDTISType,
                        [self cleanURL:self.remoteURL], replicator, state);
             break;
     }
 
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", kCDTISType,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: state: %@", CDTISType,
                [self cleanURL:self.remoteURL], replicator, state);
 }
 
@@ -2183,7 +2183,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  */
 - (void)replicatorDidChangeProgress:(CDTReplicator *)replicator
 {
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: progressed: [%@/%@]", kCDTISType,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: progressed: [%@/%@]", CDTISType,
                [self cleanURL:self.remoteURL], replicator, @(replicator.changesProcessed),
                @(replicator.changesTotal));
     self.progressBlock(NO, replicator.changesProcessed, replicator.changesTotal, nil);
@@ -2195,7 +2195,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  */
 - (void)replicatorDidComplete:(CDTReplicator *)replicator
 {
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: completed", kCDTISType,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: completed", CDTISType,
                [self cleanURL:self.remoteURL], replicator);
     self.progressBlock(YES, 0, 0, nil);
     self.progressBlock = nil;
@@ -2206,7 +2206,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  */
 - (void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info
 {
-    CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: suffered error: %@", kCDTISType,
+    CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: %@: %@: suffered error: %@", CDTISType,
                 [self cleanURL:self.remoteURL], replicator, info);
     self.progressBlock(YES, 0, 0, info);
     self.progressBlock = nil;
@@ -2224,12 +2224,12 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     if (![self setupIndexes:error]) {
         return NO;
     }
-    NSDictionary *metaData = [self getMetaDataFromDocID:kCDTISMetaDataDocID error:error];
+    NSDictionary *metaData = [self getMetaDataFromDocID:CDTISMetaDataDocID error:error];
     if (!metaData) {
         return NO;
     }
     if (![self checkMetaData:metaData error:error]) {
-        [NSException raise:kCDTISException format:@"failed metaData check"];
+        [NSException raise:CDTISException format:@"failed metaData check"];
     }
     // go directly to super
     [super setMetadata:metaData];
@@ -2268,7 +2268,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         for (NSSortDescriptor *sd in sds) {
             NSString *sel = NSStringFromSelector([sd selector]);
             if (![sel isEqualToString:@"compare:"]) {
-                [NSException raise:kCDTISException format:@"we do not allow custom compares"];
+                [NSException raise:CDTISException format:@"we do not allow custom compares"];
             }
             NSString *key = [sd key];
 
@@ -2328,7 +2328,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     if ([lhs expressionType] == NSKeyPathExpressionType) {
         key = [lhs keyPath];
     } else if ([lhs expressionType] == NSEvaluatedObjectExpressionType) {
-        key = kCDTISIdentifierKey;
+        key = CDTISIdentifierKey;
     }
 
     id value = [rhs expressionValueWithObject:nil context:nil];
@@ -2353,7 +2353,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
         case NSInPredicateOperatorType: {
             if ([value isKindOfClass:[NSString class]]) {
-                [NSException raise:kCDTISException format:@"Can't do substring matches: %@", value];
+                [NSException raise:CDTISException format:@"Can't do substring matches: %@", value];
                 break;
             }
             // FIXME? I hope this deals with collections
@@ -2369,7 +2369,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
         case NSBetweenPredicateOperatorType: {
             if (![value isKindOfClass:[NSArray class]]) {
-                [NSException raise:kCDTISException format:@"unexpected \"between\" args"];
+                [NSException raise:CDTISException format:@"unexpected \"between\" args"];
                 break;
             }
             NSArray *between = value;
@@ -2389,12 +2389,12 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         case NSEndsWithPredicateOperatorType:
         case NSCustomSelectorPredicateOperatorType:
         case NSContainsPredicateOperatorType:
-            [NSException raise:kCDTISException
+            [NSException raise:CDTISException
                         format:@"Predicate with unsupported comparison operator: %@", @(predType)];
             break;
 
         default:
-            [NSException raise:kCDTISException
+            [NSException raise:CDTISException
                         format:@"Predicate with unrecognized comparison operator: %@", @(predType)];
             break;
     }
@@ -2404,7 +2404,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     CDTIndexType type = [self indexTypeForKey:keyStr inProperties:props];
 
     if (![self ensureIndexExists:keyStr fieldName:keyStr type:type error:&err]) {
-        [NSException raise:kCDTISException format:@"failed at creating index for key %@", keyStr];
+        [NSException raise:CDTISException format:@"failed at creating index for key %@", keyStr];
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
     }
@@ -2415,7 +2415,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 {
     if ([p isKindOfClass:[NSCompoundPredicate class]]) {
         if (!CDTISSupportCompoundPredicates) {
-            [NSException raise:kCDTISException
+            [NSException raise:CDTISException
                         format:@"Compound predicates not supported at all: %@", p];
         }
 
@@ -2435,12 +2435,12 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             case NSOrPredicateType:
             case NSNotPredicateType:
                 [NSException
-                     raise:kCDTISException
+                     raise:CDTISException
                     format:@"Predicate with unsupported compound operator: %@", @(predType)];
                 break;
             default:
                 [NSException
-                     raise:kCDTISException
+                     raise:CDTISException
                     format:@"Predicate with unrecognized compound operator: %@", @(predType)];
         }
 
@@ -2486,7 +2486,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSEntityDescription *entity = [fetchRequest entity];
     NSString *entityName = [entity name];
 
-    NSMutableDictionary *query = [@{ kCDTISEntityNameKey : entityName } mutableCopy];
+    NSMutableDictionary *query = [@{ CDTISEntityNameKey : entityName } mutableCopy];
     NSDictionary *predicate = [self processPredicate:fetchRequest];
     [query addEntriesFromDictionary:predicate];
 
@@ -2497,7 +2497,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 {
     // we only support one grouping
     if ([fetchRequest.propertiesToGroupBy count] > 1) {
-        [NSException raise:kCDTISException format:@"can only group by 1 property"];
+        [NSException raise:CDTISException format:@"can only group by 1 property"];
     }
 
     id groupProp = [fetchRequest.propertiesToGroupBy firstObject];
@@ -2505,7 +2505,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     // we only support grouping by an existing property, no expressions or
     // aggregates
     if (![groupProp isKindOfClass:[NSPropertyDescription class]]) {
-        [NSException raise:kCDTISException format:@"can only handle properties for groupings"];
+        [NSException raise:CDTISException format:@"can only handle properties for groupings"];
     }
 
     // use a dictionary so we can track repeats
@@ -2537,15 +2537,15 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 NSExpressionDescription *ed = prop;
                 NSExpression *e = ed.expression;
                 if (e.expressionType != NSFunctionExpressionType) {
-                    [NSException raise:kCDTISException format:@"expression type is not a function"];
+                    [NSException raise:CDTISException format:@"expression type is not a function"];
                 }
                 if (![e.function isEqualToString:@"count:"]) {
-                    [NSException raise:kCDTISException
+                    [NSException raise:CDTISException
                                 format:@"count: is the only function currently supported"];
                 }
                 dic[ed.name] = @([ga count]);
             } else {
-                [NSException raise:kCDTISException format:@"unsupported property descriptor"];
+                [NSException raise:CDTISException format:@"unsupported property descriptor"];
             }
         }
         [results addObject:[NSDictionary dictionaryWithDictionary:dic]];
@@ -2629,7 +2629,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSString *s =
         [NSString localizedStringWithFormat:@"Unknown request fetch type: %@", fetchRequest];
     if (error) {
-        *error = [NSError errorWithDomain:kCDTISErrorDomain
+        *error = [NSError errorWithDomain:CDTISErrorDomain
                                      code:CDTISErrorExectueRequestFetchTypeUnkown
                                  userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
     }
@@ -2682,7 +2682,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
      * > you should treat it as a request to save the store metadata.
      */
     if (!insertedObjects && !updatedObjects && !deletedObjects && !optLockObjects) {
-        if (![self updateMetadata:[self metadata] withDocID:kCDTISMetaDataDocID error:&err]) {
+        if (![self updateMetadata:[self metadata] withDocID:CDTISMetaDataDocID error:&err]) {
             if (error) *error = err;
             return nil;
         }
@@ -2709,7 +2709,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
     NSString *s = [NSString localizedStringWithFormat:@"Unknown request type: %@", @(requestType)];
     if (error) {
-        *error = [NSError errorWithDomain:kCDTISErrorDomain
+        *error = [NSError errorWithDomain:CDTISErrorDomain
                                      code:CDTISErrorExectueRequestTypeUnkown
                                  userInfo:@{NSLocalizedFailureReasonErrorKey : s}];
     }
@@ -2845,7 +2845,7 @@ static void DotWrite(NSMutableData *out, NSString *s)
     DotWrite(out, @"  splines=true;\n");
 
     for (CDTDocumentRevision *rev in all) {
-        if ([rev.docId isEqualToString:kCDTISMetaDataDocID]) {
+        if ([rev.docId isEqualToString:CDTISMetaDataDocID]) {
             // we do not plot the metadata document
             continue;
         }
@@ -2853,12 +2853,12 @@ static void DotWrite(NSMutableData *out, NSString *s)
         NSMutableArray *props = [NSMutableArray array];
 
         for (NSString *name in rev.body) {
-            if ([name isEqual:kCDTISEntityNameKey]) {
+            if ([name isEqual:CDTISEntityNameKey]) {
                 // the node
                 entity = rev.body[name];
             }
 
-            if ([name hasPrefix:kCDTISPrefix]) {
+            if ([name hasPrefix:CDTISPrefix]) {
                 continue;
             }
             id value = rev.body[name];
@@ -2899,13 +2899,13 @@ static void DotWrite(NSMutableData *out, NSString *s)
                     [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@", idx, name, num]];
                 } break;
                 case NSFloatAttributeType: {
-                    NSNumber *i32Num = meta[kCDTISFloatImageKey];
+                    NSNumber *i32Num = meta[CDTISFloatImageKey];
                     int32_t i32 = (int32_t)[i32Num integerValue];
                     float flt = *(float *)&i32;
                     [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, flt]];
                 } break;
                 case NSDoubleAttributeType: {
-                    NSNumber *i64Num = meta[kCDTISDoubleImageKey];
+                    NSNumber *i64Num = meta[CDTISDoubleImageKey];
                     int64_t i64 = [i64Num integerValue];
                     double dbl = *(double *)&i64;
                     [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, dbl]];

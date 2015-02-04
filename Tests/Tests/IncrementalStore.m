@@ -391,7 +391,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     fr.predicate = nosup;
 
     XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 kCDTISException, @"Expected Exception");
+                                 CDTISException, @"Expected Exception");
 
     /**
      *  fetch in range
@@ -494,7 +494,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     fr.predicate = cp;
 
     XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 kCDTISException, @"Expected Exception");
+                                 CDTISException, @"Expected Exception");
 
     /**
      *  Compound Predicates
@@ -504,7 +504,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         fr.predicate = both;
 
         XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                     kCDTISException, @"Expected Exception");
+                                     CDTISException, @"Expected Exception");
         return;
     }
 
