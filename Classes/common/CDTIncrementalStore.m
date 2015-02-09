@@ -163,6 +163,11 @@ static BOOL CDTISCheckEntityVersions = NO;
 static BOOL CDTISFixUpDatabaseName = NO;
 
 /**
+ *  Check for the exisitence of subentities that we may be ignorning
+ */
+static BOOL CDTISCheckForSubEntities = NO;
+
+/**
  *  This is how I like to assert, it stops me in the debugger.
  *
  *  *Why not use exceptions?*
@@ -858,13 +863,13 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
  *  * encoded object
  *
  *  @param attribute The attribute
- *  @param obj       The object
+ *  @param value     The object
  *  @param error     Error
  *
  *  @return Encoded array
  */
 - (NSDictionary *)encodeAttribute:(NSAttributeDescription *)attribute
-                       withObject:(id)obj
+                        withValue:(id)value
                         blobStore:(NSMutableDictionary *)blobStore
                             error:(NSError **)error
 {
@@ -872,7 +877,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     NSString *name = attribute.name;
 
     // Keep this
-    if (!obj) oops(@"no nil allowed");
+    if (!value) oops(@"no nil allowed");
 
     switch (type) {
         case NSUndefinedAttributeType: {
@@ -888,7 +893,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             return nil;
         }
         case NSStringAttributeType: {
-            NSString *str = obj;
+            NSString *str = value;
             return @{
                 name : str,
             };
@@ -897,20 +902,20 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         case NSInteger16AttributeType:
         case NSInteger32AttributeType:
         case NSInteger64AttributeType: {
-            NSNumber *num = obj;
+            NSNumber *num = value;
             return @{
                 name : num,
             };
         }
         case NSDateAttributeType: {
-            NSDate *date = obj;
+            NSDate *date = value;
             NSNumber *since = [NSNumber numberWithDouble:[date timeIntervalSince1970]];
             return @{
                 name : since,
             };
         }
         case NSBinaryDataAttributeType: {
-            NSData *data = obj;
+            NSData *data = value;
             NSString *mimeType = @"application/octet-stream";
             NSString *bytes =
                 [self encodeBlob:data withName:name inStore:blobStore withMIMEType:mimeType];
@@ -931,9 +936,9 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 }
                 id xform = [[myClass alloc] init];
                 // use reverseTransformedValue to come back
-                save = [xform transformedValue:obj];
+                save = [xform transformedValue:value];
             } else {
-                save = [NSKeyedArchiver archivedDataWithRootObject:obj];
+                save = [NSKeyedArchiver archivedDataWithRootObject:value];
             }
             NSString *bytes =
                 [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
@@ -943,14 +948,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         case NSObjectIDAttributeType: {
             // I don't think converting to a ref is needed, besides we
             // would need the entity id to decode.
-            NSManagedObjectID *oid = obj;
+            NSManagedObjectID *oid = value;
             NSURL *uri = [oid URIRepresentation];
             return @{
                 name : [uri absoluteString],
             };
         }
         case NSDecimalAttributeType: {
-            NSDecimalNumber *dec = obj;
+            NSDecimalNumber *dec = value;
             NSString *desc = [dec description];
             NSDecimal val = [dec decimalValue];
             NSData *data = [NSData dataWithBytes:&val length:sizeof(val)];
@@ -966,7 +971,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             return @{name : desc, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
         }
         case NSDoubleAttributeType: {
-            NSNumber *num = obj;
+            NSNumber *num = value;
             double dbl = [num doubleValue];
             NSNumber *i64 = @(*(int64_t *)&dbl);
             NSMutableDictionary *meta = [NSMutableDictionary dictionary];
@@ -994,7 +999,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         }
 
         case NSFloatAttributeType: {
-            NSNumber *num = obj;
+            NSNumber *num = value;
             float flt = [num floatValue];
             NSNumber *i32 = @(*(int32_t *)&flt);
             NSMutableDictionary *meta = [NSMutableDictionary dictionary];
@@ -1023,7 +1028,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     if (error) {
         NSString *str = [NSString
             localizedStringWithFormat:@"type %@: is not of " @"NSNumber: %@ = %@", @(type),
-                                      attribute.name, NSStringFromClass([obj class])];
+                                      attribute.name, NSStringFromClass([value class])];
         *error = [NSError errorWithDomain:CDTISErrorDomain
                                      code:CDTISErrorNaN
                                  userInfo:@{NSLocalizedDescriptionKey : str}];
@@ -1061,26 +1066,26 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
  *  Encode a complete relation, both "to-one" and "to-many"
  *
  *  @param rel   relation
- *  @param obj   object
+ *  @param value   object
  *  @param error error
  *
  *  @return the dictionary
  */
 - (NSDictionary *)encodeRelation:(NSRelationshipDescription *)rel
-                      withObject:(id)obj
+                       withValue:(id)value
                            error:(NSError **)error
 {
     NSString *name = rel.name;
 
     if (!rel.isToMany) {
-        NSManagedObject *mo = obj;
+        NSManagedObject *mo = value;
         NSString *enc = [self encodeRelationFromManagedObject:mo];
         return @{
             name : enc,
         };
     }
     NSMutableArray *ids = [NSMutableArray array];
-    for (NSManagedObject *mo in obj) {
+    for (NSManagedObject *mo in value) {
         if (!mo) oops(@"nil mo");
 
         NSString *enc = [self encodeRelationFromManagedObject:mo];
@@ -1111,18 +1116,24 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         if ([prop isTransient]) {
             continue;
         }
-        id obj = [mo valueForKey:name];
+        id value = [mo valueForKey:name];
         NSDictionary *enc = nil;
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
-            if (!obj) {
+            if (!value) {
                 // don't even process nil objects
                 continue;
             }
-            enc = [self encodeAttribute:att withObject:obj blobStore:blobStore error:&err];
+            enc = [self encodeAttribute:att withValue:value blobStore:blobStore error:&err];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
-            enc = [self encodeRelation:rel withObject:obj error:&err];
+            enc = [self encodeRelation:rel withValue:value error:&err];
+        } else if ([prop isKindOfClass:[NSFetchedPropertyDescription class]]) {
+            /**
+             *  The incremental store should never see this, if it did it would
+             * make NoSQL "views" interesting
+             */
+            [NSException raise:CDTISException format:@"Fetched property?: %@", prop];
         } else {
             [NSException raise:CDTISException format:@"unknown property: %@", prop];
         }
@@ -1135,10 +1146,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         [props addEntriesFromDictionary:enc];
     }
 
-    // just checking
-    NSArray *entitySubs = [[mo entity] subentities];
-    if ([entitySubs count] > 0) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: subentities: %@", CDTISType, entitySubs);
+    if (CDTISCheckForSubEntities) {
+        NSArray *entitySubs = [[mo entity] subentities];
+        if ([entitySubs count] > 0) {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: subentities: %@", CDTISType, entitySubs);
+        }
     }
     return [NSDictionary dictionaryWithDictionary:props];
 }
@@ -1197,20 +1209,20 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     id prop = body[name];
     NSDictionary *meta = body[MakeMeta(name)];
 
-    id obj;
+    id value;
 
     switch (type) {
         case NSStringAttributeType:
         case NSBooleanAttributeType:
-            obj = prop;
+            value = prop;
             break;
         case NSDateAttributeType: {
             NSNumber *since = prop;
-            obj = [NSDate dateWithTimeIntervalSince1970:[since doubleValue]];
+            value = [NSDate dateWithTimeIntervalSince1970:[since doubleValue]];
         } break;
         case NSBinaryDataAttributeType: {
             NSString *uname = prop;
-            obj = [self decodeBlob:uname fromStore:blobStore];
+            value = [self decodeBlob:uname fromStore:blobStore];
         } break;
         case NSTransformableAttributeType: {
             NSString *xname = [self xformFromDoc:body withName:name];
@@ -1219,9 +1231,9 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             if (xname) {
                 id xform = [[NSClassFromString(xname) alloc] init];
                 // is the xform guaranteed to handle nil?
-                obj = [xform reverseTransformedValue:restore];
+                value = [xform reverseTransformedValue:restore];
             } else {
-                obj = [NSKeyedUnarchiver unarchiveObjectWithData:restore];
+                value = [NSKeyedUnarchiver unarchiveObjectWithData:restore];
             }
         } break;
         case NSObjectIDAttributeType: {
@@ -1229,48 +1241,48 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSURL *uri = [NSURL URLWithString:str];
             NSManagedObjectID *moid =
                 [self.persistentStoreCoordinator managedObjectIDForURIRepresentation:uri];
-            obj = moid;
+            value = moid;
         } break;
         case NSDecimalAttributeType: {
             NSString *b64 = meta[CDTISDecimalImageKey];
             NSData *data = [[NSData alloc] initWithBase64EncodedString:b64 options:0];
             NSDecimal val;
             [data getBytes:&val length:sizeof(val)];
-            obj = [NSDecimalNumber decimalNumberWithDecimal:val];
+            value = [NSDecimalNumber decimalNumberWithDecimal:val];
         } break;
         case NSDoubleAttributeType: {
             // just get the image
             NSNumber *i64Num = meta[CDTISDoubleImageKey];
             int64_t i64 = [i64Num longLongValue];
             NSNumber *num = @(*(double *)&i64);
-            obj = num;
+            value = num;
         } break;
         case NSFloatAttributeType: {
             // just get the image
             NSNumber *i32Num = meta[CDTISFloatImageKey];
             int32_t i32 = (int32_t)[i32Num integerValue];
             NSNumber *num = @(*(float *)&i32);
-            obj = num;
+            value = num;
         } break;
         case NSInteger16AttributeType:
         case NSInteger32AttributeType:
         case NSInteger64AttributeType: {
             NSNumber *num = prop;
-            obj = num;
+            value = num;
         } break;
         case CDTISRelationToOneType: {
             NSString *ref = prop;
             NSString *entityName = [self destinationFromDoc:body withName:name];
             if (entityName.length == 0) {
-                obj = [NSNull null];
+                value = [NSNull null];
             } else {
                 NSManagedObjectID *moid =
                     [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
-                // we cannot return nil
                 if (!moid) {
-                    obj = [NSNull null];
+                // Our relation desitination object has not been assigned
+                    value = [NSNull null];
                 } else {
-                    obj = moid;
+                    value = moid;
                 }
             }
         } break;
@@ -1282,7 +1294,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             break;
     }
 
-    return obj;
+    return value;
 }
 
 #pragma mark - database methods
@@ -1411,11 +1423,10 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         }
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
-            enc =
-                [self encodeAttribute:att withObject:changed[name] blobStore:blobStore error:&err];
+            enc = [self encodeAttribute:att withValue:changed[name] blobStore:blobStore error:&err];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
-            enc = [self encodeRelation:rel withObject:changed[name] error:&err];
+            enc = [self encodeRelation:rel withValue:changed[name] error:&err];
         } else {
             oops(@"bad prop?");
         }
@@ -1563,17 +1574,17 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             continue;
         }
 
-        id obj = [self decodeProperty:name
-                              fromDoc:rev.body
-                        withBlobStore:rev.attachments
-                          withContext:context];
-        if (!obj) {
+        id value = [self decodeProperty:name
+                                fromDoc:rev.body
+                          withBlobStore:rev.attachments
+                            withContext:context];
+        if (!value) {
             // Dictionaries do not take nil, but Values can't have NSNull.
             // Apparently we just skip it and the properties faults take care
             // of it
             continue;
         }
-        values[name] = obj;
+        values[name] = value;
     }
 
     return [NSDictionary dictionaryWithDictionary:values];
@@ -1881,8 +1892,8 @@ static NSString *fixupName(NSString *name)
                                              fieldName:CDTISEntityNameKey
                                                  error:&err]) {
         if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@",
-                    CDTISType, self.databaseName, err);
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@", CDTISType,
+                    self.databaseName, err);
         return NO;
     }
 
@@ -2515,12 +2526,12 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSString *groupKey = [groupProp name];
     NSMutableDictionary *group = [NSMutableDictionary dictionary];
     for (CDTDocumentRevision *rev in hits) {
-        id obj = rev.body[groupKey];
-        NSArray *revList = group[obj];
+        id value = rev.body[groupKey];
+        NSArray *revList = group[value];
         if (revList) {
-            group[obj] = [revList arrayByAddingObject:rev];
+            group[value] = [revList arrayByAddingObject:rev];
         } else {
-            group[obj] = @[ rev ];
+            group[value] = @[ rev ];
         }
     }
 
