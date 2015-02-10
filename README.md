@@ -75,6 +75,20 @@ $ open Project.xcworkspace
 
 See [CONTRIBUTING](CONTRIBUTING.md).
 
+## Tested Platforms
+
+CDTDatastore gets regularly tested on the following platforms:
+
+- OS X 10.10.2 (Yosemite)
+- iPhone 4S (Simulator), iOS 8.1 and 7.1
+- iPhone 5 (Simulator), iOS 8.1 and 7.1
+- iPhone 5S (Simulator), iOS 8.1 and 7.1
+- iPhone 6 Plus (Simulator), iOS 8.1
+- iPhone 6 (Simulator), iOS 8.1
+- iPad 2 (Simulator), iOS 8.1 and 7.1
+- iPad Air (Simulator), iOS 8.1 and 7.1
+- iPad Retina (Simulator), iOS 8.1 and 7.1  
+
 ## <a name="overview"></a>Overview of the library
 
 Once the libraries are added to a project, the basics of adding and reading
