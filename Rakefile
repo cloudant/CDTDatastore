@@ -47,7 +47,7 @@ end
 
 desc "pod update all included projects"
 task :podupdate do
-  sh "cd Tests ; pod update ; cd ../ReplicationAcceptance ; pod update ; cd .."
+  sh "for i in Tests ReplicationAcceptance Project\ndo\ncd $i ; pod update ; cd ..\ndone"
 end
 
 desc "Run the replication acceptance tests"
