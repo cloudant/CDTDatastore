@@ -347,19 +347,12 @@ All other documents should follow the following schema:
             }
         },
 
-        // Floating Point Special values like NaN and +/-Infinity
-        // cannot be sotred as JSON, so we have added extra properties
-        // to capture this.
-		// JX: I don't know how to reference this correctly so I have
-		// it blown out below
-        "metaDataForFloatSpecial": {
-            "id": "#metaDataForFloatSpecial",
-            "type": "object",
-            "properties": {
-                "infinity": { "type": "boolean" },
-                "-infinity": { "type": "boolean" },
-                "nan": { "type": "boolean" }
-            }
+        // Floating Non-Finite values like NaN and +/-Infinity
+        // cannot be stored as JSON, so we have added an extra
+        // property to capture this.
+        "metaDataForFloatNonFinite": {
+            "id": "#metaDataForFloatNonFinite",
+            "enum": [ "infinity", "-infinity", "nan" ]
         },
 
         // IEEE single precision floating point values are
@@ -371,9 +364,7 @@ All other documents should follow the following schema:
             "type": "object",
             "required": [ "ieee754_single" ],
             "properties": {
-                "infinity": { "type": "boolean" },
-                "-infinity": { "type": "boolean" },
-                "nan": { "type": "boolean" },
+                "nonFinite": { "$ref": "#/definitions/metaDataForFloatNonFinite" },
                 "ieee754_single": {"type": "integer" }
             }
         },
@@ -387,9 +378,7 @@ All other documents should follow the following schema:
             "type": "object",
             "required": [ "ieee754_double" ],
             "properties": {
-                "infinity": { "type": "boolean" },
-                "-infinity": { "type": "boolean" },
-                "nan": { "type": "boolean" },
+                "nonFinite": { "$ref": "#/definitions/metaDataForFloatNonFinite" },
                 "ieee754_double": {"type": "integer" }
             }
         },
@@ -403,9 +392,7 @@ All other documents should follow the following schema:
             "type": "object",
             "required": [ "nsdecimal" ],
             "properties": {
-                "infinity": { "type": "boolean" },
-                "-infinity": { "type": "boolean" },
-                "nan": { "type": "boolean" },
+                "nonFinite": { "$ref": "#/definitions/metaDataForFloatNonFinite" },
                 "nsdecimal": {"type": "string" }
             }
         },

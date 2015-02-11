@@ -67,9 +67,10 @@ static NSString *const CDTISFloatAttributeType = @"float";
 static NSString *const CDTISDoubleAttributeType = @"double";
 
 // encodings for floating point special values
-static NSString *const CDTISFPInfinityKey = @"infinity";
-static NSString *const CDTISFPNegInfinityKey = @"-infinity";
-static NSString *const CDTISFPNaNKey = @"nan";
+static NSString *const CDTISFPNonFiniteKey = @"nonFinite";
+static NSString *const CDTISFPInfinity = @"infinity";
+static NSString *const CDTISFPNegInfinity = @"-infinity";
+static NSString *const CDTISFPNaN = @"nan";
 
 static NSString *const CDTISPropertiesKey = @"properties";
 static NSString *const CDTISPropertyNameKey = @"typeName";
@@ -963,11 +964,18 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             meta[CDTISDecimalImageKey] = b64;
 
             if ([dec isEqual:[NSDecimalNumber notANumber]]) {
-                meta[CDTISFPNaNKey] = @"true";
-                desc = @"0";
+                meta[CDTISFPNonFiniteKey] = CDTISFPNaN;
+                desc = nil;
             }
-
-            return @{name : desc, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            if (desc) {
+                return
+                    @{name : desc, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            } else {
+                return @{
+                    name : [NSNull null],
+                    MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                };
+            }
         }
         case NSDoubleAttributeType: {
             NSNumber *num = value;
@@ -978,16 +986,16 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 
             if ([num isEqual:@(INFINITY)]) {
                 num = @(DBL_MAX);
-                meta[CDTISFPInfinityKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPInfinity;
             }
             if ([num isEqual:@(-INFINITY)]) {
                 num = @(-DBL_MAX);
-                meta[CDTISFPNegInfinityKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPNegInfinity;
             }
             // we use null if it is NaN that way it will not get evaluated as a predicate
             if ([num isEqual:@(NAN)]) {
                 num = nil;
-                meta[CDTISFPNaNKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPNaN;
             }
             if (num) {
                 // NSDecimalNumber "description" is the closest thing we will get
@@ -1010,17 +1018,17 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 
             if ([num isEqual:@(INFINITY)]) {
                 num = @(FLT_MAX);
-                meta[CDTISFPInfinityKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPInfinity;
             }
             if ([num isEqual:@(-INFINITY)]) {
                 num = @(-FLT_MAX);
-                meta[CDTISFPNegInfinityKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPNegInfinity;
             }
 
             // we use null if it is NaN that way it will not get evaluated as a
             // predicate
             if ([num isEqual:@(NAN)]) {
-                meta[CDTISFPNaNKey] = @"true";
+                meta[CDTISFPNonFiniteKey] = CDTISFPNaN;
                 num = nil;
             }
             if (num) {
