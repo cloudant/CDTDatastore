@@ -282,6 +282,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
         // check will indicate if value is an even number
         e.check = (i % 2) ? @NO : @YES;
         e.i64 = @(i);
+        e.fpFloat = @(((float)(M_PI)) * (float)i);
         e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
     }
 
@@ -505,31 +506,54 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
         XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
                                      CDTISException, @"Expected Exception");
-        return;
-    }
+    } else {
+        /**
+         *  fetch both with or
+         */
+        NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
+        fr.predicate = both;
 
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+
+        XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
+                      @([results count]));
+
+        /**
+         *  Fetch none with AND, yes I know this is nonsense
+         */
+        NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
+        fr.predicate = none;
+
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+
+        XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0,
+                      @([results count]));
+    }
     /**
-     *  fetch both with or
+     *  test predicates with Floats see if NaN shows up
      */
-    NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
-    fr.predicate = both;
+    NSPredicate *floatPi = [NSPredicate predicateWithFormat:@"fpFloat <= %f", M_PI * 2];
+    fr.predicate = floatPi;
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
+    XCTAssertTrue([results count] == 3, @"results count should be %d is %@", 3,
                   @([results count]));
 
-    /**
-     *  Fetch none with AND, yes I know this is nonsense
-     */
-    NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
-    fr.predicate = none;
+    // make one of them NaN
+    Entry *nan = [results firstObject];
+    nan.fpFloat = @((float)NAN);
 
+    // push it out
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0, @([results count]));
+    XCTAssertTrue([results count] == 2, @"results count should be %d is %@", 2,
+                  @([results count]));
 }
 
 - (void)testFetchConstraints
