@@ -984,19 +984,23 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 num = @(-DBL_MAX);
                 meta[CDTISFPNegInfinityKey] = @"true";
             }
+            // we use null if it is NaN that way it will not get evaluated as a predicate
             if ([num isEqual:@(NAN)]) {
-                num = @(0);  // not sure what to do here
-                dbl = 0.;
+                num = nil;
                 meta[CDTISFPNaNKey] = @"true";
             }
-
-            // NSDecimalNumber "description" is the closest thing we will get
-            // to an arbitrary precision number in JSON, so lets use it.
-            NSDecimalNumber *dec = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:dbl];
-            NSString *str = [dec description];
-            return @{name : str, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            if (num) {
+                // NSDecimalNumber "description" is the closest thing we will get
+                // to an arbitrary precision number in JSON, so lets use it.
+                NSDecimalNumber *dec = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:dbl];
+                NSString *str = [dec description];
+                return @{name : str, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            }
+            return @{
+                name : [NSNull null],
+                MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+            };
         }
-
         case NSFloatAttributeType: {
             NSNumber *num = value;
             float flt = [num floatValue];
@@ -1012,14 +1016,21 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 num = @(-FLT_MAX);
                 meta[CDTISFPNegInfinityKey] = @"true";
             }
+
+            // we use null if it is NaN that way it will not get evaluated as a
+            // predicate
             if ([num isEqual:@(NAN)]) {
-                num = @(0);  // not sure what to do here
                 meta[CDTISFPNaNKey] = @"true";
+                num = nil;
             }
-
-            return @{name : num, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            if (num) {
+                return @{name : num, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+            }
+            return @{
+                name : [NSNull null],
+                MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+            };
         }
-
         default:
             break;
     }
@@ -1278,7 +1289,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 NSManagedObjectID *moid =
                     [self decodeRelationFromEntityName:entityName withRef:ref withContext:context];
                 if (!moid) {
-                // Our relation desitination object has not been assigned
+                    // Our relation desitination object has not been assigned
                     value = [NSNull null];
                 } else {
                     value = moid;
@@ -1286,6 +1297,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             }
         } break;
         case CDTISRelationToManyType:
+            // See the check at the top of this function
             oops(@"this is deferred to newValueForRelationship");
             break;
         default:
