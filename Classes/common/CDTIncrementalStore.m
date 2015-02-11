@@ -19,7 +19,6 @@
 #pragma mark - properties
 @interface CDTIncrementalStore () <CDTReplicatorDelegate>
 
-@property (nonatomic, strong) NSString *databaseName;
 @property (nonatomic, strong) CDTDatastoreManager *manager;
 @property (nonatomic, strong) CDTDatastore *datastore;
 @property (nonatomic, strong) NSURL *localURL;

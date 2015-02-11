@@ -102,6 +102,13 @@ typedef NS_ENUM(NSInteger, CDTISReplicateDirection) {
  */
 + (NSArray *)storesFromCoordinator:(NSPersistentStoreCoordinator *)coordinator;
 
+/**
+ *  The databaseName is exposed in order to be able to identify the different
+ *  CDTIncrementalStore objects. @see +storesFromCoordinator:coordinator
+ */
+@property (nonatomic, strong) NSString *databaseName;
+
+
 typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
     CDTISErrorBadURL = 1,
     CDTISErrorBadPath,
