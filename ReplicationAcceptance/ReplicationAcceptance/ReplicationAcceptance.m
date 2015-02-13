@@ -36,7 +36,6 @@
 #import "TDRemoteRequest.h"
 #import "ChangeTrackerDelegate.h"
 #import "ChangeTrackerNSURLProtocolTimedOut.h"
-#import "TD_DatabaseManager.h"
 #import "TDInternal.h"
 
 @interface ReplicationAcceptance () 

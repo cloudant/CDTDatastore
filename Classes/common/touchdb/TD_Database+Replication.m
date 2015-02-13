@@ -18,6 +18,7 @@
 #import "TD_Database+Replication.h"
 #import "TDInternal.h"
 #import "TDPuller.h"
+#import "TDJSON.h"
 #import "MYBlockUtils.h"
 
 #import "FMDatabase.h"
@@ -66,25 +67,36 @@
         [_activeReplicators removeObjectIdenticalTo:repl];
 }
 
-- (NSString *)lastSequenceWithCheckpointID:(NSString *)checkpointID
+- (NSObject*)lastSequenceWithCheckpointID:(NSString *)checkpointID
 {
     // This table schema is out of date but I'm keeping it the way it is for compatibility.
     // The 'remote' column now stores the opaque checkpoint IDs, and 'push' is ignored.
-    __block NSString *result = nil;
+    __block NSData *lastSequenceJson = nil;
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
-        result = [db
-            stringForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?", checkpointID];
+        lastSequenceJson = [db
+            dataForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?", checkpointID];
+        
     }];
-    return result;
+    if (lastSequenceJson != nil) {
+        NSDictionary *lastSequence = [TDJSON JSONObjectWithData:lastSequenceJson options:0 error:nil];
+        // the sequence is saved as a json dict of {"seq": <data>}
+        return lastSequence[@"seq"];
+    } else {
+        return nil;
+    }
 }
 
-- (BOOL)setLastSequence:(NSString *)lastSequence withCheckpointID:(NSString *)checkpointID
+- (BOOL)setLastSequence:(NSObject*)lastSequence withCheckpointID:(NSString *)checkpointID
 {
     __block BOOL result;
+    id lastSequenceJson;
+    // write the sequence as a json dict of {"seq": <data>}
+    NSDictionary *dict = @{@"seq": lastSequence};
+    lastSequenceJson = [TDJSON dataWithJSONObject:dict options:0 error:nil];
     [_fmdbQueue inDatabase:^(FMDatabase *db) {
         result = [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
                                    @"last_sequence) VALUES (?, -1, ?)",
-                                   checkpointID, lastSequence];
+                                   checkpointID, lastSequenceJson];
     }];
     return result;
 }

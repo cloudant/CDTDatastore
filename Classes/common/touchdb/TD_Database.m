@@ -244,7 +244,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         int dbVersion = [db intForQuery:@"PRAGMA user_version"];
 
         // Incompatible version changes increment the hundreds' place:
-        if (dbVersion >= 100) {
+        if (dbVersion >= 200) {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                     @"TD_Database: Database version (%d) is newer than I know how to work with",
                     dbVersion);
@@ -367,7 +367,33 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                 result = NO;
                 return;
             }
-            // dbVersion = 6;
+            dbVersion = 6;
+        }
+        
+        if (dbVersion < 100) {
+            // Version 100: upgrade replicators.last_sequence to a json dict of {"seq": <data>}
+            FMResultSet *replicators = [db executeQuery:@"SELECT rowid, last_sequence FROM replicators"];
+            
+            while ([replicators next]) {
+                NSUInteger rowid = [replicators longForColumn:@"rowid"];
+                NSData *lastSequence = [replicators dataForColumn:@"last_sequence"];
+                NSDictionary *lastSequenceJsonMaybe = [TDJSON JSONObjectWithData:lastSequence options:0 error:nil];
+                if (lastSequenceJsonMaybe == nil) {
+                    // sequence not in json format, so upgrade it
+                    NSString *lastSequenceString = [replicators stringForColumn:@"last_sequence"];
+                    // the sequence might have been a number, or a string "<number-base64>"
+                    NSDictionary *dict = @{@"seq": lastSequenceString};
+                    NSData *lastSequenceJson = [TDJSON dataWithJSONObject:dict options:0 error:nil];
+                    [db executeUpdate:@"UPDATE replicators SET last_sequence=? WHERE rowid=?", lastSequenceJson, @(rowid)];
+                }
+            }
+            
+            // upgrade the schema version without any updates (since our updates were in the code above)
+            if (![strongSelf migrateWithUpdates:nil queries:nil version:100 inDatabase:db]) {
+                result = NO;
+                return;
+            }
+            // dbVersion = 100;
         }
 
 #if DEBUG

@@ -67,13 +67,14 @@
     if (_creatingTarget) return;
 
     _pendingSequences = [NSMutableIndexSet indexSet];
-    _maxPendingSequence = self.lastSequence.longLongValue;
+    // in TDPusher, _lastSequence is always an NSNumber
+    _maxPendingSequence = [(NSNumber*)_lastSequence longLongValue];
 
     // Include conflicts so all conflicting revisions are replicated too
     TDChangesOptions options = kDefaultTDChangesOptions;
     options.includeConflicts = YES;
     // Process existing changes since the last push:
-    [self addRevsToInbox:[_db changesSinceSequence:[_lastSequence longLongValue]
+    [self addRevsToInbox:[_db changesSinceSequence:_maxPendingSequence
                                            options:&options
                                             filter:self.filter
                                             params:_filterParameters]];
@@ -152,7 +153,7 @@
             maxCompleted = _maxPendingSequence;
         else
             --maxCompleted;
-        self.lastSequence = $sprintf(@"%lld", maxCompleted);
+        self.lastSequence = [NSNumber numberWithUnsignedLongLong:maxCompleted];
     }
 }
 

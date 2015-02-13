@@ -9,6 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <CloudantSync.h>
 #import "CloudantSyncTests.h"
+#import "TDInternal.h"
+#import "FMDatabase.h"
+#import "FMDatabaseQueue.h"
 
 @interface DatastoreManagerTests : CloudantSyncTests
 
@@ -57,6 +60,29 @@
                    @"Wrong number of datastores returned, expected 0 got %d",
                    [datastores count]);
 
+}
+
+-(void) testSchema6ToSchema100Upgrade {
+    NSError *err;
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSString *dbPath = [bundle pathForResource:@"schema6to7upgrade" ofType:@"touchdb"];
+    CDTDatastoreManager *customFactory = [[CDTDatastoreManager alloc ]initWithDirectory:[dbPath stringByDeletingLastPathComponent] error:&err];
+    CDTDatastore *store = [customFactory datastoreNamed:[[dbPath lastPathComponent] stringByDeletingPathExtension] error:&err];
+    
+    NSMutableArray *remotes = [NSMutableArray array];
+    [[[store database] fmdbQueue] inDatabase:^(FMDatabase *db) {
+        FMResultSet *replicators = [db executeQuery:@"SELECT remote FROM replicators"];
+        while ([replicators next]) {
+            NSString *remoteId = [replicators stringForColumn:@"remote"];
+            [remotes addObject:remoteId];
+        }
+    }];
+
+    // check that we get back the upgraded sequence numbers
+    for (NSString *remote in remotes) {
+        NSObject *sequence = [[store database] lastSequenceWithCheckpointID:remote];
+        XCTAssertNotNil(sequence);
+    }
 }
 
 @end
