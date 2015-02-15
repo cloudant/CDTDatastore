@@ -30,6 +30,10 @@ typedef NS_ENUM(NSInteger, CDTISReplicateDirection) {
 
 @interface CDTIncrementalStore : NSIncrementalStore
 
+@property (nonatomic, strong) CDTDatastore *datastore;
+
+- (NSInteger)propertyTypeFromDoc:(NSDictionary *)body withName:(NSString *)name;
+
 /**
 *  Cause the store to push to the remote database
 *  > *Note*: does not block

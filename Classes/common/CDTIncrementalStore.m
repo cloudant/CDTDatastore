@@ -12,15 +12,14 @@
 #import <CDTLogging.h>
 
 #import "CDTIncrementalStore.h"
+#import "CDTISObjectModel.h"
 #import "CDTFieldIndexer.h"
-
-@class CDTISObjectModel;
+#import "CDTISGraphviz.h"
 
 #pragma mark - properties
 @interface CDTIncrementalStore () <CDTReplicatorDelegate>
 
 @property (nonatomic, strong) CDTDatastoreManager *manager;
-@property (nonatomic, strong) CDTDatastore *datastore;
 @property (nonatomic, strong) NSURL *localURL;
 @property (nonatomic, strong) NSURL *remoteURL;
 @property (nonatomic, strong) CDTIndexManager *indexManager;
@@ -37,7 +36,7 @@
 /**
  *  This holds the "dot" directed graph, see [dotMe](@ref dotMe)
  */
-@property (nonatomic, strong) NSData *dotData;
+@property (nonatomic, strong) CDTISGraphviz *graph;
 
 @end
 
@@ -48,57 +47,15 @@ NSString *const CDTISException = @"CDTIncrementalStoreException";
 
 static NSString *const CDTISType = @"CDTIncrementalStore";
 static NSString *const CDTISDirectory = @"cloudant-sync-datastore-incremental";
-static NSString *const CDTISPrefix = @"CDTIS";
-static NSString *const CDTISMeta = @"CDTISMeta_";
-static NSString *const CDTISMetaDataDocID = @"CDTISMetaData";
 
-#pragma mark - private keys
 static NSString *const CDTISObjectVersionKey = @"CDTISObjectVersion";
-static NSString *const CDTISEntityNameKey = @"CDTISEntityName";
 static NSString *const CDTISIdentifierKey = @"CDTISIdentifier";
 
 #pragma mark - property string type for backing store
-static NSString *const CDTISUndefinedAttributeType = @"undefined";
 
-static NSString *const CDTISInteger16AttributeType = @"int16";
-static NSString *const CDTISInteger32AttributeType = @"int32";
-static NSString *const CDTISInteger64AttributeType = @"int64";
-static NSString *const CDTISFloatAttributeType = @"float";
-static NSString *const CDTISDoubleAttributeType = @"double";
-
-// encodings for floating point special values
-static NSString *const CDTISFPNonFiniteKey = @"nonFinite";
-static NSString *const CDTISFPInfinity = @"infinity";
-static NSString *const CDTISFPNegInfinity = @"-infinity";
-static NSString *const CDTISFPNaN = @"nan";
-
-static NSString *const CDTISPropertiesKey = @"properties";
-static NSString *const CDTISPropertyNameKey = @"typeName";
-static NSString *const CDTISTypeStringKey = @"type";
-static NSString *const CDTISTransformerClassKey = @"xform";
-static NSString *const CDTISMIMETypeKey = @"mime-type";
-static NSString *const CDTISFloatImageKey = @"ieee754_single";
-static NSString *const CDTISDoubleImageKey = @"ieee754_double";
-static NSString *const CDTISDecimalImageKey = @"nsdecimal";
 static NSString *const CDTISMetaDataKey = @"metaData";
 static NSString *const CDTISRunKey = @"run";
 static NSString *const CDTISObjectModelKey = @"objectModel";
-static NSString *const CDTISVersionHashKey = @"versionHash";
-static NSString *const CDTISRelationDesitinationKey = @"destination";
-
-static NSString *const CDTISDecimalAttributeTypeStr = @"decimal";
-static NSString *const CDTISStringAttributeTypeStr = @"utf8";
-static NSString *const CDTISBooleanAttributeTypeStr = @"bool";
-static NSString *const CDTISDateAttributeTypeStr = @"date1970";
-static NSString *const CDTISBinaryDataAttributeTypeStr = @"binary";
-static NSString *const CDTISTransformableAttributeTypeStr = @"xform";
-static NSString *const CDTISObjectIDAttributeTypeStr = @"id";
-static NSString *const CDTISRelationToOneTypeStr = @"relation-to-one";
-static NSString *const CDTISRelationToManyTypeStr = @"relation-to-many";
-
-// These are in addition to NSAttributeType, which is unsigned
-static NSInteger const CDTISRelationToOneType = -1;
-static NSInteger const CDTISRelationToManyType = -2;
 
 #pragma mark - Code selection
 // allows selection of different code paths
@@ -166,435 +123,6 @@ static BOOL CDTISFixUpDatabaseName = NO;
  *  Check for the exisitence of subentities that we may be ignorning
  */
 static BOOL CDTISCheckForSubEntities = NO;
-
-/**
- *  This is how I like to assert, it stops me in the debugger.
- *
- *  *Why not use exceptions?*
- *  1. I can continue from this simply by using `jump +1`
- *  2. I don't need to "Add Exception Break-point"
- *  3. I don't need to hunt down which exception a test is using in an
- *  expected way
- *
- *  *Why is it a macro?*
- *  I want to stop *at* the `oops` line in the code and not have to "pop up"
- *  the stack if `oops` was not inlined due to optimization issues.
- *
- *  @param fmt A format string
- *  @param ... A comma-separated list of arguments to substitute into format.
- */
-#define oops(fmt, ...)                                                     \
-    do {                                                                   \
-        NSLog(@"%s:%u OOPS: %s", __FILE__, __LINE__, __PRETTY_FUNCTION__); \
-        NSLog(fmt, ##__VA_ARGS__);                                         \
-        fflush(stderr);                                                    \
-        __builtin_trap();                                                  \
-    } while (NO);
-
-static NSString *stringFromData(NSData *data)
-{
-    NSMutableString *s = [NSMutableString string];
-    const unsigned char *d = (const unsigned char *)[data bytes];
-    size_t sz = [data length];
-
-    for (size_t i = 0; i < sz; i++) {
-        [s appendString:[NSString stringWithFormat:@"%02x", d[i]]];
-    }
-    return [NSString stringWithString:s];
-}
-
-static NSData *dataFromString(NSString *str)
-{
-    char buf[3] = {0};
-
-    size_t sz = [str length];
-
-    if (sz % 2) {
-        oops(@"must be even number of characters (%zd): %@", sz, str);
-    }
-
-    unsigned char *bytes = malloc(sz / 2);
-    unsigned char *bp = bytes;
-    for (size_t i = 0; i < sz; i += 2) {
-        buf[0] = [str characterAtIndex:i];
-        buf[1] = [str characterAtIndex:i + 1];
-        char *chk = NULL;
-        *bp = strtol(buf, &chk, 16);
-        if (chk != buf + 2) {
-            oops(@"bad character around %zd: %@", i, str);
-        }
-        ++bp;
-    }
-
-    return [NSData dataWithBytesNoCopy:bytes length:sz / 2 freeWhenDone:YES];
-}
-
-@interface CDTISProperty : NSObject
-// Information about the object
-@property (nonatomic) BOOL isRelationship;
-@property (strong, nonatomic) NSString *typeName;
-@property (nonatomic) NSInteger typeCode;
-@property (strong, nonatomic) NSString *xform;
-@property (strong, nonatomic) NSString *destination;
-@property (strong, nonatomic) NSData *versionHash;
-
-- (instancetype)initWithAttribute:(NSAttributeDescription *)attribute;
-- (instancetype)initWithRelationship:(NSRelationshipDescription *)relationship;
-- (instancetype)initWithDictionary:(NSDictionary *)dic;
-- (NSDictionary *)dictionary;
-@end
-
-@implementation CDTISProperty
-
-/**
- * Defines the attribute meta data that is stored in the object.
- *
- *  @param att
- *
- *  @return initialized object
- */
-- (instancetype)initWithAttribute:(NSAttributeDescription *)attribute
-{
-    self = [super init];
-    if (self) {
-        _isRelationship = NO;
-        NSAttributeType type = attribute.attributeType;
-        _typeCode = type;
-        _versionHash = attribute.versionHash;
-
-        switch (type) {
-            case NSUndefinedAttributeType:
-                _typeName = @"NSUndefinedAttributeType";
-                break;
-
-            case NSStringAttributeType:
-                _typeName = CDTISStringAttributeTypeStr;
-                break;
-
-            case NSBooleanAttributeType:
-                _typeName = CDTISBooleanAttributeTypeStr;
-                break;
-
-            case NSDateAttributeType:
-                _typeName = CDTISDateAttributeTypeStr;
-                break;
-
-            case NSBinaryDataAttributeType:
-                _typeName = CDTISBinaryDataAttributeTypeStr;
-                break;
-
-            case NSTransformableAttributeType:
-                _typeName = CDTISTransformableAttributeTypeStr;
-                _xform = [attribute valueTransformerName];
-                break;
-
-            case NSObjectIDAttributeType:
-                _typeName = CDTISObjectIDAttributeTypeStr;
-                break;
-
-            case NSDecimalAttributeType:
-                _typeName = CDTISDecimalAttributeTypeStr;
-                break;
-
-            case NSDoubleAttributeType:
-                _typeName = CDTISDoubleAttributeType;
-                break;
-
-            case NSFloatAttributeType:
-                _typeName = CDTISFloatAttributeType;
-                break;
-
-            case NSInteger16AttributeType:
-                _typeName = CDTISInteger16AttributeType;
-                break;
-
-            case NSInteger32AttributeType:
-                _typeName = CDTISInteger32AttributeType;
-                break;
-
-            case NSInteger64AttributeType:
-                _typeName = CDTISInteger64AttributeType;
-                break;
-
-            default:
-                return nil;
-        }
-    }
-    return self;
-}
-
-- (instancetype)initWithRelationship:(NSRelationshipDescription *)relationship
-{
-    self = [super init];
-    if (self) {
-        _isRelationship = YES;
-        _versionHash = relationship.versionHash;
-
-        NSEntityDescription *ent = [relationship destinationEntity];
-        _destination = [ent name];
-
-        if (relationship.isToMany) {
-            _typeName = CDTISRelationToManyTypeStr;
-            _typeCode = CDTISRelationToManyType;
-        } else {
-            _typeName = CDTISRelationToOneTypeStr;
-            _typeCode = CDTISRelationToOneType;
-        }
-    }
-    return self;
-}
-
-- (NSDictionary *)dictionary
-{
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    dic[CDTISPropertyNameKey] = self.typeName;
-    dic[CDTISVersionHashKey] = stringFromData(self.versionHash);
-
-    if (self.xform) {
-        dic[CDTISTransformerClassKey] = self.xform;
-    }
-    if (self.isRelationship && self.destination) {
-        dic[CDTISRelationDesitinationKey] = self.destination;
-    }
-    return [NSDictionary dictionaryWithDictionary:dic];
-}
-
-static NSInteger typeCodeFromName(NSString *name)
-{
-    if ([name isEqualToString:CDTISStringAttributeTypeStr]) {
-        return NSStringAttributeType;
-    }
-    if ([name isEqualToString:CDTISBooleanAttributeTypeStr]) {
-        return NSBooleanAttributeType;
-    }
-    if ([name isEqualToString:CDTISDateAttributeTypeStr]) {
-        return NSDateAttributeType;
-    }
-    if ([name isEqualToString:CDTISBinaryDataAttributeTypeStr]) {
-        return NSBinaryDataAttributeType;
-    }
-    if ([name isEqualToString:CDTISTransformableAttributeTypeStr]) {
-        return NSTransformableAttributeType;
-    }
-    if ([name isEqualToString:CDTISObjectIDAttributeTypeStr]) {
-        return NSObjectIDAttributeType;
-    }
-    if ([name isEqualToString:CDTISDecimalAttributeTypeStr]) {
-        return NSDecimalAttributeType;
-    }
-    if ([name isEqualToString:CDTISInteger16AttributeType]) {
-        return NSInteger16AttributeType;
-    }
-    if ([name isEqualToString:CDTISInteger32AttributeType]) {
-        return NSInteger16AttributeType;
-    }
-    if ([name isEqualToString:CDTISInteger64AttributeType]) {
-        return NSInteger16AttributeType;
-    }
-    if ([name isEqualToString:CDTISRelationToOneTypeStr]) {
-        return CDTISRelationToOneType;
-    }
-    if ([name isEqualToString:CDTISRelationToManyTypeStr]) {
-        return CDTISRelationToManyType;
-    }
-
-    return 0;
-}
-
-- (instancetype)initWithDictionary:(NSDictionary *)dic
-{
-    self = [super init];
-    if (self) {
-        _typeName = dic[CDTISPropertyNameKey];
-        _typeCode = typeCodeFromName(_typeName);
-        _versionHash = dataFromString(dic[CDTISVersionHashKey]);
-
-        _xform = dic[CDTISTransformerClassKey];
-        _destination = dic[CDTISRelationDesitinationKey];
-
-        if (_destination) {
-            _isRelationship = YES;
-        }
-    }
-    return self;
-}
-
-- (NSString *)description
-{
-    NSDictionary *dic = [self dictionary];
-    return [dic description];
-}
-
-@end
-
-@interface CDTISEntity : NSObject
-@property (strong, nonatomic) NSDictionary *properties;
-@property (strong, nonatomic) NSData *versionHash;
-
-- (instancetype)initWithEntities:(NSEntityDescription *)ent;
-- (NSDictionary *)dictionary;
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
-@end
-
-@implementation CDTISEntity : NSObject
-
-- (instancetype)initWithEntities:(NSEntityDescription *)ent
-{
-    self = [super init];
-    if (self) {
-        CDTISProperty *enc = nil;
-        NSMutableDictionary *props = [NSMutableDictionary dictionary];
-        for (id prop in [ent properties]) {
-            if ([prop isTransient]) {
-                continue;
-            }
-            if ([prop isKindOfClass:[NSAttributeDescription class]]) {
-                NSAttributeDescription *att = prop;
-                enc = [[CDTISProperty alloc] initWithAttribute:att];
-            } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
-                NSRelationshipDescription *rel = prop;
-                enc = [[CDTISProperty alloc] initWithRelationship:rel];
-            } else if ([prop isKindOfClass:[NSFetchedPropertyDescription class]]) {
-                oops(@"unexpected NSFetchedPropertyDescription");
-            } else {
-                oops(@"unknown property: %@", prop);
-            }
-            props[[prop name]] = enc;
-        }
-        _properties = props;
-        _versionHash = ent.versionHash;
-    }
-    return self;
-}
-
-- (NSDictionary *)dictionary
-{
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    for (NSString *name in self.properties) {
-        CDTISProperty *prop = self.properties[name];
-        dic[name] = [prop dictionary];
-    }
-    return @{
-        CDTISPropertiesKey : [NSDictionary dictionaryWithDictionary:dic],
-        CDTISVersionHashKey : stringFromData(self.versionHash)
-    };
-}
-
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary
-{
-    self = [super init];
-    if (self) {
-        NSString *vh = dictionary[CDTISVersionHashKey];
-        _versionHash = dataFromString(vh);
-
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-
-        NSDictionary *props = dictionary[CDTISPropertiesKey];
-        for (NSString *name in props) {
-            NSDictionary *desc = props[name];
-            dic[name] = [[CDTISProperty alloc] initWithDictionary:desc];
-        }
-        _properties = [NSDictionary dictionaryWithDictionary:dic];
-    }
-    return self;
-}
-
-- (NSString *)description
-{
-    NSDictionary *dic = [self dictionary];
-    return [dic description];
-}
-
-@end
-
-@interface CDTISObjectModel : NSObject
-@property (strong, nonatomic) NSDictionary *entities;
-
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)mom;
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary;
-- (NSDictionary *)dictionary;
-- (NSInteger)propertyTypeWithName:(NSString *)name withEntityName:(NSString *)ent;
-- (NSString *)destinationWithName:(NSString *)name withEntityName:(NSString *)ent;
-- (NSString *)xformWithName:(NSString *)name withEntityName:(NSString *)ent;
-- (NSDictionary *)versionHashes;
-@end
-
-@implementation CDTISObjectModel
-
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)mom
-{
-    self = [super init];
-    if (self) {
-        NSMutableDictionary *ents = [NSMutableDictionary dictionary];
-        for (NSEntityDescription *ent in mom.entities) {
-            if ([ent superentity]) {
-                continue;
-            }
-            ents[ent.name] = [[CDTISEntity alloc] initWithEntities:ent];
-        }
-        _entities = [NSDictionary dictionaryWithDictionary:ents];
-    }
-    return self;
-}
-
-- (NSDictionary *)dictionary
-{
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    for (NSString *name in self.entities) {
-        CDTISEntity *ent = self.entities[name];
-        dic[name] = [ent dictionary];
-    }
-    return [NSDictionary dictionaryWithDictionary:dic];
-}
-
-- (instancetype)initWithDictionary:(NSDictionary *)dictionary
-{
-    self = [super self];
-    if (self) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-
-        for (NSString *name in dictionary) {
-            NSDictionary *desc = dictionary[name];
-            dic[name] = [[CDTISEntity alloc] initWithDictionary:desc];
-        }
-        _entities = [NSDictionary dictionaryWithDictionary:dic];
-    }
-    return self;
-}
-
-- (NSInteger)propertyTypeWithName:(NSString *)name withEntityName:(NSString *)ent
-{
-    CDTISEntity *ents = self.entities[ent];
-    CDTISProperty *prop = ents.properties[name];
-    return prop.typeCode;
-}
-
-- (NSString *)destinationWithName:(NSString *)name withEntityName:(NSString *)ent
-{
-    CDTISEntity *ents = self.entities[ent];
-    CDTISProperty *prop = ents.properties[name];
-    return prop.destination;
-}
-
-- (NSString *)xformWithName:(NSString *)name withEntityName:(NSString *)ent
-{
-    CDTISEntity *ents = self.entities[ent];
-    CDTISProperty *prop = ents.properties[name];
-    return prop.xform;
-}
-
-- (NSDictionary *)versionHashes
-{
-    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    for (NSString *e in self.entities) {
-        CDTISEntity *ent = self.entities[e];
-        dic[e] = ent.versionHash;
-    }
-    return [NSDictionary dictionaryWithDictionary:dic];
-}
-
-- (NSString *)description { return [self.entities description]; }
-@end
 
 @implementation CDTIncrementalStore
 
@@ -693,8 +221,6 @@ static NSInteger typeCodeFromName(NSString *name)
     }
     return ref;
 }
-
-static NSString *MakeMeta(NSString *s) { return [CDTISMeta stringByAppendingString:s]; }
 
 static BOOL badEntityVersion(NSEntityDescription *entity, NSDictionary *metadata)
 {
@@ -921,7 +447,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 [self encodeBlob:data withName:name inStore:blobStore withMIMEType:mimeType];
             return @{
                 name : bytes,
-                MakeMeta(name) : @{CDTISMIMETypeKey : @"application/octet-stream"}
+                CDTISMakeMeta(name) : @{CDTISMIMETypeKey : @"application/octet-stream"}
             };
         }
         case NSTransformableAttributeType: {
@@ -943,7 +469,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
             NSString *bytes =
                 [self encodeBlob:save withName:name inStore:blobStore withMIMEType:mimeType];
 
-            return @{ name : bytes, MakeMeta(name) : @{CDTISMIMETypeKey : mimeType} };
+            return @{ name : bytes, CDTISMakeMeta(name) : @{CDTISMIMETypeKey : mimeType} };
         }
         case NSObjectIDAttributeType: {
             // I don't think converting to a ref is needed, besides we
@@ -968,12 +494,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 desc = nil;
             }
             if (desc) {
-                return
-                    @{name : desc, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+                return @{
+                    name : desc,
+                    CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                };
             } else {
                 return @{
                     name : [NSNull null],
-                    MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                    CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
                 };
             }
         }
@@ -1002,11 +530,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 // to an arbitrary precision number in JSON, so lets use it.
                 NSDecimalNumber *dec = (NSDecimalNumber *)[NSDecimalNumber numberWithDouble:dbl];
                 NSString *str = [dec description];
-                return @{name : str, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+                return @{
+                    name : str,
+                    CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                };
             }
             return @{
                 name : [NSNull null],
-                MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
             };
         }
         case NSFloatAttributeType: {
@@ -1032,11 +563,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
                 num = nil;
             }
             if (num) {
-                return @{name : num, MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]};
+                return @{
+                    name : num,
+                    CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                };
             }
             return @{
                 name : [NSNull null],
-                MakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
+                CDTISMakeMeta(name) : [NSDictionary dictionaryWithDictionary:meta]
             };
         }
         default:
@@ -1225,7 +759,7 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     }
 
     id prop = body[name];
-    NSDictionary *meta = body[MakeMeta(name)];
+    NSDictionary *meta = body[CDTISMakeMeta(name)];
 
     id value;
 
@@ -1609,6 +1143,8 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     return [NSDictionary dictionaryWithDictionary:values];
 }
 
+#pragma mark - Push/Pull with Remote methods
+
 - (BOOL)commWithRemote:(CDTReplicator *)rep
                  error:(NSError **)error
           withProgress:(CDTISProgressBlock)progress
@@ -1932,7 +1468,7 @@ static NSDictionary *encodeVersionHashes(NSDictionary *hashes)
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
         NSData *h = hashes[hash];
-        NSString *s = stringFromData(h);
+        NSString *s = CDTISStringFromData(h);
         newHashes[hash] = s;
     }
     return [NSDictionary dictionaryWithDictionary:newHashes];
@@ -2033,7 +1569,7 @@ static NSDictionary *decodeVersionHashes(NSDictionary *hashes)
     NSMutableDictionary *newHashes = [NSMutableDictionary dictionary];
     for (NSString *hash in hashes) {
         NSString *s = hashes[hash];
-        NSData *h = dataFromString(s);
+        NSData *h = CDTISDataFromString(s);
         newHashes[hash] = h;
     }
     return [NSDictionary dictionaryWithDictionary:newHashes];
@@ -2834,145 +2370,29 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     return objectIDs;
 }
 
-#pragma mark - DOT
 /**
- *  Quick function to write an `NSString` in UTF8 format.
- *
- *  @param out Object to write to.
- *  @param s   The string to write.
- */
-static void DotWrite(NSMutableData *out, NSString *s)
-{
-    [out appendBytes:[s UTF8String] length:[s lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
-}
-
-/**
- *  This is a quick hack which lets me dump the storage graph visually.
- *  It uses [Graphviz](http://www.graphviz.org/) "dot" format.
+ *  Use the CDTISGraphviz to create a graph representation of the datastore
  *
  *  Once you have a database configured, in any form, you can simply call:
  *      [self dotMe]
  *
  *  What you get:
  *  * You may call this from your code or from the debugger (LLDB).
- *  * The result is stored as `self.dotData` which is an `NSData` object`
+ *  * The result is stored as `self.graph`
  *  ** You can then use your favorite `writeTo` method.
- *  * dotMe returns
- *  > *Warning*: this replaces contents of an existing file but does not
- *  > truncate it. So if the original file was bigger there will be garbage
- *  > at the end.
  *
  *  @return A string that is the debugger command to dump the result
  *   into a file on the host.
+ *
+ *  > *Warning*: this replaces contents of an existing file but does not
+ *  > truncate it. So if the original file was bigger there will be garbage
+ *  > at the end.
  */
-- (NSString *)dotMe __attribute__((used))
+- (NSString *)dotMe
 {
-    if (!self.datastore) {
-        return @"FAIL";
-    }
-    NSArray *all = [self.datastore getAllDocuments];
-    NSMutableData *out = [NSMutableData data];
-
-    DotWrite(out, @"strict digraph CDTIS {\n");
-    DotWrite(out, @"  overlap=false;\n");
-    DotWrite(out, @"  splines=true;\n");
-
-    for (CDTDocumentRevision *rev in all) {
-        if ([rev.docId isEqualToString:CDTISMetaDataDocID]) {
-            // we do not plot the metadata document
-            continue;
-        }
-        NSString *entity = nil;
-        NSMutableArray *props = [NSMutableArray array];
-
-        for (NSString *name in rev.body) {
-            if ([name isEqual:CDTISEntityNameKey]) {
-                // the node
-                entity = rev.body[name];
-            }
-
-            if ([name hasPrefix:CDTISPrefix]) {
-                continue;
-            }
-            id value = rev.body[name];
-            NSDictionary *meta = rev.body[MakeMeta(name)];
-            NSInteger ptype = [self propertyTypeFromDoc:rev.body withName:name];
-
-            size_t idx = [props count] + 1;
-            switch (ptype) {
-                case CDTISRelationToOneType: {
-                    NSString *str = value;
-                    [props addObject:[NSString stringWithFormat:@"<%zu> to-one", idx]];
-                    DotWrite(out,
-                             [NSString
-                                 stringWithFormat:
-                                     @"  \"%@\":%zu -> \"%@\":0 [label=\"one\", color=\"blue\"];\n",
-                                     rev.docId, idx, str]);
-                } break;
-                case CDTISRelationToManyType: {
-                    NSArray *rels = value;
-                    [props addObject:[NSString stringWithFormat:@"<%zu> to-many", idx]];
-                    DotWrite(out,
-                             [NSString stringWithFormat:@"  \"%@\":%zu -> { ", rev.docId, idx]);
-                    for (NSString *str in rels) {
-                        DotWrite(out, [NSString stringWithFormat:@"\"%@\":0 ", str]);
-                    }
-                    DotWrite(out, @"} [label=\"many\", color=\"red\"];\n");
-                } break;
-                case NSDecimalAttributeType: {
-                    NSString *str = value;
-                    NSDecimalNumber *dec = [NSDecimalNumber decimalNumberWithString:str];
-                    double dbl = [dec doubleValue];
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%e", idx, name, dbl]];
-                } break;
-                case NSInteger16AttributeType:
-                case NSInteger32AttributeType:
-                case NSInteger64AttributeType: {
-                    NSNumber *num = value;
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%@", idx, name, num]];
-                } break;
-                case NSFloatAttributeType: {
-                    NSNumber *i32Num = meta[CDTISFloatImageKey];
-                    int32_t i32 = (int32_t)[i32Num integerValue];
-                    float flt = *(float *)&i32;
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, flt]];
-                } break;
-                case NSDoubleAttributeType: {
-                    NSNumber *i64Num = meta[CDTISDoubleImageKey];
-                    int64_t i64 = [i64Num integerValue];
-                    double dbl = *(double *)&i64;
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:%f", idx, name, dbl]];
-                } break;
-                case NSStringAttributeType: {
-                    NSString *str = value;
-                    if ([str length] > 16) {
-                        str = [NSString stringWithFormat:@"%@...", [str substringToIndex:16]];
-                    }
-                    str = [str stringByReplacingOccurrencesOfString:@"\"" withString:@"\\\""];
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@: %@", idx, name, str]];
-                } break;
-                default:
-                    [props addObject:[NSString stringWithFormat:@"<%zu> %@:*", idx, name]];
-                    break;
-            }
-        }
-
-        if (!entity) oops(@"no entity name?");
-        DotWrite(out, [NSString stringWithFormat:@"  \"%@\" [shape=record, label=\"{ <0> %@ ",
-                                                 rev.docId, entity]);
-
-        for (NSString *p in props) {
-            DotWrite(out, [NSString stringWithFormat:@"| %@ ", p]);
-        }
-        DotWrite(out, @"}\" ];\n");
-    }
-    DotWrite(out, @"}\n");
-
-    self.dotData = [NSData dataWithData:out];
-    size_t length = [self.dotData length];
-    return [NSString stringWithFormat:@"memory read --force --binary --outfile "
-                                      @"/tmp/CDTIS.dot --count %zu %p",
-                                      length, [self.dotData bytes]];
+    self.graph = [[CDTISGraphviz alloc] initWithIncrementalStore:self];
+    [self.graph dotMe];
+    return [self.graph extractLLDB:@"/tmp/CDTIS.dot"];
 }
 
 @end
