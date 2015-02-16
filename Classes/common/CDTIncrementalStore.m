@@ -1006,8 +1006,19 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         [upRev.attachments addEntriesFromDictionary:blobStore];
     }
 
-    // delete all changed properties, in case they are being removed.
-    [upRev.body removeObjectsForKeys:[props allKeys]];
+    /**
+     *  > ***Note***:
+     *  >
+     *  > Since the properties of the entity are being updated/modified, there is
+     *  > no need to remove the actual members from the body.
+     *  >
+     *  > However, care must be taken, since this code adds additional "Meta Properties"
+     *  > to the dictionary that may require cleaning up.
+     *  >
+     *  > Currently, this is not a problem since we collect all "Meta Properties"
+     *  > in a single dictionary that is always present if necessary.
+     *  > Therefore, there is nothing to clean up.
+     */
     [upRev.body addEntriesFromDictionary:props];
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
