@@ -67,17 +67,23 @@ NSString *const CDTExtensionsDirName = @"_extensions";
     TD_Database *db = [self.manager databaseNamed:name];
 
     if (!db) {
-        NSDictionary *userInfo = @{
-            NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
-            NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
-            NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
-        };
-        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
+        if (error) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
+                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+            };
+            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
+        }
         return NO;
     }
 
     // first delete the SQLite database and any attachments
-    if (![db deleteDatabase:error]) {
+    NSError *localError;
+    if (![db deleteDatabase:&localError]) {
+        if (error) {
+            *error = localError;
+        }
         return NO;
     }
 
@@ -89,7 +95,15 @@ NSString *const CDTExtensionsDirName = @"_extensions";
     BOOL isDirectory;
     BOOL extenstionsExists = [fm fileExistsAtPath:path isDirectory:&isDirectory];
     if (extenstionsExists && isDirectory) {
-        return [fm removeItemAtPath:path error:error];
+        if (![fm removeItemAtPath:path error:&localError]) {
+            if (error) {
+                *error = localError;
+            }
+            return NO;
+        }
+        else {
+            return YES;
+        }
     } else {
         // maybe there weren't any extensions
         return YES;
