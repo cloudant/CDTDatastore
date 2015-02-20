@@ -61,6 +61,19 @@
             location = "group:CDTSQLiteHelpers.m">
          </FileRef>
          <Group
+            location = "group:CDTEncryptionKey"
+            name = "CDTEncryptionKey">
+            <FileRef
+               location = "group:CDTEncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeyDummy.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeyDummy.m">
+            </FileRef>
+         </Group>
+         <Group
             location = "group:CDTReplicator"
             name = "CDTReplicator">
             <FileRef

@@ -17,6 +17,8 @@
 
 extern NSString *const CDTDatastoreErrorDomain;
 
+@protocol CDTEncryptionKey;
+
 @class CDTDatastore;
 @class TD_DatabaseManager;
 
@@ -32,8 +34,7 @@ extern NSString *const CDTDatastoreErrorDomain;
 @property (nonatomic, strong, readonly) TD_DatabaseManager *manager;
 
 /**
- Initialises the datastore manager with a directory where the files
- for datastores are persisted to disk.
+ Initialises the datastore manager with a directory where the files will be persisted.
 
  @param directoryPath  directory for files. This must exist.
  @param outError will point to an NSError object in case of error.
@@ -41,7 +42,8 @@ extern NSString *const CDTDatastoreErrorDomain;
 - (id)initWithDirectory:(NSString *)directoryPath error:(NSError **)outError;
 
 /**
- Returns a datastore for the given name.
+ Returns a datastore for the given name. Data in the datastore is not encrypted.
+ If not key is provided at the moment the datastore is created, it can not be encrypted later on.
 
  @param name datastore name
  @param error will point to an NSError object in case of error.
@@ -49,6 +51,22 @@ extern NSString *const CDTDatastoreErrorDomain;
  @see CDTDatastore
  */
 - (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error;
+
+/**
+ Returns a datastore for the given name. Datastore files are encrypted before saving to disk
+ (attachments and extensions not included).
+ If a key is provided the first time the datastore is open, from that point on the same key
+ has to be informed each time the datastore is open.
+
+ @param name datastore name
+ @param encryptionKey key to encrypt the data
+ @param error will point to an NSError object in case of error.
+
+ @see CDTDatastore
+ */
+- (CDTDatastore *)datastoreNamed:(NSString *)name
+               withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+                           error:(NSError *__autoreleasing *)error;
 
 /**
  Deletes a datastore for the given name.
@@ -65,10 +83,28 @@ extern NSString *const CDTDatastoreErrorDomain;
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error;
 
 /**
- 
- Returns an array of datastore names (NSString) that are managed by this CDTDatastoreManager.
- 
+ Deletes a datastore for the given name. If the datastore is encrypted, the same key used to open
+ it has to be provided to delete it.
+
+ All datastore files, including attachments and extensions, are deleted.
+
+ Currently it is the responsibility of the caller to ensure that extensions should be shutdown (and
+ their underlying databases closed) before calling this method.
+
+ @param name datastore name
+ @param encryptionKey key to encrypt the data
+ @param error will point to an NSError object in case of error.
+
  */
-- (NSArray* /* NSString */)allDatastores;
+- (BOOL)deleteDatastoreNamed:(NSString *)name
+           withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+                       error:(NSError *__autoreleasing *)error;
+
+/**
+
+ Returns an array of datastore names (NSString) that are managed by this CDTDatastoreManager.
+
+ */
+- (NSArray * /* NSString */)allDatastores;
 
 @end

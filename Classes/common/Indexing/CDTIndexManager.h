@@ -47,7 +47,11 @@ typedef NS_ENUM(NSInteger, CDTIndexError) {
     /**
      * No index with this name was found.
      */
-    CDTIndexErrorIndexDoesNotExist = 4
+    CDTIndexErrorIndexDoesNotExist = 4,
+    /**
+     * Key provided could not be used to initialize index manager
+     */
+    CDTIndexErrorEncryptionKeyError = 5
 };
 
 @class CDTDatastore;

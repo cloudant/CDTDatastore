@@ -13,7 +13,10 @@
 #import "TDStatus.h"
 #import "TDMisc.h"
 
+@protocol CDTEncryptionKey;
+
 @class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
+
 struct TDQueryOptions;  // declared in TD_View.h
 
 /** NSNotification posted when a document is updated.
@@ -41,8 +44,7 @@ enum {
 };
 
 /** Options for _changes feed (-changesSinceSequence:). */
-typedef struct TDChangesOptions
-{
+typedef struct TDChangesOptions {
     unsigned limit;
     TDContentOptions contentOptions;
     BOOL includeDocs;
@@ -57,6 +59,7 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
    @private
     NSString* _path;
     NSString* _name;
+    id<CDTEncryptionKey> _encryptionKey;
     FMDatabaseQueue* _fmdbQueue;
     BOOL _readOnly;
     BOOL _open;
@@ -68,12 +71,16 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     NSMutableArray* _activeReplicators;
 }
 
-- (id)initWithPath:(NSString*)path;
+- (id)initWithPath:(NSString*)path encryptionKey:(id<CDTEncryptionKey>)encryptionKey;
+
+- (id<CDTEncryptionKey>)copyEncryptionKey;
+
 - (BOOL)open;
 - (BOOL)close;
 - (BOOL)deleteDatabase:(NSError**)outError;
 
-+ (TD_Database*)createEmptyDBAtPath:(NSString*)path;
++ (TD_Database*)createEmptyDBAtPath:(NSString*)path
+                  withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey;
 
 /** Should the database file be opened in read-only mode? */
 @property BOOL readOnly;

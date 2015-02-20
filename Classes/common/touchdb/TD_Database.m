@@ -31,6 +31,7 @@
 #import "FMDatabaseAdditions.h"
 #import "FMDatabase+LongLong.h"
 #import "FMDatabaseQueue.h"
+#import "CDTEncryptionKey.h"
 #import "CDTLogging.h"
 
 NSString* const TD_DatabaseWillCloseNotification = @"TD_DatabaseWillClose";
@@ -80,20 +81,31 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 }
 
 + (TD_Database*)createEmptyDBAtPath:(NSString*)path
+                  withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
 {
-    if (!removeItemIfExists(path, NULL)) return nil;
-    TD_Database* db = [[self alloc] initWithPath:path];
-    if (!removeItemIfExists(db.attachmentStorePath, NULL)) return nil;
-    if (![db open]) return nil;
+    if (!removeItemIfExists(path, NULL)) {
+        return nil;
+    }
+
+    TD_Database* db = [[self alloc] initWithPath:path encryptionKey:encryptionKey];
+    if (!removeItemIfExists(db.attachmentStorePath, NULL)) {
+        return nil;
+    }
+    if (![db open]) {
+        return nil;
+    }
+
     return db;
 }
 
-- (id)initWithPath:(NSString*)path
+- (id)initWithPath:(NSString*)path encryptionKey:(id<CDTEncryptionKey>)encryptionKey
 {
     if (self = [super init]) {
         Assert([path hasPrefix:@"/"], @"Path must be absolute");
+        Assert(encryptionKey, @"Key is mandatory. Provide a dummy instance instead");
         _path = [path copy];
         _name = [path.lastPathComponent.stringByDeletingPathExtension copy];
+        _encryptionKey = [encryptionKey copy];
 
         if (0) {
             // Appease the static analyzer by using these category ivars in this source file:
@@ -107,6 +119,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 - (NSString*)description { return $sprintf(@"%@[%@]", [self class], _path); }
 
 - (BOOL)exists { return [[NSFileManager defaultManager] fileExistsAtPath:_path]; }
+
+- (id<CDTEncryptionKey>)copyEncryptionKey { return [_encryptionKey copy]; }
 
 - (BOOL)replaceWithDatabaseFile:(NSString*)databasePath
                 withAttachments:(NSString*)attachmentsPath
@@ -132,10 +146,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     if (nil != updates) {
         for (NSString* statement in [updates componentsSeparatedByString:@";"]) {
             if (statement.length && ![db executeUpdate:statement]) {
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
-                                               @"May be an old/incompatible format. "
-                                                "SQLite error: %@",
-                        _path, db.lastErrorMessage);
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                           @"TD_Database: Could not initialize schema of %@ -- "
+                           @"May be an old/incompatible format. "
+                            "SQLite error: %@",
+                           _path, db.lastErrorMessage);
                 [db close];
                 return NO;
             }
@@ -148,10 +163,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             // problem in which case it's nil.
             FMResultSet* results = [db executeQuery:statement];
             if (statement.length && results == nil) {
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
-                                               @"May be an old/incompatible format. "
-                                                "SQLite error: %@",
-                        _path, db.lastErrorMessage);
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                           @"TD_Database: Could not initialize schema of %@ -- "
+                           @"May be an old/incompatible format. "
+                            "SQLite error: %@",
+                           _path, db.lastErrorMessage);
                 [db close];
                 return NO;
             }
@@ -179,10 +195,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     if (nil != updates) {
         for (NSString* statement in [updates componentsSeparatedByString:@";"]) {
             if (statement.length && ![db executeUpdate:statement]) {
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"TD_Database: Could not initialize schema of %@ -- "
-                                               @"May be an old/incompatible format. "
-                                                "SQLite error: %@",
-                        _path, db.lastErrorMessage);
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                           @"TD_Database: Could not initialize schema of %@ -- "
+                           @"May be an old/incompatible format. "
+                            "SQLite error: %@",
+                           _path, db.lastErrorMessage);
                 [db close];
                 return NO;
             }
@@ -195,69 +212,100 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 // callers: -open, -compact
 - (BOOL)openFMDB
 {
+#ifdef SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN
     int flags = SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN;
-    if (_readOnly)
+#else
+    int flags = kNilOptions;
+#endif
+    if (_readOnly) {
         flags |= SQLITE_OPEN_READONLY;
-    else
+    } else {
         flags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    }
     CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Open %@ (flags=%X)", _path, flags);
+
     _fmdbQueue = [FMDatabaseQueue databaseQueueWithPath:_path flags:flags];
-    if (!_fmdbQueue) return NO;
-
-    // Register CouchDB-compatible JSON collation functions:
-    [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        sqlite3_create_collation(db.sqliteHandle, "JSON", SQLITE_UTF8, kTDCollateJSON_Unicode,
-                                 TDCollateJSON);
-        sqlite3_create_collation(db.sqliteHandle, "JSON_RAW", SQLITE_UTF8, kTDCollateJSON_Raw,
-                                 TDCollateJSON);
-        sqlite3_create_collation(db.sqliteHandle, "JSON_ASCII", SQLITE_UTF8, kTDCollateJSON_ASCII,
-                                 TDCollateJSON);
-        sqlite3_create_collation(db.sqliteHandle, "REVID", SQLITE_UTF8, NULL, TDCollateRevIDs);
-    }];
-
-    __block BOOL result = YES;
-    __weak TD_Database* weakSelf = self;
-    [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        // Stuff we need to initialize every time the database opens:
-        TD_Database* strongSelf = weakSelf;
-        if (![strongSelf initialize:@"PRAGMA foreign_keys = ON;" inDatabase:db]) result = NO;
-    }];
-    if (!result) {
+    if (!_fmdbQueue) {
         return NO;
     }
 
-    return YES;
+    __block BOOL result = YES;
+
+    // Cipher database
+    if (result) {
+        NSString* key = [_encryptionKey encryptionKeyOrNil];
+        if (key) {
+            [_fmdbQueue inDatabase:^(FMDatabase* db) {
+              result = [db setKey:key];
+            }];
+
+            if (!result) {
+                CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Key to cipher database not set");
+            }
+        }
+    }
+
+    // Register CouchDB-compatible JSON collation functions:
+    if (result) {
+        [_fmdbQueue inDatabase:^(FMDatabase* db) {
+          sqlite3_create_collation(db.sqliteHandle, "JSON", SQLITE_UTF8, kTDCollateJSON_Unicode,
+                                   TDCollateJSON);
+          sqlite3_create_collation(db.sqliteHandle, "JSON_RAW", SQLITE_UTF8, kTDCollateJSON_Raw,
+                                   TDCollateJSON);
+          sqlite3_create_collation(db.sqliteHandle, "JSON_ASCII", SQLITE_UTF8, kTDCollateJSON_ASCII,
+                                   TDCollateJSON);
+          sqlite3_create_collation(db.sqliteHandle, "REVID", SQLITE_UTF8, NULL, TDCollateRevIDs);
+        }];
+    }
+
+    // Stuff we need to initialize every time the database opens:
+    if (result) {
+        __weak TD_Database* weakSelf = self;
+        [_fmdbQueue inDatabase:^(FMDatabase* db) {
+          TD_Database* strongSelf = weakSelf;
+          if (!strongSelf || ![strongSelf initialize:@"PRAGMA foreign_keys = ON;" inDatabase:db]) {
+              result = NO;
+          }
+        }];
+    }
+
+    return result;
 }
 
 // callers: many things
 - (BOOL)open
 {
-    if (_open) return YES;
-    if (![self openFMDB]) return NO;
+    if (_open) {
+        return YES;
+    }
+
+    if (![self openFMDB]) {
+        return NO;
+    }
 
     __block BOOL result = YES;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
+      TD_Database* strongSelf = weakSelf;
 
-        // Check the user_version number we last stored in the database:
-        int dbVersion = [db intForQuery:@"PRAGMA user_version"];
+      // Check the user_version number we last stored in the database:
+      int dbVersion = [db intForQuery:@"PRAGMA user_version"];
 
-        // Incompatible version changes increment the hundreds' place:
-        if (dbVersion >= 200) {
-            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                    @"TD_Database: Database version (%d) is newer than I know how to work with",
-                    dbVersion);
-            [db close];
-            result = NO;
-            return;
-        }
+      // Incompatible version changes increment the hundreds' place:
+      if (dbVersion >= 200) {
+          CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                     @"TD_Database: Database version (%d) is newer than I know how to work with",
+                     dbVersion);
+          [db close];
+          result = NO;
+          return;
+      }
 
-        if (dbVersion < 1) {
-            // First-time initialization:
-            // (Note: Declaring revs.sequence as AUTOINCREMENT means the values will always be
-            // monotonically increasing, never reused. See <http://www.sqlite.org/autoinc.html>)
-            NSString* schema = @"\
+      if (dbVersion < 1) {
+          // First-time initialization:
+          // (Note: Declaring revs.sequence as AUTOINCREMENT means the values will always be
+          // monotonically increasing, never reused. See <http://www.sqlite.org/autoinc.html>)
+          NSString* schema = @"\
                 CREATE TABLE docs ( \
                     doc_id INTEGER PRIMARY KEY, \
                     docid TEXT UNIQUE NOT NULL); \
@@ -303,114 +351,118 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                     push BOOLEAN, \
                     last_sequence TEXT, \
                     UNIQUE (remote, push))";
-            if (![strongSelf migrateWithUpdates:schema queries:nil version:3 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 3;
-        }
+          if (![strongSelf migrateWithUpdates:schema queries:nil version:3 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 3;
+      }
 
-        if (dbVersion < 2) {
-            // Version 2: added attachments.revpos
-            NSString* sql = @"ALTER TABLE attachments ADD COLUMN revpos INTEGER DEFAULT 0";
-            if (![strongSelf migrateWithUpdates:sql queries:nil version:2 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 2;
-        }
+      if (dbVersion < 2) {
+          // Version 2: added attachments.revpos
+          NSString* sql = @"ALTER TABLE attachments ADD COLUMN revpos INTEGER DEFAULT 0";
+          if (![strongSelf migrateWithUpdates:sql queries:nil version:2 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 2;
+      }
 
-        if (dbVersion < 3) {
-            // Version 3: added localdocs table
-            NSString* sql = @"CREATE TABLE IF NOT EXISTS localdocs ( \
+      if (dbVersion < 3) {
+          // Version 3: added localdocs table
+          NSString* sql = @"CREATE TABLE IF NOT EXISTS localdocs ( \
                                 docid TEXT UNIQUE NOT NULL, \
                                 revid TEXT NOT NULL, \
                                 json BLOB); \
                                 CREATE INDEX IF NOT EXISTS localdocs_by_docid ON localdocs(docid)";
-            if (![strongSelf migrateWithUpdates:sql queries:nil version:3 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 3;
-        }
+          if (![strongSelf migrateWithUpdates:sql queries:nil version:3 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 3;
+      }
 
-        if (dbVersion < 4) {
-            // Version 4: added 'info' table
-            NSString* sql = $sprintf(@"CREATE TABLE info ( \
+      if (dbVersion < 4) {
+          // Version 4: added 'info' table
+          NSString* sql = $sprintf(@"CREATE TABLE info ( \
                                          key TEXT PRIMARY KEY, \
                                          value TEXT); \
                                        INSERT INTO INFO (key, value) VALUES ('privateUUID', '%@');\
                                        INSERT INTO INFO (key, value) VALUES ('publicUUID',  '%@')",
-                                     TDCreateUUID(), TDCreateUUID());
-            if (![strongSelf migrateWithUpdates:sql queries:nil version:4 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 4;
-        }
+                                   TDCreateUUID(), TDCreateUUID());
+          if (![strongSelf migrateWithUpdates:sql queries:nil version:4 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 4;
+      }
 
-        if (dbVersion < 5) {
-            // Version 5: added encoding for attachments
-            NSString* sql = @"ALTER TABLE attachments ADD COLUMN encoding INTEGER DEFAULT 0; \
+      if (dbVersion < 5) {
+          // Version 5: added encoding for attachments
+          NSString* sql = @"ALTER TABLE attachments ADD COLUMN encoding INTEGER DEFAULT 0; \
                               ALTER TABLE attachments ADD COLUMN encoded_length INTEGER";
-            if (![strongSelf migrateWithUpdates:sql queries:nil version:5 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 5;
-        }
+          if (![strongSelf migrateWithUpdates:sql queries:nil version:5 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 5;
+      }
 
-        if (dbVersion < 6) {
-            // Version 6: enable Write-Ahead Log (WAL) <http://sqlite.org/wal.html>
-            NSString* sql = @"PRAGMA journal_mode=WAL";
-            if (![strongSelf migrateWithUpdates:nil queries:sql version:6 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            dbVersion = 6;
-        }
-        
-        if (dbVersion < 100) {
-            // Version 100: upgrade replicators.last_sequence to a json dict of {"seq": <data>}
-            FMResultSet *replicators = [db executeQuery:@"SELECT rowid, last_sequence FROM replicators"];
-            
-            while ([replicators next]) {
-                NSUInteger rowid = [replicators longForColumn:@"rowid"];
-                NSData *lastSequence = [replicators dataForColumn:@"last_sequence"];
-                NSDictionary *lastSequenceJsonMaybe = [TDJSON JSONObjectWithData:lastSequence options:0 error:nil];
-                if (lastSequenceJsonMaybe == nil) {
-                    // sequence not in json format, so upgrade it
-                    NSString *lastSequenceString = [replicators stringForColumn:@"last_sequence"];
-                    // the sequence might have been a number, or a string "<number-base64>"
-                    NSDictionary *dict = @{@"seq": lastSequenceString};
-                    NSData *lastSequenceJson = [TDJSON dataWithJSONObject:dict options:0 error:nil];
-                    [db executeUpdate:@"UPDATE replicators SET last_sequence=? WHERE rowid=?", lastSequenceJson, @(rowid)];
-                }
-            }
-            
-            // upgrade the schema version without any updates (since our updates were in the code above)
-            if (![strongSelf migrateWithUpdates:nil queries:nil version:100 inDatabase:db]) {
-                result = NO;
-                return;
-            }
-            // dbVersion = 100;
-        }
+      if (dbVersion < 6) {
+          // Version 6: enable Write-Ahead Log (WAL) <http://sqlite.org/wal.html>
+          NSString* sql = @"PRAGMA journal_mode=WAL";
+          if (![strongSelf migrateWithUpdates:nil queries:sql version:6 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          dbVersion = 6;
+      }
+
+      if (dbVersion < 100) {
+          // Version 100: upgrade replicators.last_sequence to a json dict of {"seq": <data>}
+          FMResultSet* replicators =
+              [db executeQuery:@"SELECT rowid, last_sequence FROM replicators"];
+
+          while ([replicators next]) {
+              NSUInteger rowid = [replicators longForColumn:@"rowid"];
+              NSData* lastSequence = [replicators dataForColumn:@"last_sequence"];
+              NSDictionary* lastSequenceJsonMaybe =
+                  [TDJSON JSONObjectWithData:lastSequence options:0 error:nil];
+              if (lastSequenceJsonMaybe == nil) {
+                  // sequence not in json format, so upgrade it
+                  NSString* lastSequenceString = [replicators stringForColumn:@"last_sequence"];
+                  // the sequence might have been a number, or a string "<number-base64>"
+                  NSDictionary* dict = @{ @"seq" : lastSequenceString };
+                  NSData* lastSequenceJson = [TDJSON dataWithJSONObject:dict options:0 error:nil];
+                  [db executeUpdate:@"UPDATE replicators SET last_sequence=? WHERE rowid=?",
+                                    lastSequenceJson, @(rowid)];
+              }
+          }
+
+          // upgrade the schema version without any updates (since our updates were in the code
+          // above)
+          if (![strongSelf migrateWithUpdates:nil queries:nil version:100 inDatabase:db]) {
+              result = NO;
+              return;
+          }
+          // dbVersion = 100;
+      }
 
 #if DEBUG
-        db.crashOnErrors = YES;
+      db.crashOnErrors = YES;
 #endif
 
-        // Open attachment store:
-        NSString* attachmentsPath = strongSelf.attachmentStorePath;
-        NSError* error;
-        _attachments = [[TDBlobStore alloc] initWithPath:attachmentsPath error:&error];
-        if (!_attachments) {
-            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
-                    attachmentsPath);
-            [db close];
-            result = NO;
-            return;
-        }
+      // Open attachment store:
+      NSString* attachmentsPath = strongSelf.attachmentStorePath;
+      NSError* error;
+      _attachments = [[TDBlobStore alloc] initWithPath:attachmentsPath error:&error];
+      if (!_attachments) {
+          CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
+                     attachmentsPath);
+          [db close];
+          result = NO;
+          return;
+      }
     }];
 
     if (result) {
@@ -481,15 +533,15 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     __block TDStatus status;
 
     [_fmdbQueue inTransaction:^(FMDatabase* db, BOOL* rollback) {
-        @try {
-            status = block(db);
-        }
-        @catch (NSException* x)
-        {
-            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Exception raised during -inTransaction: %@", x);
-            status = kTDStatusException;
-        }
-        @finally { *rollback = TDStatusIsError(status); }
+      @try {
+          status = block(db);
+      }
+      @catch (NSException* x)
+      {
+          CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Exception raised during -inTransaction: %@", x);
+          status = kTDStatusException;
+      }
+      @finally { *rollback = TDStatusIsError(status); }
     }];
     return status;
 }
@@ -498,7 +550,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
     __block NSString* result;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        result = [db stringForQuery:@"SELECT value FROM info WHERE key='privateUUID'"];
+      result = [db stringForQuery:@"SELECT value FROM info WHERE key='privateUUID'"];
     }];
     return result;
 }
@@ -507,7 +559,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
     __block NSString* result;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        result = [db stringForQuery:@"SELECT value FROM info WHERE key='publicUUID'"];
+      result = [db stringForQuery:@"SELECT value FROM info WHERE key='publicUUID'"];
     }];
     return result;
 }
@@ -518,12 +570,12 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
     __block NSUInteger result = NSNotFound;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        FMResultSet* r = [db executeQuery:@"SELECT COUNT(DISTINCT doc_id) FROM revs "
-                                           "WHERE current=1 AND deleted=0"];
-        if ([r next]) {
-            result = [r intForColumnIndex:0];
-        }
-        [r close];
+      FMResultSet* r = [db executeQuery:@"SELECT COUNT(DISTINCT doc_id) FROM revs "
+                                         "WHERE current=1 AND deleted=0"];
+      if ([r next]) {
+          result = [r intForColumnIndex:0];
+      }
+      [r close];
     }];
     return result;
 }
@@ -531,7 +583,9 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 - (SequenceNumber)lastSequence
 {
     __block SequenceNumber result = 0;
-    [_fmdbQueue inDatabase:^(FMDatabase* db) { result = [self lastSequenceInDatabase:db]; }];
+    [_fmdbQueue inDatabase:^(FMDatabase* db) {
+      result = [self lastSequenceInDatabase:db];
+    }];
     return result;
 }
 
@@ -568,12 +622,12 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
     if (options & kTDIncludeRevsInfo) {
         revsInfo = [[self getRevisionHistory:rev] my_map:^id(TD_Revision* rev) {
-            NSString* status = @"available";
-            if (rev.deleted)
-                status = @"deleted";
-            else if (rev.missing)
-                status = @"missing";
-            return $dict({ @"rev", [rev revID] }, { @"status", status });
+          NSString* status = @"available";
+          if (rev.deleted)
+              status = @"deleted";
+          else if (rev.missing)
+              status = @"missing";
+          return $dict({ @"rev", [rev revID] }, { @"status", status });
         }];
     }
 
@@ -582,7 +636,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             [self getAllRevisionsOfDocumentID:docID onlyCurrent:YES excludeDeleted:YES database:db];
         if (revs.count > 1) {
             conflicts = [revs.allRevisions my_map:^(id aRev) {
-                return ($equal(aRev, rev) || [(TD_Revision*)aRev deleted]) ? nil : [aRev revID];
+              return ($equal(aRev, rev) || [(TD_Revision*)aRev deleted]) ? nil : [aRev revID];
             }];
         }
     }
@@ -627,8 +681,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     NSMutableDictionary* docProperties =
         [TDJSON JSONObjectWithData:json options:TDJSONReadingMutableContainers error:NULL];
     if (!docProperties) {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Unparseable JSON for doc=%@, rev=%@: %@", docID, revID,
-                [json my_UTF8ToString]);
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Unparseable JSON for doc=%@, rev=%@: %@", docID,
+                   revID, [json my_UTF8ToString]);
         return extra;
     }
     [docProperties addEntriesFromDictionary:extra];
@@ -644,12 +698,12 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     __block TD_Revision* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf getDocumentWithID:docID
-                                    revisionID:revID
-                                       options:options
-                                        status:outStatus
-                                      database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf getDocumentWithID:docID
+                                  revisionID:revID
+                                     options:options
+                                      status:outStatus
+                                    database:db];
     }];
     return result;
 }
@@ -704,8 +758,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     __block TD_Revision* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf getDocumentWithID:docID revisionID:revID database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf getDocumentWithID:docID revisionID:revID database:db];
     }];
     return result;
 }
@@ -736,8 +790,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     __block TDStatus result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf loadRevisionBody:rev options:options database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf loadRevisionBody:rev options:options database:db];
     }];
     return result;
 }
@@ -834,11 +888,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     __block TD_RevisionList* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf getAllRevisionsOfDocumentID:docID
-                                             onlyCurrent:onlyCurrent
-                                          excludeDeleted:excludeDeleted
-                                                database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf getAllRevisionsOfDocumentID:docID
+                                           onlyCurrent:onlyCurrent
+                                        excludeDeleted:excludeDeleted
+                                              database:db];
     }];
     return result;
 }
@@ -878,8 +932,8 @@ static NSArray* revIDsFromResultSet(FMResultSet* r)
     __block NSArray* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf getPossibleAncestorRevisionIDs:rev limit:limit database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf getPossibleAncestorRevisionIDs:rev limit:limit database:db];
     }];
     return result;
 }
@@ -921,8 +975,8 @@ static NSArray* revIDsFromResultSet(FMResultSet* r)
     __block NSArray* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf getRevisionHistory:rev database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf getRevisionHistory:rev database:db];
     }];
     return result;
 }
@@ -1000,7 +1054,9 @@ extern NSDictionary* makeRevisionHistoryDict(NSArray* history)
         }
     }
 
-    NSArray* revIDs = start ? suffixes : [history my_map:^(id rev) { return [rev revID]; }];
+    NSArray* revIDs = start ? suffixes : [history my_map:^(id rev) {
+      return [rev revID];
+    }];
     return $dict({ @"ids", revIDs }, { @"start", start });
 }
 
@@ -1050,12 +1106,12 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
     __block TD_RevisionList* result;
     __weak TD_Database* weakSelf = self;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf changesSinceSequence:lastSequence
-                                          options:options
-                                           filter:filter
-                                           params:filterParams
-                                         database:db];
+      TD_Database* strongSelf = weakSelf;
+      result = [strongSelf changesSinceSequence:lastSequence
+                                        options:options
+                                         filter:filter
+                                         params:filterParams
+                                       database:db];
     }];
     return result;
 }
@@ -1143,13 +1199,13 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 {
     __block NSMutableArray* views;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        FMResultSet* r = [db executeQuery:@"SELECT name FROM views"];
-        if (!r) {
-            return;
-        }
-        views = $marray();
-        while ([r next]) [views addObject:[self viewNamed:[r stringForColumnIndex:0]]];
-        [r close];
+      FMResultSet* r = [db executeQuery:@"SELECT name FROM views"];
+      if (!r) {
+          return;
+      }
+      views = $marray();
+      while ([r next]) [views addObject:[self viewNamed:[r stringForColumnIndex:0]]];
+      [r close];
     }];
     return views;
 }
@@ -1158,12 +1214,12 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 {
     __block TDStatus result;
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        if (![db executeUpdate:@"DELETE FROM views WHERE name=?", name]) {
-            result = kTDStatusDBError;
-            return;
-        }
-        [_views removeObjectForKey:name];
-        result = (db.changes ? kTDStatusOK : kTDStatusNotFound);
+      if (![db executeUpdate:@"DELETE FROM views WHERE name=?", name]) {
+          result = kTDStatusDBError;
+          return;
+      }
+      [_views removeObjectForKey:name];
+      result = (db.changes ? kTDStatusOK : kTDStatusNotFound);
     }];
     return result;
 }
@@ -1246,82 +1302,80 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
     __block NSMutableArray* rows = $marray();
 
     [_fmdbQueue inTransaction:^(FMDatabase* db, BOOL* rollback) {
-        if (options->updateSeq)
-            update_seq = self.lastSequence;  // TODO: needs to be atomic with the following SELECT
+      if (options->updateSeq)
+          update_seq = self.lastSequence;  // TODO: needs to be atomic with the following SELECT
 
-        // Now run the database query:
-        FMResultSet* r = [db executeQuery:sql withArgumentsInArray:args];
-        if (!r) return;
+      // Now run the database query:
+      FMResultSet* r = [db executeQuery:sql withArgumentsInArray:args];
+      if (!r) return;
 
-        int64_t lastDocID = 0;
-        NSMutableDictionary* docs = docIDs ? $mdict() : nil;
-        while ([r next]) {
-            @autoreleasepool
-            {
-                // Only count the first rev for a given doc (the rest will be losing conflicts):
-                int64_t docNumericID = [r longLongIntForColumnIndex:0];
-                if (docNumericID == lastDocID) continue;
-                lastDocID = docNumericID;
+      int64_t lastDocID = 0;
+      NSMutableDictionary* docs = docIDs ? $mdict() : nil;
+      while ([r next]) {
+          @autoreleasepool
+          {
+              // Only count the first rev for a given doc (the rest will be losing conflicts):
+              int64_t docNumericID = [r longLongIntForColumnIndex:0];
+              if (docNumericID == lastDocID) continue;
+              lastDocID = docNumericID;
 
-                NSString* docID = [r stringForColumnIndex:1];
-                NSString* revID = [r stringForColumnIndex:2];
-                BOOL deleted = options->includeDeletedDocs && [r boolForColumn:@"deleted"];
-                NSDictionary* docContents = nil;
-                if (options->includeDocs) {
-                    // Fill in the document contents:
-                    NSData* json = [r dataNoCopyForColumnIndex:3];
-                    SequenceNumber sequence = [r longLongIntForColumnIndex:4];
-                    docContents = [self documentPropertiesFromJSON:json
-                                                             docID:docID
-                                                             revID:revID
-                                                           deleted:deleted
-                                                          sequence:sequence
-                                                           options:options->content
-                                                        inDatabase:db];
-                    Assert(docContents);
-                }
-                NSDictionary* change = $dict(
-                    { @"id", docID }, { @"key", docID },
-                    { @"value", $dict({ @"rev", revID }, { @"deleted", (deleted ? $true : nil) }) },
-                    { @"doc", docContents });
-                if (docIDs)
-                    [docs setObject:change forKey:docID];
-                else
-                    [rows addObject:change];
-            }
-        }
-        [r close];
+              NSString* docID = [r stringForColumnIndex:1];
+              NSString* revID = [r stringForColumnIndex:2];
+              BOOL deleted = options->includeDeletedDocs && [r boolForColumn:@"deleted"];
+              NSDictionary* docContents = nil;
+              if (options->includeDocs) {
+                  // Fill in the document contents:
+                  NSData* json = [r dataNoCopyForColumnIndex:3];
+                  SequenceNumber sequence = [r longLongIntForColumnIndex:4];
+                  docContents = [self documentPropertiesFromJSON:json
+                                                           docID:docID
+                                                           revID:revID
+                                                         deleted:deleted
+                                                        sequence:sequence
+                                                         options:options->content
+                                                      inDatabase:db];
+                  Assert(docContents);
+              }
+              NSDictionary* change = $dict({ @"id", docID }, { @"key", docID }, {
+                  @"value", $dict({ @"rev", revID }, { @"deleted", (deleted ? $true : nil) })
+              }, { @"doc", docContents });
+              if (docIDs)
+                  [docs setObject:change forKey:docID];
+              else
+                  [rows addObject:change];
+          }
+      }
+      [r close];
 
-        // If given doc IDs, sort the output into that order, and add entries for missing docs:
-        if (docIDs) {
-            for (NSString* docID in docIDs) {
-                NSDictionary* change = docs[docID];
-                if (!change) {
-                    NSString* revID = nil;
-                    SInt64 docNumericID = [self getDocNumericID:docID database:db];
-                    if (docNumericID > 0) {
-                        BOOL deleted;
-                        revID = [self winningRevIDOfDocNumericID:docNumericID
-                                                       isDeleted:&deleted
-                                                        database:db];
-                    }
-                    if (revID) {
-                        change =
-                            $dict({ @"id", docID }, { @"key", docID },
-                                  { @"value", $dict({ @"rev", revID }, { @"deleted", $true }) });
-                    } else {
-                        change = $dict({ @"key", docID }, { @"error", @"not_found" });
-                    }
-                }
-                [rows addObject:change];
-            }
-        }
+      // If given doc IDs, sort the output into that order, and add entries for missing docs:
+      if (docIDs) {
+          for (NSString* docID in docIDs) {
+              NSDictionary* change = docs[docID];
+              if (!change) {
+                  NSString* revID = nil;
+                  SInt64 docNumericID = [self getDocNumericID:docID database:db];
+                  if (docNumericID > 0) {
+                      BOOL deleted;
+                      revID = [self winningRevIDOfDocNumericID:docNumericID
+                                                     isDeleted:&deleted
+                                                      database:db];
+                  }
+                  if (revID) {
+                      change = $dict({ @"id", docID }, { @"key", docID },
+                                     { @"value", $dict({ @"rev", revID }, { @"deleted", $true }) });
+                  } else {
+                      change = $dict({ @"key", docID }, { @"error", @"not_found" });
+                  }
+              }
+              [rows addObject:change];
+          }
+      }
     }];
 
     NSUInteger totalRows = rows.count;  //??? Is this true, or does it ignore limit/offset?
-    return $dict({ @"rows", rows }, { @"total_rows", @(totalRows) },
-                 { @"offset", @(options->skip) },
-                 { @"update_seq", update_seq ? @(update_seq) : nil });
+    return $dict({ @"rows", rows }, { @"total_rows", @(totalRows) }, {
+        @"offset", @(options->skip)
+    }, { @"update_seq", update_seq ? @(update_seq) : nil });
 }
 
 - (NSDictionary*)getAllDocs:(const TDQueryOptions*)options

@@ -9,11 +9,13 @@
 
 #import <Foundation/Foundation.h>
 #import "TDStatus.h"
+
+@protocol CDTEncryptionKey;
+
 @class TD_Database, TDReplicator;
 //@class TDReplicatorManager;
 
-typedef struct TD_DatabaseManagerOptions
-{
+typedef struct TD_DatabaseManagerOptions {
     bool readOnly;
     bool noReplicator;
 } TD_DatabaseManagerOptions;
@@ -36,10 +38,11 @@ extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
 @property (readonly) NSString* directory;
 
-- (TD_Database*)databaseNamed:(NSString*)name;
-- (TD_Database*)existingDatabaseNamed:(NSString*)name;
+- (TD_Database*)databaseNamed:(NSString*)name withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey;
+- (TD_Database*)existingDatabaseNamed:(NSString*)name
+                    withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey;
 
-- (BOOL)deleteDatabaseNamed:(NSString*)name;
+- (BOOL)deleteDatabaseNamed:(NSString*)name withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey;
 
 @property (readonly) NSArray* allDatabaseNames;
 @property (readonly) NSArray* allOpenDatabases;

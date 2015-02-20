@@ -83,9 +83,10 @@
 
     if (self.target) {
         [doc setObject:self.target.name forKey:@"target"];
+        [doc setObject:[self.target copyEncryptionKey] forKey:@"encryptionKey"];
     } else {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                @"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
+                   @"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
 
         if (error) {
             NSString *msg = @"Cannot sync data. Remote server not specified.";
@@ -112,7 +113,7 @@
 {
     if (url == nil) {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
+                   @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
 
         if (error) {
             NSString *msg = @"Cannot sync data. Local data source not specified.";
