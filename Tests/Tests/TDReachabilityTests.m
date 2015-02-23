@@ -30,9 +30,9 @@
 {
 //    NSLog(@"Test reachability of %@ ...", hostname);
     TDReachability* r = [[TDReachability alloc] initWithHostName: hostname];
-    XCTAssertNotNil(r, @"TDReachbility instance is nil in %s:@%", __PRETTY_FUNCTION__, hostname);
+    XCTAssertNotNil(r, @"TDReachbility instance is nil in %s:%@", __PRETTY_FUNCTION__, hostname);
 //    NSLog(@"TDReachability = %@", r);
-    XCTAssertEqualObjects(r.hostName, hostname, @"TDReachbility instance hostname (@%) is not %@ in %s:@%", r.hostName, hostname, __PRETTY_FUNCTION__, hostname);
+    XCTAssertEqualObjects(r.hostName, hostname, @"TDReachbility instance hostname (%@) is not %@ in %s:%@", r.hostName, hostname, __PRETTY_FUNCTION__, hostname);
     __block BOOL resolved = NO;
     
     __weak TDReachability *weakR = r;
@@ -44,7 +44,7 @@
         if (strongR.reachabilityKnown)
             resolved = YES;
     };
-    XCTAssertTrue([r start], @"TDReachability failed to start in %s:@%", __PRETTY_FUNCTION__, hostname);
+    XCTAssertTrue([r start], @"TDReachability failed to start in %s:%@", __PRETTY_FUNCTION__, hostname);
     
     BOOL known = r.reachabilityKnown;
 //    NSLog(@"Initially: known=%d, flags=%x --> reachable=%d", known, r.reachabilityFlags, r.reachable);
