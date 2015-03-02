@@ -1,5 +1,5 @@
 //
-//  CDTMockOneUseEncryptionKey.m
+//  CDTMockOneUseEncryptionKeyRetriever.m
 //  Tests
 //
 //  Created by Enrique de la Torre Fernandez on 27/02/2015.
@@ -13,15 +13,15 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import "CDTMockOneUseEncryptionKey.h"
+#import "CDTMockOneUseEncryptionKeyRetriever.h"
 
-@interface CDTMockOneUseEncryptionKey ()
+@interface CDTMockOneUseEncryptionKeyRetriever ()
 
 @property (strong, nonatomic) NSString *thisKey;
 
 @end
 
-@implementation CDTMockOneUseEncryptionKey
+@implementation CDTMockOneUseEncryptionKeyRetriever
 
 #pragma mark - Init object
 - (id)init

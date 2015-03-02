@@ -1,8 +1,8 @@
 //
-//  CDTMockEncryptionKey.h
+//  CDTMockOneUseEncryptionKeyRetriever.h
 //  Tests
 //
-//  Created by Enrique de la Torre Fernandez on 23/02/2015.
+//  Created by Enrique de la Torre Fernandez on 27/02/2015.
 //  Copyright (c) 2015 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -15,8 +15,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTEncryptionKey.h"
+#import "CDTEncryptionKeyRetrieving.h"
 
-@interface CDTMockEncryptionKey : NSObject <CDTEncryptionKey>
+@interface CDTMockOneUseEncryptionKeyRetriever : NSObject <CDTEncryptionKeyRetrieving>
 
 @end

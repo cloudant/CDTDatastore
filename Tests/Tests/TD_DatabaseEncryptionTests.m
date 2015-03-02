@@ -16,7 +16,7 @@
 #import <Foundation/Foundation.h>
 
 #import "CloudantTests.h"
-#import "CDTMockEncryptionKey.h"
+#import "CDTMockEncryptionKeyRetriever.h"
 
 #import "TD_Database.h"
 
@@ -28,24 +28,24 @@
 
 - (void)testCopyEncryptionKeyDoesNotReturnTheSameKeyUsedToCreateTheDatabase
 {
-    CDTMockEncryptionKey *mockKey = [[CDTMockEncryptionKey alloc] init];
+    CDTMockEncryptionKeyRetriever *mock = [[CDTMockEncryptionKeyRetriever alloc] init];
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_copyEncryptionKey"];
 
-    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKey:mockKey];
+    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyRetriever:mock];
 
-    XCTAssertNotEqualObjects([db copyEncryptionKey], mockKey,
+    XCTAssertNotEqualObjects([db copyEncryptionKeyRetriever], mock,
                              @"Once a database is created with a key, this key must not change. "
                              @"Return a copy instead of the original");
 }
 
 - (void)testOpenFailsIfEncryptionKeyReturnsAValue
 {
-    CDTMockEncryptionKey *mockKey = [[CDTMockEncryptionKey alloc] init];
+    CDTMockEncryptionKeyRetriever *mock = [[CDTMockEncryptionKeyRetriever alloc] init];
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_OpenFails"];
 
-    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKey:mockKey];
+    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyRetriever:mock];
 
     XCTAssertFalse([db open],
                    @"DB can't be opened with key because encription library is not available");

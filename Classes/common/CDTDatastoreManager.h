@@ -17,7 +17,7 @@
 
 extern NSString *const CDTDatastoreErrorDomain;
 
-@protocol CDTEncryptionKey;
+@protocol CDTEncryptionKeyRetrieving;
 
 @class CDTDatastore;
 @class TD_DatabaseManager;
@@ -53,19 +53,20 @@ extern NSString *const CDTDatastoreErrorDomain;
 - (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error;
 
 /**
- Returns a datastore for the given name. Datastore files are encrypted before saving to disk
- (attachments and extensions not included).
- If a key is provided the first time the datastore is open, from that point on the same key
- has to be informed each time the datastore is open.
+ Returns a datastore for the given name. If a key is provided, datastore files are encrypted before
+ saving to disk (attachments and extensions not included).
+ If a key is provided the first time the datastore is open, only this key will be valid the next
+ time. In the same way, if no key is informed, the datastore will not be cipher and can not be
+ cipher later on.
 
  @param name datastore name
- @param encryptionKey key to encrypt the data
+ @param retriever it returns the key to cipher the datastore
  @param error will point to an NSError object in case of error.
 
  @see CDTDatastore
  */
 - (CDTDatastore *)datastoreNamed:(NSString *)name
-               withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+      withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
                            error:(NSError *__autoreleasing *)error;
 
 /**
@@ -92,13 +93,13 @@ extern NSString *const CDTDatastoreErrorDomain;
  their underlying databases closed) before calling this method.
 
  @param name datastore name
- @param encryptionKey key to encrypt the data
+ @param retriever it returns the key to cipher the datastore
  @param error will point to an NSError object in case of error.
 
  */
 - (BOOL)deleteDatastoreNamed:(NSString *)name
-           withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
-                       error:(NSError *__autoreleasing *)error;
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)encryptionKey
+                         error:(NSError *__autoreleasing *)error;
 
 /**
 

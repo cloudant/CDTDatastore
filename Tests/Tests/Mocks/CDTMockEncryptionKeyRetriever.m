@@ -1,5 +1,5 @@
 //
-//  CDTMockEncryptionKey.m
+//  CDTMockEncryptionKeyRetriever.m
 //  Tests
 //
 //  Created by Enrique de la Torre Fernandez on 23/02/2015.
@@ -13,13 +13,13 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import "CDTMockEncryptionKey.h"
+#import "CDTMockEncryptionKeyRetriever.h"
 
-@interface CDTMockEncryptionKey ()
+@interface CDTMockEncryptionKeyRetriever ()
 
 @end
 
-@implementation CDTMockEncryptionKey
+@implementation CDTMockEncryptionKeyRetriever
 
 #pragma mark - CDTEncryptionKey methods
 - (NSString *)encryptionKeyOrNil { return @"???"; }

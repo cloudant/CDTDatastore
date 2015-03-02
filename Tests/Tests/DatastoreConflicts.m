@@ -27,7 +27,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTConflictResolver.h"
 #import "CDTMutableDocumentRevision.h"
-#import "CDTMockOneUseEncryptionKey.h"
+#import "CDTMockOneUseEncryptionKeyRetriever.h"
 
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
@@ -207,9 +207,10 @@
 - (void)testGetConflictedDocumentIdsReturnNilIfDatastoreCanNotBeOpen
 {
     NSError *error;
-    CDTMockOneUseEncryptionKey *mock = [[CDTMockOneUseEncryptionKey alloc] init];
-    CDTDatastore *otherDatastore =
-        [self.factory datastoreNamed:@"otherconflicttests" withEncryptionKey:mock error:&error];
+    CDTMockOneUseEncryptionKeyRetriever *mock = [[CDTMockOneUseEncryptionKeyRetriever alloc] init];
+    CDTDatastore *otherDatastore = [self.factory datastoreNamed:@"otherconflicttests"
+                                     withEncryptionKeyRetriever:mock
+                                                          error:&error];
     [otherDatastore.database close];
 
     XCTAssertNil([otherDatastore getConflictedDocumentIds],

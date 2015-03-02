@@ -13,7 +13,7 @@
 #import "TDStatus.h"
 #import "TDMisc.h"
 
-@protocol CDTEncryptionKey;
+@protocol CDTEncryptionKeyRetrieving;
 
 @class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
 
@@ -59,7 +59,7 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
    @private
     NSString* _path;
     NSString* _name;
-    id<CDTEncryptionKey> _encryptionKey;
+    id<CDTEncryptionKeyRetrieving> _encryptionKeyRetriever;
     FMDatabaseQueue* _fmdbQueue;
     BOOL _readOnly;
     BOOL _open;
@@ -71,16 +71,16 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     NSMutableArray* _activeReplicators;
 }
 
-- (id)initWithPath:(NSString*)path encryptionKey:(id<CDTEncryptionKey>)encryptionKey;
+- (id)initWithPath:(NSString*)path encryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever;
 
-- (id<CDTEncryptionKey>)copyEncryptionKey;
+- (id<CDTEncryptionKeyRetrieving>)copyEncryptionKeyRetriever;
 
 - (BOOL)open;
 - (BOOL)close;
 - (BOOL)deleteDatabase:(NSError**)outError;
 
 + (TD_Database*)createEmptyDBAtPath:(NSString*)path
-                  withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey;
+         withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever;
 
 /** Should the database file be opened in read-only mode? */
 @property BOOL readOnly;

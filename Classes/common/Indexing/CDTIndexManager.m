@@ -21,7 +21,7 @@
 #import "CDTFieldIndexer.h"
 #import "CDTDatastore.h"
 #import "CDTQueryBuilder.h"
-#import "CDTEncryptionKeyDummy.h"
+#import "CDTEncryptionKeyDummyRetriever.h"
 
 #import "TD_Database.h"
 #import "TD_Body.h"
@@ -790,9 +790,9 @@ static const int VERSION = 1;
     }
 
     if (success) {
-        id<CDTEncryptionKey> encryptionKey = [datastore copyEncryptionKey];
+        id<CDTEncryptionKeyRetrieving> retriever = [datastore copyEncryptionKeyRetriever];
 
-        success = [CDTIndexManager configureDatabase:database withEncryptionKey:encryptionKey];
+        success = [CDTIndexManager configureDatabase:database withEncryptionKeyRetriever:retriever];
 
         if (!success) {
             NSDictionary *userInfo = @{
@@ -831,11 +831,11 @@ static const int VERSION = 1;
 }
 
 + (BOOL)configureDatabase:(FMDatabaseQueue *)database
-        withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
     __block BOOL success = YES;
 
-    NSString *key = [encryptionKey encryptionKeyOrNil];
+    NSString *key = [retriever encryptionKeyOrNil];
     if (key) {
         [database inDatabase:^(FMDatabase *db) {
           success = [db setKey:key];

@@ -17,7 +17,7 @@
 #import "CollectionUtils.h"
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
-#import "CDTEncryptionKeyDummy.h"
+#import "CDTEncryptionKeyDummyRetriever.h"
 
 #import "CloudantTests.h"
 
@@ -32,9 +32,9 @@
     // RequireTestCase(TD_Database); how can I do this in XCode?
     TD_DatabaseManager* dbm =
         [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest"];
-    
-    CDTEncryptionKeyDummy* dummy = [CDTEncryptionKeyDummy dummy];
-    TD_Database* db = [dbm databaseNamed:@"foo" withEncryptionKey:dummy];
+
+    CDTEncryptionKeyDummyRetriever* dummy = [CDTEncryptionKeyDummyRetriever dummy];
+    TD_Database* db = [dbm databaseNamed:@"foo" withEncryptionKeyRetriever:dummy];
 
     XCTAssertNotNil(db, @"TD_Database is nil in %s", __PRETTY_FUNCTION__);
     XCTAssertEqualObjects(db.name, @"foo", @"TD_Database.name is not \"foo\" in %s",
@@ -46,7 +46,7 @@
 
     XCTAssertTrue(!db.exists, @"TD_Database already exists in %s", __PRETTY_FUNCTION__);
 
-    XCTAssertEqual([dbm databaseNamed:@"foo" withEncryptionKey:dummy], db,
+    XCTAssertEqual([dbm databaseNamed:@"foo" withEncryptionKeyRetriever:dummy], db,
                    @"TD_DatabaseManager is not aware of a database named \"foo\" in %s",
                    __PRETTY_FUNCTION__);
 

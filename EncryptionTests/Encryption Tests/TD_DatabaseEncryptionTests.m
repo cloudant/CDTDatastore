@@ -16,7 +16,7 @@
 #import <XCTest/XCTest.h>
 
 #import "CloudantTests.h"
-#import "CDTMockEncryptionKey.h"
+#import "CDTMockEncryptionKeyRetriever.h"
 
 #import "TD_Database.h"
 
@@ -28,13 +28,13 @@
 
 - (void)testCopyEncryptionKeyDoesNotReturnTheSameKeyUsedToCreateTheDatabase
 {
-    CDTMockEncryptionKey *mockKey = [[CDTMockEncryptionKey alloc] init];
+    CDTMockEncryptionKeyRetriever *mock = [[CDTMockEncryptionKeyRetriever alloc] init];
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_copyEncryptionKey"];
 
-    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKey:mockKey];
+    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyRetriever:mock];
 
-    XCTAssertNotEqualObjects([db copyEncryptionKey], mockKey,
+    XCTAssertNotEqualObjects([db copyEncryptionKeyRetriever], mock,
                              @"Once a database is created with a key, this key must not change. "
                              @"Return a copy instead of the original");
 }
@@ -44,17 +44,17 @@
     NSString *path =
         [NSTemporaryDirectory() stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests"];
 
-    XCTAssertThrows([TD_Database createEmptyDBAtPath:path withEncryptionKey:nil],
+    XCTAssertThrows([TD_Database createEmptyDBAtPath:path withEncryptionKeyRetriever:nil],
                     @"The key is mandatory. Provide a dummy object to not cipher the database");
 }
 
 - (void)testOpenDoesNotFailIfEncryptionKeyReturnsAValue
 {
-    CDTMockEncryptionKey *mockKey = [[CDTMockEncryptionKey alloc] init];
+    CDTMockEncryptionKeyRetriever *mock = [[CDTMockEncryptionKeyRetriever alloc] init];
     NSString *path =
         [NSTemporaryDirectory() stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests"];
 
-    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKey:mockKey];
+    TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyRetriever:mock];
 
     XCTAssertTrue([db open], @"DB can be opened with a key with the encryption library available");
 }

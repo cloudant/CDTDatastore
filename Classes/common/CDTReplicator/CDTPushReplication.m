@@ -84,7 +84,7 @@
 
     if (self.source) {
         [doc setObject:self.source.name forKey:@"source"];
-        [doc setObject:[self.source copyEncryptionKey] forKey:@"encryptionKey"];
+        [doc setObject:[self.source copyEncryptionKeyRetriever] forKey:@"encryptionKeyRetriever"];
     } else {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                    @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");

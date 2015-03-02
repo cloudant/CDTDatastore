@@ -118,8 +118,8 @@ static NSCharacterSet* kIllegalNameChars;
 }
 
 - (TD_Database*)databaseNamed:(NSString*)name
-            withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
-                       create:(BOOL)create
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
+                        create:(BOOL)create
 {
     if (_options.readOnly) {
         create = NO;
@@ -132,7 +132,7 @@ static NSCharacterSet* kIllegalNameChars;
             return nil;
         }
 
-        db = [[TD_Database alloc] initWithPath:path encryptionKey:encryptionKey];
+        db = [[TD_Database alloc] initWithPath:path encryptionKeyRetriever:retriever];
         db.readOnly = _options.readOnly;
         if (!create && !db.exists) {
             return nil;
@@ -145,15 +145,16 @@ static NSCharacterSet* kIllegalNameChars;
     return db;
 }
 
-- (TD_Database*)databaseNamed:(NSString*)name withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+- (TD_Database*)databaseNamed:(NSString*)name
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
-    return [self databaseNamed:name withEncryptionKey:encryptionKey create:YES];
+    return [self databaseNamed:name withEncryptionKeyRetriever:retriever create:YES];
 }
 
 - (TD_Database*)existingDatabaseNamed:(NSString*)name
-                    withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+           withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
-    TD_Database* db = [self databaseNamed:name withEncryptionKey:encryptionKey create:NO];
+    TD_Database* db = [self databaseNamed:name withEncryptionKeyRetriever:retriever create:NO];
     if (db && ![db open]) {
         db = nil;
     }
@@ -161,9 +162,10 @@ static NSCharacterSet* kIllegalNameChars;
     return db;
 }
 
-- (BOOL)deleteDatabaseNamed:(NSString*)name withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+- (BOOL)deleteDatabaseNamed:(NSString*)name
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
-    TD_Database* db = [self databaseNamed:name withEncryptionKey:encryptionKey];
+    TD_Database* db = [self databaseNamed:name withEncryptionKeyRetriever:retriever];
     if (!db) {
         return NO;
     }
@@ -227,8 +229,8 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
         return kTDStatusBadRequest;
     }
 
-    id<CDTEncryptionKey> encryptionKey = properties[@"encryptionKey"];
-    if (!encryptionKey) {
+    id<CDTEncryptionKeyRetrieving> encryptionKeyRetriever = properties[@"encryptionKeyRetriever"];
+    if (!encryptionKeyRetriever) {
         return kTDStatusBadRequest;
     }
 
@@ -245,7 +247,8 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     NSDictionary* remoteDict = nil;
     if ([TD_DatabaseManager isValidDatabaseName:source]) {
         if (outDatabase) {
-            db = [self existingDatabaseNamed:source withEncryptionKey:encryptionKey];
+            db = [self existingDatabaseNamed:source
+                  withEncryptionKeyRetriever:encryptionKeyRetriever];
         }
 
         remoteDict = targetDict;
@@ -261,12 +264,13 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
         remoteDict = sourceDict;
         if (outDatabase) {
             if (createTarget) {
-                db = [self databaseNamed:target withEncryptionKey:encryptionKey];
+                db = [self databaseNamed:target withEncryptionKeyRetriever:encryptionKeyRetriever];
                 if (![db open]) {
                     return kTDStatusDBError;
                 }
             } else {
-                db = [self existingDatabaseNamed:target withEncryptionKey:encryptionKey];
+                db = [self existingDatabaseNamed:target
+                      withEncryptionKeyRetriever:encryptionKeyRetriever];
             }
         }
     }

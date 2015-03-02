@@ -16,8 +16,8 @@
 		CD48786F1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786B1A9BA6C80070EB63 /* CloudantSyncTests.m */; };
 		CD4878701A9BA6C80070EB63 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786D1A9BA6C80070EB63 /* CloudantTests.m */; };
 		CD4878711A9BA6C80070EB63 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786D1A9BA6C80070EB63 /* CloudantTests.m */; };
-		CD4878751A9BA7760070EB63 /* CDTMockEncryptionKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4878741A9BA7760070EB63 /* CDTMockEncryptionKey.m */; };
-		CD4878761A9BA7760070EB63 /* CDTMockEncryptionKey.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4878741A9BA7760070EB63 /* CDTMockEncryptionKey.m */; };
+		CD4A02A81AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A02A71AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m */; };
+		CD4A02A91AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A02A71AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m */; };
 		F90D36E7E415768CD9A11DF8 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C7BC81EA72FBC2080CDD22E /* libPods-osx.a */; };
 /* End PBXBuildFile section */
 
@@ -38,8 +38,8 @@
 		CD48786B1A9BA6C80070EB63 /* CloudantSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CloudantSyncTests.m; path = ../../Tests/Tests/CloudantSyncTests.m; sourceTree = "<group>"; };
 		CD48786C1A9BA6C80070EB63 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CloudantTests.h; path = ../../Tests/Tests/CloudantTests.h; sourceTree = "<group>"; };
 		CD48786D1A9BA6C80070EB63 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CloudantTests.m; path = ../../Tests/Tests/CloudantTests.m; sourceTree = "<group>"; };
-		CD4878731A9BA7760070EB63 /* CDTMockEncryptionKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKey.h; sourceTree = "<group>"; };
-		CD4878741A9BA7760070EB63 /* CDTMockEncryptionKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKey.m; sourceTree = "<group>"; };
+		CD4A02A61AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeyRetriever.h; sourceTree = "<group>"; };
+		CD4A02A71AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeyRetriever.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,8 +133,8 @@
 		CD4878721A9BA7760070EB63 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
-				CD4878731A9BA7760070EB63 /* CDTMockEncryptionKey.h */,
-				CD4878741A9BA7760070EB63 /* CDTMockEncryptionKey.m */,
+				CD4A02A61AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.h */,
+				CD4A02A71AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m */,
 			);
 			name = Mocks;
 			path = ../../Tests/Tests/Mocks;
@@ -312,7 +312,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD48786E1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */,
-				CD4878751A9BA7760070EB63 /* CDTMockEncryptionKey.m in Sources */,
+				CD4A02A81AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */,
 				CD4878651A9BA5D50070EB63 /* IndexManagerEncryptionTests.m in Sources */,
 				CD4878681A9BA5F90070EB63 /* TD_DatabaseEncryptionTests.m in Sources */,
 				CD4878701A9BA6C80070EB63 /* CloudantTests.m in Sources */,
@@ -324,7 +324,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD48786F1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */,
-				CD4878761A9BA7760070EB63 /* CDTMockEncryptionKey.m in Sources */,
+				CD4A02A91AA4BCBD00B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */,
 				CD4878661A9BA5D50070EB63 /* IndexManagerEncryptionTests.m in Sources */,
 				CD4878691A9BA5F90070EB63 /* TD_DatabaseEncryptionTests.m in Sources */,
 				CD4878711A9BA6C80070EB63 /* CloudantTests.m in Sources */,

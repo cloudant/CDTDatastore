@@ -31,7 +31,7 @@
 #import "FMDatabaseAdditions.h"
 #import "FMDatabase+LongLong.h"
 #import "FMDatabaseQueue.h"
-#import "CDTEncryptionKey.h"
+#import "CDTEncryptionKeyRetrieving.h"
 #import "CDTLogging.h"
 
 NSString* const TD_DatabaseWillCloseNotification = @"TD_DatabaseWillClose";
@@ -81,13 +81,13 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 }
 
 + (TD_Database*)createEmptyDBAtPath:(NSString*)path
-                  withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+         withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
     if (!removeItemIfExists(path, NULL)) {
         return nil;
     }
 
-    TD_Database* db = [[self alloc] initWithPath:path encryptionKey:encryptionKey];
+    TD_Database* db = [[self alloc] initWithPath:path encryptionKeyRetriever:retriever];
     if (!removeItemIfExists(db.attachmentStorePath, NULL)) {
         return nil;
     }
@@ -98,14 +98,14 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     return db;
 }
 
-- (id)initWithPath:(NSString*)path encryptionKey:(id<CDTEncryptionKey>)encryptionKey
+- (id)initWithPath:(NSString*)path encryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
 {
     if (self = [super init]) {
         Assert([path hasPrefix:@"/"], @"Path must be absolute");
-        Assert(encryptionKey, @"Key is mandatory. Provide a dummy instance instead");
+        Assert(retriever, @"Key retriever is mandatory. Provide a dummy instance instead");
         _path = [path copy];
         _name = [path.lastPathComponent.stringByDeletingPathExtension copy];
-        _encryptionKey = [encryptionKey copy];
+        _encryptionKeyRetriever = [retriever copy];
 
         if (0) {
             // Appease the static analyzer by using these category ivars in this source file:
@@ -120,7 +120,10 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (BOOL)exists { return [[NSFileManager defaultManager] fileExistsAtPath:_path]; }
 
-- (id<CDTEncryptionKey>)copyEncryptionKey { return [_encryptionKey copy]; }
+- (id<CDTEncryptionKeyRetrieving>)copyEncryptionKeyRetriever
+{
+    return [_encryptionKeyRetriever copy];
+}
 
 - (BOOL)replaceWithDatabaseFile:(NSString*)databasePath
                 withAttachments:(NSString*)attachmentsPath
@@ -233,7 +236,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
     // Cipher database
     if (result) {
-        NSString* key = [_encryptionKey encryptionKeyOrNil];
+        NSString* key = [_encryptionKeyRetriever encryptionKeyOrNil];
         if (key) {
             [_fmdbQueue inDatabase:^(FMDatabase* db) {
               result = [db setKey:key];

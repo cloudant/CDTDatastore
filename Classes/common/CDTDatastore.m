@@ -150,7 +150,10 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 - (NSString *)name { return self.database.name; }
 
-- (id<CDTEncryptionKey>)copyEncryptionKey { return [self.database copyEncryptionKey]; };
+- (id<CDTEncryptionKeyRetrieving>)copyEncryptionKeyRetriever
+{
+    return [self.database copyEncryptionKeyRetriever];
+}
 
 - (CDTDocumentRevision *)getDocumentWithId:(NSString *)docId error:(NSError *__autoreleasing *)error
 {

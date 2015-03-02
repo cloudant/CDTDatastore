@@ -64,13 +64,13 @@
             location = "group:CDTEncryptionKey"
             name = "CDTEncryptionKey">
             <FileRef
-               location = "group:CDTEncryptionKey.h">
+               location = "group:CDTEncryptionKeyDummyRetriever.h">
             </FileRef>
             <FileRef
-               location = "group:CDTEncryptionKeyDummy.h">
+               location = "group:CDTEncryptionKeyDummyRetriever.m">
             </FileRef>
             <FileRef
-               location = "group:CDTEncryptionKeyDummy.m">
+               location = "group:CDTEncryptionKeyRetrieving.h">
             </FileRef>
          </Group>
          <Group

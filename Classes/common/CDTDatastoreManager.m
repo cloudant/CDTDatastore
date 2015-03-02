@@ -16,7 +16,7 @@
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 
-#import "CDTEncryptionKeyDummy.h"
+#import "CDTEncryptionKeyDummyRetriever.h"
 
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
@@ -46,20 +46,20 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    CDTEncryptionKeyDummy *dummy = [CDTEncryptionKeyDummy dummy];
+    CDTEncryptionKeyDummyRetriever *dummy = [CDTEncryptionKeyDummyRetriever dummy];
 
-    return [self datastoreNamed:name withEncryptionKey:dummy error:error];
+    return [self datastoreNamed:name withEncryptionKeyRetriever:dummy error:error];
 }
 
 - (CDTDatastore *)datastoreNamed:(NSString *)name
-               withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
+      withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
                            error:(NSError *__autoreleasing *)error
 {
     //    if (![TD_Database isValidDatabaseName:name]) {
     //      Not a public method yet
     //    }
 
-    TD_Database *db = [self.manager databaseNamed:name withEncryptionKey:encryptionKey];
+    TD_Database *db = [self.manager databaseNamed:name withEncryptionKeyRetriever:retriever];
 
     if (db) {
         return [[CDTDatastore alloc] initWithDatabase:db];
@@ -78,16 +78,16 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    CDTEncryptionKeyDummy *dummy = [CDTEncryptionKeyDummy dummy];
+    CDTEncryptionKeyDummyRetriever *dummy = [CDTEncryptionKeyDummyRetriever dummy];
 
-    return [self deleteDatastoreNamed:name withEncryptionKey:dummy error:error];
+    return [self deleteDatastoreNamed:name withEncryptionKeyRetriever:dummy error:error];
 }
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name
-           withEncryptionKey:(id<CDTEncryptionKey>)encryptionKey
-                       error:(NSError *__autoreleasing *)error
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
+                         error:(NSError *__autoreleasing *)error
 {
-    TD_Database *db = [self.manager databaseNamed:name withEncryptionKey:encryptionKey];
+    TD_Database *db = [self.manager databaseNamed:name withEncryptionKeyRetriever:retriever];
 
     if (!db) {
         NSDictionary *userInfo = @{

@@ -16,7 +16,7 @@
 #import <XCTest/XCTest.h>
 
 #import "CloudantSyncTests.h"
-#import "CDTEncryptionKeyDummy.h"
+#import "CDTEncryptionKeyDummyRetriever.h"
 #import "CDTDatastoreManager.h"
 
 #import "CDTIndexManager.h"
@@ -45,9 +45,9 @@
 
 - (void)testCreateIndexManagerWithDummyKey
 {
-    CDTEncryptionKeyDummy *dummy = [CDTEncryptionKeyDummy dummy];
+    CDTEncryptionKeyDummyRetriever *dummy = [CDTEncryptionKeyDummyRetriever dummy];
     CDTDatastore *datastore =
-        [self.factory datastoreNamed:@"test" withEncryptionKey:dummy error:nil];
+        [self.factory datastoreNamed:@"test" withEncryptionKeyRetriever:dummy error:nil];
 
     NSError *err = nil;
     CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:&err];
