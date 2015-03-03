@@ -15,7 +15,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 });
 ```
 
-## Database changed - CDTDatastoreChangedNotification
+## Database changed - CDTDatastoreChangeNotification
 
 Defined in:
 
