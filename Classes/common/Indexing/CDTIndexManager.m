@@ -21,6 +21,7 @@
 #import "CDTFieldIndexer.h"
 #import "CDTDatastore.h"
 #import "CDTQueryBuilder.h"
+#import "CDTEncryptionKeyDummyRetriever.h"
 
 #import "TD_Database.h"
 #import "TD_Body.h"
@@ -56,7 +57,7 @@ static const int VERSION = 1;
             changes:(TD_RevisionList *)changes
        lastSequence:(long *)lastSequence;
 
-- (BOOL)updateSchema:(int)currentVersion;
++ (BOOL)updateSchema:(int)currentVersion inDatabase:(FMDatabaseQueue *)database;
 
 @end
 
@@ -66,51 +67,21 @@ static const int VERSION = 1;
 
 - (id)initWithDatastore:(CDTDatastore *)datastore error:(NSError *__autoreleasing *)error
 {
-    BOOL success = YES;
     self = [super init];
     if (self) {
-        _datastore = datastore;
-        _indexFunctionMap = [[NSMutableDictionary alloc] init];
-        _validFieldRegexp = [[NSRegularExpression alloc] initWithPattern:kCDTIndexFieldNamePattern
-                                                                 options:0
-                                                                   error:error];
-
-        NSString *dir = [datastore extensionDataFolder:kCDTExtensionName];
-        [[NSFileManager defaultManager] createDirectoryAtPath:dir
-                                  withIntermediateDirectories:TRUE
-                                                   attributes:nil
-                                                        error:nil];
-        NSString *filename = [NSString pathWithComponents:@[ dir, @"indexes.sqlite" ]];
-        _database = [[FMDatabaseQueue alloc] initWithPath:filename];
-        if (!_database) {
-            // raise error
-            if (error) {
-                NSDictionary *userInfo = @{
-                    NSLocalizedDescriptionKey :
-                        NSLocalizedString(@"Problem opening or creating database.", nil)
-                        };
-                *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
-                                             code:CDTIndexErrorSqlError
-                                         userInfo:userInfo];
-            }
-            return nil;
-        }
-
-        success = [self updateSchema:VERSION];
-        if (!success) {
-            // raise error
-            if (error) {
-                NSDictionary *userInfo = @{
-                    NSLocalizedDescriptionKey :
-                        NSLocalizedString(@"Problem updating database schema.", nil)
-                        };
-                *error = [NSError errorWithDomain:CDTIndexManagerErrorDomain
-                                             code:CDTIndexErrorSqlError
-                                         userInfo:userInfo];
-            }
-            return nil;
+        _database = [CDTIndexManager databaseQueueWithDatastore:datastore error:error];
+        if (_database) {
+            _datastore = datastore;
+            _indexFunctionMap = [[NSMutableDictionary alloc] init];
+            _validFieldRegexp =
+                [[NSRegularExpression alloc] initWithPattern:kCDTIndexFieldNamePattern
+                                                     options:0
+                                                       error:error];
+        } else {
+            self = nil;
         }
     }
+
     return self;
 }
 
@@ -152,12 +123,12 @@ static const int VERSION = 1;
         [NSString stringWithFormat:@"drop table %@%@;", kCDTIndexTablePrefix, indexName];
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        NSDictionary *v = @{ @"name" : indexName };
-        success = success && [db executeUpdate:sqlDelete withParameterDictionary:v];
-        success = success && [db executeUpdate:sqlDrop];
-        if (!success) {
-            *rollback = YES;
-        }
+      NSDictionary *v = @{ @"name" : indexName };
+      success = success && [db executeUpdate:sqlDelete withParameterDictionary:v];
+      success = success && [db executeUpdate:sqlDrop];
+      if (!success) {
+          *rollback = YES;
+      }
     }];
 
     if (success) {
@@ -217,11 +188,11 @@ static const int VERSION = 1;
     NSMutableArray *docids = [NSMutableArray array];
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:query.sql withArgumentsInArray:query.values];
-        while ([results next]) {
-            NSString *docid = [results stringForColumnIndex:0];
-            [docids addObject:docid];
-        }
+      FMResultSet *results = [db executeQuery:query.sql withArgumentsInArray:query.values];
+      while ([results next]) {
+          NSString *docid = [results stringForColumnIndex:0];
+          [docids addObject:docid];
+      }
     }];
 
     // now return CDTQueryResult which is an iterator over the documents for these ids
@@ -406,19 +377,19 @@ static const int VERSION = 1;
     }
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:sqlJoin withArgumentsInArray:queryValues];
+      FMResultSet *results = [db executeQuery:sqlJoin withArgumentsInArray:queryValues];
 
-        int n = 0;
-        [results next];
-        for (int i = 0;[results hasAnotherRow]; i++) {
-            if (i >= offset && (!limit || n < limitCount)) {
-                NSString *docid = [results stringForColumnIndex:0];
-                [docids addObject:docid];
-                n++;
-            }
-            [results next];
-        }
-        [results close];
+      int n = 0;
+      [results next];
+      for (int i = 0;[results hasAnotherRow]; i++) {
+          if (i >= offset && (!limit || n < limitCount)) {
+              NSString *docid = [results stringForColumnIndex:0];
+              [docids addObject:docid];
+              n++;
+          }
+          [results next];
+      }
+      [results close];
     }];
 
     // now return CDTQueryResult which is an iterator over the documents for these ids
@@ -439,14 +410,14 @@ static const int VERSION = 1;
     NSMutableArray *values = [[NSMutableArray alloc] init];
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:sql];
+      FMResultSet *results = [db executeQuery:sql];
 
-        [results next];
-        while ([results hasAnotherRow]) {
-            [values addObject:[results objectForColumnIndex:0]];
-            [results next];
-        }
-        [results close];
+      [results next];
+      while ([results hasAnotherRow]) {
+          [values addObject:[results objectForColumnIndex:0]];
+          [results next];
+      }
+      [results close];
     }];
     return values;
 }
@@ -466,14 +437,14 @@ static const int VERSION = 1;
     __block BOOL success = false;
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:SQL_SELECT_INDEX_BY_NAME, indexName];
-        [results next];
-        if ([results hasAnotherRow]) {
-            type = [results longForColumnIndex:1];
-            lastSequence = [results longForColumnIndex:2];
-            success = true;
-        }
-        [results close];
+      FMResultSet *results = [db executeQuery:SQL_SELECT_INDEX_BY_NAME, indexName];
+      [results next];
+      if ([results hasAnotherRow]) {
+          type = [results longForColumnIndex:1];
+          lastSequence = [results longForColumnIndex:2];
+          success = true;
+      }
+      [results close];
     }];
     if (success) {
         return
@@ -503,24 +474,24 @@ static const int VERSION = 1;
     __block long lastSequence;
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:SQL_SELECT_INDEX_BY_NAME];
-        [results next];
-        while ([results hasAnotherRow]) {
-            indexName = [results stringForColumnIndex:0];
+      FMResultSet *results = [db executeQuery:SQL_SELECT_INDEX_BY_NAME];
+      [results next];
+      while ([results hasAnotherRow]) {
+          indexName = [results stringForColumnIndex:0];
 
-            // If index isn't registered with ensureIndexed yet, then skip it.
-            if ([registeredIndexes containsObject:indexName]) {
-                type = [results longForColumnIndex:1];
-                lastSequence = [results longForColumnIndex:2];
-                CDTIndex *index = [[CDTIndex alloc] initWithIndexName:indexName
-                                                         lastSequence:lastSequence
-                                                            fieldType:type];
-                [indexes setObject:index forKey:indexName];
-            }
+          // If index isn't registered with ensureIndexed yet, then skip it.
+          if ([registeredIndexes containsObject:indexName]) {
+              type = [results longForColumnIndex:1];
+              lastSequence = [results longForColumnIndex:2];
+              CDTIndex *index = [[CDTIndex alloc] initWithIndexName:indexName
+                                                       lastSequence:lastSequence
+                                                          fieldType:type];
+              [indexes setObject:index forKey:indexName];
+          }
 
-            [results next];
-        }
-        [results close];
+          [results next];
+      }
+      [results close];
     }];
     return indexes;
 }
@@ -591,39 +562,39 @@ static const int VERSION = 1;
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
-        for (TD_Revision *rev in changes) {
-            NSString *docID = [rev docID];
+      for (TD_Revision *rev in changes) {
+          NSString *docID = [rev docID];
 
-            // Delete
-            NSDictionary *dictDelete = @{ @"docid" : docID };
-            [db executeUpdate:sqlDelete withParameterDictionary:dictDelete];
+          // Delete
+          NSDictionary *dictDelete = @{ @"docid" : docID };
+          [db executeUpdate:sqlDelete withParameterDictionary:dictDelete];
 
-            // Insert new values if the rev isn't deleted
-            if (!rev.deleted) {
-                CDTDocumentRevision *docRev =
-                    [[CDTDocumentRevision alloc] initWithDocId:rev.docID
-                                                    revisionId:rev.revID
-                                                          body:rev.body.properties
-                                                       deleted:rev.deleted
-                                                   attachments:@{}
-                                                      sequence:rev.sequence];
-                NSArray *valuesInsert = [f valuesForRevision:docRev indexName:[index indexName]];
-                for (NSObject *rawValue in valuesInsert) {
-                    NSObject *convertedValue = [helper convertIndexValue:rawValue];
-                    if (convertedValue) {
-                        NSDictionary *dictInsert = @{ @"docid" : docID, @"value" : convertedValue };
-                        success = success &&
-                                  [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
-                    }
-                }
-            }
-            if (!success) {
-                // TODO fill in error
-                *rollback = true;
-                break;
-            }
-            *lastSequence = [rev sequence];
-        }
+          // Insert new values if the rev isn't deleted
+          if (!rev.deleted) {
+              CDTDocumentRevision *docRev =
+                  [[CDTDocumentRevision alloc] initWithDocId:rev.docID
+                                                  revisionId:rev.revID
+                                                        body:rev.body.properties
+                                                     deleted:rev.deleted
+                                                 attachments:@{}
+                                                    sequence:rev.sequence];
+              NSArray *valuesInsert = [f valuesForRevision:docRev indexName:[index indexName]];
+              for (NSObject *rawValue in valuesInsert) {
+                  NSObject *convertedValue = [helper convertIndexValue:rawValue];
+                  if (convertedValue) {
+                      NSDictionary *dictInsert = @{ @"docid" : docID, @"value" : convertedValue };
+                      success = success &&
+                                [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
+                  }
+              }
+          }
+          if (!success) {
+              // TODO fill in error
+              *rollback = true;
+              break;
+          }
+          *lastSequence = [rev sequence];
+      }
     }];
 
     // if there was a problem, we rolled back, so the sequence won't be updated
@@ -638,18 +609,17 @@ static const int VERSION = 1;
 {
     __block BOOL success = TRUE;
 
-    NSDictionary *v = @{
-        @"name" : indexName,
-        @"last_sequence" : [NSNumber numberWithLong:lastSequence]
-    };
+    NSDictionary *v =
+        @{ @"name" : indexName,
+           @"last_sequence" : [NSNumber numberWithLong:lastSequence] };
     NSString *template = @"update %@ set last_sequence = :last_sequence where name = :name;";
     NSString *sql = [NSString stringWithFormat:template, kCDTIndexMetadataTableName];
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        success = success && [db executeUpdate:sql withParameterDictionary:v];
-        if (!success) {
-            *rollback = YES;
-        }
+      success = success && [db executeUpdate:sql withParameterDictionary:v];
+      if (!success) {
+          *rollback = YES;
+      }
     }];
     return success;
 }
@@ -687,34 +657,34 @@ static const int VERSION = 1;
     __weak CDTIndexManager *weakSelf = self;
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        if (index == nil) {
-            NSString *sqlCreate = [weakSelf createIndexTable:indexName type:type];
-            // TODO splitting up statement, should do somewhere else?
-            for (NSString *str in [sqlCreate componentsSeparatedByString:@";"]) {
-                if ([str length] != 0) {
-                    success = success && [db executeUpdate:str];
-                }
-            }
+      if (index == nil) {
+          NSString *sqlCreate = [weakSelf createIndexTable:indexName type:type];
+          // TODO splitting up statement, should do somewhere else?
+          for (NSString *str in [sqlCreate componentsSeparatedByString:@";"]) {
+              if ([str length] != 0) {
+                  success = success && [db executeUpdate:str];
+              }
+          }
 
-            // same as insertIndexMetaData
-            NSDictionary *v = @{
-                @"name" : indexName,
-                @"last_sequence" : [NSNumber numberWithInt:0],
-                @"type" : @(type)
-            };
-            NSString *strInsert = @"insert into %@ values (:name, :type, :last_sequence);";
-            NSString *sqlInsert = [NSString stringWithFormat:strInsert, kCDTIndexMetadataTableName];
+          // same as insertIndexMetaData
+          NSDictionary *v = @{
+              @"name" : indexName,
+              @"last_sequence" : [NSNumber numberWithInt:0],
+              @"type" : @(type)
+          };
+          NSString *strInsert = @"insert into %@ values (:name, :type, :last_sequence);";
+          NSString *sqlInsert = [NSString stringWithFormat:strInsert, kCDTIndexMetadataTableName];
 
-            success = success && [db executeUpdate:sqlInsert withParameterDictionary:v];
-        } else {
-            CDTLogWarn(CDTINDEX_LOG_CONTEXT, @"not creating index, it was there already");
-        }
-        if (success) {
-            [indexFunctionMap setObject:indexer forKey:indexName];
-        } else {
-            // raise error, either creating the table or doing the insert
-            *rollback = YES;
-        }
+          success = success && [db executeUpdate:sqlInsert withParameterDictionary:v];
+      } else {
+          CDTLogWarn(CDTINDEX_LOG_CONTEXT, @"not creating index, it was there already");
+      }
+      if (success) {
+          [indexFunctionMap setObject:indexer forKey:indexName];
+      } else {
+          // raise error, either creating the table or doing the insert
+          *rollback = YES;
+      }
     }];
 
     // this has to happen outside that tx
@@ -726,41 +696,6 @@ static const int VERSION = 1;
         // update index will populate error if necessary
         success = success && [self updateIndex:index error:error];
     }
-
-    return success;
-}
-
-- (BOOL)updateSchema:(int)currentVersion
-{
-    NSString *SCHEMA_INDEX =
-        @"CREATE TABLE _t_cloudant_sync_indexes_metadata ( " @"        name TEXT NOT NULL, "
-        @"        type INTEGER NOT NULL, " @"        last_sequence INTEGER NOT NULL);";
-
-    __block BOOL success = YES;
-
-    // get current version
-    [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-        FMResultSet *results = [db executeQuery:@"pragma user_version;"];
-        [results next];
-        int version = 0;
-        if ([results hasAnotherRow]) {
-            version = [results intForColumnIndex:0];
-        }
-        if (version < currentVersion) {
-            // update version in pragma
-            // NB we format the entire sql here because pragma doesn't seem to allow ? placeholders
-            success =
-                success && [db executeUpdate:[NSString stringWithFormat:@"pragma user_version = %d",
-                                                                        currentVersion]];
-            success = success && [db executeUpdate:SCHEMA_INDEX];
-            if (!success) {
-                *rollback = YES;
-            }
-        } else {
-            success = YES;
-        }
-        [results close];
-    }];
 
     return success;
 }
@@ -821,6 +756,132 @@ static const int VERSION = 1;
         return NO;
     }
     return YES;
+}
+
+#pragma mark Private class methods
+
++ (FMDatabaseQueue *)databaseQueueWithDatastore:(CDTDatastore *)datastore
+                                          error:(NSError *__autoreleasing *)error
+{
+    NSString *dir = [datastore extensionDataFolder:kCDTExtensionName];
+    [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                              withIntermediateDirectories:TRUE
+                                               attributes:nil
+                                                    error:nil];
+    NSString *filename = [NSString pathWithComponents:@[ dir, @"indexes.sqlite" ]];
+
+    FMDatabaseQueue *database = nil;
+    NSError *thisError = nil;
+    BOOL success = YES;
+
+    if (success) {
+        database = [[FMDatabaseQueue alloc] initWithPath:filename];
+
+        success = (database != nil);
+        if (!success) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem opening or creating database.", nil)
+            };
+            thisError = [NSError errorWithDomain:CDTIndexManagerErrorDomain
+                                            code:CDTIndexErrorSqlError
+                                        userInfo:userInfo];
+        }
+    }
+
+    if (success) {
+        id<CDTEncryptionKeyRetrieving> retriever = [datastore copyEncryptionKeyRetriever];
+
+        success = [CDTIndexManager configureDatabase:database withEncryptionKeyRetriever:retriever];
+
+        if (!success) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem configuring database with encryption key", nil)
+            };
+            thisError = [NSError errorWithDomain:CDTIndexManagerErrorDomain
+                                            code:CDTIndexErrorEncryptionKeyError
+                                        userInfo:userInfo];
+        }
+    }
+
+    if (success) {
+        success = [CDTIndexManager updateSchema:VERSION inDatabase:database];
+
+        if (!success) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem updating database schema.", nil)
+            };
+            thisError = [NSError errorWithDomain:CDTIndexManagerErrorDomain
+                                            code:CDTIndexErrorSqlError
+                                        userInfo:userInfo];
+        }
+    }
+
+    if (!success) {
+        database = nil;
+
+        if (error) {
+            *error = thisError;
+        }
+    }
+
+    return database;
+}
+
++ (BOOL)configureDatabase:(FMDatabaseQueue *)database
+    withEncryptionKeyRetriever:(id<CDTEncryptionKeyRetrieving>)retriever
+{
+    __block BOOL success = YES;
+
+    NSString *key = [retriever encryptionKeyOrNil];
+    if (key) {
+        [database inDatabase:^(FMDatabase *db) {
+          success = [db setKey:key];
+        }];
+
+        if (!success) {
+            CDTLogError(CDTINDEX_LOG_CONTEXT, @"Key to cipher database not set");
+        }
+    }
+
+    return success;
+}
+
++ (BOOL)updateSchema:(int)currentVersion inDatabase:(FMDatabaseQueue *)database
+{
+    NSString *SCHEMA_INDEX =
+        @"CREATE TABLE _t_cloudant_sync_indexes_metadata ( " @"        name TEXT NOT NULL, "
+        @"        type INTEGER NOT NULL, " @"        last_sequence INTEGER NOT NULL);";
+
+    __block BOOL success = YES;
+
+    // get current version
+    [database inTransaction:^(FMDatabase *db, BOOL *rollback) {
+      FMResultSet *results = [db executeQuery:@"pragma user_version;"];
+      [results next];
+      int version = 0;
+      if ([results hasAnotherRow]) {
+          version = [results intForColumnIndex:0];
+      }
+      if (version < currentVersion) {
+          // update version in pragma
+          // NB we format the entire sql here because pragma doesn't seem to allow ? placeholders
+          success =
+              success && [db executeUpdate:[NSString stringWithFormat:@"pragma user_version = %d",
+                                                                      currentVersion]];
+          success = success && [db executeUpdate:SCHEMA_INDEX];
+          if (!success) {
+              *rollback = YES;
+          }
+      } else {
+          success = YES;
+      }
+      [results close];
+    }];
+
+    return success;
 }
 
 @end

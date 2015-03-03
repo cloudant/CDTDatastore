@@ -76,6 +76,14 @@
 		9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F95D60F18CF6A580006D349 /* DBQueryUtils.m */; };
 		9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
 		9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
+		CD4A02A21AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A029F1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m */; };
+		CD4A02A31AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A02A11AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m */; };
+		CD4A02A41AA4BBF800B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A029F1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m */; };
+		CD4A02A51AA4BBFE00B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4A02A11AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m */; };
+		CD79FFE11A9B40FA00F5B5C5 /* IndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD79FFDF1A9B3E0F00F5B5C5 /* IndexManagerEncryptionTests.m */; };
+		CD79FFE71A9B478A00F5B5C5 /* IndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD79FFDF1A9B3E0F00F5B5C5 /* IndexManagerEncryptionTests.m */; };
+		CDE860371A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */; };
+		CDE860381A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -135,6 +143,12 @@
 		9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflictResolvers.m; sourceTree = "<group>"; };
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD4A029E1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeyRetriever.h; sourceTree = "<group>"; };
+		CD4A029F1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeyRetriever.m; sourceTree = "<group>"; };
+		CD4A02A01AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockOneUseEncryptionKeyRetriever.h; sourceTree = "<group>"; };
+		CD4A02A11AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockOneUseEncryptionKeyRetriever.m; sourceTree = "<group>"; };
+		CD79FFDF1A9B3E0F00F5B5C5 /* IndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IndexManagerEncryptionTests.m; sourceTree = "<group>"; };
+		CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseEncryptionTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -197,6 +211,7 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CD79FFE21A9B422700F5B5C5 /* Mocks */,
 				98BB73FE19E5927600C57866 /* CloudantTests.h */,
 				98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */,
 				98BB73FF19E5927600C57866 /* CloudantTests.m */,
@@ -208,6 +223,7 @@
 				9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */,
 				985A188919D2CCEB000283E9 /* DatastoreConflicts.m */,
 				9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */,
+				CD79FFDF1A9B3E0F00F5B5C5 /* IndexManagerEncryptionTests.m */,
 				985FEFFD19CC597400EA5392 /* IndexManagerTests.h */,
 				985FEFFE19CC597400EA5392 /* IndexManagerTests.m */,
 				989E6E21198799AE00FB8510 /* DatastoreCRUD.m */,
@@ -220,6 +236,7 @@
 				27389E16185345FD0027A404 /* Supporting Files */,
 				9F0D23FE188DF96600D3D04E /* TD_DatabaseManagerTests.m */,
 				9F0D23F9188DF36800D3D04E /* TD_DatabaseTests.m */,
+				CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */,
 				9F0D2401188DFE8600D3D04E /* TD_RevisionTests.m */,
 				9F0D2407188E378700D3D04E /* TDCanonicalJSONTests.m */,
 				9F0D240A188E3C3A00D3D04E /* TDCollateJSONTests.m */,
@@ -308,6 +325,17 @@
 				03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		CD79FFE21A9B422700F5B5C5 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				CD4A029E1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.h */,
+				CD4A029F1AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m */,
+				CD4A02A01AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.h */,
+				CD4A02A11AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -482,6 +510,7 @@
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				9985C74919AE5D8300636AB6 /* CDTQueryBuilderTests.m in Sources */,
+				CD4A02A31AA4BB1600B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m in Sources */,
 				27389E3618534E050027A404 /* DatastoreActions.m in Sources */,
 				27389E3518534E050027A404 /* CloudantSyncTests.m in Sources */,
 				9F0D24111890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
@@ -493,6 +522,8 @@
 				985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */,
 				98DDEB9F1A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
 				9F4E646B19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
+				CD79FFE71A9B478A00F5B5C5 /* IndexManagerEncryptionTests.m in Sources */,
+				CD4A02A21AA4BB1600B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */,
 				98BB740019E5927600C57866 /* CloudantTests.m in Sources */,
 				9F0D2402188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				9F4E646D19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
@@ -503,6 +534,7 @@
 				985FEFFF19CC597400EA5392 /* IndexManagerTests.m in Sources */,
 				9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				CDE860371A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -511,7 +543,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD4A02A51AA4BBFE00B5E0B4 /* CDTMockOneUseEncryptionKeyRetriever.m in Sources */,
 				270ED44E19D165BB007E08C4 /* CDTQueryBuilderTests.m in Sources */,
+				CD79FFE11A9B40FA00F5B5C5 /* IndexManagerEncryptionTests.m in Sources */,
 				985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
@@ -528,6 +562,7 @@
 				9F0D2403188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				98DDEBA01A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
 				9F4E646C19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
+				CD4A02A41AA4BBF800B5E0B4 /* CDTMockEncryptionKeyRetriever.m in Sources */,
 				98BB740119E5927600C57866 /* CloudantTests.m in Sources */,
 				985A188B19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
 				9F4E646E19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
@@ -538,6 +573,7 @@
 				9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */,
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				CDE860381A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

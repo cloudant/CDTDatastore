@@ -35,18 +35,16 @@
 
 - (NSArray *)getConflictedDocumentIds
 {
-    if (![self.database open]) {
-        return nil;
-    }
-
-    return [self.database getConflictedDocumentIds];
+    // This property is not synthesized, it is a method that already ensures that the
+    // database is open (or return nil)
+    return (self.database ? [self.database getConflictedDocumentIds] : nil);
 }
 
 - (BOOL)resolveConflictsForDocument:(NSString *)docId
                            resolver:(NSObject<CDTConflictResolver> *)resolver
                               error:(NSError *__autoreleasing *)error
 {
-    if (![self.database open]) {
+    if (!self.database) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return NO;
     }
@@ -101,87 +99,87 @@
 
     TDStatus retStatus = [self.database inTransaction:^TDStatus(FMDatabase *db) {
 
-        CDTDatastore *strongSelf = weakSelf;
-        localError = nil;
+      CDTDatastore *strongSelf = weakSelf;
+      localError = nil;
 
-        // insert at specfied rev
-        // I assume thats already attached so I just insert
-        TDStatus status;
+      // insert at specfied rev
+      // I assume thats already attached so I just insert
+      TDStatus status;
 
-        if ([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]) {
-            TD_Revision *converted =
-                [[TD_Revision alloc] initWithDocID:resolvedRev.docId revID:nil deleted:NO];
-            converted.body = [[TD_Body alloc] initWithProperties:resolvedRev.body];
+      if ([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]) {
+          TD_Revision *converted =
+              [[TD_Revision alloc] initWithDocID:resolvedRev.docId revID:nil deleted:NO];
+          converted.body = [[TD_Body alloc] initWithProperties:resolvedRev.body];
 
-            TD_Revision *winner = [strongSelf.database putRevision:converted
-                                                    prevRevisionID:winningRev
-                                                     allowConflict:NO
-                                                            status:&status
-                                                          database:db];
-            if (TDStatusIsError(status)) {
-                // well conflic res failed
-                localError = TDStatusToNSError(status, nil);
-                return status;
-            }
+          TD_Revision *winner = [strongSelf.database putRevision:converted
+                                                  prevRevisionID:winningRev
+                                                   allowConflict:NO
+                                                          status:&status
+                                                        database:db];
+          if (TDStatusIsError(status)) {
+              // well conflic res failed
+              localError = TDStatusToNSError(status, nil);
+              return status;
+          }
 
-            // okay we have the new winner, need to insert the attachments
-            // start with the new ones
-            for (NSDictionary *attachment in downloadedAttachments) {
-                if (![strongSelf addAttachment:attachment
-                                         toRev:[[CDTDocumentRevision alloc]
-                                                   initWithDocId:winner.docID
-                                                      revisionId:winner.revID
-                                                            body:winner.body.properties
-                                                         deleted:winner.deleted
-                                                     attachments:@{}
-                                                        sequence:winner.sequence]
-                                    inDatabase:db]) {
-                    localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
-                    return kTDStatusAttachmentError;
-                }
-            }
-            for (CDTSavedAttachment *attachment in attachmentsToCopy) {
-                status = [strongSelf.database copyAttachmentNamed:attachment.name
-                                                     fromSequence:attachment.sequence
-                                                       toSequence:winner.sequence
-                                                       inDatabase:db];
+          // okay we have the new winner, need to insert the attachments
+          // start with the new ones
+          for (NSDictionary *attachment in downloadedAttachments) {
+              if (![strongSelf addAttachment:attachment
+                                       toRev:[[CDTDocumentRevision alloc]
+                                                 initWithDocId:winner.docID
+                                                    revisionId:winner.revID
+                                                          body:winner.body.properties
+                                                       deleted:winner.deleted
+                                                   attachments:@{}
+                                                      sequence:winner.sequence]
+                                  inDatabase:db]) {
+                  localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
+                  return kTDStatusAttachmentError;
+              }
+          }
+          for (CDTSavedAttachment *attachment in attachmentsToCopy) {
+              status = [strongSelf.database copyAttachmentNamed:attachment.name
+                                                   fromSequence:attachment.sequence
+                                                     toSequence:winner.sequence
+                                                     inDatabase:db];
 
-                if (TDStatusIsError(status)) {
-                    localError = TDStatusToNSError(status, nil);
-                    return status;
-                }
-            }
-        }
+              if (TDStatusIsError(status)) {
+                  localError = TDStatusToNSError(status, nil);
+                  return status;
+              }
+          }
+      }
 
-        //
-        // set all remaining conflicted revisions to deleted
-        //
-        for (CDTDocumentRevision *theRev in revsArray) {
-            if (theRev == resolvedRev || [theRev.revId isEqualToString:winningRev]) {
-                continue;
-            }
+      //
+      // set all remaining conflicted revisions to deleted
+      //
+      for (CDTDocumentRevision *theRev in revsArray) {
+          if (theRev == resolvedRev || [theRev.revId isEqualToString:winningRev]) {
+              continue;
+          }
 
-            TD_Revision *toPutRevision =
-                [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:YES];
+          TD_Revision *toPutRevision =
+              [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:YES];
 
-            TDStatus status;
-            [strongSelf.database putRevision:toPutRevision
-                              prevRevisionID:theRev.revId
-                               allowConflict:NO
-                                      status:&status
-                                    database:db];
+          TDStatus status;
+          [strongSelf.database putRevision:toPutRevision
+                            prevRevisionID:theRev.revId
+                             allowConflict:NO
+                                    status:&status
+                                  database:db];
 
-            if (TDStatusIsError(status)) {
-                localError = TDStatusToNSError(status, nil);
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                        @"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
-                        @" to delete non-winning revision (%@) for document %@",
-                        theRev.revId, docId);
-                return status;
-            }
-        }
+          if (TDStatusIsError(status)) {
+              localError = TDStatusToNSError(status, nil);
+              CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                         @"CDTDatastore+Conflicts -resolveConflictsForDocument: Failed"
+                         @" to delete non-winning revision (%@) for document %@",
+                         theRev.revId, docId);
+              return status;
+          }
+      }
 
-        return kTDStatusOK;
+      return kTDStatusOK;
     }];
 
     *error = localError;

@@ -15,6 +15,8 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol CDTEncryptionKeyRetrieving;
+
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
 @class FMDatabase;
@@ -86,6 +88,11 @@ extern NSString *const CDTDatastoreChangeNotification;
  * The name of the datastore.
  */
 @property (readonly) NSString *extensionsDir;
+
+/**
+ * Return a copy of the key used to encrypt the datastore
+ */
+- (id<CDTEncryptionKeyRetrieving>)copyEncryptionKeyRetriever;
 
 /**
  * Returns a document's current winning revision.

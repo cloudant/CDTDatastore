@@ -29,7 +29,6 @@
 
 @implementation DatastoreActions
 
-
 - (void)testGetADatabase
 {
     NSError *error;
@@ -38,29 +37,30 @@
     XCTAssertTrue([tmp isKindOfClass:[CDTDatastore class]], @"Returned database not CDTDatastore");
 }
 
-- (NSString*)createTemporaryFileAndReturnPath
+- (NSString *)createTemporaryFileAndReturnPath
 {
-    NSString *tempFileTemplate = [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.tempfile.XXXXXX"];
+    NSString *tempFileTemplate = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"cloudant_sync_ios_tests.tempfile.XXXXXX"];
     const char *tempFileTemplateCString = [tempFileTemplate fileSystemRepresentation];
-    char *tempFileNameCString =  (char *)malloc(strlen(tempFileTemplateCString) + 1);
+    char *tempFileNameCString = (char *)malloc(strlen(tempFileTemplateCString) + 1);
     strcpy(tempFileNameCString, tempFileTemplateCString);
-    
+
     char *result = mktemp(tempFileNameCString);
-    if (!result)
-    {
+    if (!result) {
         XCTFail(@"Couldn't create temporary file");
     }
-    
-    NSString *path = [[NSFileManager defaultManager]
-                      stringWithFileSystemRepresentation:tempFileNameCString
-                      length:strlen(result)];
-    
-    BOOL fileCreated = [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
-    
+
+    NSString *path =
+        [[NSFileManager defaultManager] stringWithFileSystemRepresentation:tempFileNameCString
+                                                                    length:strlen(result)];
+
+    BOOL fileCreated =
+        [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+
     XCTAssertTrue(fileCreated, @"File %@ not created in %s", path, __PRETTY_FUNCTION__);
-    
+
     free(tempFileNameCString);
-    
+
     return path;
 }
 
@@ -68,32 +68,36 @@
 {
     NSError *error;
     NSString *localFilePath = [self createTemporaryFileAndReturnPath];
-    
-    CDTDatastoreManager *localFactory = [[CDTDatastoreManager alloc] initWithDirectory:localFilePath error:&error];
-    XCTAssertNil(localFactory, @"CDTDatastoreManager should fail with a pre-existing file at path in %s", __PRETTY_FUNCTION__);
+
+    CDTDatastoreManager *localFactory =
+        [[CDTDatastoreManager alloc] initWithDirectory:localFilePath error:&error];
+    XCTAssertNil(localFactory,
+                 @"CDTDatastoreManager should fail with a pre-existing file at path in %s",
+                 __PRETTY_FUNCTION__);
 
     error = nil;
     [[NSFileManager defaultManager] removeItemAtPath:localFilePath error:&error];
     XCTAssertNil(error, @"Error deleting temporary directory.");
-    
 }
 
 - (void)testCreateFactoryWithPreExistingDirectory
 {
     NSError *error;
     NSString *localDirPath = [self createTemporaryDirectoryAndReturnPath];
-    
-    CDTDatastoreManager *localFactory = [[CDTDatastoreManager alloc] initWithDirectory:localDirPath error:&error];
-    XCTAssertNotNil(localFactory, @"CDTDatastoreManager should not fail with a pre-existing directory at path in %s", __PRETTY_FUNCTION__);
-    
+
+    CDTDatastoreManager *localFactory =
+        [[CDTDatastoreManager alloc] initWithDirectory:localDirPath error:&error];
+    XCTAssertNotNil(
+        localFactory,
+        @"CDTDatastoreManager should not fail with a pre-existing directory at path in %s",
+        __PRETTY_FUNCTION__);
+
     error = nil;
     [[NSFileManager defaultManager] removeItemAtPath:localDirPath error:&error];
     XCTAssertNil(error, @"Error deleting temporary directory.");
-    
 }
 
-
-//Note: TD_Database -compact is throughly tested in DatastoreCRUD
+// Note: TD_Database -compact is throughly tested in DatastoreCRUD
 - (void)testCompact
 {
     NSError *error;
@@ -101,15 +105,15 @@
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.body = @{ @"hello" : @"world" };
     rev.docId = @"myDocId";
-    
+
     CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev error:&error];
     rev = [revision mutableCopy];
     rev.body = @{ @"hello" : @"world", @"test" : @"testy" };
     revision = [datastore updateDocumentFromRevision:rev error:&error];
-    
-    XCTAssertTrue([datastore compactWithError:&error],@"Compaction failed");
+
+    XCTAssertTrue([datastore compactWithError:&error], @"Compaction failed");
     XCTAssertNil(error, @"Error compacting datastore, %@", error);
-    
+
     NSArray *previsousRevs = [datastore getRevisionHistory:revision];
 
     int compacted = 0;
@@ -118,11 +122,12 @@
         // erm check that one out of two has their body compacted?
         CDTDocumentRevision *prevRev =
             [datastore getDocumentWithId:previous.docId rev:previous.revId error:nil];
-        
-        if([prevRev.body count] == 0){
+
+        if ([prevRev.body count] == 0) {
             compacted++;
         } else {
-            XCTAssertEqualObjects(rev.body, prevRev.body, @"Unexpected body, wrong revision compacted?");
+            XCTAssertEqualObjects(rev.body, prevRev.body,
+                                  @"Unexpected body, wrong revision compacted?");
         }
     }
     XCTAssertEqual(1, compacted, @"Wrong number of docs compacted");

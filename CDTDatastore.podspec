@@ -29,27 +29,52 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
+
   s.requires_arc = true
 
-  s.source_files = 'Classes/**/*.{h,m}'
-  s.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+  s.default_subspec = 'common'
 
-  s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+  s.subspec 'common' do |sp|
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
 
-  s.ios.exclude_files = 'Classes/osx'
-  s.osx.exclude_files = 'Classes/ios'
-  # s.public_header_files = 'Classes/common/CloudantSync.h'
+    sp.source_files = 'Classes/**/*.{h,m}'
+    sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+    
+    sp.ios.exclude_files = 'Classes/osx'
+    sp.osx.exclude_files = 'Classes/ios'
 
-  s.dependency 'FMDB', '= 2.3'
-  s.dependency 'CocoaLumberjack', '= 2.0.0-rc'
+    sp.frameworks = 'SystemConfiguration'
 
-  s.frameworks = 'SystemConfiguration'
-  s.library = 'sqlite3', 'z'
+    sp.dependency 'CDTDatastore/no-arc'
+    sp.dependency 'CocoaLumberjack', '= 2.0.0-rc'
+
+    sp.default_subspec = 'SQLite'
+
+    sp.subspec 'SQLite' do |ssp|
+      ssp.library = 'sqlite3', 'z'
+
+      ssp.dependency 'FMDB', '= 2.3'
+    end
+
+    sp.subspec 'SQLCipher' do |ssp|
+      ssp.library = 'z'
+
+      ssp.dependency 'FMDB/SQLCipher', '= 2.3'
+    end
+  end
 
   s.subspec 'no-arc' do |sp|
-    s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
-    sp.source_files = 'Classes/vendor/MYUtilities/*.{h,m}'
     sp.requires_arc = false
+
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+
+    sp.source_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+
     sp.ios.exclude_files = 'Classes/vendor/MYUtilities/MYURLHandler.{h,m}'
+  end
+
+  s.subspec 'SQLCipher' do |sp|
+    sp.dependency 'CDTDatastore/common'
+    sp.dependency 'CDTDatastore/common/SQLCipher'
   end
 end
