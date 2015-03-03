@@ -22,29 +22,26 @@ root of the project. All code should be formatted using the clang-format tool.
 
 ### Installing clang-format into Xcode
 
-Clang-format should be installed into xcode using the 
-[ClangFormat-Xcode](https://github.com/travisjeffery/ClangFormat-Xcode) plug-in, 
-the easiest way to do this is via [Alcatraz](https://github.com/mneorr/Alcatraz). 
+Clang-format can be installed into Xcode using the 
+[ClangFormat-Xcode](https://github.com/travisjeffery/ClangFormat-Xcode) plug-in. 
+The easiest way to do this is via [Alcatraz](https://github.com/mneorr/Alcatraz). 
 You can also install the plugin from source using the instractions at 
 [ClangFormat-Xcode](https://github.com/travisjeffery/ClangFormat-Xcode).
 
 #### Setting up Xcode
 
-We suggest Xcode should be set up to use clang-format to format code on save, 
-and map the format command to `ctrl-i`
+You can set up `ClangFormat-Xcode` to format the whole file on every save. Unfortunately,
+many of the files in the codebase are not yet formatted, so we suggest *not* setting this
+up as if you do you'll be picking apart hundreds of lines of whitespace changes from
+your actual changes to separate their commits. Instead, run the formatter over just
+the code you change.
 
-- Setting clang-format to run on save 
+You can set up a hotkey for formatting selected text as follows:
 
-
-In the menu, open Edit > Clang Format > Click Format on save (a checkmark 
-appears in this menu item indicicating that the feature is active.)
-
-- Assign keyboard shortcut
-
-- Open the System Preferences > Keyboard > Shortcuts > App Shortcuts > Click `+`
-- Set the application to be Xcode
-- Set the menu title to "Format File in Focus"
-- Set your shortcut to `ctrl-i`
+1. Open _System Preferences_ > _Keyboard_ > _Shortcuts_ > _App Shortcuts_. Click `+`.
+1. Set the application to be Xcode.
+1. Set the menu title to "Format Selected Text".
+1. Set your shortcut to `ctrl-i`.
 
 ## Mechanics
 
