@@ -193,6 +193,21 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
 @implementation IncrementalStore
 
+static void *ISContextProgress = &ISContextProgress;
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+    if (context == ISContextProgress) {
+        NSProgress *progress = object;
+        NSLog(@"Progress: %@ / %@", @(progress.completedUnitCount), @(progress.totalUnitCount));
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
 - (NSManagedObjectModel *)managedObjectModel
 {
     if (_managedObjectModel != nil) {
@@ -264,6 +279,98 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     self.persistentStoreCoordinator = nil;
 
     [super tearDown];
+}
+
+- (void)testAsyncFetch
+{
+    int max = 5000;
+    NSUInteger __block completed = 0;
+
+    NSError *err = nil;
+    // This will create the database and wire everything up
+    NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    for (int i = 0; i < max; i++) {
+        Entry *e = MakeEntry(moc);
+        // check will indicate if value is an even number
+        e.check = (i % 2) ? @NO : @YES;
+        e.i64 = @(i);
+        e.fpFloat = @(((float)(M_PI)) * (float)i);
+        e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
+
+        if ((i % (max / 10)) == 0) {
+            NSLog(@"Saving %u of %u", i, max);
+            XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+        }
+    }
+    NSLog(@"Saving %u of %u", max, max);
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+
+
+    // create other context that will fetch from our store
+    NSManagedObjectContext *otherMOC =
+        [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    XCTAssertNotNil(otherMOC, @"could not create Context");
+    [otherMOC setPersistentStoreCoordinator:self.persistentStoreCoordinator];
+
+    NSPredicate *even = [NSPredicate predicateWithFormat:@"check == YES"];
+    NSSortDescriptor *sd = [NSSortDescriptor sortDescriptorWithKey:@"i64" ascending:YES];
+    NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+    fr.shouldRefreshRefetchedObjects = YES;
+    fr.predicate = even;
+    fr.sortDescriptors = @[ sd ];
+    // this does not do anything, but maybe it will one day
+    fr.fetchBatchSize = 10;
+
+    NSAsynchronousFetchRequest *asyncFetch = [[NSAsynchronousFetchRequest alloc]
+        initWithFetchRequest:fr
+             completionBlock:^(NSAsynchronousFetchResult *result) {
+                 NSLog(@"Final: %@", @(result.finalResult.count));
+                 [result.progress removeObserver:self
+                                      forKeyPath:@"completedUnitCount"
+                                         context:ISContextProgress];
+                 [result.progress removeObserver:self
+                                      forKeyPath:@"totalUnitCount"
+                                         context:ISContextProgress];
+                 completed = result.finalResult.count;
+             }];
+
+    [otherMOC performBlock:^{
+        // Create Progress
+        NSProgress *progress = [NSProgress progressWithTotalUnitCount:1];
+
+        // Become Current
+        [progress becomeCurrentWithPendingUnitCount:1];
+
+        // Execute Asynchronous Fetch Request
+        NSError *err = nil;
+        NSAsynchronousFetchResult *asyncFetchResult =
+            (NSAsynchronousFetchResult *)[otherMOC executeRequest:asyncFetch error:&err];
+
+        if (err) {
+            NSLog(@"Unable to execute asynchronous fetch result: %@", err);
+        }
+
+        // Add Observer
+        [asyncFetchResult.progress addObserver:self
+                                    forKeyPath:@"completedUnitCount"
+                                       options:NSKeyValueObservingOptionNew
+                                       context:ISContextProgress];
+        [asyncFetchResult.progress addObserver:self
+                                    forKeyPath:@"totalUnitCount"
+                                       options:NSKeyValueObservingOptionNew
+                                       context:ISContextProgress];
+        // Resign Current
+        [progress resignCurrent];
+
+
+    }];
+
+    while (completed == 0) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+    XCTAssertTrue(completed == max / 2, @"completed should be %@ is %@", @(completed), @(max));
 }
 
 - (void)testPredicates
@@ -540,8 +647,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 3, @"results count should be %d is %@", 3,
-                  @([results count]));
+    XCTAssertTrue([results count] == 3, @"results count should be %d is %@", 3, @([results count]));
 
     // make one of them NaN
     Entry *nan = [results firstObject];
@@ -552,8 +658,7 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 2, @"results count should be %d is %@", 2,
-                  @([results count]));
+    XCTAssertTrue([results count] == 2, @"results count should be %d is %@", 2, @([results count]));
 }
 
 - (void)testFetchConstraints
