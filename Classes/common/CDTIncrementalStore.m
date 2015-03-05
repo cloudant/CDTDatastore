@@ -97,11 +97,6 @@ static BOOL CDTISSupportCompoundPredicates = NO;
 static DDLogLevel CDTISEnableLogging = DDLogLevelOff;
 
 /**
- *  CoreData says to _only_ store the UUID, Type and Hashes
- */
-static BOOL CDTISStoreAllCoreDataMetaData = NO;
-
-/**
  *  Detect if the hashes changed and update the stored object model.
  *  Turn this on if you would like to migrate objects into the same store.
  *
@@ -1485,34 +1480,6 @@ static NSDictionary *encodeVersionHashes(NSDictionary *hashes)
     return [NSDictionary dictionaryWithDictionary:newHashes];
 }
 
-/**
- *  The version hashes are inline `NSData` and so they need to be encoded
- *  We may have to consider that Apple may have other non encodable items
- *  other than the hashes.
- *
- *  @param metadata metadata from Core Data
- *
- *  @return encoded dictionary
- */
-static NSDictionary *encodeCoreDataMeta(NSDictionary *inMetaData)
-{
-    NSDictionary *hashes = inMetaData[NSStoreModelVersionHashesKey];
-    NSMutableDictionary *metaData = [NSMutableDictionary dictionary];
-
-    if (CDTISStoreAllCoreDataMetaData == NO) {
-        metaData[NSStoreUUIDKey] = inMetaData[NSStoreUUIDKey];
-        metaData[NSStoreTypeKey] = inMetaData[NSStoreTypeKey];
-    } else {
-        metaData = [inMetaData mutableCopy];
-    }
-
-    // hashes are inline data and need to be converted
-    if (hashes) {
-        metaData[NSStoreModelVersionHashesKey] = encodeVersionHashes(hashes);
-    }
-    return [NSDictionary dictionaryWithDictionary:metaData];
-}
-
 - (NSDictionary *)updateObjectModel
 {
     NSPersistentStoreCoordinator *psc = self.persistentStoreCoordinator;
@@ -1542,19 +1509,24 @@ static NSDictionary *encodeCoreDataMeta(NSDictionary *inMetaData)
     }
     CDTMutableDocumentRevision *upRev = [oldRev mutableCopy];
 
-    if (CDTISUpdateStoredObjectModel) {
-        // check it the hashes have changed
-        NSDictionary *newHash = metadata[NSStoreModelVersionHashesKey];
-        NSDictionary *oldHash = [self.objectModel versionHashes];
+    NSDictionary *newHashes = metadata[NSStoreModelVersionHashesKey];
+    if (newHashes) {
+        NSDictionary *upHashes = @{NSStoreModelVersionHashesKey : encodeVersionHashes(newHashes)};
+        NSMutableDictionary *upMeta = [upRev.body[CDTISMetaDataKey] mutableCopy];
+        [upMeta addEntriesFromDictionary:upHashes];
+        upRev.body[CDTISMetaDataKey] = [NSDictionary dictionaryWithDictionary:upMeta];
+    }
 
-        if (oldHash && ![oldHash isEqualToDictionary:newHash]) {
+    if (CDTISUpdateStoredObjectModel) {
+        // check if the hashes have changed
+        NSDictionary *oldHashes = [self.objectModel versionHashes];
+
+        if (oldHashes && ![oldHashes isEqualToDictionary:newHashes]) {
             // recreate the object model
             NSDictionary *omd = [self updateObjectModel];
             upRev.body[CDTISObjectModelKey] = omd;
         }
     }
-
-    upRev.body[CDTISMetaDataKey] = encodeCoreDataMeta(metadata);
 
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
@@ -1587,7 +1559,7 @@ static NSDictionary *decodeVersionHashes(NSDictionary *hashes)
 }
 
 /**
- *  @see -encodeCoreDataMeta:metadata
+ *  We need to swizzle the hashes if they exist
  *
  *  @param storedMetaData <#storedMetaData description#>
  *
@@ -1598,12 +1570,9 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSMutableDictionary *metadata = [NSMutableDictionary dictionary];
     NSDictionary *hashes = storedMetaData[NSStoreModelVersionHashesKey];
 
-    if (CDTISStoreAllCoreDataMetaData == NO) {
-        metadata[NSStoreUUIDKey] = storedMetaData[NSStoreUUIDKey];
-        metadata[NSStoreTypeKey] = storedMetaData[NSStoreTypeKey];
-    } else {
-        metadata = [storedMetaData mutableCopy];
-    }
+    metadata[NSStoreUUIDKey] = storedMetaData[NSStoreUUIDKey];
+    metadata[NSStoreTypeKey] = storedMetaData[NSStoreTypeKey];
+
     // hashes are encoded and need to be inline data
     if (hashes) {
         metadata[NSStoreModelVersionHashesKey] = decodeVersionHashes(hashes);
