@@ -1824,7 +1824,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
 /**
  *  Process comparison predicates
- *  > *Warning*: completely untested right now
  *
  *  The queries currently supported by the backing store are:
  *  * `{index: @{@"max": value}}`: index <= value
@@ -1875,7 +1874,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 [NSException raise:CDTISException format:@"Can't do substring matches: %@", value];
                 break;
             }
-            // FIXME? I hope this deals with collections
             if ([value respondsToSelector:@selector(objectEnumerator)]) {
                 NSMutableArray *set = [NSMutableArray array];
                 for (id el in value) {
