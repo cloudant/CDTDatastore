@@ -29,11 +29,6 @@
 @property (nonatomic, strong) CDTISObjectModel *objectModel;
 
 /**
- *  Helps us with our bogus [uniqueID](@ref uniqueID)
- */
-@property (nonatomic, strong) NSString *run;
-
-/**
  *  This holds the "dot" directed graph, see [dotMe](@ref dotMe)
  */
 @property (nonatomic, strong) CDTISGraphviz *graph;
@@ -54,17 +49,11 @@ static NSString *const CDTISIdentifierKey = @"CDTISIdentifier";
 #pragma mark - property string type for backing store
 
 static NSString *const CDTISMetaDataKey = @"metaData";
-static NSString *const CDTISRunKey = @"run";
 static NSString *const CDTISObjectModelKey = @"objectModel";
 
 #pragma mark - Code selection
 // allows selection of different code paths
 // Use this instead of #ifdef's so the code are actually gets compiled
-/**
- *  This allows UIDs for individual objects to be readable.
- *  Useful for debugging
- */
-static BOOL CDTISReadableUUIDs = NO;
 
 /**
  *  If true, will simply delete the database object with no considerations
@@ -185,19 +174,9 @@ static BOOL CDTISCheckForSubEntities = NO;
  *
  *  @return A unique ID
  */
-- (NSString *)uniqueID:(NSString *)label
+static NSString *uniqueID(NSString *label)
 {
-    /**
-     *  @See CDTISReadableUUIDs
-     */
-    if (!CDTISReadableUUIDs) {
-        return [NSString stringWithFormat:@"%@-%@-%@", CDTISPrefix, label, TDCreateUUID()];
-    }
-
-    static volatile int64_t uniqueCounter;
-    uint64_t val = OSAtomicIncrement64(&uniqueCounter);
-
-    return [NSString stringWithFormat:@"%@-%@-%@-%llu", CDTISPrefix, label, self.run, val];
+    return [NSString stringWithFormat:@"%@-%@-%@", CDTISPrefix, label, TDCreateUUID()];
 }
 
 /**
@@ -1598,9 +1577,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docID error:&err];
     if (!rev) {
-        self.run = @"1";
-
-        NSString *uuid = [self uniqueID:@"NSStore"];
+        NSString *uuid = uniqueID(@"NSStore");
         NSDictionary *metaData = @{NSStoreUUIDKey : uuid, NSStoreTypeKey : [self type]};
         NSDictionary *omd = [self updateObjectModel];
 
@@ -1610,7 +1587,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         newRev.body = @{
             CDTISMetaDataKey : metaData,
             CDTISObjectModelKey : omd,
-            CDTISRunKey : self.run,
         };
 
         rev = [self.datastore createDocumentFromRevision:newRev error:&err];
@@ -1628,13 +1604,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     self.objectModel = [[CDTISObjectModel alloc] initWithDictionary:omd];
 
     NSDictionary *storedMetaData = rev.body[CDTISMetaDataKey];
-    NSString *run = rev.body[CDTISRunKey];
-    uint64_t runVal = [run longLongValue];
-    ++runVal;
-    self.run = [NSString stringWithFormat:@"run-%llu", runVal];
-
     CDTMutableDocumentRevision *upRev = [rev mutableCopy];
-    upRev.body[CDTISRunKey] = self.run;
     CDTDocumentRevision *upedRev = [self.datastore updateDocumentFromRevision:upRev error:&err];
     if (!upedRev) {
         if (error) *error = err;
@@ -2341,7 +2311,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     for (NSManagedObject *mo in array) {
         NSEntityDescription *e = [mo entity];
         NSManagedObjectID *moid =
-            [self newObjectIDForEntity:e referenceObject:[self uniqueID:e.name]];
+            [self newObjectIDForEntity:e referenceObject:uniqueID(e.name)];
 
         if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
 
