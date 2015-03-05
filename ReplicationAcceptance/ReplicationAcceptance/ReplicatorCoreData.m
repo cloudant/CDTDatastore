@@ -55,7 +55,7 @@
 {
     Entry *e =
         [NSEntityDescription insertNewObjectForEntityForName:@"Entry" inManagedObjectContext:moc];
-    XCTAssertNotNil(e, "could not get entity");
+    XCTAssertNotNil(e, @"could not get entity");
     return e;
 }
 
@@ -139,7 +139,7 @@
                                                                    destinationModel:toMom
                                                                               error:&err];
         XCTAssertNotNil(mapMom, @"Failed to create mapping model");
-        XCTAssertNil(err, "Error: %@", err);
+        XCTAssertNil(err, @"Error: %@", err);
 
         self.migrateRemoteDatabaseName =
             [self.primaryRemoteDatabaseName stringByAppendingString:@"-migrate"];
