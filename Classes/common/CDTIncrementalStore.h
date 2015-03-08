@@ -126,7 +126,8 @@ typedef NS_ENUM(NSInteger, CDTIncrementalStoreErrors) {
     CDTISErrorMetaDataMismatch,
     CDTISErrorNoRemoteDB,
     CDTISErrorSyncBusy,
-    CDTISErrorNotSupported
+    CDTISErrorNotSupported,
+    CDTISErrorInvalidArgument
 };
 
 @end

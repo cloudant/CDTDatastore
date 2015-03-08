@@ -1046,10 +1046,6 @@ static void *ISContextProgress = &ISContextProgress;
     XCTAssertNotNil(res, @"Expected results: %@", err);
     NSLog(@"%@ objects updated", res.result);
 
-    XCTAssertTrue([res.result integerValue] == (3 * num_entries / 4),
-                  @"results count should be %d is %ld", 3 * num_entries / 4,
-                  (long)[res.result integerValue]);
-
     /**
      *  Fetch checked entries
      */

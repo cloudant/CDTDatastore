@@ -16,6 +16,14 @@
 #import "CDTDatastore+Query.h"
 #import "CDTISGraphviz.h"
 
+@interface CDTISBatchUpdateResult : NSPersistentStoreResult
+@property (nonatomic, strong) id result;
+@property (nonatomic, assign) NSBatchUpdateRequestResultType resultType;
+@end
+
+@implementation CDTISBatchUpdateResult
+@end
+
 #pragma mark - properties
 @interface CDTIncrementalStore () <CDTReplicatorDelegate>
 
@@ -2121,6 +2129,120 @@ NSString *kNorOperator = @"$nor";
     return @[];
 }
 
+- (id)executeBatchUpdateRequest:(NSBatchUpdateRequest *)updateRequest
+                    withContext:(NSManagedObjectContext *)context
+                          error:(NSError **)error
+{
+    NSError *err = nil;
+
+    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+    fetchRequest.entity = updateRequest.entity;
+    fetchRequest.predicate = updateRequest.predicate;
+
+    NSDictionary *query = [self queryForFetchRequest:fetchRequest error:&err];
+
+    if (!query) {
+        if (error) *error = err;
+        return nil;
+    }
+
+    err = nil;
+    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:nil error:&err];
+    // hits == nil is valid, get rid of this once tested
+    if (!hits && err) {
+        if (error) *error = err;
+        return nil;
+    }
+
+    // Note: This dictionary is apparently *not* the same dictionary specified in the original
+    // request.
+    // The keys have all been transformed from attribute names into NSAttributeDescriptions
+    NSDictionary *updates = updateRequest.propertiesToUpdate;
+
+    // Preprocess updates dict here
+
+    NSMutableDictionary *simpleUpdates = [NSMutableDictionary dictionary];
+    for (NSAttributeDescription *attr in [updates allKeys]) {
+        id newValue;
+        switch (attr.attributeType) {
+            case NSBooleanAttributeType:
+                newValue = [NSNumber numberWithBool:updates[attr]];
+                break;
+
+#if 0
+			case NSDateAttributeType:
+			case NSInteger16AttributeType:
+			case NSInteger32AttributeType:
+			case NSInteger64AttributeType:
+			case NSDecimalAttributeType:
+			case NSDoubleAttributeType:
+			case NSFloatAttributeType:
+				return CDTIndexTypeInteger;
+
+			default:
+			case NSUndefinedAttributeType:
+				name = @"NSUndefinedAttributeType";
+				break;
+			case NSBinaryDataAttributeType:
+				name = @"NSBinaryDataAttributeType";
+				break;
+			case NSTransformableAttributeType:
+				name = @"NSTransformableAttributeType";
+				break;
+			case NSObjectIDAttributeType:
+				name = @"NSObjectIDAttributeType";
+				break;
+
+			case NSStringAttributeType:
+				return CDTIndexTypeString;
+				break;
+#endif
+            default:
+                oops(@"Missing case for attributeType: %lu", attr.attributeType);
+        }
+
+        [simpleUpdates setObject:newValue forKey:attr.name];
+    }
+
+    NSEntityDescription *entity = [updateRequest entity];
+
+    NSMutableArray *results = [NSMutableArray array];
+    for (CDTDocumentRevision *rev in hits) {
+        NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
+        NSManagedObject *mo = [context objectWithID:moid];
+
+        for (NSString *key in [simpleUpdates allKeys]) {
+            [mo setValue:simpleUpdates[key] forKey:key];
+        }
+
+        if (![self updateManagedObject:mo error:&err]) {
+            if (error) *error = err;
+            return nil;
+        }
+
+        [results addObject:moid];
+    }
+
+    CDTISBatchUpdateResult *updateResult = [[CDTISBatchUpdateResult alloc] init];
+    updateResult.resultType = updateRequest.resultType;
+
+    switch (updateRequest.resultType) {
+        case NSUpdatedObjectIDsResultType:  // Return the object IDs of the rows that were updated
+            updateResult.result = results;
+            break;
+
+        case NSUpdatedObjectsCountResultType:  // Return the number of rows that were updated
+            updateResult.result = @([results count]);
+            break;
+
+        case NSStatusOnlyResultType:  // Don't return anything
+        default:
+            break;
+    }
+
+    return updateResult;
+}
+
 - (id)executeRequest:(NSPersistentStoreRequest *)request
          withContext:(NSManagedObjectContext *)context
                error:(NSError **)error
@@ -2135,6 +2257,11 @@ NSString *kNorOperator = @"$nor";
     if (requestType == NSSaveRequestType) {
         NSSaveChangesRequest *saveRequest = (NSSaveChangesRequest *)request;
         return [self executeSaveRequest:saveRequest withContext:context error:error];
+    }
+
+    if (requestType == NSBatchUpdateRequestType) {
+        NSBatchUpdateRequest *updateRequest = (NSBatchUpdateRequest *)request;
+        return [self executeBatchUpdateRequest:updateRequest withContext:context error:error];
     }
 
     NSString *s = [NSString localizedStringWithFormat:@"Unknown request type: %@", @(requestType)];
