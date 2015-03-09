@@ -1036,25 +1036,74 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  Batch update all objects 50 or higher (should add 25 checks)
+     *  Batch update all objects 50 or higher (should remove 25 checks)
      */
-    NSBatchUpdateRequest *req = [[NSBatchUpdateRequest alloc] initWithEntityName:@"Entry"];
-    req.predicate = [NSPredicate predicateWithFormat:@"i64>=%d", num_entries / 2];
-    req.propertiesToUpdate = @{ @"check" : @(YES) };
-    req.resultType = NSUpdatedObjectsCountResultType;
-    NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
-    XCTAssertNotNil(res, @"Expected results: %@", err);
-    NSLog(@"%@ objects updated", res.result);
+    {
+        NSBatchUpdateRequest *req = [[NSBatchUpdateRequest alloc] initWithEntityName:@"Entry"];
+        req.predicate = [NSPredicate predicateWithFormat:@"i64>=%d", num_entries / 2];
+        req.propertiesToUpdate = @{ @"check" : @(NO) };
+        req.resultType = NSUpdatedObjectsCountResultType;
+        NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
+        XCTAssertNotNil(res, @"Expected results: %@", err);
+        NSLog(@"%@ objects updated", res.result);
+
+        /**
+         *  Fetch checked entries
+         */
+        fr.predicate = checked;
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+
+        XCTAssertTrue([results count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[results count]);
+    }
 
     /**
-     *  Fetch checked entries
+     *  Batch update date, string, integer, and float attributes
+     *  Request objectIDs to be returned
      */
-    fr.predicate = checked;
-    results = [moc executeFetchRequest:fr error:&err];
-    XCTAssertNotNil(results, @"Expected results: %@", err);
+    {
+        NSBatchUpdateRequest *req = [[NSBatchUpdateRequest alloc] initWithEntityName:@"Entry"];
+        req.predicate = [NSPredicate predicateWithFormat:@"check == YES"];
+        NSDate *now = [NSDate date];
+        req.propertiesToUpdate = @{
+            @"created_at" : now,
+            @"text" : @"foobar",
+            @"i16" : @(32),
+            @"fpFloat" : @(M_PI_2),
+            @"fpDouble" : @(M_PI)
+        };
+        req.resultType = NSUpdatedObjectIDsResultType;
+        NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
+        XCTAssertNotNil(res, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == ((3 * num_entries) / 4), @"results count should be %d is %lu",
-                  (3 * num_entries) / 4, (unsigned long)[results count]);
+        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[res.result count]);
+
+        [res.result enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx,
+                                                 BOOL *stop) {
+          Entry *e = (Entry *)[moc objectWithID:objID];
+          if (![e isFault]) {
+              [moc refreshObject:e mergeChanges:YES];
+              XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
+              XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
+              XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
+              XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2, @"fpDouble field not updated");
+              XCTAssertTrue([e.fpDouble doubleValue] == (double)M_PI,
+                            @"fpDouble field not updated");
+          }
+        }];
+
+        /**
+         *  Fetch checked entries
+         */
+        fr.predicate = [NSPredicate predicateWithFormat:@"text == 'foobar'"];
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+
+        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[res.result count]);
+    }
 }
 
 - (void)testCheckNumbers

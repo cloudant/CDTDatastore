@@ -2154,55 +2154,9 @@ NSString *kNorOperator = @"$nor";
         return nil;
     }
 
-    // Note: This dictionary is apparently *not* the same dictionary specified in the original
-    // request.
+    // Note: This dictionary is *not* the same dictionary specified in the original request.
     // The keys have all been transformed from attribute names into NSAttributeDescriptions
     NSDictionary *updates = updateRequest.propertiesToUpdate;
-
-    // Preprocess updates dict here
-
-    NSMutableDictionary *simpleUpdates = [NSMutableDictionary dictionary];
-    for (NSAttributeDescription *attr in [updates allKeys]) {
-        id newValue;
-        switch (attr.attributeType) {
-            case NSBooleanAttributeType:
-                newValue = [NSNumber numberWithBool:updates[attr]];
-                break;
-
-#if 0
-			case NSDateAttributeType:
-			case NSInteger16AttributeType:
-			case NSInteger32AttributeType:
-			case NSInteger64AttributeType:
-			case NSDecimalAttributeType:
-			case NSDoubleAttributeType:
-			case NSFloatAttributeType:
-				return CDTIndexTypeInteger;
-
-			default:
-			case NSUndefinedAttributeType:
-				name = @"NSUndefinedAttributeType";
-				break;
-			case NSBinaryDataAttributeType:
-				name = @"NSBinaryDataAttributeType";
-				break;
-			case NSTransformableAttributeType:
-				name = @"NSTransformableAttributeType";
-				break;
-			case NSObjectIDAttributeType:
-				name = @"NSObjectIDAttributeType";
-				break;
-
-			case NSStringAttributeType:
-				return CDTIndexTypeString;
-				break;
-#endif
-            default:
-                oops(@"Missing case for attributeType: %lu", attr.attributeType);
-        }
-
-        [simpleUpdates setObject:newValue forKey:attr.name];
-    }
 
     NSEntityDescription *entity = [updateRequest entity];
 
@@ -2211,8 +2165,9 @@ NSString *kNorOperator = @"$nor";
         NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
         NSManagedObject *mo = [context objectWithID:moid];
 
-        for (NSString *key in [simpleUpdates allKeys]) {
-            [mo setValue:simpleUpdates[key] forKey:key];
+        for (NSAttributeDescription *attr in [updates allKeys]) {
+            id newValue = [updates[attr] constantValue];
+            [mo setValue:newValue forKey:attr.name];
         }
 
         if (![self updateManagedObject:mo error:&err]) {
