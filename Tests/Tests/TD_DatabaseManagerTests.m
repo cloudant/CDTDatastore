@@ -72,7 +72,32 @@
         __PRETTY_FUNCTION__);  // because foo should now exist and be the only database here
 }
 
+- (void)testDeleteDatabaseReleaseMemoryIfDBWasRequestedBefore
+{
+    TD_DatabaseManager* dbm =
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_deletionTests"];
+    
+    [dbm databaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+    
+    NSUInteger beforeDeletingCounter = [dbm.allOpenDatabases count];
+    
+    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+    
+    XCTAssertEqual([dbm.allOpenDatabases count], beforeDeletingCounter - 1,
+                   @"Delete the db from memory, not only from disk");
+}
 
-
+- (void)testDeleteDatabaseDoNotReleaseMemoryIfDBWasNotRequestedBefore
+{
+    TD_DatabaseManager* dbm =
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_deletionTests"];
+    
+    NSUInteger beforeDeletingCounter = [dbm.allOpenDatabases count];
+    
+    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+    
+    XCTAssertEqual([dbm.allOpenDatabases count], beforeDeletingCounter,
+                   @"DB was never loaded in memory");
+}
 
 @end
