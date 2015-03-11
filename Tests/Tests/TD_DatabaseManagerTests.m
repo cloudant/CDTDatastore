@@ -75,13 +75,13 @@
 - (void)testDeleteDatabaseReleaseMemoryIfDBWasRequestedBefore
 {
     TD_DatabaseManager* dbm =
-        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_deletionTests"];
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_releaseMemory"];
     
     [dbm databaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
     
     NSUInteger beforeDeletingCounter = [dbm.allOpenDatabases count];
     
-    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME error:nil];
     
     XCTAssertEqual([dbm.allOpenDatabases count], beforeDeletingCounter - 1,
                    @"Delete the db from memory, not only from disk");
@@ -90,14 +90,32 @@
 - (void)testDeleteDatabaseDoNotReleaseMemoryIfDBWasNotRequestedBefore
 {
     TD_DatabaseManager* dbm =
-        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_deletionTests"];
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_notReleaseMemory"];
     
     NSUInteger beforeDeletingCounter = [dbm.allOpenDatabases count];
     
-    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+    [dbm deleteDatabaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME error:nil];
     
     XCTAssertEqual([dbm.allOpenDatabases count], beforeDeletingCounter,
                    @"DB was never loaded in memory");
+}
+
+- (void)testDeleteDatastoreReturnsErrorIfNameIsNotValid
+{
+    TD_DatabaseManager* dbm =
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest_returnError"];
+    
+    NSError *error = nil;
+    BOOL deletionSucceeded = [dbm deleteDatabaseNamed:@"-.-" error:&error];
+    
+    BOOL isExpectedError = (error &&
+                            ([error.domain isEqualToString:kTD_DatabaseManagerErrorDomain]) &&
+                            (error.code == kTD_DatabaseManagerErrorCodeInvalidName));
+    
+    XCTAssertTrue(!deletionSucceeded && isExpectedError,
+                  @"There is only one possible error if the name is not valid (%@, %lu)",
+                  kTD_DatabaseManagerErrorDomain,
+                  (unsigned long)kTD_DatabaseManagerErrorCodeInvalidName);
 }
 
 @end
