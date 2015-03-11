@@ -78,7 +78,12 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (NSString*)attachmentStorePath
 {
-    return [[_path stringByDeletingPathExtension] stringByAppendingString:@" attachments"];
+    return [TD_Database attachmentStorePathWithDatabasePath:_path];
+}
+
++ (NSString *)attachmentStorePathWithDatabasePath:(NSString *)path
+{
+    return [[path stringByDeletingPathExtension] stringByAppendingString:@" attachments"];
 }
 
 + (instancetype)createEmptyDBAtPath:(NSString*)path
@@ -109,7 +114,12 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (NSString*)description { return $sprintf(@"%@[%@]", [self class], _path); }
 
-- (BOOL)exists { return [[NSFileManager defaultManager] fileExistsAtPath:_path]; }
+- (BOOL)exists { return [TD_Database existsDatabaseAtPath:_path]; }
+
++ (BOOL)existsDatabaseAtPath:(NSString *)path
+{
+    return [[NSFileManager defaultManager] fileExistsAtPath:path];
+}
 
 - (BOOL)replaceWithDatabaseFile:(NSString*)databasePath
                 withAttachments:(NSString*)attachmentsPath
@@ -562,18 +572,34 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     return YES;
 }
 
-- (BOOL)deleteDatabase:(NSError**)outError
+- (BOOL)deleteDatabase:(NSError **)outError
 {
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleting %@", _path);
     [[NSNotificationCenter defaultCenter] postNotificationName:TD_DatabaseWillBeDeletedNotification
                                                         object:self];
-    if ([self isOpen]) {
-        if (![self close]) return NO;
-    } else if (!self.exists) {
-        return YES;
+
+    if (_open && ![self close]) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Database at path %@ could not be closed", _path);
+
+        return NO;
     }
-    return removeItemIfExists(_path, outError) &&
-           removeItemIfExists(self.attachmentStorePath, outError);
+
+    return [[self class] deleteClosedDatabaseAtPath:_path error:outError];
+}
+
++ (BOOL)deleteClosedDatabaseAtPath:(NSString *)path error:(NSError **)outError
+{
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleting %@", path);
+    
+    BOOL success = YES;
+
+    if ([TD_Database existsDatabaseAtPath:path]) {
+        NSString *attachmentsPath = [TD_Database attachmentStorePathWithDatabasePath:path];
+
+        success =
+            (removeItemIfExists(path, outError) && removeItemIfExists(attachmentsPath, outError));
+    }
+
+    return success;
 }
 
 - (void)dealloc

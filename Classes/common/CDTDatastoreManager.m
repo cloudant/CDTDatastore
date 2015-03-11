@@ -87,50 +87,58 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    TD_Database *db = [self.manager databaseNamed:name];
-
-    if (!db) {
-        if (error) {
-            NSDictionary *userInfo = @{
-                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
-                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
-                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
-            };
-            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
-        }
-        return NO;
-    }
-
-    // first delete the SQLite database and any attachments
-    NSError *localError;
-    if (![db deleteDatabase:&localError]) {
-        if (error) {
+    BOOL success = YES;
+    
+    NSString *dbPath = nil;
+    TD_Database *db = [self.manager cachedDatabaseNamed:name];
+    if (db) {
+        dbPath = db.path;
+        
+        // first delete the SQLite database and any attachments
+        // WARNING: db is deleted from disk but not from TD_DatabaseManager
+        NSError *localError = nil;
+        success = [db deleteDatabase:&localError];
+        if (!success && error) {
             *error = localError;
         }
-        return NO;
+    } else {
+        dbPath = [self.manager pathForName:name];
+        success = (dbPath != nil);
+        if (!success && error) {
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
+                                       NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+                                       NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+                                       };
+            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
+        }
+        
+        if (success) {
+            // first delete the SQLite database and any attachments
+            success = [TD_Database deleteClosedDatabaseAtPath:dbPath error:error];
+        }
     }
-
-    // delete any cloudant extensions
-    NSString *path = [[db path] stringByDeletingLastPathComponent];
-    path = [path
-        stringByAppendingPathComponent:[[db name] stringByAppendingString:CDTExtensionsDirName]];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    BOOL isDirectory;
-    BOOL extenstionsExists = [fm fileExistsAtPath:path isDirectory:&isDirectory];
-    if (extenstionsExists && isDirectory) {
-        if (![fm removeItemAtPath:path error:&localError]) {
-            if (error) {
+    
+    if (success) {
+        // delete any cloudant extensions
+        NSString *extPath = [dbPath stringByDeletingLastPathComponent];
+        extPath = [extPath
+                   stringByAppendingPathComponent:[name stringByAppendingString:CDTExtensionsDirName]];
+        
+        NSFileManager *fm = [NSFileManager defaultManager];
+        
+        BOOL isDirectory;
+        BOOL extenstionsExists = [fm fileExistsAtPath:extPath isDirectory:&isDirectory];
+        if (extenstionsExists && isDirectory) {
+            NSError *localError = nil;
+            success = [fm removeItemAtPath:extPath error:&localError];
+            if (!success && error) {
                 *error = localError;
             }
-            return NO;
         }
-        else {
-            return YES;
-        }
-    } else {
-        // maybe there weren't any extensions
-        return YES;
     }
+    
+    return success;
 }
 
 - (NSArray* /* NSString */) allDatastores
