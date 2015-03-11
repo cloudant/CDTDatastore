@@ -19,7 +19,7 @@
 #import "CloudantSyncTests.h"
 #import "DatastoreConflictResolvers.h"
 
-#import "CDTDatastoreManager.h"
+#import "CDTDatastoreManager+EncryptionKey.h"
 #import "CDTDatastore+Conflicts.h"
 #import "CDTDatastore+Attachments.h"
 #import "CDTDatastore+Internal.h"
@@ -27,6 +27,7 @@
 #import "CDTDocumentRevision.h"
 #import "CDTConflictResolver.h"
 #import "CDTMutableDocumentRevision.h"
+#import "CDTHelperOneUseKeyProvider.h"
 
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
@@ -218,6 +219,21 @@
     XCTAssertNotNil(rev, @"CDTDocumentRevision object was nil");
     
     return rev;
+}
+
+- (void)testGetConflictedDocumentIdsReturnNilIfDatastoreCanNotBeOpen
+{
+    NSError *error;
+    CDTHelperOneUseKeyProvider *provider = [[CDTHelperOneUseKeyProvider alloc] init];
+    CDTDatastore *otherDatastore = [self.factory datastoreNamed:@"otherconflicttests"
+                                      withEncryptionKeyProvider:provider
+                                                          error:&error];
+    [otherDatastore.database close];
+
+    XCTAssertNil([otherDatastore getConflictedDocumentIds],
+                 @"Database can not be opened because the encryption library is not included. If "
+                 @"the database can not be opened, there is no place to look for the conflicted "
+                 @"document, therefore return nil");
 }
 
 -(void)testResolveConflictWithMutableRevisionNoParent{
