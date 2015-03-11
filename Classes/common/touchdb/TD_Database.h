@@ -104,6 +104,15 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 - (BOOL)deleteDatabase:(NSError**)outError;
 
 /**
+ * Delete a closed database, i.e. there must not be a database instance bound to the files in this
+ * path. This method will remove from disk the database as well as the attachments (if there is any)
+ *
+ * @param path path to the database
+ * @param outError will point to an NSError object in case of error.
+ */
++ (BOOL)deleteClosedDatabaseAtPath:(NSString *)path error:(NSError **)outError;
+
+/**
  * Create an empty database, i.e. it deletes all previous content and creates a new database
  *
  * @param path path where the database will be created

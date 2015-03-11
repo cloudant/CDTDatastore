@@ -151,10 +151,21 @@ static NSCharacterSet* kIllegalNameChars;
 
 - (BOOL)deleteDatabaseNamed:(NSString *)name
 {
-    TD_Database* db = [self databaseNamed:name];
-    if (!db) return NO;
-    [db deleteDatabase:NULL];
-    [_databases removeObjectForKey:name];
+    TD_Database* db = [self cachedDatabaseNamed:name];
+    if (db) {
+        [db deleteDatabase:NULL];
+        [_databases removeObjectForKey:name];
+        
+        return YES;
+    }
+    
+    NSString* path = [self pathForName:name];
+    if (!path) {
+        return NO;
+    }
+    
+    [TD_Database deleteClosedDatabaseAtPath:path error:NULL];
+    
     return YES;
 }
 
