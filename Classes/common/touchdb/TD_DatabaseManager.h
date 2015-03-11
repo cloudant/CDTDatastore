@@ -21,6 +21,9 @@ typedef struct TD_DatabaseManagerOptions
 
 extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
+extern NSString *const kTD_DatabaseManagerErrorDomain;
+extern NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName;
+
 /** Manages a directory containing TD_Databases. */
 @interface TD_DatabaseManager : NSObject {
    @private
@@ -58,7 +61,7 @@ extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
  */
 - (TD_Database*)cachedDatabaseNamed:(NSString*)name;
 
-- (BOOL)deleteDatabaseNamed:(NSString*)name;
+- (BOOL)deleteDatabaseNamed:(NSString*)name error:(NSError *__autoreleasing *)error;
 
 @property (readonly) NSArray* allDatabaseNames;
 @property (readonly) NSArray* allOpenDatabases;
