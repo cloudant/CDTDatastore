@@ -125,4 +125,17 @@
     XCTAssertFalse([fm fileExistsAtPath:[dir stringByAppendingPathComponent:dbNameAttachments]], @"attachments dir was not deleted");
 }
 
+- (void)testDeleteDatastoreReturnsErrorIfNameIsNotValid
+{
+    NSError *error = nil;
+    BOOL deletionSucceeded = [self.factory deleteDatastoreNamed:@"-.-" error:&error];
+    BOOL isExpectedError = (error &&
+                            ([error.domain isEqualToString:CDTDatastoreErrorDomain]) &&
+                            (error.code == 404));
+    
+    XCTAssertTrue(!deletionSucceeded && isExpectedError,
+                  @"There is only one possible error if the name is not valid (%@, %i)",
+                  CDTDatastoreErrorDomain, 404);
+}
+
 @end
