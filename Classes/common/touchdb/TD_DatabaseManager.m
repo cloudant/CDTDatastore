@@ -27,6 +27,9 @@
 
 const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
+NSString *const kTD_DatabaseManagerErrorDomain = @"kTD_DatabaseManagerErrorDomain";
+NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName = 404;
+
 const NSString* TD_Server = @"TD_Server";
 
 @implementation TD_DatabaseManager
@@ -149,24 +152,36 @@ static NSCharacterSet* kIllegalNameChars;
     return db;
 }
 
-- (BOOL)deleteDatabaseNamed:(NSString *)name
+- (BOOL)deleteDatabaseNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    TD_Database* db = [self cachedDatabaseNamed:name];
+    BOOL success = NO;
+
+    TD_Database *db = [self cachedDatabaseNamed:name];
     if (db) {
-        [db deleteDatabase:NULL];
-        [_databases removeObjectForKey:name];
-        
-        return YES;
+        // Do not simply delete the files, use instance method
+        success = [db deleteDatabase:error];
+        if (success) {
+            // Release cache
+            [_databases removeObjectForKey:name];
+        }
+    } else {
+        // Database not loaded in memory. Delete the files
+        NSString *path = [self pathForName:name];
+        if (path) {
+            success = [TD_Database deleteClosedDatabaseAtPath:path error:error];
+        } else if (error) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
+                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+            };
+            *error = [NSError errorWithDomain:kTD_DatabaseManagerErrorDomain
+                                         code:kTD_DatabaseManagerErrorCodeInvalidName
+                                     userInfo:userInfo];
+        }
     }
-    
-    NSString* path = [self pathForName:name];
-    if (!path) {
-        return NO;
-    }
-    
-    [TD_Database deleteClosedDatabaseAtPath:path error:NULL];
-    
-    return YES;
+
+    return success;
 }
 
 - (NSArray*)allDatabaseNames

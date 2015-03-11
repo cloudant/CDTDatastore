@@ -87,40 +87,23 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    BOOL success = YES;
-    
-    NSString *dbPath = nil;
-    TD_Database *db = [self.manager cachedDatabaseNamed:name];
-    if (db) {
-        dbPath = db.path;
-        
-        // first delete the SQLite database and any attachments
-        // WARNING: db is deleted from disk but not from TD_DatabaseManager
-        NSError *localError = nil;
-        success = [db deleteDatabase:&localError];
-        if (!success && error) {
-            *error = localError;
-        }
-    } else {
-        dbPath = [self.manager pathForName:name];
-        success = (dbPath != nil);
-        if (!success && error) {
-            NSDictionary *userInfo = @{
-                                       NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
-                                       NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
-                                       NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
-                                       };
-            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:404 userInfo:userInfo];
+    // first delete the SQLite database and any attachments
+    NSError *localError = nil;
+    BOOL success = [self.manager deleteDatabaseNamed:name error:&localError];
+    if (!success && error) {
+        if ([localError.domain isEqualToString:kTD_DatabaseManagerErrorDomain] &&
+            (localError.code == kTD_DatabaseManagerErrorCodeInvalidName)) {
+            localError = [NSError errorWithDomain:CDTDatastoreErrorDomain
+                                             code:404
+                                         userInfo:localError.userInfo];
         }
         
-        if (success) {
-            // first delete the SQLite database and any attachments
-            success = [TD_Database deleteClosedDatabaseAtPath:dbPath error:error];
-        }
+        *error = localError;
     }
     
     if (success) {
         // delete any cloudant extensions
+        NSString *dbPath = [self.manager pathForName:name];;
         NSString *extPath = [dbPath stringByDeletingLastPathComponent];
         extPath = [extPath
                    stringByAppendingPathComponent:[name stringByAppendingString:CDTExtensionsDirName]];
@@ -130,7 +113,6 @@ NSString *const CDTExtensionsDirName = @"_extensions";
         BOOL isDirectory;
         BOOL extenstionsExists = [fm fileExistsAtPath:extPath isDirectory:&isDirectory];
         if (extenstionsExists && isDirectory) {
-            NSError *localError = nil;
             success = [fm removeItemAtPath:extPath error:&localError];
             if (!success && error) {
                 *error = localError;

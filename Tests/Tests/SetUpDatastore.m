@@ -24,6 +24,7 @@
 #import "CDTDatastore.h"
 
 #import "TD_Database.h"
+#import "TD_DatabaseManager.h"
 
 @interface SetUpDatastore : CloudantSyncTests
 
@@ -136,6 +137,18 @@
     XCTAssertTrue(!deletionSucceeded && isExpectedError,
                   @"There is only one possible error if the name is not valid (%@, %i)",
                   CDTDatastoreErrorDomain, 404);
+}
+
+- (void)testDeleteDatastoreReleaseMemory
+{
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"deletiontest" error:nil];
+    
+    NSUInteger databasesCounter = [[self.factory.manager allOpenDatabases] count];
+    
+    [self.factory deleteDatastoreNamed:datastore.name error:nil];
+    
+    XCTAssertEqual([[self.factory.manager allOpenDatabases] count], databasesCounter - 1,
+                   @"Datastore must be removed from disk and released from memory");
 }
 
 @end
