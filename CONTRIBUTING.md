@@ -54,10 +54,17 @@ inside the `Tests` folder:
 
 cd Tests
 pod install
+cd ..
 ```
 
 Open up `CDTDatastore.xcworkspace`. This workspace is where you should do all
-your work. It contains:
+your work. 
+
+```bash
+open CDTDatastore.xcworkspace
+```
+
+The workspace contains:
 
 * The CDTDatastore source code, following the folder structure in `Classes`.
 * The test project, `Tests`.
@@ -72,7 +79,10 @@ As you edit the source code in the `CDTDatastore` group, the Pods project will
 be rebuilt when you run the tests as it references the code in `Classes`.
 
 At this point, run both the tests from the Tests project and the example app
-to make sure you're setup correctly.
+to make sure you're setup correctly. To run the tests, change the Scheme to
+either `Tests iOS` or `Tests OSX` using the dropdown in the top left. It'll
+probably be the `Project` scheme to start with. Once you've changed the
+scheme, `cmd-u` should run the tests on your preferred platform.
 
 ### Adding and removing files
 
@@ -84,6 +94,9 @@ First, make sure you add them to the right folder within the `Classes` structure
 
 **If you add or remove files, run `pod update` in `Tests` to get them into
 the build. Then add them to the workspace, under the CDTDatastore group.**
+
+_Note_: `rake podupdate` will update all projects' workspaces, which is a useful
+shortcut.
 
 When adding files to the workspace, make sure to keep the groups in the
 workspace up to date with the file locations on the file system.
@@ -111,10 +124,10 @@ To test on a specific device you need to specify `-destination`:
 
 ```
 // iOS
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination "platform=iOS Simulator,OS=latest,name=iPhone Retina (3.5-inch)" test | xcpretty
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test | xcpretty
 
 // Mac OS X
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests' -destination "platform=OS X" test | xcpretty
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests OSX' -destination 'platform=OS X' test | xcpretty
 ```
 
 Xcodebuild references:
