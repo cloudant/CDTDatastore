@@ -42,7 +42,7 @@ desc "Task for travis"
 task :travis do
   sh "rake testios"
   sh "rake testosx"
-  sh "pod lib lint"
+  sh "pod lib lint --allow-warnings"
 end
 
 desc "pod update all included projects"
