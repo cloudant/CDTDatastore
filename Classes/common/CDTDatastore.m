@@ -130,7 +130,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     if (nil != nUserInfo[@"source"]) {
-        userInfo[@"winner"] = nUserInfo[@"source"];
+        userInfo[@"source"] = nUserInfo[@"source"];
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
