@@ -244,18 +244,16 @@ the appropriate indexes are set up, querying is as follows:
 
 ```objc
 NSDictionary *query = @{
-    @"name": @"John",       // name equals John
-    @"age": @{@"min": @25}  // age greater than 25
+    @"name": @"John",         // name equals John
+    @"age": @{ @"$gt" : @25}  // age greater than 25
 };
-CDTQueryResult *result = [indexManager queryWithDictionary:query
-                                                     error:nil];
-
-for(CDTDocumentRevision *revision in result) {
+CDTQResultSet *result = [datastore find:query];
+[result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
     // do something
-}
+}];
 ```
 
-See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/index-query.md).
+See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md).
 
 ### Conflicts
 
