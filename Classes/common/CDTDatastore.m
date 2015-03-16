@@ -20,6 +20,7 @@
 #import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 #import "CDTDatastore+Attachments.h"
+#import "CDTEncryptionKeyNilProvider.h"
 #import "CDTLogging.h"
 
 #import "TD_Database.h"
@@ -39,6 +40,8 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @interface CDTDatastore ()
 
+@property (nonatomic, strong, readonly) id<CDTEncryptionKeyProvider> keyProvider;
+
 @property (readonly) CDTDatastoreManager *manager;
 - (void)TDdbChanged:(NSNotification *)n;
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error;
@@ -53,25 +56,40 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 - (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database
 {
+    CDTEncryptionKeyNilProvider *provider = [CDTEncryptionKeyNilProvider provider];
+    
+    return [self initWithManager:manager database:database encryptionKeyProvider:provider];
+}
+
+// Public init method defined in CDTDatastore+EncryptionKey.h
+- (instancetype)initWithManager:(CDTDatastoreManager *)manager
+					   database:(TD_Database *)database
+          encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+{
+    NSParameterAssert(manager);
+    Assert(provider, @"Key provider is mandatory. Supply a CDTNilEncryptionKeyProvider instead.");
+
     self = [super init];
     if (self) {
-        NSParameterAssert(manager);
-        _database = database;
-        if (![_database open]) {
-            return nil;
+        if (![database openWithEncryptionKeyProvider:provider]) {
+            self = nil;
+        } else {
+            _manager = manager;
+            _database = database;
+            _keyProvider = provider;
+            
+            NSString *dir = [[database path] stringByDeletingLastPathComponent];
+            NSString *name = [database name];
+            _extensionsDir = [dir
+                stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_extensions", name]];
+
+            [[NSNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(TDdbChanged:)
+                                                         name:TD_DatabaseChangeNotification
+                                                       object:database];
         }
-
-        NSString *dir = [[database path] stringByDeletingLastPathComponent];
-        NSString *name = [database name];
-        _extensionsDir =
-            [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_extensions", name]];
-        _manager = manager;
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(TDdbChanged:)
-                                                     name:TD_DatabaseChangeNotification
-                                                   object:_database];
     }
+    
     return self;
 }
 
@@ -152,6 +170,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 
 - (NSString *)name { return self.database.name; }
+
+// Public method defined in CDTDatastore+EncryptionKey.h
+- (id<CDTEncryptionKeyProvider>)encryptionKeyProvider { return self.keyProvider; }
 
 - (CDTDocumentRevision *)getDocumentWithId:(NSString *)docId error:(NSError *__autoreleasing *)error
 {
@@ -422,7 +443,10 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 #pragma mark Helper methods
 
-- (BOOL)ensureDatabaseOpen { return [_database open]; }
+- (BOOL)ensureDatabaseOpen
+{
+    return [_database openWithEncryptionKeyProvider:self.keyProvider];
+}
 
 #pragma mark fromRevision API methods
 
