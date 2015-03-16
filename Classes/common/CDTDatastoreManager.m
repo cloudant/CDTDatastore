@@ -14,7 +14,9 @@
 //  and limitations under the License.
 
 #import "CDTDatastoreManager.h"
-#import "CDTDatastore.h"
+#import "CDTDatastore+EncryptionKey.h"
+
+#import "CDTEncryptionKeyNilProvider.h"
 
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
@@ -34,32 +36,53 @@ NSString *const CDTExtensionsDirName = @"_extensions";
     if (self) {
         _manager =
             [[TD_DatabaseManager alloc] initWithDirectory:directoryPath options:nil error:outError];
-        if (!_manager) return nil;
+        if (!_manager) {
+            self = nil;
+        }
     }
+
     return self;
 }
 
 - (CDTDatastore *)datastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
+    CDTEncryptionKeyNilProvider *provider = [CDTEncryptionKeyNilProvider provider];
+
+    return [self datastoreNamed:name withEncryptionKeyProvider:provider error:error];
+}
+
+- (CDTDatastore *)datastoreNamed:(NSString *)name
+       withEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                           error:(NSError *__autoreleasing *)error
+{
     //    if (![TD_Database isValidDatabaseName:name]) {
     //      Not a public method yet
     //    }
 
-    TD_Database *db = [self.manager databaseNamed:name];
+    CDTDatastore *datastore = nil;
 
+    NSString *errorReason = nil;
+    TD_Database *db = [self.manager databaseNamed:name];
     if (db) {
-        return [[CDTDatastore alloc] initWithDatabase:db];
-    } else {
-        if (error) {
-            NSDictionary *userInfo = @{
-                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't create database.", nil),
-                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
-                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
-            };
-            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:400 userInfo:userInfo];
+        datastore = [[CDTDatastore alloc] initWithDatabase:db encryptionKeyProvider:provider];
+
+        if (!datastore) {
+            errorReason = NSLocalizedString(@"Wrong key?", nil);
         }
-        return nil;
+    } else {
+        errorReason = NSLocalizedString(@"Invalid name?", nil);
     }
+
+    if (!datastore && error) {
+        NSDictionary *userInfo = @{
+            NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't create database.", nil),
+            NSLocalizedFailureReasonErrorKey : errorReason,
+            NSLocalizedRecoverySuggestionErrorKey : errorReason
+        };
+        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:400 userInfo:userInfo];
+    }
+
+    return datastore;
 }
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error

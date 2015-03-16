@@ -17,8 +17,15 @@
 #import "CollectionUtils.h"
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
+#import "CDTEncryptionKeyNilProvider.h"
 
 #import "CloudantTests.h"
+
+
+
+#define TD_DATABASEMANAGERTESTS_DATABASENAME    @"foo"
+
+
 
 @interface TD_DatabaseManagerTests : CloudantTests
 
@@ -29,25 +36,40 @@
 
 - (void)testManager
 {
-    //RequireTestCase(TD_Database); how can I do this in XCode?
-    
-    TD_DatabaseManager* dbm = [TD_DatabaseManager createEmptyAtTemporaryPath: @"TD_DatabaseManagerTest"];
-    TD_Database* db = [dbm databaseNamed: @"foo"];
-    
+    // RequireTestCase(TD_Database); how can I do this in XCode?
+    TD_DatabaseManager* dbm =
+        [TD_DatabaseManager createEmptyAtTemporaryPath:@"TD_DatabaseManagerTest"];
+
+    CDTEncryptionKeyNilProvider* provider = [CDTEncryptionKeyNilProvider provider];
+    TD_Database* db = [dbm databaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME];
+
     XCTAssertNotNil(db, @"TD_Database is nil in %s", __PRETTY_FUNCTION__);
-    XCTAssertEqualObjects(db.name, @"foo", @"TD_Database.name is not \"foo\" in %s", __PRETTY_FUNCTION__);
-    XCTAssertEqualObjects(db.path.stringByDeletingLastPathComponent, dbm.directory, @"TD_Database path is not equal to path supplied by TD_DatabaseManager in %s", __PRETTY_FUNCTION__);
-    
+    XCTAssertEqualObjects(db.name, TD_DATABASEMANAGERTESTS_DATABASENAME,
+                          @"TD_Database.name is not \"%@\" in %s",
+                          TD_DATABASEMANAGERTESTS_DATABASENAME, __PRETTY_FUNCTION__);
+    XCTAssertEqualObjects(
+        db.path.stringByDeletingLastPathComponent, dbm.directory,
+        @"TD_Database path is not equal to path supplied by TD_DatabaseManager in %s",
+        __PRETTY_FUNCTION__);
+
     XCTAssertTrue(!db.exists, @"TD_Database already exists in %s", __PRETTY_FUNCTION__);
-    
-    XCTAssertEqual([dbm databaseNamed: @"foo"], db, @"TD_DatabaseManager is not aware of a database named \"foo\" in %s", __PRETTY_FUNCTION__);
-    
-    XCTAssertEqualObjects(dbm.allDatabaseNames, @[], @"TD_DatabaseManager reports some database already exists in %s", __PRETTY_FUNCTION__);    // because foo doesn't exist yet
-    
-    XCTAssertTrue([db open], @"TD_Database.open returned NO in %s", __PRETTY_FUNCTION__);
+
+    XCTAssertEqual([dbm databaseNamed:TD_DATABASEMANAGERTESTS_DATABASENAME], db,
+                   @"TD_DatabaseManager is not aware of a database named \"foo\" in %s",
+                   __PRETTY_FUNCTION__);
+
+    XCTAssertEqualObjects(dbm.allDatabaseNames, @[],
+                          @"TD_DatabaseManager reports some database already exists in %s",
+                          __PRETTY_FUNCTION__);  // because foo doesn't exist yet
+
+    XCTAssertTrue([db openWithEncryptionKeyProvider:provider],
+                  @"TD_Database.open returned NO in %s", __PRETTY_FUNCTION__);
     XCTAssertTrue(db.exists, @"TD_Database does not exist in %s", __PRETTY_FUNCTION__);
-    
-    XCTAssertEqualObjects(dbm.allDatabaseNames, @[@"foo"], @"TD_DatabaseManager reports some database other than \"foo\" in %s", __PRETTY_FUNCTION__);  // because foo should now exist and be the only database here
+
+    XCTAssertEqualObjects(
+        dbm.allDatabaseNames, @[ TD_DATABASEMANAGERTESTS_DATABASENAME ],
+        @"TD_DatabaseManager reports some database other than \"foo\" in %s",
+        __PRETTY_FUNCTION__);  // because foo should now exist and be the only database here
 }
 
 
