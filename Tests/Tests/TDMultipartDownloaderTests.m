@@ -17,6 +17,7 @@
 #import "CollectionUtils.h"
 #import "TDMultipartDownloader.h"
 #import "TDInternal.h"
+#import "CDTEncryptionKeyNilProvider.h"
 #import "CloudantTests.h"
 
 @interface TDMultipartDownloaderTests : CloudantTests
@@ -36,7 +37,12 @@
     //RequireTestCase(TDMultipartReader_Simple);
     //RequireTestCase(TDMultipartReader_Types);
     
-    TD_Database* db = [TD_Database createEmptyDBAtPath: [NSTemporaryDirectory() stringByAppendingPathComponent: @"TDMultipartDownloader"]];
+    CDTEncryptionKeyNilProvider* provider = [CDTEncryptionKeyNilProvider provider];
+    TD_Database* db =
+        [TD_Database createEmptyDBAtPath:[NSTemporaryDirectory()
+                                          stringByAppendingPathComponent:@"TDMultipartDownloader"]
+               withEncryptionKeyProvider:provider];
+    
     //NSString* urlStr = @"http://127.0.0.1:5984/demo-shopping-attachments/2F9078DF-3C72-44C2-8332-B07B3A29FFE4"
     NSString* urlStr = @"http://127.0.0.1:5984/attach-test/oneBigAttachment";
     urlStr = [urlStr stringByAppendingString: @"?revs=true&attachments=true"];

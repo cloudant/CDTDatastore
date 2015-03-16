@@ -117,34 +117,39 @@ static NSCharacterSet* kIllegalNameChars;
     return [_dir stringByAppendingPathComponent:[name stringByAppendingPathExtension:kDBExtension]];
 }
 
-- (TD_Database*)databaseNamed:(NSString*)name create:(BOOL)create
+- (TD_Database*)databaseNamed:(NSString*)name
 {
-    if (_options.readOnly) create = NO;
-    TD_Database* db = _databases[name];
+    TD_Database* db = [self cachedDatabaseNamed:name];
     if (!db) {
         NSString* path = [self pathForName:name];
-        if (!path) return nil;
-        db = [[TD_Database alloc] initWithPath:path];
-        db.readOnly = _options.readOnly;
-        if (!create && !db.exists) {
-            return nil;
+        if (!path) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Database name not valid");
+        } else {
+            db = [[TD_Database alloc] initWithPath:path];
+            if (_options.readOnly && !db.exists) {
+                CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Read-only db does not exist. Return nil");
+                
+                db = nil;
+            } else {
+                db.name = name;
+                db.readOnly = _options.readOnly;
+                
+                _databases[name] = db;
+            }
         }
-        db.name = name;
-        _databases[name] = db;
     }
+    
     return db;
 }
 
-- (TD_Database*)databaseNamed:(NSString*)name { return [self databaseNamed:name create:YES]; }
-
-- (TD_Database*)existingDatabaseNamed:(NSString*)name
+- (TD_Database*)cachedDatabaseNamed:(NSString*)name
 {
-    TD_Database* db = [self databaseNamed:name create:NO];
-    if (db && ![db open]) db = nil;
+    TD_Database* db = _databases[name];
+    
     return db;
 }
 
-- (BOOL)deleteDatabaseNamed:(NSString*)name
+- (BOOL)deleteDatabaseNamed:(NSString *)name
 {
     TD_Database* db = [self databaseNamed:name];
     if (!db) return NO;
@@ -194,7 +199,6 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                            toDatabase:(TD_Database**)outDatabase  // may be NULL
                                remote:(NSURL**)outRemote          // may be NULL
                                isPush:(BOOL*)outIsPush
-                         createTarget:(BOOL*)outCreateTarget
                               headers:(NSDictionary**)outHeaders
                            authorizer:(id<TDAuthorizer>*)outAuthorizer
 {
@@ -205,35 +209,49 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     NSString* target = targetDict[@"url"];
     if (!source || !target) return kTDStatusBadRequest;
 
-    *outCreateTarget = [$castIf(NSNumber, properties[@"create_target"]) boolValue];
-    *outIsPush = NO;
+    if (outIsPush) {
+        *outIsPush = NO;
+    }
+
     TD_Database* db = nil;
     NSDictionary* remoteDict = nil;
     if ([TD_DatabaseManager isValidDatabaseName:source]) {
-        if (outDatabase) db = [self existingDatabaseNamed:source];
+        db = [self cachedDatabaseNamed:source];
+
         remoteDict = targetDict;
-        *outIsPush = YES;
+
+        if (outIsPush) {
+            *outIsPush = YES;
+        }
     } else {
-        if (![TD_DatabaseManager isValidDatabaseName:target]) return kTDStatusBadID;
+        if (![TD_DatabaseManager isValidDatabaseName:target]) {
+            return kTDStatusBadID;
+        }
+
         remoteDict = sourceDict;
-        if (outDatabase) {
-            if (*outCreateTarget) {
-                db = [self databaseNamed:target];
-                if (![db open]) return kTDStatusDBError;
-            } else {
-                db = [self existingDatabaseNamed:target];
-            }
+
+        db = [self cachedDatabaseNamed:target];
+    }
+
+    NSURL* remote = [NSURL URLWithString:remoteDict[@"url"]];
+    if (![@[ @"http", @"https", @"touchdb" ] containsObject:remote.scheme.lowercaseString]) {
+        return kTDStatusBadRequest;
+    }
+
+    if (outDatabase) {
+        // The DB has to be open to read/write on it. It should be open given that a replicator
+        // links a datastore and a datastore opens the DB during initialization.
+        *outDatabase = (db && [db isOpen] ? db : nil);
+        if (!*outDatabase) {
+            return kTDStatusNotFound;
         }
     }
-    NSURL* remote = [NSURL URLWithString:remoteDict[@"url"]];
-    if (![@[ @"http", @"https", @"touchdb" ] containsObject:remote.scheme.lowercaseString])
-        return kTDStatusBadRequest;
-    if (outDatabase) {
-        *outDatabase = db;
-        if (!db) return kTDStatusNotFound;
+    if (outRemote) {
+        *outRemote = remote;
     }
-    if (outRemote) *outRemote = remote;
-    if (outHeaders) *outHeaders = $castIf(NSDictionary, properties[@"headers"]);
+    if (outHeaders) {
+        *outHeaders = $castIf(NSDictionary, properties[@"headers"]);
+    }
 
     //    if (outAuthorizer) {
     //        *outAuthorizer = nil;
@@ -269,12 +287,11 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 
 - (TDStatus)validateReplicatorProperties:(NSDictionary*)properties
 {
-    BOOL push, createTarget;
+    BOOL push;
     return [self parseReplicatorProperties:properties
                                 toDatabase:NULL
                                     remote:NULL
                                     isPush:&push
-                              createTarget:&createTarget
                                    headers:NULL
                                 authorizer:NULL];
 }
@@ -285,7 +302,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     // http://wiki.apache.org/couchdb/Replication
     TD_Database* db;
     NSURL* remote;
-    BOOL push, createTarget;
+    BOOL push;
     NSDictionary* headers;
     id<TDAuthorizer> authorizer;
 
@@ -293,7 +310,6 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                                            toDatabase:&db
                                                remote:&remote
                                                isPush:&push
-                                         createTarget:&createTarget
                                               headers:&headers
                                            authorizer:&authorizer];
     if (TDStatusIsError(status)) {
@@ -315,7 +331,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     repl.options = properties;
     repl.requestHeaders = headers;
     repl.authorizer = authorizer;
-    if (push) ((TDPusher*)repl).createTarget = createTarget;
+    if (push) ((TDPusher*)repl).createTarget = NO;
 
     if (outStatus) *outStatus = kTDStatusOK;
     return repl;

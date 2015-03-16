@@ -727,7 +727,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Closing and re-opening database...");
     [_fmdbQueue close];
 
-    if (![self openFMDB]) return kTDStatusDBError;
+    if (![self openFMDBWithEncryptionKeyProvider:_keyProviderToOpenDB]) return kTDStatusDBError;
 
     CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"...Finished database compaction.");
     return result;
