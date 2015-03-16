@@ -21,7 +21,7 @@
 @interface TD_Database ()
 @property (readwrite, copy) NSString* name;  // make it settable
 @property (readonly) TDBlobStore* attachmentStore;
-- (BOOL)openFMDB;
+- (BOOL)openFMDBWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 /** Must be called from within a queue -inDatabase: or -inTransaction: **/
 - (SInt64)getDocNumericID:(NSString*)docID database:(FMDatabase*)db;

@@ -13,7 +13,10 @@
 #import "TDStatus.h"
 #import "TDMisc.h"
 
+@protocol CDTEncryptionKeyProvider;
+
 @class FMDatabase, FMDatabaseQueue, TD_View, TDBlobStore;
+
 struct TDQueryOptions;  // declared in TD_View.h
 
 /** NSNotification posted when a document is updated.
@@ -58,6 +61,7 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
     NSString* _path;
     NSString* _name;
     FMDatabaseQueue* _fmdbQueue;
+    id<CDTEncryptionKeyProvider> _keyProviderToOpenDB;
     BOOL _readOnly;
     BOOL _open;
     int _transactionLevel;
@@ -69,11 +73,46 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 }
 
 - (id)initWithPath:(NSString*)path;
-- (BOOL)open;
+
+/**
+ * @return YES if the database is open. NO in other case.
+ */
+- (BOOL)isOpen;
+
+/**
+ * This method check if the database is open and it was opened with the same key informed by the
+ * provider
+ *
+ * @param provider it will return the key used to cipher the database
+ *
+ * @return YES is the database is open and it was opened with the provided key. NO in other case.
+ */
+- (BOOL)isOpenWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
+
+/**
+ * Open a database using a key to de-cipher its content. If the database does not exit before, it
+ * will create it and initialise it. If the database is already open, it will check that the key
+ * is valid.
+ *
+ * @param provider it will return the key used to de-cipher the database
+ *
+ * @return YES if the database is opened and initialised successfully. NO in other case
+ */
+- (BOOL)openWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
+
 - (BOOL)close;
 - (BOOL)deleteDatabase:(NSError**)outError;
 
-+ (TD_Database*)createEmptyDBAtPath:(NSString*)path;
+/**
+ * Create an empty database, i.e. it deletes all previous content and creates a new database
+ *
+ * @param path path where the database will be created
+ * @param provider will return a key to cipher the content
+ *
+ * @return The next database or nil if there were an error
+ */
++ (instancetype)createEmptyDBAtPath:(NSString*)path
+          withEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 /** Should the database file be opened in read-only mode? */
 @property BOOL readOnly;

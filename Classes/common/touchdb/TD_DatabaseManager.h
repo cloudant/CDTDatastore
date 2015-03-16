@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import "TDStatus.h"
+
 @class TD_Database, TDReplicator;
 //@class TDReplicatorManager;
 
@@ -29,6 +30,7 @@ extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 }
 
 + (BOOL)isValidDatabaseName:(NSString*)name;
+- (NSString*)pathForName:(NSString*)name;
 
 - (id)initWithDirectory:(NSString*)dirPath
                 options:(const TD_DatabaseManagerOptions*)options
@@ -36,8 +38,25 @@ extern const TD_DatabaseManagerOptions kTD_DatabaseManagerDefaultOptions;
 
 @property (readonly) NSString* directory;
 
+/**
+ * Returns a database:
+ * - If the database is cached, it will return this database. The database may or may not be open.
+ * - If it is not cached, it will create a new instance. The database is closed and it is based on
+ * the content saved to disk (if there is any)
+ * - It will no create an instance if the database is for read-only and there is not previous data
+ * on disk
+ *
+ * param name name of the database. This name is used to compose the filename of the database
+ *
+ * return a database or nil if it is not possible to create a new instance
+ */
 - (TD_Database*)databaseNamed:(NSString*)name;
-- (TD_Database*)existingDatabaseNamed:(NSString*)name;
+
+/**
+ * Returns a database that was previously allocated with 'databaseNamed:'.
+ * Be aware that the database may or may not be open.
+ */
+- (TD_Database*)cachedDatabaseNamed:(NSString*)name;
 
 - (BOOL)deleteDatabaseNamed:(NSString*)name;
 
