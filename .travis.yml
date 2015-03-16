@@ -6,9 +6,7 @@ before_install:
 
 install:
   - gem install cocoapods xcpretty --no-document
-  - cd Tests
-  - pod install
-  - cd ..
+  - rake podupdatetests
 
 script:
   - rake travis

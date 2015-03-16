@@ -15,6 +15,7 @@
 
 #import "CDTDatastore+Conflicts.h"
 #import "CDTDatastore+Internal.h"
+#import "CDTDatastore+EncryptionKey.h"
 #import "TD_Database+Attachments.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDatastore+Attachments.h"
@@ -35,7 +36,7 @@
 
 - (NSArray *)getConflictedDocumentIds
 {
-    if (![self.database open]) {
+    if (![self.database openWithEncryptionKeyProvider:[self copyEncryptionKeyProvider]]) {
         return nil;
     }
 
@@ -46,7 +47,7 @@
                            resolver:(NSObject<CDTConflictResolver> *)resolver
                               error:(NSError *__autoreleasing *)error
 {
-    if (![self.database open]) {
+    if (![self.database openWithEncryptionKeyProvider:[self copyEncryptionKeyProvider]]) {
         *error = TDStatusToNSError(kTDStatusException, nil);
         return NO;
     }
