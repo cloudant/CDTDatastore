@@ -24,6 +24,25 @@
             </FileRef>
          </Group>
          <Group
+            location = "group:Encryption"
+            name = "Encryption">
+            <FileRef
+               location = "group:CDTDatastore+EncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTDatastoreManager+EncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeyNilProvider.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeyNilProvider.m">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeyProvider.h">
+            </FileRef>
+         </Group>
+         <Group
             location = "container:"
             name = "Indexing">
             <FileRef
@@ -232,6 +251,12 @@
             </FileRef>
             <FileRef
                location = "group:FMDatabase+LongLong.m">
+            </FileRef>
+            <FileRef
+               location = "group:FMDatabase+SQLCipher.h">
+            </FileRef>
+            <FileRef
+               location = "group:FMDatabase+SQLCipher.m">
             </FileRef>
          </Group>
          <Group

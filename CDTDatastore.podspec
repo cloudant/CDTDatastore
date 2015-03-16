@@ -29,27 +29,87 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '6.0'
   s.osx.deployment_target = '10.8'
+
   s.requires_arc = true
 
-  s.source_files = 'Classes/**/*.{h,m}'
-  s.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+  s.default_subspec = 'standard'
 
-  s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+  s.subspec 'standard' do |sp|
+    # DUPLICATED CODE - Check subspec 'SQLCipher' - BEGIN
+    # CDTDatastore code depends on FMDB, without this dependency the code will
+    # not compile ('pod lib lint' will fail). FMDB can be compiled based on
+    # SQLite or SQLCipher and we want to offer both options. To do that, we have
+    # to define 2 subspecs and specify in both the CDTDatastore code and one of
+    # FMDB subspecs.
+    # If you try to make one of the subspecs to depend on the other to avoid the
+    # duplicated code, the resulting subspec will include at the same time
+    # SQLite and SQLCipher.
 
-  s.ios.exclude_files = 'Classes/osx'
-  s.osx.exclude_files = 'Classes/ios'
-  # s.public_header_files = 'Classes/common/CloudantSync.h'
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
 
-  s.dependency 'FMDB', '= 2.3'
-  s.dependency 'CocoaLumberjack', '~> 2.0'
+    sp.source_files = 'Classes/**/*.{h,m}'
 
-  s.frameworks = 'SystemConfiguration'
-  s.library = 'sqlite3', 'z'
+    sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+    sp.ios.exclude_files = 'Classes/osx'
+    sp.osx.exclude_files = 'Classes/ios'
+
+    sp.dependency 'CDTDatastore/common-dependencies'
+
+    # DUPLICATED CODE - Check subspec 'SQLCipher' - END
+
+    sp.library = 'sqlite3', 'z'
+
+    sp.dependency 'FMDB', '= 2.3'
+  end
+
+  s.subspec 'SQLCipher' do |sp|
+    # DUPLICATED CODE - Check subspec 'standard' - BEGIN
+    # CDTDatastore code depends on FMDB, without this dependency the code will
+    # not compile ('pod lib lint' will fail). FMDB can be compiled based on
+    # SQLite or SQLCipher and we want to offer both options. To do that, we have
+    # to define 2 subspecs and specify in both the CDTDatastore code and one of
+    # FMDB subspecs.
+    # If you try to make one of the subspecs to depend on the other to avoid the
+    # duplicated code, the resulting subspec will include at the same time
+    # SQLite and SQLCipher.
+
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+
+    sp.source_files = 'Classes/**/*.{h,m}'
+
+    sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+    sp.ios.exclude_files = 'Classes/osx'
+    sp.osx.exclude_files = 'Classes/ios'
+
+    sp.dependency 'CDTDatastore/common-dependencies'
+    
+    # DUPLICATED CODE - Check subspec 'standard' - END
+
+    sp.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
+
+    sp.library = 'z'
+
+    # Some CDTDatastore classes use SQLite functions, we have to include
+    # 'SQLCipher' although 'FMDB/SQLCipher' also depends on 'SQLCipher' or they
+    # will not compile (linker will not find some symbols)
+    sp.dependency 'SQLCipher'
+    sp.dependency 'FMDB/SQLCipher', '= 2.3'
+  end
+
+  s.subspec 'common-dependencies' do |sp|
+    sp.frameworks = 'SystemConfiguration'
+
+    sp.dependency 'CDTDatastore/no-arc'
+    sp.dependency 'CocoaLumberjack', '~> 2.0'
+  end
 
   s.subspec 'no-arc' do |sp|
-    s.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
-    sp.source_files = 'Classes/vendor/MYUtilities/*.{h,m}'
     sp.requires_arc = false
+
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+
+    sp.source_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+
     sp.ios.exclude_files = 'Classes/vendor/MYUtilities/MYURLHandler.{h,m}'
   end
 end
