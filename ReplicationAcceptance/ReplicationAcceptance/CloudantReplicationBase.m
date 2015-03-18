@@ -10,6 +10,7 @@
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
+#import "ReplicationSettings.h"
 
 #import <UNIRest.h>
 
@@ -28,7 +29,7 @@
     XCTAssertNil(error, @"CDTDatastoreManager had error");
     XCTAssertNotNil(self.factory, @"Factory is nil");
 
-    self.remoteRootURL = [NSURL URLWithString:@"http://localhost:5984"];
+    self.remoteRootURL = [NSURL URLWithString:[[ReplicationSettings alloc] init].serverURI];
     self.remoteDbPrefix = @"replication-acceptance";
 }
 

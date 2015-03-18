@@ -136,6 +136,34 @@ Xcodebuild references:
 
 Miss out the `| xcpretty` if you didn't install that.
 
+### Configuring ReplicationAcceptance Tests
+
+ReplicationAcceptance are a set of tests which tests the replication function of CDTDatastore, the tests are found in the ReplicationAcceptance.xcworkspace in the ReplicationAcceptance directory in CDTDatastore. 
+
+The tests can be configured by using a series of environment variables. The environment variables are as follows:
+
+Environment Variable | Purpose | Default
+------------ | ------------- | ------------- | -------------
+`TEST_COUCH_HOST` | CouchDB hostname | `localhost`
+`TEST_COUCH_PORT` | Port couchdb is listening on | `5984`
+`TEST_COUCH_HTTP` | http protocol to use, either http or https | `http`
+`TEST_COUCH_USERNAME` | CouchDB account username | 
+`TEST_COUCH_PASSWROD` | CouchDB account Password | 
+
+
+Example
+
+```bash
+
+$ export TEST_COUCH_HOST=couchdbhost
+$ export TEST_COUCH_PORT=8080
+$ export TEST_COUCH_HTTP=http
+$ export TEST_COUCH_USERNAME=auser
+$ export TEST_COUCH_PASSWORD=apassword
+$ xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests_OSX -destination 'platform=OS X' test | xcpretty
+
+```
+
 ## Contributing your changes
 
 We follow a fairly standard proceedure:
