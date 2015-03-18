@@ -193,8 +193,13 @@ if let err = error {
 
 Read more in [the CRUD document](https://github.com/cloudant/CDTDatastore/blob/master/doc/crud.md).
 
-You will also be able to subscribe for notifications of changes in the database, which
-is described in [the events documentation for Android](https://github.com/cloudant/sync-android/blob/master/doc/events.md). The implementation is still in-flux on iOS.
+You can subscribe for notifications of changes in the database, which
+is described in 
+[the events documentation](https://github.com/cloudant/cdtdatastore/blob/master/doc/events.md). 
+It's still a bit raw right now:
+
+- You receive a notification for all new revisions in replication (which can be more
+  than one per updated document).
 
 ### Replicating Data Between Many Devices
 
