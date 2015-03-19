@@ -1,11 +1,11 @@
 # Finding documents with Cloudant Sync
 
-This query engine is inspired by MongoDB's query implementation, so users of MongoDB should feel
+Cloudant Query is inspired by MongoDB's query implementation, so users of MongoDB should feel
 at home using it in their mobile applications.
 
-The aim is that the query you use on our cloud-based database works for your mobile application.
+The aim is that the query you use on Cloudant works for your mobile application.
 
-This query engine is meant to replace our previous [indexing/query][1] solution which will be removed from this project repository shortly.  The functionality provided by this query engine already exceeds that of the previous solution.
+This query engine replaces our previous [indexing/query][1] solution which will be removed from this project repository shortly.  The functionality provided by this query engine already exceeds that of the previous solution.
   
 
 [1]: https://github.com/cloudant/CDTDatastore/blob/master/doc/index-query.md
@@ -499,7 +499,7 @@ The one-index was over the `name` field, the three-index over `name`, `age` and 
 
 ## Grammar
 
-To help, I've tried to write a grammar/schema for the Query language.
+To help, Below is a grammar/schema for the Query language.
 
 Here:
 
