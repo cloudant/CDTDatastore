@@ -1,5 +1,12 @@
 # CDTDatastore CHANGELOG
 
+## 0.15.0 (Unreleased)
+
+- [FIX] Previously, we overwrote the `winner` field of CDT-notification emitted
+  on datastore changes when translating from TouchDB's event.  We now copy over
+  the `source` field correctly to the new notification.
+- [NOTE] Bump CocoaLumberjack to 2.0.0
+
 ## 0.14.0 (2015-02-13)
 
 - [FIX] Accept CouchDB 2.0 and Cloudant Local's array-based sequence numbers.
