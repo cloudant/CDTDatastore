@@ -25,37 +25,6 @@
          </Group>
          <Group
             location = "container:"
-            name = "Indexing">
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTFieldIndexer.h">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTFieldIndexer.m">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTIndex.h">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTIndex.m">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTIndexer.h">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTIndexManager.h">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTIndexManager.m">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTQueryBuilder.h">
-            </FileRef>
-            <FileRef
-               location = "group:Classes/common/Indexing/CDTQueryBuilder.m">
-            </FileRef>
-         </Group>
-         <Group
-            location = "container:"
             name = "Query">
             <FileRef
                location = "group:Classes/common/query/CDTDatastore+Query.h">
