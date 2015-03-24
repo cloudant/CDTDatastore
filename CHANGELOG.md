@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## 0.15.0 (Unreleased)
+## 0.15.0 (2015-03-24)
 
 - [FIX] Previously, we overwrote the `winner` field of CDT-notification emitted
   on datastore changes when translating from TouchDB's event.  We now copy over
