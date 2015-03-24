@@ -1,5 +1,9 @@
 ## Finding documents within Cloudant Sync
 
+_This functionality is now deprecated and will be removed from this repository shortly.  Please use the our new [query engine][1] instead when looking for an indexing/query solution._
+
+[1]: https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md
+
 Cloudant Sync provides simple and powerful ways to index and query
 your documents, allowing your applications to make the most of the
 data they store.

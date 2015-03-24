@@ -54,6 +54,85 @@
                location = "group:Classes/common/Indexing/CDTQueryBuilder.m">
             </FileRef>
          </Group>
+         <Group
+            location = "container:"
+            name = "Query">
+            <FileRef
+               location = "group:Classes/common/query/CDTDatastore+Query.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTDatastore+Query.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexCreator.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexCreator.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexManager.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexManager.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexUpdater.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndexUpdater.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQLogging.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQProjectedDocumentRevision.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQProjectedDocumentRevision.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryConstants.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryConstants.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryExecutor.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryExecutor.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQuerySqlTranslator.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQuerySqlTranslator.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryValidator.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQQueryValidator.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQResultSet.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQResultSet.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQUnindexedMatcher.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQUnindexedMatcher.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQValueExtractor.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQValueExtractor.m">
+            </FileRef>
+         </Group>
          <FileRef
             location = "group:CDTSQLiteHelpers.h">
          </FileRef>
