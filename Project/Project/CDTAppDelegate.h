@@ -16,14 +16,12 @@
 #import <UIKit/UIKit.h>
 
 @class CDTDatastore;
-@class CDTIndexManager;
 @class CDTReplicatorFactory;
 @class CDTTodoReplicator;
 
 @interface CDTAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (nonatomic, strong) CDTDatastore *datastore;
-@property (nonatomic, strong) CDTIndexManager *indexManager;
 @property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 @property (nonatomic, strong) CDTTodoReplicator *todoReplicator;
 
