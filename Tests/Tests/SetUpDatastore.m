@@ -19,7 +19,7 @@
 
 #import "CDTDatastoreManager.h"
 
-#import "CDTIndexManager.h"
+#import "CDTDatastore+Query.h"
 
 #import "CDTDatastore.h"
 
@@ -86,7 +86,7 @@
     
     NSString *dbName = @"test_extensions";
     
-    // setup datastore and indexmanager
+    // setup datastore
     CDTDatastore *datastore = [self.factory datastoreNamed:dbName error:&error];
     XCTAssertNil(datastore, @"datastore is not nil");
 }
@@ -103,9 +103,9 @@
     NSString *dbNameExtensions = [dbName stringByAppendingString:@"_extensions"];
     NSString *dbNameAttachments = [dbName stringByAppendingString:@" attachments"];
 
-    // setup datastore and indexmanager
+    // setup datastore and create index
     CDTDatastore *datastore = [self.factory datastoreNamed:dbName error:&error];
-    __unused CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:&error];
+    __unused NSString *idx = [datastore ensureIndexed:@[@"blah"] withName:@"blah"];
 
     // for checking files
     NSFileManager *fm = [NSFileManager defaultManager];
