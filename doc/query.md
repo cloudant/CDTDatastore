@@ -5,13 +5,7 @@ at home using it in their mobile applications.
 
 The aim is that the query you use on Cloudant works for your mobile application.
 
-This query engine replaces our previous [indexing/query][1] solution which will be removed from this project repository shortly.  The functionality provided by this query engine already exceeds that of the previous solution.
-  
-
-[1]: https://github.com/cloudant/CDTDatastore/blob/master/doc/index-query.md
-
 ## Usage
-
 
 This query engine uses indexes explicitly defined over the fields in the document. Multiple
 indexes can be created for use in different queries, the same field may end up indexed in
@@ -56,10 +50,10 @@ Secondly, these documents are in the datastore:
 
 ### Headers
 
-You need to include `CDTDatastore+Query.h`:
+By including `CloudantSync.h` you get full query capabilities:
 
 ```objc
-#import "CDTDatastore+Query.h"
+#import <CloudantSync.h>
 ```
 
 ### The CDTDatastore+Query Category 

@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## 0.17.0 (Unreleased)
+
+- [REMOVE] The previous indexing/query legacy code has been removed.
+
 ## 0.16.0 (2015-04-09)
 
 - [NEW] We've migrated the Cloudant Query for iOS code which
