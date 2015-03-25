@@ -13,6 +13,7 @@
 #import <XCTest/XCTest.h>
 #import <CloudantSync.h>
 #import <FMDatabase.h>
+#import "FMDatabaseQueue.h"
 
 @interface Attachments : CloudantReplicationBase
 
