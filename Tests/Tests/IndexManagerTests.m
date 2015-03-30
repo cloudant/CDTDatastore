@@ -16,6 +16,10 @@
 
 #import "TD_Revision.h"
 #import "TD_Body.h"
+#import "TD_Database.h"
+
+#import "FMDatabase.h"
+#import "FMDatabaseQueue.h"
 
 
 @implementation IndexManagerTests 
@@ -835,6 +839,118 @@
     for (_ in result) { resultCount++; }
     XCTAssertEqual(resultCount, 2, @"Query didn't find the document");
     
+    
+    [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:nil];
+}
+
+
+/**
+ Set up following document structure
+ 
+                winner (returned by getDocumentWithId:...)
+                |
+        /---- 2-4f
+ 1-97 --
+        \---- 2-33 ---- 3-bc
+                         |
+                         deleted (returned by _changes)
+ 
+ This test ensures we index the winning revision rather than the one with the highest 
+ revision id.
+
+ The bug we are fixing (BugId: 45667) results from the indexing code updating the
+ index used the revision the _changes feed provides. It's possible the changed
+ feed gives a revision which isn't the winning revision. For example, it gives
+ 3-bc for the tree above, rather than 2-4f.
+ */
+- (void)test_CanIndexConflictedDocWithLatestRevDeleted
+{
+    CDTDatastore *datastore;
+    
+    NSString *factoryPath = [self createTemporaryDirectoryAndReturnPath];
+    CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath
+                                                                            error:nil];
+    
+    NSString *name = [@"test_CanIndexConflictedDocWithLatestRevDeleted" lowercaseString];
+    datastore = [factory datastoreNamed:name error:nil];
+    
+    
+    // This is the doc structure above in the revs table (we also need to create an entry in
+    // the docs table, but that's simple, see below).
+    // sqlite> select * from revs;
+    //  sequence    doc_id      revid                            parent    current   deleted   json                                                                                  
+    //----------  --------  ----------------------------------  -------  --------  ----------  -----
+    //1           1         1-972630218dba7c669957a8567684b7b2           0         0           {...
+    //2           1         2-4fef73a591b001c590a28e433bc448c3  1        1         0           {...
+    //3           1         2-3314e4f9bbce21fa9a111af2ac6a28eb  1        0         0           {...
+    //4           1         3-bc3b310ab4ff877104b1aeb53d0b8457  3        1         1         
+    
+    NSString *testDocId = @"604C64B6-983B-457D-8B17-D73B79DEEE30";
+    
+    // Create conflict
+    [datastore.database.fmdbQueue inDatabase:^(FMDatabase *db) {
+        NSString *sql;
+        NSArray *args;
+        
+        sql = @"INSERT INTO docs (doc_id, docid) VALUES (?, ?)";
+        args = @[@1, testDocId];
+        [db executeUpdate:sql withArgumentsInArray:args];
+        
+        sql = @"INSERT INTO revs (sequence, doc_id, revid, current, deleted, json) "
+        @"VALUES (?, ?, ?, ?, ?, ?)";
+        args = @[@1, @1, @"1-972630218dba7c669957a8567684b7b2" /*, no parent */, @0, @0, 
+                 @"{\"completed\":false,\"description\":\"desc1\"}"];
+        [db executeUpdate:sql withArgumentsInArray:args];
+        
+        sql = @"INSERT INTO revs (sequence, doc_id, revid, parent, current, deleted, json) "
+        @"VALUES (?, ?, ?, ?, ?, ?, ?)";
+        args = @[@2, @1, @"2-4fef73a591b001c590a28e433bc448c3", @1, @1, @0, 
+                 @"{\"completed\":true,\"description\":\"desc2\"}"];
+        [db executeUpdate:sql withArgumentsInArray:args];
+        
+        args = @[@3, @1, @"2-3314e4f9bbce21fa9a111af2ac6a28eb", @1, @0, @0, 
+                 @"{\"completed\":true,\"description\":\"desc3\"}"];
+        [db executeUpdate:sql withArgumentsInArray:args];
+    }];
+    
+    // At this point, try getting each doc to make sure the above is still the right db format
+    XCTAssertEqualObjects([datastore getDocumentWithId:testDocId 
+                                             rev:@"1-972630218dba7c669957a8567684b7b2" 
+                                           error:nil].body[@"description"], @"desc1");
+    XCTAssertEqualObjects([datastore getDocumentWithId:testDocId 
+                                                   rev:@"2-4fef73a591b001c590a28e433bc448c3" 
+                                                 error:nil].body[@"description"], @"desc2");
+    XCTAssertEqualObjects([datastore getDocumentWithId:testDocId 
+                                                   rev:@"2-3314e4f9bbce21fa9a111af2ac6a28eb" 
+                                                 error:nil].body[@"description"], @"desc3");
+    
+    // Set up our index
+    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:datastore error:nil];
+    [im ensureIndexedWithIndexName:@"description" fieldName:@"description" error:nil];
+    
+    // Query for doc, winning rev is 2-4fe as lexigraphically higher than 2-331
+    CDTQueryResult *res1 = [im queryWithDictionary:@{@"description": @"desc2"} error:nil];  
+    XCTAssertEqual(res1.documentIds.count, (NSUInteger)1);
+    XCTAssertEqualObjects(res1.documentIds[0], testDocId);
+    
+    // Resolve conflict by tombstone-ing 2-331
+    [datastore.database.fmdbQueue inDatabase:^(FMDatabase *db) {
+        NSString *sql;
+        NSArray *args;
+        
+        sql = @"INSERT INTO revs (sequence, doc_id, revid, parent, current, deleted, json) "
+        @"VALUES (?, ?, ?, ?, ?, ?, ?)";
+        args = @[@4, @1, @"3-bc3b310ab4ff877104b1aeb53d0b8457", @3, @1, @1, @""];
+        [db executeUpdate:sql withArgumentsInArray:args];
+    }];
+    XCTAssertTrue([datastore getDocumentWithId:testDocId 
+                                           rev:@"3-bc3b310ab4ff877104b1aeb53d0b8457" 
+                                         error:nil].deleted);
+    
+    // Should still have the same result.
+    CDTQueryResult *res2 = [im queryWithDictionary:@{@"description": @"desc2"} error:nil];
+    XCTAssertEqual(res2.documentIds.count, (NSUInteger)1);
+    XCTAssertEqualObjects(res2.documentIds[0], testDocId);
     
     [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:nil];
 }
