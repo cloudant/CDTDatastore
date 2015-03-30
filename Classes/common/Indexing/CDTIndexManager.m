@@ -540,10 +540,11 @@ static const int VERSION = 1;
 {
     BOOL success = TRUE;
     TDChangesOptions options = {.limit = 10000,
-                                .contentOptions = 0,
-                                .includeDocs = TRUE,
-                                .includeConflicts = FALSE,
-                                .sortBySequence = TRUE};
+        .contentOptions = 0,                                
+        .includeDocs = NO,  // we only need the docIDs and sequences, body
+                            // is retrieved separately
+        .includeConflicts = FALSE,
+        .sortBySequence = TRUE};
 
     TD_RevisionList *changes;
     long lastSequence = [index lastSequence];
@@ -588,30 +589,36 @@ static const int VERSION = 1;
         (NSObject<CDTIndexer> *)[_indexFunctionMap valueForKey:[index indexName]];
     // we'll need a helper to do conversions
     CDTIndexHelper *helper = [CDTIndexHelper indexHelperForType:[index fieldType]];
+    
+    // _changes provides the revs with highest rev ID, which might not be the
+    // winning revision (e.g., tombstone on long doc branch). For all docs
+    // that are updated rather than deleted, we need to be sure we index the
+    // winning revision. This loop gets those revisions.
+    NSMutableDictionary *updatedRevisions = [NSMutableDictionary dictionary];
+    for (CDTDocumentRevision *rev in [_datastore getDocumentsWithIds:[changes allDocIDs]]) {
+        if (rev != nil && !rev.deleted) {
+            updatedRevisions[rev.docId] = rev;
+        }
+    }
 
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
-        for (TD_Revision *rev in changes) {
-            NSString *docID = [rev docID];
+        for (TD_Revision *change in changes) {
 
-            // Delete
-            NSDictionary *dictDelete = @{ @"docid" : docID };
+            // Delete content for any changed documents.
+            NSDictionary *dictDelete = @{ @"docid" : change.docID };
             [db executeUpdate:sqlDelete withParameterDictionary:dictDelete];
-
-            // Insert new values if the rev isn't deleted
-            if (!rev.deleted) {
-                CDTDocumentRevision *docRev =
-                    [[CDTDocumentRevision alloc] initWithDocId:rev.docID
-                                                    revisionId:rev.revID
-                                                          body:rev.body.properties
-                                                       deleted:rev.deleted
-                                                   attachments:@{}
-                                                      sequence:rev.sequence];
-                NSArray *valuesInsert = [f valuesForRevision:docRev indexName:[index indexName]];
+            
+            // Now add content to index for any docs which have been updated
+            // but not deleted.
+            CDTDocumentRevision *updatedRev;
+            if ((updatedRev = updatedRevisions[change.docID]) != nil) {
+                NSArray *valuesInsert = [f valuesForRevision:updatedRev indexName:[index indexName]];
                 for (NSObject *rawValue in valuesInsert) {
                     NSObject *convertedValue = [helper convertIndexValue:rawValue];
                     if (convertedValue) {
-                        NSDictionary *dictInsert = @{ @"docid" : docID, @"value" : convertedValue };
+                        NSDictionary *dictInsert = @{ @"docid" : change.docID, 
+                                                      @"value" : convertedValue };
                         success = success &&
                                   [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
                     }
@@ -622,10 +629,11 @@ static const int VERSION = 1;
                 *rollback = true;
                 break;
             }
-            *lastSequence = [rev sequence];
+            
+            *lastSequence = change.sequence;
         }
     }];
-
+    
     // if there was a problem, we rolled back, so the sequence won't be updated
     if (success) {
         return [self updateIndexLastSequence:[index indexName] lastSequence:*lastSequence];
