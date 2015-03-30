@@ -6,7 +6,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 def import_pods
     pod "CDTDatastore", :path => "../"
     pod "MRDatabaseContentChecker"
-    pod 'Specta', :git => 'https://github.com/specta/specta.git', :tag => 'v0.3.0.beta1'
+    pod 'Specta'
     pod 'Expecta'
 end
 
