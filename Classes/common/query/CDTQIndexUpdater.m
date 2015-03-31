@@ -17,15 +17,13 @@
 #import "CDTQIndexManager.h"
 #import "CDTQResultSet.h"
 #import "CDTQValueExtractor.h"
+#import "CDTFetchChanges.h"
+#import "CDTQLogging.h"
+#import "CDTLogging.h"
 
 #import "CloudantSync.h"
 
 #import "FMDB.h"
-
-#import "TD_Database.h"
-#import "TD_Body.h"
-
-#import "CDTQLogging.h"
 
 @interface CDTQIndexUpdater ()
 
@@ -98,28 +96,9 @@
          withFields:(NSArray /* NSString */ *)fieldNames
               error:(NSError *__autoreleasing *)error
 {
-    BOOL success = YES;
-    TDChangesOptions options = {.limit = 10000,
-                                .contentOptions = 0,
-                                .includeDocs = YES,
-                                .includeConflicts = NO,
-                                .sortBySequence = YES};
-
-    TD_RevisionList *changes;
-    SequenceNumber lastSequence = [self sequenceNumberForIndex:indexName];
-
-    do {
-        @autoreleasepool {
-            changes = [self.datastore.database changesSinceSequence:lastSequence
-                                                            options:&options
-                                                             filter:nil
-                                                             params:nil];
-            success = success && [self updateIndex:indexName
-                                        withFields:fieldNames
-                                           changes:changes
-                                      lastSequence:&lastSequence];
-        }
-    } while (success && [changes count] > 0);
+    BOOL success = [self updateIndex:indexName
+                          fieldNames:fieldNames
+                    startingSequence:[self sequenceNumberForIndex:indexName]];
 
     // raise error
     if (!success) {
@@ -138,71 +117,149 @@
 }
 
 - (BOOL)updateIndex:(NSString *)indexName
-         withFields:(NSArray /* NSString */ *)fieldNames
-            changes:(TD_RevisionList *)changes
-       lastSequence:(SequenceNumber *)lastSequence
+          fieldNames:(NSArray /* NSString */ *)fieldNames
+    startingSequence:(SequenceNumber)lastSequence
 {
     __block bool success = YES;
 
+    NSString *lastSeqString = [[NSNumber numberWithLongLong:lastSequence] stringValue];
+    CDTFetchChanges *fetcher =
+        [[CDTFetchChanges alloc] initWithDatastore:_datastore startSequenceValue:lastSeqString];
+
+    __weak CDTQIndexUpdater *weakSelf = self;
+
+    NSMutableArray *updateBatch = [NSMutableArray array];
+    NSMutableArray *deleteBatch = [NSMutableArray array];
+
+    fetcher.documentChangedBlock = ^(CDTDocumentRevision *revision) {
+
+        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"documentChangedBlock: <%@,%@>", indexName,
+                      revision.docId);
+
+        [updateBatch addObject:revision];
+
+        if (updateBatch.count > 500) {
+            CDTQIndexUpdater *self = weakSelf;
+            if (self) {
+                success =
+                    success &&
+                    [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
+                [updateBatch removeAllObjects];
+            }
+        }
+
+    };
+
+    fetcher.documentWithIDWasDeletedBlock = ^(NSString *docId) {
+
+        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"documentWithIDWasDeletedBlock: <%@,%@>", indexName,
+                      docId);
+
+        [deleteBatch addObject:docId];
+
+        if (deleteBatch.count > 500) {
+            CDTQIndexUpdater *self = weakSelf;
+            if (self) {
+                success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
+                [deleteBatch removeAllObjects];
+            }
+        }
+
+    };
+
+    fetcher.fetchRecordChangesCompletionBlock =
+        ^(NSString *newSeqVal, NSString *prevSeqVal, NSError *error) {
+
+        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"fetchRecordChangesCompletionBlock: <%@,%@>",
+                      indexName, newSeqVal);
+
+        CDTQIndexUpdater *self = weakSelf;
+        if (self) {
+            // Process any remaining updates and deletes
+            success =
+                success &&
+                [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
+            [updateBatch removeAllObjects];
+            success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
+            [deleteBatch removeAllObjects];
+
+            if (success) {
+                [self updateMetadataForIndex:indexName lastSequence:[newSeqVal longLongValue]];
+            }
+        }
+
+    };
+
+    [fetcher start];  // Run NSOperation synchronously
+
+    return success;
+}
+
+- (BOOL)processUpdateBatch:(NSArray *)updateBatch
+                  forIndex:(NSString *)indexName
+                fieldNames:(NSArray /* NSString */ *)fieldNames
+{
+    __block BOOL success = YES;
+
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
-        for (TD_Revision *rev in changes) {
-            
-            @autoreleasepool {
-            
-                // Delete existing values
-                CDTQSqlParts *parts =
-                [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:rev.docID fromIndex:indexName];
-                [db executeUpdate:parts.sqlWithPlaceholders
-             withArgumentsInArray:parts.placeholderValues];
-                
-                // Insert new values if the rev isn't deleted
-                if (!rev.deleted) {
-                    // Ignoring the attachments seems reasonable right now as we don't index them.
-                    CDTDocumentRevision *cdtRev =
-                    [[CDTDocumentRevision alloc] initWithDocId:rev.docID
-                                                    revisionId:rev.revID
-                                                          body:rev.body.properties
-                                                       deleted:rev.deleted
-                                                   attachments:@{}
-                                                      sequence:rev.sequence];
-                    
-                    // If we are indexing a document where one field is an array, we
-                    // have multiple rows to insert into the index.
-                    NSArray *insertStatements = [CDTQIndexUpdater partsToIndexRevision:cdtRev
-                                                                               inIndex:indexName
-                                                                        withFieldNames:fieldNames];
-                    
-                    for (CDTQSqlParts *insert in insertStatements) {
-                        // partsToIndexRevision:... returns nil if there are no applicable fields to
-                        // index
-                        if (insert) {
-                            success = success && [db executeUpdate:insert.sqlWithPlaceholders
-                                              withArgumentsInArray:insert.placeholderValues];
-                        }
-                        
-                        if (!success) {
-                            LogError(@"Updating index %@ failed, CDTSqlParts: %@", indexName, insert);
-                        }
-                    }
+        for (CDTDocumentRevision *revision in updateBatch) {
+            // Delete existing values
+            CDTQSqlParts *parts = [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:revision.docId
+                                                                            fromIndex:indexName];
+            [db executeUpdate:parts.sqlWithPlaceholders
+                withArgumentsInArray:parts.placeholderValues];
+
+            // Insert new values as the rev isn't deleted
+
+            // If we are indexing a document where one field is an array, we
+            // have multiple rows to insert into the index.
+            NSArray *insertStatements = [CDTQIndexUpdater partsToIndexRevision:revision
+                                                                       inIndex:indexName
+                                                                withFieldNames:fieldNames];
+
+            for (CDTQSqlParts *insert in insertStatements) {
+                // partsToIndexRevision:... returns nil if there are no applicable fields to
+                // index
+                if (insert) {
+                    success = success && [db executeUpdate:insert.sqlWithPlaceholders
+                                             withArgumentsInArray:insert.placeholderValues];
                 }
+
                 if (!success) {
-                    // TODO fill in error
-                    *rollback = YES;
+                    LogError(@"Updating index %@ failed, CDTSqlParts: %@", indexName, insert);
                     break;
                 }
-                *lastSequence = [rev sequence];
-                
+            }
+
+            if (!success) {
+                // TODO fill in error
+                *rollback = YES;
+                break;
             }
         }
     }];
 
-    // if there was a problem, we rolled back, so the sequence won't be updated
-    if (success) {
-        return [self updateMetadataForIndex:indexName lastSequence:*lastSequence];
-    } else {
-        return NO;
-    }
+    return success;
+}
+
+- (BOOL)processDeleteBatch:(NSArray *)deleteBatch forIndex:(NSString *)indexName
+{
+    __block BOOL success = YES;
+
+    [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
+
+        for (NSString *docId in deleteBatch) {
+            // Delete existing values
+            CDTQSqlParts *parts =
+                [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:docId fromIndex:indexName];
+            [db executeUpdate:parts.sqlWithPlaceholders
+                withArgumentsInArray:parts.placeholderValues];
+        }
+
+    }];
+
+    return success;
 }
 
 + (CDTQSqlParts *)partsToDeleteIndexEntriesForDocId:(NSString *)docId
