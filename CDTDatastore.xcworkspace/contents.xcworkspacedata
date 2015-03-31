@@ -467,6 +467,12 @@
          <FileRef
             location = "group:CDTLogging.m">
          </FileRef>
+         <FileRef
+            location = "group:CDTFetchChanges.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTFetchChanges.m">
+         </FileRef>
       </Group>
       <Group
          location = "group:Classes/ios"
