@@ -774,30 +774,6 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 
 #pragma mark - database methods
 /**
- *  Make sure an index we will need exists
- *  To perform predicates and sorts we need to index on the key(s).
- *
- *  We just try to create the index and allow it to fail.
- *  FIXME?:
- *  We could track all the indexes in an NSSet, just not sure it is
- *  worth it.
- *
- *  @param fields     top-level field(s) use for index values
- *
- *  @return  YES if successful; NO in case of error.
- */
-- (BOOL)ensureIndexed:(NSArray *)fields  // Array of field names
-{
-    // Create the index name here to ensure a consistent naming convention
-    NSString *indexName = [fields componentsJoinedByString:@"_"];
-    NSString *ret = [self.datastore ensureIndexed:fields withName:indexName];
-    if (!ret) {
-        return NO;
-    }
-    return YES;
-}
-
-/**
  *  Insert a managed object to the database
  *
  *  @param mo    Managed Object
@@ -1340,26 +1316,6 @@ static NSString *fixupName(NSString *name)
 }
 
 /**
- *  Setup the indexes.
- *  We only care about one right now and that is to find an entity name
- *
- *  @param error Error
- *
- *  @return YES/NO
- */
-- (BOOL)setupIndexes
-{
-    // the big index
-    if (![self ensureIndexed:@[ CDTISEntityNameKey ]]) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index", CDTISType,
-                    self.databaseName);
-        return NO;
-    }
-
-    return YES;
-}
-
-/**
  *  Encode version hashes, which come to us as a dictionary of inline data
  *  objects, so we encode them as a hex string.
  *
@@ -1659,9 +1615,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     if (![self initializeDatabase:error]) {
         return NO;
     }
-    if (![self setupIndexes]) {
-        return NO;
-    }
     NSDictionary *metaData = [self getMetaDataFromDocID:CDTISMetaDataDocID error:error];
     if (!metaData) {
         return NO;
@@ -1705,12 +1658,55 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         [keys addObject:key];
         [sds addObject:@{ key : [sd ascending] ? @"asc" : @"desc" }];
     }
+    return sds;
+}
 
-    if (![self ensureIndexed:keys]) {
-        return nil;
+/**
+ *  Ensure appropriate index is created for fetch request
+ *
+ *  Note: Queries can include unindexed fields.
+ *  Because of this, we *could* do nothing here and get correct results, but we should
+ *  try to create an index that will help.  Our strategy will be an index with the following
+ *  fields:
+ *	- CDTISEntityNameKey
+ *  - the first key mentioned in the query
+ *  - the first key mentioned in the sort
+ *
+ *  @param fetchRequest fetchRequest
+ */
+- (void)ensureIndexForFetchRequest:(NSFetchRequest *)fetchRequest
+{
+    // Index should always include entity name
+    NSMutableArray *fields = [NSMutableArray arrayWithObject:CDTISEntityNameKey];
+
+    // If there is a predicate, index should include first field from the predicate
+    if ([fetchRequest predicate]) {
+        NSPredicate *pred = [fetchRequest predicate];
+        while ([pred isKindOfClass:[NSCompoundPredicate class]]) {
+            pred = [[(NSCompoundPredicate *)pred subpredicates] firstObject];
+        }
+        if ([pred isKindOfClass:[NSComparisonPredicate class]]) {
+            NSExpression *lhs = [(NSComparisonPredicate *)pred leftExpression];
+            if ([lhs expressionType] == NSKeyPathExpressionType) {
+                NSString *field = [lhs keyPath];
+                if (![fields containsObject:field]) {
+                    [fields addObject:field];
+                }
+            }
+        }
     }
 
-    return sds;
+    // If there are sort descriptors, index should include field from the first sort descriptor
+    NSSortDescriptor *sd = [[fetchRequest sortDescriptors] firstObject];
+    if (sd) {
+        NSString *field = [sd key];
+        if (![fields containsObject:field]) {
+            [fields addObject:field];
+        }
+    }
+
+    NSString *indexName = [fields componentsJoinedByString:@"_"];
+    [self.datastore ensureIndexed:fields withName:indexName];
 }
 
 /**
@@ -1778,7 +1774,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 for (id el in value) {
                     [arr addObject:el];
                 }
-				result = @{keyStr : @{ @"$in" : [NSArray arrayWithArray:arr]} };
+                result = @{ keyStr : @{@"$in" : [NSArray arrayWithArray:arr]} };
             }
             break;
         }
@@ -1794,7 +1790,10 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 break;
             }
 
-			result = @{ @"$and" : @[ @{ keyStr : @{@"$gte" : between[0]}}, @{ keyStr : @{ @"$lte" : between[1]} } ] };
+            result = @{
+                @"$and" :
+                    @[ @{keyStr : @{@"$gte" : between[0]}}, @{keyStr : @{@"$lte" : between[1]}} ]
+            };
             break;
         }
 
@@ -1814,11 +1813,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             break;
     }
 
-    if (![self ensureIndexed:@[ keyStr ]]) {
-        [NSException raise:CDTISException format:@"failed at creating index for key %@", keyStr];
-        // it is unclear what happens if I perform a query with no index
-        // I think we should let the backing store deal with it.
-    }
     return result;
 }
 
@@ -1985,6 +1979,9 @@ NSString *kNotOperator = @"$not";
 
     // Get sort descriptors for fetch request
     NSArray *sort = [self sortForFetchRequest:fetchRequest];
+
+    // Create(ensure) and index appropriate for this fetch request
+    [self ensureIndexForFetchRequest:fetchRequest];
 
     CDTQResultSet *result = [self.datastore find:query
                                             skip:fetchRequest.fetchOffset
