@@ -12,12 +12,6 @@
 #import "CloudantSyncTests.h"
 #import "CDTIncrementalStore.h"
 
-#ifdef CDTDATASTORE_SUPPORTS_COMPOUND_PREDICATES
-static BOOL SupportCompoundPredicates = YES;
-#else
-static BOOL SupportCompoundPredicates = NO;
-#endif
-
 /*
  *  ##Start Ripoff:
  *  The following code segment, that creates a managed object model
@@ -440,7 +434,6 @@ static void *ISContextProgress = &ISContextProgress;
 
     /**
      *  fetch == value
-     *  * `{index: value}`: index == value
      */
     NSPredicate *eq = [NSPredicate predicateWithFormat:@"i64 == %u", max / 2];
     fr.predicate = eq;
@@ -458,7 +451,6 @@ static void *ISContextProgress = &ISContextProgress;
 
     /**
      *  fetch <= value
-     *  * `{index: @{@"max": value}}`: index <= value
      */
     NSPredicate *lte = [NSPredicate predicateWithFormat:@"i64 <= %u", max / 2];
     fr.predicate = lte;
@@ -476,7 +468,6 @@ static void *ISContextProgress = &ISContextProgress;
 
     /**
      *  fetch >= value
-     *  * `{index: @{@"min": value}}`: index >= value
      */
     NSPredicate *gte = [NSPredicate predicateWithFormat:@"i64 >= %u", max / 2];
     fr.predicate = gte;
@@ -493,13 +484,21 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  strict "less than" not supported
+	 *  fetch < value
      */
-    NSPredicate *nosup = [NSPredicate predicateWithFormat:@"i64 < %u", max];
-    fr.predicate = nosup;
+    NSPredicate *lt = [NSPredicate predicateWithFormat:@"i64 < %u", max / 2];
+    fr.predicate = lt;
 
-    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 CDTISException, @"Expected Exception");
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
+
+	XCTAssertTrue([results count] == ((max / 2)), @"results count should be %d is %@",
+				  (max / 2), @([results count]));
+
+	for (Entry *e in results) {
+		long long val = [e.i64 longLongValue];
+		XCTAssertTrue(val < (max / 2), @"entry.i64 should be < %d, is %lld", max / 2, val);
+	}
 
     /**
      *  fetch in range
@@ -607,38 +606,32 @@ static void *ISContextProgress = &ISContextProgress;
     /**
      *  Compound Predicates
      */
-    if (!SupportCompoundPredicates) {
-        NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
-        fr.predicate = both;
 
-        XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                     CDTISException, @"Expected Exception");
-    } else {
-        /**
-         *  fetch both with or
-         */
-        NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
-        fr.predicate = both;
+	/**
+	 *  fetch both with or
+	 */
+	NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
+	fr.predicate = both;
 
-        results = [moc executeFetchRequest:fr error:&err];
-        XCTAssertNotNil(results, @"Expected results: %@", err);
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
 
-        XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
-                      @([results count]));
+	XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
+				  @([results count]));
 
-        /**
-         *  Fetch none with AND, yes I know this is nonsense
-         */
-        NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
-        fr.predicate = none;
+	/**
+	 *  Fetch none with AND, yes I know this is nonsense
+	 */
+	NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
+	fr.predicate = none;
 
-        results = [moc executeFetchRequest:fr error:&err];
-        XCTAssertNotNil(results, @"Expected results: %@", err);
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
 
-        XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0,
-                      @([results count]));
-    }
-    /**
+	XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0,
+				  @([results count]));
+
+	/**
      *  test predicates with Floats see if NaN shows up
      */
     NSPredicate *floatPi = [NSPredicate predicateWithFormat:@"fpFloat <= %f", M_PI * 2];

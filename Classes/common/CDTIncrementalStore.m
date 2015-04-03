@@ -13,7 +13,7 @@
 
 #import "CDTIncrementalStore.h"
 #import "CDTISObjectModel.h"
-#import "CDTFieldIndexer.h"
+#import "CDTDatastore+Query.h"
 #import "CDTISGraphviz.h"
 
 #pragma mark - properties
@@ -22,7 +22,6 @@
 @property (nonatomic, strong) CDTDatastoreManager *manager;
 @property (nonatomic, strong) NSURL *localURL;
 @property (nonatomic, strong) NSURL *remoteURL;
-@property (nonatomic, strong) CDTIndexManager *indexManager;
 @property (nonatomic, strong) CDTReplicator *puller;
 @property (nonatomic, strong) CDTReplicator *pusher;
 @property (copy) CDTISProgressBlock progressBlock;
@@ -71,12 +70,6 @@ static BOOL CDTISReadItBack = YES;
  *  Will update the Dot graph on save request
  */
 static BOOL CDTISDotMeUpdate = NO;
-
-/**
- *  Select if compound predicates are ever supported
- *  > *Warning*: Untested
- */
-static BOOL CDTISSupportCompoundPredicates = NO;
 
 /**
  *  Default log level.
@@ -240,51 +233,6 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     NSString *entityName = body[CDTISEntityNameKey];
     NSString *xform = [self.objectModel xformWithName:name withEntityName:entityName];
     return xform;
-}
-
-- (CDTIndexType)indexTypeForKey:(NSString *)key inProperties:(NSDictionary *)props
-{
-    // our own keys are not in the core data properties
-    // but we still want to index on them
-    if ([key hasPrefix:CDTISPrefix]) {
-        return CDTIndexTypeString;
-    }
-
-    NSAttributeDescription *attr = props[key];
-
-    NSAttributeType type = attr.attributeType;
-    NSString *name;
-    switch (type) {
-        default:
-        case NSUndefinedAttributeType:
-            name = @"NSUndefinedAttributeType";
-            break;
-        case NSBinaryDataAttributeType:
-            name = @"NSBinaryDataAttributeType";
-            break;
-        case NSTransformableAttributeType:
-            name = @"NSTransformableAttributeType";
-            break;
-        case NSObjectIDAttributeType:
-            name = @"NSObjectIDAttributeType";
-            break;
-
-        case NSStringAttributeType:
-            return CDTIndexTypeString;
-            break;
-
-        case NSBooleanAttributeType:
-        case NSDateAttributeType:
-        case NSInteger16AttributeType:
-        case NSInteger32AttributeType:
-        case NSInteger64AttributeType:
-        case NSDecimalAttributeType:
-        case NSDoubleAttributeType:
-        case NSFloatAttributeType:
-            return CDTIndexTypeInteger;
-    }
-    [NSException raise:CDTISException format:@"can't index on %@", name];
-    return 0;
 }
 
 - (NSString *)cleanURL:(NSURL *)url
@@ -827,38 +775,24 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 #pragma mark - database methods
 /**
  *  Make sure an index we will need exists
- *  To perform predicates and sorts we need to index on the key.
+ *  To perform predicates and sorts we need to index on the key(s).
  *
  *  We just try to create the index and allow it to fail.
  *  FIXME?:
  *  We could track all the indexes in an NSSet, just not sure it is
  *  worth it.
  *
- *  @param indexName  case-sensitive name of the index.
- *                    Can only contain letters, digits and underscores.
- *                    It must not start with a digit.
- *  @param fieldName  top-level field use for index values
- *  @param type       type for the field to index on
- *  @param error      will point to an NSError object in case of error.
+ *  @param fields     top-level field(s) use for index values
  *
  *  @return  YES if successful; NO in case of error.
  */
-- (BOOL)ensureIndexExists:(NSString *)indexName
-                fieldName:(NSString *)fieldName
-                     type:(CDTIndexType)type
-                    error:(NSError **)error
+- (BOOL)ensureIndexed:(NSArray *)fields  // Array of field names
 {
-    NSError *err = nil;
-
-    // Todo: BUG? if we get the type wrong should there be an error?
-    if (![self.indexManager ensureIndexedWithIndexName:indexName
-                                             fieldName:fieldName
-                                                  type:type
-                                                 error:&err]) {
-        if (err.code != CDTIndexErrorIndexAlreadyRegistered) {
-            if (error) *error = err;
-            return NO;
-        }
+    // Create the index name here to ensure a consistent naming convention
+    NSString *indexName = [fields componentsJoinedByString:@"_"];
+    NSString *ret = [self.datastore ensureIndexed:fields withName:indexName];
+    if (!ret) {
+        return NO;
     }
     return YES;
 }
@@ -1393,20 +1327,10 @@ static NSString *fixupName(NSString *name)
         return NO;
     }
 
-    CDTIndexManager *indexManager =
-        [[CDTIndexManager alloc] initWithDatastore:datastore error:&err];
-    if (!indexManager) {
-        if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: Cannot create indexManager: %@", CDTISType,
-                    databaseName, err);
-        return NO;
-    }
-
     // Commit before setting up replication
     self.databaseName = databaseName;
     self.datastore = datastore;
     self.manager = manager;
-    self.indexManager = indexManager;
 
     if (![self setupReplicators:remoteURL manager:manager datastore:datastore]) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: continuing without replication", CDTISType);
@@ -1423,17 +1347,12 @@ static NSString *fixupName(NSString *name)
  *
  *  @return YES/NO
  */
-- (BOOL)setupIndexes:(NSError **)error
+- (BOOL)setupIndexes
 {
-    NSError *err = nil;
-
     // the big index
-    if (![self.indexManager ensureIndexedWithIndexName:CDTISEntityNameKey
-                                             fieldName:CDTISEntityNameKey
-                                                 error:&err]) {
-        if (error) *error = err;
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index: %@", CDTISType,
-                    self.databaseName, err);
+    if (![self ensureIndexed:@[ CDTISEntityNameKey ]]) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: %@: cannot create default index", CDTISType,
+                    self.databaseName);
         return NO;
     }
 
@@ -1740,7 +1659,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     if (![self initializeDatabase:error]) {
         return NO;
     }
-    if (![self setupIndexes:error]) {
+    if (![self setupIndexes]) {
         return NO;
     }
     NSDictionary *metaData = [self getMetaDataFromDocID:CDTISMetaDataDocID error:error];
@@ -1767,59 +1686,31 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 }
 
 /**
- *  Create a dictionary of query options for the fetch query
+ *  Create an array of sort descriptors for the fetch request
  *
  *  @param fetchRequest fetchRequest
  *
- *  @return options dic
+ *  @return sort descriptor array
  */
-- (NSDictionary *)processOptions:(NSFetchRequest *)fetchRequest error:(NSError **)error
+- (NSArray *)sortForFetchRequest:(NSFetchRequest *)fetchRequest
 {
-    NSError *err = nil;
-    NSMutableDictionary *sdOpts = [NSMutableDictionary dictionary];
-
-    NSArray *sds = [fetchRequest sortDescriptors];
-    if (sds.count) {
-        if (sds.count > 1) {
-            oops(@"not sure what to do here");
+    NSMutableArray *keys = [NSMutableArray array];
+    NSMutableArray *sds = [NSMutableArray array];
+    for (NSSortDescriptor *sd in [fetchRequest sortDescriptors]) {
+        NSString *sel = NSStringFromSelector([sd selector]);
+        if (![sel isEqualToString:@"compare:"]) {
+            [NSException raise:CDTISException format:@"we do not allow custom compares"];
         }
-
-        for (NSSortDescriptor *sd in sds) {
-            NSString *sel = NSStringFromSelector([sd selector]);
-            if (![sel isEqualToString:@"compare:"]) {
-                [NSException raise:CDTISException format:@"we do not allow custom compares"];
-            }
-            NSString *key = [sd key];
-
-            NSEntityDescription *entity = [fetchRequest entity];
-            NSDictionary *props = [entity propertiesByName];
-
-            CDTIndexType type = [self indexTypeForKey:key inProperties:props];
-
-            if (![self ensureIndexExists:key fieldName:key type:type error:&err]) {
-                if (error) *error = err;
-                return nil;
-            }
-            sdOpts[kCDTQueryOptionSortBy] = key;
-            if ([sd ascending]) {
-                sdOpts[kCDTQueryOptionAscending] = @YES;
-            } else {
-                sdOpts[kCDTQueryOptionDescending] = @YES;
-            }
-        }
+        NSString *key = [sd key];
+        [keys addObject:key];
+        [sds addObject:@{ key : [sd ascending] ? @"asc" : @"desc" }];
     }
 
-    if (fetchRequest.fetchLimit) {
-        sdOpts[kCDTQueryOptionLimit] = @(fetchRequest.fetchLimit);
-    }
-    if (fetchRequest.fetchOffset) {
-        sdOpts[kCDTQueryOptionOffset] = @(fetchRequest.fetchOffset);
+    if (![self ensureIndexed:keys]) {
+        return nil;
     }
 
-    if ([sdOpts count]) {
-        return [NSDictionary dictionaryWithDictionary:sdOpts];
-    }
-    return nil;
+    return sds;
 }
 
 /**
@@ -1837,7 +1728,6 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  *  @return predicate dictionary
  */
 - (NSDictionary *)comparisonPredicate:(NSComparisonPredicate *)cp
-                       withProperties:(NSDictionary *)props
 {
     NSExpression *lhs = [cp leftExpression];
     NSExpression *rhs = [cp rightExpression];
@@ -1859,14 +1749,23 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     // process the predicate operator and create the key-value string
     NSPredicateOperatorType predType = [cp predicateOperatorType];
     switch (predType) {
+        case NSLessThanPredicateOperatorType:
+            result = @{ keyStr : @{@"$lt" : value} };
+            break;
         case NSLessThanOrEqualToPredicateOperatorType:
-            result = @{ keyStr : @{@"max" : value} };
+            result = @{ keyStr : @{@"$lte" : value} };
             break;
         case NSEqualToPredicateOperatorType:
             result = @{keyStr : value};
             break;
+        case NSNotEqualToPredicateOperatorType:
+            result = @{ @"$not" : @{keyStr : value} };
+            break;
+        case NSGreaterThanPredicateOperatorType:
+            result = @{ keyStr : @{@"$gt" : value} };
+            break;
         case NSGreaterThanOrEqualToPredicateOperatorType:
-            result = @{ keyStr : @{@"min" : value} };
+            result = @{ keyStr : @{@"$gte" : value} };
             break;
 
         case NSInPredicateOperatorType: {
@@ -1875,11 +1774,11 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 break;
             }
             if ([value respondsToSelector:@selector(objectEnumerator)]) {
-                NSMutableArray *set = [NSMutableArray array];
+                NSMutableArray *arr = [NSMutableArray array];
                 for (id el in value) {
-                    [set addObject:el];
+                    [arr addObject:el];
                 }
-                result = @{keyStr : [NSArray arrayWithArray:set]};
+				result = @{keyStr : @{ @"$in" : [NSArray arrayWithArray:arr]} };
             }
             break;
         }
@@ -1890,16 +1789,15 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 break;
             }
             NSArray *between = value;
+            if ([between count] != 2) {
+                [NSException raise:CDTISException format:@"unexpected \"between\" args"];
+                break;
+            }
 
-            result = @{
-                keyStr : @{@"min" : [between objectAtIndex:0], @"max" : [between objectAtIndex:1]}
-            };
+			result = @{ @"$and" : @[ @{ keyStr : @{@"$gte" : between[0]}}, @{ keyStr : @{ @"$lte" : between[1]} } ] };
             break;
         }
 
-        case NSNotEqualToPredicateOperatorType:
-        case NSGreaterThanPredicateOperatorType:
-        case NSLessThanPredicateOperatorType:
         case NSMatchesPredicateOperatorType:
         case NSLikePredicateOperatorType:
         case NSBeginsWithPredicateOperatorType:
@@ -1916,11 +1814,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             break;
     }
 
-    NSError *err = nil;
-
-    CDTIndexType type = [self indexTypeForKey:keyStr inProperties:props];
-
-    if (![self ensureIndexExists:keyStr fieldName:keyStr type:type error:&err]) {
+    if (![self ensureIndexed:@[ keyStr ]]) {
         [NSException raise:CDTISException format:@"failed at creating index for key %@", keyStr];
         // it is unclear what happens if I perform a query with no index
         // I think we should let the backing store deal with it.
@@ -1928,32 +1822,26 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     return result;
 }
 
-- (NSDictionary *)processPredicate:(NSPredicate *)p withProperties:(NSDictionary *)props
+NSString *kAndOperator = @"$and";
+NSString *kOrOperator = @"$or";
+NSString *kNotOperator = @"$not";
+
+- (NSDictionary *)processPredicate:(NSPredicate *)p
 {
     if ([p isKindOfClass:[NSCompoundPredicate class]]) {
-        if (!CDTISSupportCompoundPredicates) {
-            [NSException raise:CDTISException
-                        format:@"Compound predicates not supported at all: %@", p];
-        }
-
         NSCompoundPredicate *cp = (NSCompoundPredicate *)p;
         NSCompoundPredicateType predType = [cp compoundPredicateType];
 
+        NSString *opStr = nil;
         switch (predType) {
-            case NSAndPredicateType: {
-                oops(@"can we do this? I don't think so. need a test.");
-                NSMutableDictionary *ands = [NSMutableDictionary dictionary];
-                for (NSPredicate *sub in [cp subpredicates]) {
-                    [ands
-                        addEntriesFromDictionary:[self processPredicate:sub withProperties:props]];
-                }
-                return [NSDictionary dictionaryWithDictionary:ands];
-            }
+            case NSAndPredicateType:
+                opStr = kAndOperator;
+                break;
             case NSOrPredicateType:
+                opStr = kOrOperator;
+                break;
             case NSNotPredicateType:
-                [NSException
-                     raise:CDTISException
-                    format:@"Predicate with unsupported compound operator: %@", @(predType)];
+                opStr = kNotOperator;
                 break;
             default:
                 [NSException
@@ -1961,33 +1849,17 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                     format:@"Predicate with unrecognized compound operator: %@", @(predType)];
         }
 
-        return nil;
+        NSMutableArray *predArray = [NSMutableArray array];
+        for (NSPredicate *sub in [cp subpredicates]) {
+            [predArray addObject:[self processPredicate:sub]];
+        }
+        return @{opStr : (predType == NSNotPredicateType) ? predArray[0] : predArray};
 
     } else if ([p isKindOfClass:[NSComparisonPredicate class]]) {
         NSComparisonPredicate *cp = (NSComparisonPredicate *)p;
-        return [self comparisonPredicate:cp withProperties:props];
+        return [self comparisonPredicate:cp];
     }
     return nil;
-}
-
-/**
- *  Process the predicates
- *
- *  @param fetchRequest fetchRequest
- *
- *  @return return value
- */
-- (NSDictionary *)processPredicate:(NSFetchRequest *)fetchRequest
-{
-    NSPredicate *p = [fetchRequest predicate];
-    if (!p) {
-        return nil;
-    }
-
-    NSEntityDescription *entity = [fetchRequest entity];
-    NSDictionary *props = [entity propertiesByName];
-
-    return [self processPredicate:p withProperties:props];
 }
 
 /**
@@ -2002,15 +1874,34 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 {
     NSEntityDescription *entity = [fetchRequest entity];
     NSString *entityName = [entity name];
+    NSPredicate *entityPredicate =
+        [NSPredicate predicateWithFormat:@"%K = %@", CDTISEntityNameKey, entityName];
 
-    NSMutableDictionary *query = [@{ CDTISEntityNameKey : entityName } mutableCopy];
-    NSDictionary *predicate = [self processPredicate:fetchRequest];
-    [query addEntriesFromDictionary:predicate];
+    NSPredicate *fetchPredicate = [fetchRequest predicate];
 
-    return [NSDictionary dictionaryWithDictionary:query];
+    NSPredicate *fullPredicate;
+    if (fetchPredicate) {
+        // Avoid nested ANDs if possible
+        if ([fetchPredicate isKindOfClass:[NSCompoundPredicate class]] &&
+            [((NSCompoundPredicate *)fetchPredicate)compoundPredicateType] == NSAndPredicateType) {
+            fullPredicate = [NSCompoundPredicate andPredicateWithSubpredicates:[@[
+                entityPredicate
+            ] arrayByAddingObjectsFromArray:[((NSCompoundPredicate *)fetchPredicate)
+                                                    subpredicates]]];
+        } else {
+            fullPredicate = [NSCompoundPredicate
+                andPredicateWithSubpredicates:@[ entityPredicate, fetchPredicate ]];
+        }
+    } else {
+        fullPredicate = entityPredicate;
+    }
+
+    NSDictionary *query = [self processPredicate:fullPredicate];
+
+    return query;
 }
 
-- (NSArray *)fetchDictionaryResult:(NSFetchRequest *)fetchRequest withHits:(CDTQueryResult *)hits
+- (NSArray *)fetchDictionaryResult:(NSFetchRequest *)fetchRequest withResult:(CDTQResultSet *)result
 {
     // we only support one grouping
     if ([fetchRequest.propertiesToGroupBy count] > 1) {
@@ -2027,16 +1918,16 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
     // use a dictionary so we can track repeats
     NSString *groupKey = [groupProp name];
-    NSMutableDictionary *group = [NSMutableDictionary dictionary];
-    for (CDTDocumentRevision *rev in hits) {
-        id value = rev.body[groupKey];
-        NSArray *revList = group[value];
-        if (revList) {
-            group[value] = [revList arrayByAddingObject:rev];
-        } else {
-            group[value] = @[ rev ];
-        }
-    }
+    NSMutableDictionary __block *group = [NSMutableDictionary dictionary];
+    [result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
+      id value = rev.body[groupKey];
+      NSArray *revList = group[value];
+      if (revList) {
+          group[value] = [revList arrayByAddingObject:rev];
+      } else {
+          group[value] = @[ rev ];
+      }
+    }];
 
     // get the results ready
     NSMutableArray *results = [NSMutableArray array];
@@ -2086,57 +1977,50 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSEntityDescription *entity = [fetchRequest entity];
     if (badEntityVersion(entity, self.metadata)) oops(@"bad entity mismatch: %@", entity);
 
-    // Get sort descriptors and add them as options
-    err = nil;
-    NSDictionary *options = [self processOptions:fetchRequest error:&err];
-    if (!options && err) {
-        if (error) *error = err;
-        // I think we do this on error, it is unclear
-        return nil;
-    }
-
     NSDictionary *query = [self queryForFetchRequest:fetchRequest error:&err];
-    if (!query) {
+    if (!query && err) {
         if (error) *error = err;
         return nil;
     }
 
-    err = nil;
-    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:options error:&err];
-    // hits == nil is valid, get rid of this once tested
-    if (!hits && err) {
-        if (error) *error = err;
-        return nil;
-    }
+    // Get sort descriptors for fetch request
+    NSArray *sort = [self sortForFetchRequest:fetchRequest];
+
+    CDTQResultSet *result = [self.datastore find:query
+                                            skip:fetchRequest.fetchOffset
+                                           limit:fetchRequest.fetchLimit
+                                          fields:nil
+                                            sort:sort];
 
     switch (fetchType) {
         case NSManagedObjectResultType: {
             NSMutableArray *results = [NSMutableArray array];
-            for (CDTDocumentRevision *rev in hits) {
-                NSManagedObjectID *moid =
-                    [self newObjectIDForEntity:entity referenceObject:rev.docId];
-                NSManagedObject *mo = [context objectWithID:moid];
-                [results addObject:mo];
-            }
+            [result
+                enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
+                  NSManagedObjectID *moid =
+                      [self newObjectIDForEntity:entity referenceObject:rev.docId];
+                  NSManagedObject *mo = [context objectWithID:moid];
+                  [results addObject:mo];
+                }];
             return [NSArray arrayWithArray:results];
         }
 
         case NSManagedObjectIDResultType: {
             NSMutableArray *results = [NSMutableArray array];
-            for (CDTDocumentRevision *rev in hits) {
-                NSManagedObjectID *moid =
-                    [self newObjectIDForEntity:entity referenceObject:rev.docId];
-                [results addObject:moid];
-            }
+            [result
+                enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
+                  NSManagedObjectID *moid =
+                      [self newObjectIDForEntity:entity referenceObject:rev.docId];
+                  [results addObject:moid];
+                }];
             return [NSArray arrayWithArray:results];
         }
 
         case NSDictionaryResultType:
-            return [self fetchDictionaryResult:fetchRequest withHits:hits];
+            return [self fetchDictionaryResult:fetchRequest withResult:result];
 
         case NSCountResultType: {
-            NSArray *docIDs = [hits documentIds];
-            NSUInteger count = [docIDs count];
+            NSUInteger count = [result.documentIds count];
             return @[ [NSNumber numberWithUnsignedLong:count] ];
         }
 
@@ -2308,8 +2192,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSMutableArray *objectIDs = [NSMutableArray arrayWithCapacity:[array count]];
     for (NSManagedObject *mo in array) {
         NSEntityDescription *e = [mo entity];
-        NSManagedObjectID *moid =
-            [self newObjectIDForEntity:e referenceObject:uniqueID(e.name)];
+        NSManagedObjectID *moid = [self newObjectIDForEntity:e referenceObject:uniqueID(e.name)];
 
         if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
 
