@@ -301,7 +301,6 @@ static void *ISContextProgress = &ISContextProgress;
     NSLog(@"Saving %u of %u", max, max);
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
-
     // create other context that will fetch from our store
     NSManagedObjectContext *otherMOC =
         [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -320,44 +319,43 @@ static void *ISContextProgress = &ISContextProgress;
     NSAsynchronousFetchRequest *asyncFetch = [[NSAsynchronousFetchRequest alloc]
         initWithFetchRequest:fr
              completionBlock:^(NSAsynchronousFetchResult *result) {
-                 NSLog(@"Final: %@", @(result.finalResult.count));
-                 [result.progress removeObserver:self
-                                      forKeyPath:@"completedUnitCount"
-                                         context:ISContextProgress];
-                 [result.progress removeObserver:self
-                                      forKeyPath:@"totalUnitCount"
-                                         context:ISContextProgress];
-                 completed = result.finalResult.count;
+               NSLog(@"Final: %@", @(result.finalResult.count));
+               [result.progress removeObserver:self
+                                    forKeyPath:@"completedUnitCount"
+                                       context:ISContextProgress];
+               [result.progress removeObserver:self
+                                    forKeyPath:@"totalUnitCount"
+                                       context:ISContextProgress];
+               completed = result.finalResult.count;
              }];
 
     [otherMOC performBlock:^{
-        // Create Progress
-        NSProgress *progress = [NSProgress progressWithTotalUnitCount:1];
+      // Create Progress
+      NSProgress *progress = [NSProgress progressWithTotalUnitCount:1];
 
-        // Become Current
-        [progress becomeCurrentWithPendingUnitCount:1];
+      // Become Current
+      [progress becomeCurrentWithPendingUnitCount:1];
 
-        // Execute Asynchronous Fetch Request
-        NSError *err = nil;
-        NSAsynchronousFetchResult *asyncFetchResult =
-            (NSAsynchronousFetchResult *)[otherMOC executeRequest:asyncFetch error:&err];
+      // Execute Asynchronous Fetch Request
+      NSError *err = nil;
+      NSAsynchronousFetchResult *asyncFetchResult =
+          (NSAsynchronousFetchResult *)[otherMOC executeRequest:asyncFetch error:&err];
 
-        if (err) {
-            NSLog(@"Unable to execute asynchronous fetch result: %@", err);
-        }
+      if (err) {
+          NSLog(@"Unable to execute asynchronous fetch result: %@", err);
+      }
 
-        // Add Observer
-        [asyncFetchResult.progress addObserver:self
-                                    forKeyPath:@"completedUnitCount"
-                                       options:NSKeyValueObservingOptionNew
-                                       context:ISContextProgress];
-        [asyncFetchResult.progress addObserver:self
-                                    forKeyPath:@"totalUnitCount"
-                                       options:NSKeyValueObservingOptionNew
-                                       context:ISContextProgress];
-        // Resign Current
-        [progress resignCurrent];
-
+      // Add Observer
+      [asyncFetchResult.progress addObserver:self
+                                  forKeyPath:@"completedUnitCount"
+                                     options:NSKeyValueObservingOptionNew
+                                     context:ISContextProgress];
+      [asyncFetchResult.progress addObserver:self
+                                  forKeyPath:@"totalUnitCount"
+                                     options:NSKeyValueObservingOptionNew
+                                     context:ISContextProgress];
+      // Resign Current
+      [progress resignCurrent];
 
     }];
 
@@ -484,21 +482,21 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-	 *  fetch < value
+     *  fetch < value
      */
     NSPredicate *lt = [NSPredicate predicateWithFormat:@"i64 < %u", max / 2];
     fr.predicate = lt;
 
-	results = [moc executeFetchRequest:fr error:&err];
-	XCTAssertNotNil(results, @"Expected results: %@", err);
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
 
-	XCTAssertTrue([results count] == ((max / 2)), @"results count should be %d is %@",
-				  (max / 2), @([results count]));
+    XCTAssertTrue([results count] == ((max / 2)), @"results count should be %d is %@", (max / 2),
+                  @([results count]));
 
-	for (Entry *e in results) {
-		long long val = [e.i64 longLongValue];
-		XCTAssertTrue(val < (max / 2), @"entry.i64 should be < %d, is %lld", max / 2, val);
-	}
+    for (Entry *e in results) {
+        long long val = [e.i64 longLongValue];
+        XCTAssertTrue(val < (max / 2), @"entry.i64 should be < %d, is %lld", max / 2, val);
+    }
 
     /**
      *  fetch in range
@@ -607,31 +605,30 @@ static void *ISContextProgress = &ISContextProgress;
      *  Compound Predicates
      */
 
-	/**
-	 *  fetch both with or
-	 */
-	NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
-	fr.predicate = both;
+    /**
+     *  fetch both with or
+     */
+    NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
+    fr.predicate = both;
 
-	results = [moc executeFetchRequest:fr error:&err];
-	XCTAssertNotNil(results, @"Expected results: %@", err);
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
 
-	XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
-				  @([results count]));
+    XCTAssertTrue([results count] == max, @"results count should be %d is %@", max,
+                  @([results count]));
 
-	/**
-	 *  Fetch none with AND, yes I know this is nonsense
-	 */
-	NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
-	fr.predicate = none;
+    /**
+     *  Fetch none with AND, yes I know this is nonsense
+     */
+    NSPredicate *none = [NSPredicate predicateWithFormat:@"check == NO && check == YES"];
+    fr.predicate = none;
 
-	results = [moc executeFetchRequest:fr error:&err];
-	XCTAssertNotNil(results, @"Expected results: %@", err);
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
 
-	XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0,
-				  @([results count]));
+    XCTAssertTrue([results count] == 0, @"results count should be %d is %@", 0, @([results count]));
 
-	/**
+    /**
      *  test predicates with Floats see if NaN shows up
      */
     NSPredicate *floatPi = [NSPredicate predicateWithFormat:@"fpFloat <= %f", M_PI * 2];
@@ -722,6 +719,118 @@ static void *ISContextProgress = &ISContextProgress;
         XCTAssertTrue(val == last - 1, @"unexpected entry %@: %@", @(val), e);
         --last;
     }
+}
+
+- (void)testSortDescriptors
+{
+    int num_entries = 20;
+
+    NSError *err = nil;
+    // This will create the database
+    NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:-num_entries];
+
+    for (int i = 0; i < num_entries; i++) {
+        Entry *e = MakeEntry(moc);
+        // check will indicate if value is an even number
+        e.check = (i % 2) ? @NO : @YES;
+        e.created_at = [startDate dateByAddingTimeInterval:(NSTimeInterval)((i / 4) * 4)];
+        e.i64 = @(i);
+        e.fpFloat = @(((float)(M_PI)) * (float)i);
+        e.text = [NSString stringWithFormat:@"%u", (num_entries * 10) + i];
+    }
+
+    // push it out
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+
+    NSArray *results;
+    /**
+     *  Fetch checked items sorted by created_at
+     */
+    {
+        NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+        fr.predicate = [NSPredicate predicateWithFormat:@"check == YES"];
+        fr.sortDescriptors =
+            @[ [NSSortDescriptor sortDescriptorWithKey:@"created_at" ascending:YES] ];
+        fr.shouldRefreshRefetchedObjects = YES;
+
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNil(err, @"Expected no error but got: %@", err);
+
+        XCTAssertTrue([results count] == (num_entries / 2), @"results count should be %d is %@",
+                      num_entries / 2, @([results count]));
+
+        NSDate *prevDate = ((Entry *)results.firstObject).created_at;
+        for (Entry *e in results) {
+            XCTAssertTrue([e.created_at timeIntervalSinceDate:prevDate] >= 0,
+                          @"dates are out of order");
+            prevDate = e.created_at;
+        }
+    }
+
+    NSLog(@"Success");
+}
+
+- (void)testMultipletSortDescriptors
+{
+    int num_entries = 20;
+
+    NSError *err = nil;
+    // This will create the database
+    NSManagedObjectContext *moc = self.managedObjectContext;
+    XCTAssertNotNil(moc, @"could not create Context");
+
+    NSDate *startDate = [NSDate dateWithTimeIntervalSinceNow:-num_entries];
+
+    for (int i = 0; i < num_entries; i++) {
+        Entry *e = MakeEntry(moc);
+        // check will indicate if value is an even number
+        e.check = (i % 2) ? @NO : @YES;
+        e.created_at = [startDate dateByAddingTimeInterval:(NSTimeInterval)((i / 4) * 4)];
+        e.i64 = @(i);
+        e.fpFloat = @(((float)(M_PI)) * (float)i);
+        e.text = [NSString stringWithFormat:@"%u", (num_entries * 10) + i];
+    }
+
+    // push it out
+    XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
+
+    NSArray *results;
+    /**
+     *  Fetch unchecked items sorted by created_at (decending) and by i64 (ascending)
+     */
+    {
+        NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
+        fr.predicate = [NSPredicate predicateWithFormat:@"check == YES"];
+        fr.sortDescriptors = @[
+            [NSSortDescriptor sortDescriptorWithKey:@"created_at" ascending:NO],
+            [NSSortDescriptor sortDescriptorWithKey:@"i64" ascending:YES]
+        ];
+        fr.shouldRefreshRefetchedObjects = YES;
+
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNil(err, @"Expected no error but got: %@", err);
+
+        XCTAssertTrue([results count] == (num_entries / 2), @"results count should be %d is %@",
+                      num_entries / 2, @([results count]));
+
+        NSDate *prevDate = ((Entry *)results.firstObject).created_at;
+        NSNumber *prevNum = ((Entry *)results.firstObject).i64;
+        for (Entry *e in [results subarrayWithRange:NSMakeRange(1, [results count] - 1)]) {
+            XCTAssertTrue([prevDate compare:e.created_at] != NSOrderedAscending,
+                          @"dates are out of order");
+            if ([prevDate compare:e.created_at] == NSOrderedSame) {
+                XCTAssertTrue([prevNum compare:e.i64] != NSOrderedDescending,
+                              @"Numbers are out of order");
+            }
+            prevDate = e.created_at;
+            prevNum = e.i64;
+        }
+    }
+
+    NSLog(@"Success");
 }
 
 - (void)testCheckNumbers

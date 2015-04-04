@@ -1669,8 +1669,8 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  *  try to create an index that will help.  Our strategy will be an index with the following
  *  fields:
  *	- CDTISEntityNameKey
- *  - the first key mentioned in the query
- *  - the first key mentioned in the sort
+ *  - the first field mentioned in the query
+ *  - all fields mentioned in the sort (this is apparently required)
  *
  *  @param fetchRequest fetchRequest
  */
@@ -1696,9 +1696,8 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
         }
     }
 
-    // If there are sort descriptors, index should include field from the first sort descriptor
-    NSSortDescriptor *sd = [[fetchRequest sortDescriptors] firstObject];
-    if (sd) {
+    // Include all fields mentioned in the sort (this is apparently required)
+	for (NSSortDescriptor *sd in [fetchRequest sortDescriptors]) {
         NSString *field = [sd key];
         if (![fields containsObject:field]) {
             [fields addObject:field];
