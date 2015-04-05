@@ -1751,10 +1751,10 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             result = @{ keyStr : @{@"$lte" : value} };
             break;
         case NSEqualToPredicateOperatorType:
-            result = @{keyStr : value};
+			result = @{ keyStr : @{@"$eq" : value} };
             break;
         case NSNotEqualToPredicateOperatorType:
-            result = @{ @"$not" : @{keyStr : value} };
+			result = @{ keyStr : @{@"$ne" : value} };
             break;
         case NSGreaterThanPredicateOperatorType:
             result = @{ keyStr : @{@"$gt" : value} };

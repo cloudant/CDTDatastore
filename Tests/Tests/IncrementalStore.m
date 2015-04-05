@@ -376,13 +376,15 @@ static void *ISContextProgress = &ISContextProgress;
     NSManagedObjectContext *moc = self.managedObjectContext;
     XCTAssertNotNil(moc, @"could not create Context");
 
+	NSArray *textvals = @[ @"apple", @"orange", @"banana", @"strawberry" ];
+
     for (int i = 0; i < max; i++) {
         Entry *e = MakeEntry(moc);
         // check will indicate if value is an even number
         e.check = (i % 2) ? @NO : @YES;
         e.i64 = @(i);
         e.fpFloat = @(((float)(M_PI)) * (float)i);
-        e.text = [NSString stringWithFormat:@"%u", (max * 10) + i];
+        e.text = textvals[i%[textvals count]];
     }
 
     // push it out
@@ -390,7 +392,7 @@ static void *ISContextProgress = &ISContextProgress;
 
     NSArray *results;
     /**
-     *  Fetch even numbers
+     *  Fetch boolean == value
      */
     NSPredicate *even = [NSPredicate predicateWithFormat:@"check == YES"];
 
@@ -412,7 +414,7 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  Fetch odd Numbers
+     *  Fetch boolean == value
      */
     NSPredicate *odd = [NSPredicate predicateWithFormat:@"check == NO"];
     fr.predicate = odd;
@@ -431,15 +433,14 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  fetch == value
+     *  fetch NSNumber == value
      */
-    NSPredicate *eq = [NSPredicate predicateWithFormat:@"i64 == %u", max / 2];
-    fr.predicate = eq;
+    fr.predicate = [NSPredicate predicateWithFormat:@"i64 == %u", max / 2];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == 1, @"results count should be %d is %@", max / 2,
+    XCTAssertTrue([results count] == 1, @"results count should be %d is %@", 1,
                   @([results count]));
 
     for (Entry *e in results) {
@@ -447,11 +448,26 @@ static void *ISContextProgress = &ISContextProgress;
         XCTAssertTrue(val == (max / 2), @"entry.i64 should be %d is %lld", max / 2, val);
     }
 
+	/**
+	 *  fetch NSNumber != value
+	 */
+	fr.predicate = [NSPredicate predicateWithFormat:@"i64 != %u", max / 2];
+
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
+
+	XCTAssertTrue([results count] == (max-1), @"results count should be %d is %@", max-1,
+				  @([results count]));
+
+	for (Entry *e in results) {
+		long long val = [e.i64 longLongValue];
+		XCTAssertTrue(val != (max / 2), @"entry.i64 should not be %d is %lld", max / 2, val);
+	}
+
     /**
-     *  fetch <= value
+     *  fetch NSNumber <= value
      */
-    NSPredicate *lte = [NSPredicate predicateWithFormat:@"i64 <= %u", max / 2];
-    fr.predicate = lte;
+    fr.predicate = [NSPredicate predicateWithFormat:@"i64 <= %u", max / 2];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -465,10 +481,9 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  fetch >= value
+     *  fetch NSNumber >= value
      */
-    NSPredicate *gte = [NSPredicate predicateWithFormat:@"i64 >= %u", max / 2];
-    fr.predicate = gte;
+    fr.predicate = [NSPredicate predicateWithFormat:@"i64 >= %u", max / 2];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -482,10 +497,9 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  fetch < value
+     *  fetch NSNumber < value
      */
-    NSPredicate *lt = [NSPredicate predicateWithFormat:@"i64 < %u", max / 2];
-    fr.predicate = lt;
+    fr.predicate = [NSPredicate predicateWithFormat:@"i64 < %u", max / 2];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -498,14 +512,42 @@ static void *ISContextProgress = &ISContextProgress;
         XCTAssertTrue(val < (max / 2), @"entry.i64 should be < %d, is %lld", max / 2, val);
     }
 
+	/**
+	 *  fetch NSString == value
+	 */
+	fr.predicate = [NSPredicate predicateWithFormat:@"text == %@", textvals[0]];
+
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
+
+	XCTAssertTrue([results count] == (max/4), @"results count should be %d is %@", (max/4),
+				  @([results count]));
+
+	for (Entry *e in results) {
+		XCTAssertTrue([e.text isEqualToString:textvals[0]], @"entry.text should be %@ is %@", textvals[0], e.text);
+	}
+
+	/**
+	 *  fetch NSString != value
+	 */
+	fr.predicate = [NSPredicate predicateWithFormat:@"text != %@", textvals[1]];
+
+	results = [moc executeFetchRequest:fr error:&err];
+	XCTAssertNotNil(results, @"Expected results: %@", err);
+
+	XCTAssertTrue([results count] == 3*(max/4), @"results count should be %d is %@", 3*(max/4),
+				  @([results count]));
+
+	for (Entry *e in results) {
+		XCTAssertTrue(![e.text isEqualToString:textvals[1]], @"entry.text should not be %@ is %@", textvals[1], e.text);
+	}
+
     /**
-     *  fetch in range
-     *  * `{index: @{@"min": value1, @"max": value2}}`: value1 <= index <= value2
+     *  fetch NSNumber between lower and upper bound
      */
     int start = max / 4;
     int end = (max * 3) / 4;
-    NSPredicate *tween = [NSPredicate predicateWithFormat:@"i64 between { %u, %u }", start, end];
-    fr.predicate = tween;
+    fr.predicate = [NSPredicate predicateWithFormat:@"i64 between { %u, %u }", start, end];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -520,8 +562,7 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  fetch member of
-     *  * `{index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
+     *  fetch NSNumber in array
      */
     NSComparisonPredicate *cp;
     NSExpression *lhs;
@@ -608,8 +649,7 @@ static void *ISContextProgress = &ISContextProgress;
     /**
      *  fetch both with or
      */
-    NSPredicate *both = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
-    fr.predicate = both;
+    fr.predicate = [NSPredicate predicateWithFormat:@"check == NO || check == YES"];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -631,8 +671,7 @@ static void *ISContextProgress = &ISContextProgress;
     /**
      *  test predicates with Floats see if NaN shows up
      */
-    NSPredicate *floatPi = [NSPredicate predicateWithFormat:@"fpFloat <= %f", M_PI * 2];
-    fr.predicate = floatPi;
+    fr.predicate = [NSPredicate predicateWithFormat:@"fpFloat <= %f", M_PI * 2];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
