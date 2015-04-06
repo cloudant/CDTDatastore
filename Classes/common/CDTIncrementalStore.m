@@ -1647,18 +1647,15 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
  */
 - (NSArray *)sortForFetchRequest:(NSFetchRequest *)fetchRequest
 {
-    NSMutableArray *keys = [NSMutableArray array];
     NSMutableArray *sds = [NSMutableArray array];
     for (NSSortDescriptor *sd in [fetchRequest sortDescriptors]) {
         NSString *sel = NSStringFromSelector([sd selector]);
         if (![sel isEqualToString:@"compare:"]) {
             [NSException raise:CDTISException format:@"we do not allow custom compares"];
         }
-        NSString *key = [sd key];
-        [keys addObject:key];
-        [sds addObject:@{ key : [sd ascending] ? @"asc" : @"desc" }];
+        [sds addObject:@{ [sd key] : [sd ascending] ? @"asc" : @"desc" }];
     }
-    return sds;
+    return [NSArray arrayWithArray:sds];
 }
 
 /**
@@ -1697,7 +1694,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     }
 
     // Include all fields mentioned in the sort (this is apparently required)
-	for (NSSortDescriptor *sd in [fetchRequest sortDescriptors]) {
+    for (NSSortDescriptor *sd in [fetchRequest sortDescriptors]) {
         NSString *field = [sd key];
         if (![fields containsObject:field]) {
             [fields addObject:field];
@@ -1705,7 +1702,11 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     }
 
     NSString *indexName = [fields componentsJoinedByString:@"_"];
-    [self.datastore ensureIndexed:fields withName:indexName];
+    NSString *result = [self.datastore ensureIndexed:fields withName:indexName];
+    if (!result) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Error creating index: %@", CDTISType,
+                    indexName);
+    }
 }
 
 /**
@@ -1751,10 +1752,10 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
             result = @{ keyStr : @{@"$lte" : value} };
             break;
         case NSEqualToPredicateOperatorType:
-			result = @{ keyStr : @{@"$eq" : value} };
+            result = @{ keyStr : @{@"$eq" : value} };
             break;
         case NSNotEqualToPredicateOperatorType:
-			result = @{ keyStr : @{@"$ne" : value} };
+            result = @{ keyStr : @{@"$ne" : value} };
             break;
         case NSGreaterThanPredicateOperatorType:
             result = @{ keyStr : @{@"$gt" : value} };
@@ -1863,7 +1864,7 @@ NSString *kNotOperator = @"$not";
  *
  *  @return return value
  */
-- (NSDictionary *)queryForFetchRequest:(NSFetchRequest *)fetchRequest error:(NSError **)error
+- (NSDictionary *)queryForFetchRequest:(NSFetchRequest *)fetchRequest
 {
     NSEntityDescription *entity = [fetchRequest entity];
     NSString *entityName = [entity name];
@@ -1970,9 +1971,16 @@ NSString *kNotOperator = @"$not";
     NSEntityDescription *entity = [fetchRequest entity];
     if (badEntityVersion(entity, self.metadata)) oops(@"bad entity mismatch: %@", entity);
 
-    NSDictionary *query = [self queryForFetchRequest:fetchRequest error:&err];
-    if (!query && err) {
-        if (error) *error = err;
+    NSDictionary *query = [self queryForFetchRequest:fetchRequest];
+    if (!query) {
+        if (error) {
+            NSDictionary *userInfo = @{
+                NSLocalizedFailureReasonErrorKey : @"Error processing predicate for fetch request"
+            };
+            *error = [NSError errorWithDomain:CDTISErrorDomain
+                                         code:CDTISErrorNotSupported
+                                     userInfo:userInfo];
+        }
         return nil;
     }
 
