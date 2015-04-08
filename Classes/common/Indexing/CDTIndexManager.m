@@ -22,8 +22,7 @@
 #import "CDTDatastore.h"
 #import "CDTQueryBuilder.h"
 
-#import "TD_Database.h"
-#import "TD_Body.h"
+#import "CDTFetchChanges.h"
 
 #import "FMResultSet.h"
 #import "FMDatabase.h"
@@ -52,9 +51,7 @@ static const int VERSION = 1;
 
 - (BOOL)updateIndex:(CDTIndex *)index error:(NSError *__autoreleasing *)error;
 
-- (BOOL)updateIndex:(CDTIndex *)index
-            changes:(TD_RevisionList *)changes
-       lastSequence:(long *)lastSequence;
+- (BOOL)updateIndex:(CDTIndex *)index;
 
 - (BOOL)updateSchema:(int)currentVersion;
 
@@ -538,24 +535,7 @@ static const int VERSION = 1;
 
 - (BOOL)updateIndex:(CDTIndex *)index error:(NSError *__autoreleasing *)error
 {
-    BOOL success = TRUE;
-    TDChangesOptions options = {.limit = 10000,
-        .contentOptions = 0,                                
-        .includeDocs = NO,  // we only need the docIDs and sequences, body
-                            // is retrieved separately
-        .includeConflicts = FALSE,
-        .sortBySequence = TRUE};
-
-    TD_RevisionList *changes;
-    long lastSequence = [index lastSequence];
-
-    do {
-        changes = [[_datastore database] changesSinceSequence:lastSequence
-                                                      options:&options
-                                                       filter:nil
-                                                       params:nil];
-        success = success && [self updateIndex:index changes:changes lastSequence:&lastSequence];
-    } while (success && [changes count] > 0);
+    BOOL success = [self updateIndex:index];
 
     // raise error
     if (!success) {
@@ -572,83 +552,157 @@ static const int VERSION = 1;
 }
 
 - (BOOL)updateIndex:(CDTIndex *)index
-            changes:(TD_RevisionList *)changes
-       lastSequence:(long *)lastSequence
 {
     __block bool success = YES;
+    
+    long lastSequence = [index lastSequence];
+    
+    NSString *lastSeqString = [[NSNumber numberWithLongLong:lastSequence] stringValue];
+    CDTFetchChanges *fetcher =
+        [[CDTFetchChanges alloc] initWithDatastore:_datastore startSequenceValue:lastSeqString];
 
+    __weak CDTIndexManager *weakSelf = self;
+
+    NSMutableArray *updateBatch = [NSMutableArray array];
+    NSMutableArray *deleteBatch = [NSMutableArray array];
+    
+    fetcher.documentChangedBlock = ^(CDTDocumentRevision *revision) {
+        
+        CDTLogVerbose(CDTINDEX_LOG_CONTEXT, @"documentChangedBlock: <%@,%@>", 
+                      index.indexName, revision.docId);
+        
+        [updateBatch addObject:revision];
+        
+        if (updateBatch.count > 500) {
+            CDTIndexManager *self = weakSelf;
+            if (self) {
+                success = success && [self processUpdateBatch:updateBatch forIndex:index];
+                [updateBatch removeAllObjects];
+            }
+        }
+        
+    };
+    
+    fetcher.documentWithIDWasDeletedBlock = ^(NSString *docId) {
+        
+        CDTLogVerbose(CDTINDEX_LOG_CONTEXT, @"documentWithIDWasDeletedBlock: <%@,%@>", 
+                      index.indexName, docId);
+        
+        [deleteBatch addObject:docId];
+        
+        if (deleteBatch.count > 500) {
+            CDTIndexManager *self = weakSelf;
+            if (self) {
+                success = success && [self processDeleteBatch:deleteBatch forIndex:index];
+                [deleteBatch removeAllObjects];
+            }
+        }
+            
+        
+    };
+    
+    fetcher.fetchRecordChangesCompletionBlock = ^(NSString *newSeqVal, NSString *prevSeqVal, NSError *error) {
+        
+        CDTLogVerbose(CDTINDEX_LOG_CONTEXT, @"fetchRecordChangesCompletionBlock: <%@,%@>", 
+                      index.indexName, newSeqVal);
+        
+        CDTIndexManager *self = weakSelf;
+        if (self) {
+            
+            // Process any remaining updates and deletes
+            success = success && [self processUpdateBatch:updateBatch forIndex:index];
+            [updateBatch removeAllObjects];
+            success = success && [self processDeleteBatch:deleteBatch forIndex:index];
+            [deleteBatch removeAllObjects];
+            
+            if (success) {
+                [self updateIndexLastSequence:[index indexName] 
+                                 lastSequence:[newSeqVal longLongValue]];
+            }
+        }
+        
+    };
+
+    [fetcher start];  // Run the NSOperation synchronously
+
+    return success;
+}
+
+- (BOOL)processUpdateBatch:(NSArray*)updateBatch forIndex:(CDTIndex*)index
+{
+    __block BOOL success = YES;
     NSString *tableName = [kCDTIndexTablePrefix stringByAppendingString:[index indexName]];
-
-    NSString *strDelete = @"delete from %@ where docid = :docid;";
+    
+    static NSString *strDelete = @"delete from %@ where docid = :docid;";
     NSString *sqlDelete = [NSString stringWithFormat:strDelete, tableName];
-
-    NSString *strInsert = @"insert into %@ (docid, value) values (:docid, :value);";
+    
+    static NSString *strInsert = @"insert into %@ (docid, value) values (:docid, :value);";
     NSString *sqlInsert = [NSString stringWithFormat:strInsert, tableName];
-
-    NSObject<CDTIndexer> *f =
-        (NSObject<CDTIndexer> *)[_indexFunctionMap valueForKey:[index indexName]];
+    
+    NSObject<CDTIndexer> *f = (NSObject<CDTIndexer> *)_indexFunctionMap[[index indexName]];
     // we'll need a helper to do conversions
     CDTIndexHelper *helper = [CDTIndexHelper indexHelperForType:[index fieldType]];
     
-    // _changes provides the revs with highest rev ID, which might not be the
-    // winning revision (e.g., tombstone on long doc branch). For all docs
-    // that are updated rather than deleted, we need to be sure we index the
-    // winning revision. This loop gets those revisions.
-    NSMutableDictionary *updatedRevisions = [NSMutableDictionary dictionary];
-    for (CDTDocumentRevision *rev in [_datastore getDocumentsWithIds:[changes allDocIDs]]) {
-        if (rev != nil && !rev.deleted) {
-            updatedRevisions[rev.docId] = rev;
-        }
-    }
-
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
-
-        for (TD_Revision *change in changes) {
-
+        
+        for (CDTDocumentRevision *revision in updateBatch) {
+            
             // Delete content for any changed documents.
-            NSDictionary *dictDelete = @{ @"docid" : change.docID };
+            NSDictionary *dictDelete = @{ @"docid" : revision.docId };
             [db executeUpdate:sqlDelete withParameterDictionary:dictDelete];
             
             // Now add content to index for any docs which have been updated
             // but not deleted.
-            CDTDocumentRevision *updatedRev;
-            if ((updatedRev = updatedRevisions[change.docID]) != nil) {
-                NSArray *valuesInsert = [f valuesForRevision:updatedRev indexName:[index indexName]];
-                for (NSObject *rawValue in valuesInsert) {
-                    NSObject *convertedValue = [helper convertIndexValue:rawValue];
-                    if (convertedValue) {
-                        NSDictionary *dictInsert = @{ @"docid" : change.docID, 
-                                                      @"value" : convertedValue };
-                        success = success &&
-                                  [db executeUpdate:sqlInsert withParameterDictionary:dictInsert];
-                    }
+            NSArray *valuesInsert = [f valuesForRevision:revision indexName:[index indexName]];
+            for (NSObject *rawValue in valuesInsert) {
+                NSObject *convertedValue = [helper convertIndexValue:rawValue];
+                if (convertedValue) {
+                    NSDictionary *dictInsert = @{ @"docid" : revision.docId, 
+                                                  @"value" : convertedValue };
+                    success = success && [db executeUpdate:sqlInsert 
+                                   withParameterDictionary:dictInsert];
                 }
             }
+            
             if (!success) {
                 // TODO fill in error
                 *rollback = true;
                 break;
             }
-            
-            *lastSequence = change.sequence;
         }
     }];
     
-    // if there was a problem, we rolled back, so the sequence won't be updated
-    if (success) {
-        return [self updateIndexLastSequence:[index indexName] lastSequence:*lastSequence];
-    } else {
-        return FALSE;
-    }
+    return success;
 }
 
-- (BOOL)updateIndexLastSequence:(NSString *)indexName lastSequence:(long)lastSequence
+- (BOOL)processDeleteBatch:(NSArray*)deleteBatch forIndex:(CDTIndex*)index
+{
+    __block BOOL success = YES;
+    
+    NSString *tableName = [kCDTIndexTablePrefix stringByAppendingString:[index indexName]];
+    
+    static NSString *strDelete = @"delete from %@ where docid = :docid;";
+    NSString *sqlDelete = [NSString stringWithFormat:strDelete, tableName];
+    
+    [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
+        
+        for (NSString *docId in deleteBatch) {
+            success = success && [db executeUpdate:sqlDelete 
+                           withParameterDictionary:@{ @"docid" : docId }];
+        }
+        
+    }];
+    
+    return success;
+}
+
+- (BOOL)updateIndexLastSequence:(NSString *)indexName lastSequence:(SequenceNumber)lastSequence
 {
     __block BOOL success = TRUE;
 
     NSDictionary *v = @{
         @"name" : indexName,
-        @"last_sequence" : [NSNumber numberWithLong:lastSequence]
+        @"last_sequence" : @(lastSequence)
     };
     NSString *template = @"update %@ set last_sequence = :last_sequence where name = :name;";
     NSString *sql = [NSString stringWithFormat:template, kCDTIndexMetadataTableName];
