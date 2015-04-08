@@ -22,6 +22,8 @@
 		CD48786F1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786B1A9BA6C80070EB63 /* CloudantSyncTests.m */; };
 		CD4878701A9BA6C80070EB63 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786D1A9BA6C80070EB63 /* CloudantTests.m */; };
 		CD4878711A9BA6C80070EB63 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48786D1A9BA6C80070EB63 /* CloudantTests.m */; };
+		CD55A19B1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A19A1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m */; };
+		CD55A19C1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A19A1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m */; };
 		CD5D68311AB347D700F0BF8A /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD5D68301AB347D700F0BF8A /* DatastoreEncryptionTests.m */; };
 		CD5D68321AB347D700F0BF8A /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD5D68301AB347D700F0BF8A /* DatastoreEncryptionTests.m */; };
 		CDCB7A331AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */; };
@@ -52,6 +54,7 @@
 		CD48786B1A9BA6C80070EB63 /* CloudantSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CloudantSyncTests.m; path = ../../Tests/Tests/CloudantSyncTests.m; sourceTree = "<group>"; };
 		CD48786C1A9BA6C80070EB63 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CloudantTests.h; path = ../../Tests/Tests/CloudantTests.h; sourceTree = "<group>"; };
 		CD48786D1A9BA6C80070EB63 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CloudantTests.m; path = ../../Tests/Tests/CloudantTests.m; sourceTree = "<group>"; };
+		CD55A19A1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD5D68301AB347D700F0BF8A /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
 		CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CDEE6ECB1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CloudantTests+EncryptionTests.h"; path = "../../Tests/Tests/CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
@@ -121,6 +124,7 @@
 			children = (
 				CD00CBC01AC7705200C3F2D5 /* Assets */,
 				CD3FBCAA1AB05C080032376E /* Helpers */,
+				CD55A19A1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m */,
 				CD48786C1A9BA6C80070EB63 /* CloudantTests.h */,
 				CD48786D1A9BA6C80070EB63 /* CloudantTests.m */,
 				CDEE6ECB1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.h */,
@@ -345,6 +349,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD55A19B1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CDEE6ECD1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				CD3FBCAD1AB05CAB0032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD48786E1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */,
@@ -360,6 +365,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD55A19C1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CDEE6ECE1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				CD3FBCAE1AB05CAB0032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD48786F1A9BA6C80070EB63 /* CloudantSyncTests.m in Sources */,

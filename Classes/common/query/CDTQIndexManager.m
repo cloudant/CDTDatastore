@@ -45,8 +45,13 @@
 #import "CDTQIndexCreator.h"
 #import "CDTQLogging.h"
 
+#import "CDTEncryptionKeyProvider.h"
+#import "CDTDatastore+EncryptionKey.h"
+
 #import "TD_Database.h"
 #import "TD_Body.h"
+
+#import "FMDatabase+SQLCipher.h"
 
 #import <CloudantSync.h>
 #import <FMDB.h>
@@ -97,44 +102,18 @@ static const int VERSION = 1;
 {
     self = [super init];
     if (self) {
-        _datastore = datastore;
-        _validFieldName = [[NSRegularExpression alloc] initWithPattern:kCDTQIndexFieldNamePattern
-                                                               options:0
-                                                                 error:error];
-
-        NSString *dir = [datastore extensionDataFolder:kCDTQExtensionName];
-        [[NSFileManager defaultManager] createDirectoryAtPath:dir
-                                  withIntermediateDirectories:TRUE
-                                                   attributes:nil
-                                                        error:nil];
-        NSString *filename = [NSString pathWithComponents:@[ dir, @"indexes.sqlite" ]];
-        _database = [[FMDatabaseQueue alloc] initWithPath:filename];
-        if (!_database) {
-            if (error) {
-                NSDictionary *userInfo = @{
-                    NSLocalizedDescriptionKey :
-                        NSLocalizedString(@"Problem opening or creating database.", nil)
-                };
-                *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
-                                             code:CDTQIndexErrorSqlError
-                                         userInfo:userInfo];
-            }
-            return nil;
-        }
-
-        if (![self updateSchema:VERSION]) {
-            if (error) {
-                NSDictionary *userInfo = @{
-                    NSLocalizedDescriptionKey :
-                        NSLocalizedString(@"Problem updating database schema.", nil)
-                };
-                *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
-                                             code:CDTQIndexErrorSqlError
-                                         userInfo:userInfo];
-            }
-            return nil;
+        _database = [CDTQIndexManager databaseQueueWithDatastore:datastore error:error];
+        if (_database) {
+            _datastore = datastore;
+            _validFieldName =
+                [[NSRegularExpression alloc] initWithPattern:kCDTQIndexFieldNamePattern
+                                                     options:0
+                                                       error:error];
+        } else {
+            self = nil;
         }
     }
+
     return self;
 }
 
@@ -347,12 +326,158 @@ static const int VERSION = 1;
 
 #pragma mark Setup methods
 
-- (BOOL)updateSchema:(int)currentVersion
++ (FMDatabaseQueue *)databaseQueueWithDatastore:(CDTDatastore *)datastore
+                                          error:(NSError *__autoreleasing *)error
+{
+    NSString *dir = [datastore extensionDataFolder:kCDTQExtensionName];
+    [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                              withIntermediateDirectories:TRUE
+                                               attributes:nil
+                                                    error:nil];
+    NSString *filename = [NSString pathWithComponents:@[ dir, @"indexes.sqlite" ]];
+
+    id<CDTEncryptionKeyProvider> provider = [datastore encryptionKeyProvider];
+    FMDatabaseQueue *database = nil;
+    NSError *thisError = nil;
+    BOOL success = YES;
+
+    if (success) {
+        success = [CDTQIndexManager validateEncryptionKeyProvider:provider
+                                                forDatabaseAtPath:filename
+                                                            error:&thisError];
+    }
+
+    if (success) {
+        database = [[FMDatabaseQueue alloc] initWithPath:filename];
+
+        success = (database != nil);
+        if (!success) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem opening or creating database.", nil)
+            };
+            thisError = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
+                                            code:CDTQIndexErrorSqlError
+                                        userInfo:userInfo];
+        }
+    }
+
+    if (success) {
+        success = [CDTQIndexManager configureDatabase:database
+                            withEncryptionKeyProvider:provider
+                                                error:&thisError];
+    }
+
+    if (success) {
+        success = [CDTQIndexManager updateSchema:VERSION inDatabase:database];
+
+        if (!success) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem updating database schema.", nil)
+            };
+            thisError = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
+                                            code:CDTQIndexErrorSqlError
+                                        userInfo:userInfo];
+        }
+    }
+    
+    if (!success) {
+        database = nil;
+        
+        if (error) {
+            *error = thisError;
+        }
+    }
+    
+    return database;
+}
+
++ (BOOL)validateEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    forDatabaseAtPath:(NSString *)path
+                                error:(NSError **)error
+{
+    BOOL success = YES;
+
+    NSString *key = [provider encryptionKey];
+    if (!key) {
+        LogDebug(@"Provider does not return a key to open index at %@. Checking whether index is "
+                 @"encrypted ...",
+                 path);
+
+        switch ([FMDatabase isDatabaseUnencryptedAtPath:path]) {
+            case kFMDatabaseUnencryptedNotFound: {
+                LogDebug(@"No index found at %@. Carry on and try to open/create a new not "
+                         @"encrypted index.",
+                         path);
+
+                break;
+            }
+            case kFMDatabaseUnencryptedIsUnencrypted: {
+                LogDebug(@"Index at %@ is not encrypted. No key is neccesary, carry on and try to "
+                         @"open it.",
+                         path);
+
+                break;
+            }
+            case kFMDatabaseUnencryptedIsEncrypted:
+            default: {
+                LogError(@"Index at %@ is encrypted and can not be opened without a key.", path);
+
+                success = NO;
+
+                if (error) {
+                    NSDictionary *userInfo = @{
+                        NSLocalizedDescriptionKey :
+                            NSLocalizedString(@"A key is required to decipher the database", nil)
+                    };
+
+                    *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
+                                                 code:CDTQIndexErrorEncryptionKeyError
+                                             userInfo:userInfo];
+                }
+
+                break;
+            }
+        }
+    }
+
+    return success;
+}
+
++ (BOOL)configureDatabase:(FMDatabaseQueue *)database
+    withEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                        error:(NSError **)error
+{
+    __block BOOL success = YES;
+
+    NSString *key = [provider encryptionKey];
+    if (key) {
+        [database inDatabase:^(FMDatabase *db) {
+          success = [db setValidKey:key];
+        }];
+
+        if (!success && error) {
+            NSDictionary *userInfo = @{
+                NSLocalizedDescriptionKey :
+                    NSLocalizedString(@"Problem configuring database with encryption key", nil)
+            };
+
+            *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
+                                         code:CDTQIndexErrorEncryptionKeyError
+                                     userInfo:userInfo];
+        }
+    }
+
+    return success;
+}
+
++ (BOOL)updateSchema:(int)currentVersion inDatabase:(FMDatabaseQueue *)database
 {
     __block BOOL success = YES;
 
     // get current version
-    [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
+    [database inTransaction:^(FMDatabase *db, BOOL *rollback) {
         int version = 0;
 
         FMResultSet *rs = [db executeQuery:@"pragma user_version;"];
@@ -363,7 +488,7 @@ static const int VERSION = 1;
         [rs close];
 
         if (version < 1) {
-            success = [self migrate_0_1:db];
+            success = [CDTQIndexManager migrate_0_1:db];
         }
 
         // Set user_version unconditionally
@@ -379,7 +504,7 @@ static const int VERSION = 1;
     return success;
 }
 
-- (BOOL)migrate_0_1:(FMDatabase *)db
++ (BOOL)migrate_0_1:(FMDatabase *)db
 {
     NSString *SCHEMA_INDEX = @"CREATE TABLE _t_cloudant_sync_query_metadata ( "
         @"        index_name TEXT NOT NULL, " @"        index_type TEXT NOT NULL, "

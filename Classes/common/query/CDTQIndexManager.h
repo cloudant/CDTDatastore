@@ -49,7 +49,11 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
     /**
      * No index with this name was found.
      */
-    CDTQIndexErrorIndexDoesNotExist = 3
+    CDTQIndexErrorIndexDoesNotExist = 3,
+    /**
+     * Key provided could not be used to initialize index manager
+     */
+    CDTQIndexErrorEncryptionKeyError = 4
 };
 
 /**
