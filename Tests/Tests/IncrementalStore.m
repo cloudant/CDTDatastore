@@ -673,16 +673,8 @@ static void *ISContextProgress = &ISContextProgress;
      */
     fr.predicate = [NSPredicate predicateWithFormat:@"!(text == %@)", textvals[1]];
 
-    results = [moc executeFetchRequest:fr error:&err];
-    XCTAssertNotNil(results, @"Expected results: %@", err);
-
-    XCTAssertTrue([results count] == 3 * (max / 4), @"results count should be %d is %@",
-                  3 * (max / 4), @([results count]));
-
-    for (Entry *e in results) {
-        XCTAssertTrue(![e.text isEqualToString:textvals[1]], @"entry.text should not be %@ is %@",
-                      textvals[1], e.text);
-    }
+    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                 CDTISException, @"Expected Exception");
 
     /**
      *  Special cases

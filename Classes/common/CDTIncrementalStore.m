@@ -1712,12 +1712,8 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 /**
  *  Process comparison predicates
  *
- *  The queries currently supported by the backing store are:
- *  * `{index: @{@"max": value}}`: index <= value
- *  * `{index: value}`: index == value
- *  * `{index: @{@"min": value}}`: index >= value
- *  * `{index: @{@"min": value1, @"max": value2}}`: value1 <= index <= value2
- *  * `{index: @[value_0,...,value_n]}`: index == value_0 || ... || index == value_n
+ *  The queries currently supported by the backing store are described in the query.md
+ *  doc in the doc directory.
  *
  *  @param fetchRequest
  *
@@ -1818,7 +1814,7 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
 
 NSString *kAndOperator = @"$and";
 NSString *kOrOperator = @"$or";
-NSString *kNotOperator = @"$not";
+NSString *kNorOperator = @"$nor";
 
 - (NSDictionary *)processPredicate:(NSPredicate *)p
 {
@@ -1835,8 +1831,9 @@ NSString *kNotOperator = @"$not";
                 opStr = kOrOperator;
                 break;
             case NSNotPredicateType:
-                opStr = kNotOperator;
-                break;
+            // The $nor operator is not yet supported, so fall thru to exception
+            // opStr = kNorOperator;
+            // break;
             default:
                 [NSException
                      raise:CDTISException
