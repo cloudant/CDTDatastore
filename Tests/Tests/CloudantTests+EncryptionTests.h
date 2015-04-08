@@ -18,10 +18,13 @@
 
 @class CDTDatastore;
 
-#define kCDTIndexFolder     @"com.cloudant.indexing"    //in CDTIndexManager.m. Move it into .h?
-#define kCDTIndexFilename   @"indexes.sqlite"
+#define kCDTIndexFolder @"com.cloudant.indexing"  // in CDTIndexManager.m. Move it into .h?
+#define kCDTIndexFilename @"indexes.sqlite"
 
-#define kCDTSQLiteStandardHeader    @"SQLite format 3"
+#define kCDTQueryIndexFolder @"com.cloudant.sync.query"  // in CDTQIndexManager.m. Move it into .h?
+#define kCDTQueryIndexFilename @"indexes.sqlite"
+
+#define kCDTSQLiteStandardHeader @"SQLite format 3"
 
 @interface CloudantTests (EncryptionTests)
 
@@ -35,5 +38,16 @@
  * @return Path to a SQLite database
  */
 + (NSString *)pathForIndexInDatastore:(CDTDatastore *)datastore;
+
+/**
+ * Returns the path to the database in the query index manager for the provided datastore.
+ * It does not check if the query index manager was created before and it does not create it if
+ * it does not exist
+ *
+ * @param datastore a datastore (not nil)
+ *
+ * @return Path to a SQLite database
+ */
++ (NSString *)pathForQueryIndexInDatastore:(CDTDatastore *)datastore;
 
 @end
