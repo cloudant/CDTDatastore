@@ -74,10 +74,14 @@
 		9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */; };
 		CD00CBBE1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */; };
 		CD00CBBF1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */; };
+		CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
+		CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
 		CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
 		CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
+		CD55A1981AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */; };
+		CD55A1991AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */; };
 		CD7110421AB6282500558645 /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */; };
 		CD7110431AB6282500558645 /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */; };
 		CD7110441AB6282500558645 /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */; };
@@ -132,8 +136,6 @@
 		EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC578D891AE67D60003D6006 /* CDTQIndexTests.m */; };
 		ECA0DC611AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */; };
 		ECA0DC621AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */; };
-		CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
-		CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -191,10 +193,12 @@
 		BBD8D50209E84CD981F3FA7A /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencryptedindex.sqlite; path = Assets/emptyencryptedindex.sqlite; sourceTree = "<group>"; };
+		CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseDeletionTests.m; sourceTree = "<group>"; };
 		CD3FBCA21AB05A170032376E /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperOneUseKeyProvider.m; sourceTree = "<group>"; };
+		CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
 		CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencrypteddb.touchdb; path = Assets/emptyencrypteddb.touchdb; sourceTree = "<group>"; };
@@ -230,7 +234,6 @@
 		EC1D10861B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQContainsInAnyOrderMatcher.m; sourceTree = "<group>"; };
 		EC578D891AE67D60003D6006 /* CDTQIndexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexTests.m; sourceTree = "<group>"; };
 		ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQTextSearchTests.m; sourceTree = "<group>"; };
-		CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseDeletionTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -299,6 +302,7 @@
 				EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */,
 				EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */,
 				EC0C83211AB217290051042F /* CDTQIndexCreatorTests.m */,
+				CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */,
 				EC0C83221AB217290051042F /* CDTQIndexManagerTests.m */,
 				EC0C83231AB217290051042F /* CDTQIndexUpdaterTests.m */,
 				EC0C83241AB217290051042F /* CDTQInvalidQuerySyntax.m */,
@@ -660,6 +664,7 @@
 				989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
 				CDEE6ED11AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
+				CD55A1981AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				EC0C83621AB217290051042F /* Tests.m in Sources */,
 				9F0D23FA188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
@@ -721,6 +726,7 @@
 				EC0C835D1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				CDEE6ED21AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
+				CD55A1991AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				EC0C83631AB217290051042F /* Tests.m in Sources */,
