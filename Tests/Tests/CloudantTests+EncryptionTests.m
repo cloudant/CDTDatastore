@@ -29,4 +29,12 @@
     return path;
 }
 
++ (NSString *)pathForQueryIndexInDatastore:(CDTDatastore *)datastore
+{
+    NSString *dir = [datastore extensionDataFolder:kCDTQueryIndexFolder];
+    NSString *path = [NSString pathWithComponents:@[dir, kCDTQueryIndexFilename]];
+    
+    return path;
+}
+
 @end
