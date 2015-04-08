@@ -22,6 +22,7 @@
 #import "CDTMutableDocumentRevision.h"
 #import "CDTDocumentBody.h"
 #import "CDTAttachment.h"
+#import "CDTFetchChanges.h"
 
 #import "CDTReplicator.h"
 #import "CDTPushReplication.h"
