@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>TEST_COUCH_USERNAME</key>
+	<string></string>
+	<key>TEST_COUCH_PASSWORD</key>
+	<string></string>
+	<key>TEST_COUCH_HOST</key>
+	<string>localhost</string>
+	<key>TEST_COUCH_PORT</key>
+	<string>5984</string>
+	<key>TEST_COUCH_HTTP</key>
+	<string>http</string>
+</dict>
+</plist>
