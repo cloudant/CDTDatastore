@@ -83,6 +83,12 @@
             <FileRef
                location = "group:NSString+CDTEncryptionKeychainJSON.m">
             </FileRef>
+            <FileRef
+               location = "group:NSString+CharBufferFromHexString.h">
+            </FileRef>
+            <FileRef
+               location = "group:NSString+CharBufferFromHexString.m">
+            </FileRef>
          </Group>
          <Group
             location = "container:"

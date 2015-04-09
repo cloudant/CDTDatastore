@@ -21,6 +21,7 @@
 #import <openssl/aes.h>
 
 #import "CDTEncryptionKeychainConstants.h"
+#import "NSString+CharBufferFromHexString.h"
 
 @implementation CDTEncryptionKeychainUtils (AES)
 
@@ -29,8 +30,8 @@
 {
     NSData *cipherText = [CDTEncryptionKeychainUtils base64DataFromString:ciphertextEncoded];
 
-    unsigned char *nativeKey = [self getNativeKeyFromHexString:key];
-    unsigned char *nativeIv = [self getNativeIVFromHexString:iv];
+    unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
+    unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
 
     EVP_CIPHER_CTX ctx;
     EVP_CIPHER_CTX_init(&ctx);
@@ -60,8 +61,8 @@
 {
     NSData *myText = [text dataUsingEncoding:NSUnicodeStringEncoding];
 
-    unsigned char *nativeIv = [CDTEncryptionKeychainUtils getNativeIVFromHexString:iv];
-    unsigned char *nativeKey = [CDTEncryptionKeychainUtils getNativeKeyFromHexString:key];
+    unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
+    unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
 
     EVP_CIPHER_CTX ctx;
     EVP_CIPHER_CTX_init(&ctx);
@@ -88,70 +89,6 @@
 }
 
 #pragma mark - Private class methods
-/*
- * Caller MUST FREE the memory returned from this method
- */
-+ (unsigned char *)getNativeIVFromHexString:(NSString *)iv
-{
-    /*
-     Make sure the key length represents 32 byte (256 bit) values. The string represent the
-     hexadecimal
-     values that should be used, so the string "4962" represents byte values 0x49  0x62.
-     Note that the constant value is the actual byte size, and the strings are twice that size
-     since every two characters in the string corresponds to a single byte.
-     */
-    if ([iv length] != (NSUInteger)(CDTkChosenCipherIVSize * 2)) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_INVALID_IV_LENGTH];
-    }
-
-    unsigned char *nativeIv = malloc(CDTkChosenCipherIVSize);
-
-    int i;
-    for (i = 0; i < CDTkChosenCipherIVSize; i++) {
-        int hexStrIdx = i * 2;
-        NSString *hexChrStr = [iv substringWithRange:NSMakeRange(hexStrIdx, 2)];
-        NSScanner *scanner = [[NSScanner alloc] initWithString:hexChrStr];
-        uint currInt;
-        [scanner scanHexInt:&currInt];
-        nativeIv[i] = (char)currInt;
-    }
-
-    return nativeIv;
-}
-
-/*
- * Caller MUST FREE the memory returned from this method
- */
-+ (unsigned char *)getNativeKeyFromHexString:(NSString *)key
-{
-    /*
-     Make sure the key length represents 32 byte (256 bit) values. The string represent the
-     hexadecimal
-     values that should be used, so the string "4962" represents byte values 0x49  0x62.
-     Note that the constant value is the actual byte size, and the strings are twice that size
-     since every two characters in the string corresponds to a single byte.
-     */
-    if ([key length] != (NSUInteger)(CDTkChosenCipherKeySize * 2)) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL
-                    format:@"Key must be 64 hex characters or 32 bytes (256 bits)"];
-    }
-
-    unsigned char *nativeKey = malloc(CDTkChosenCipherKeySize);
-
-    int i;
-    for (i = 0; i < CDTkChosenCipherKeySize; i++) {
-        int hexStrIdx = i * 2;
-        NSString *hexChrStr = [key substringWithRange:NSMakeRange(hexStrIdx, 2)];
-        NSScanner *scanner = [[NSScanner alloc] initWithString:hexChrStr];
-        uint currInt;
-        [scanner scanHexInt:&currInt];
-        nativeKey[i] = (char)currInt;
-    }
-
-    return nativeKey;
-}
-
 /*
  * Caller MUST FREE memory returned from this method
  * Decryption using OpenSSL decryption aes256
