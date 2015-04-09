@@ -70,9 +70,7 @@
     NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData key:key withIV:iv];
 
     NSString *encodedBase64CipherString =
-        [CDTEncryptionKeychainUtils base64StringFromData:cipherDat
-                                                  length:(int)text.length
-                                               isSafeUrl:NO];
+        [CDTEncryptionKeychainUtils base64StringFromData:cipherDat length:(int)text.length];
     return encodedBase64CipherString;
 }
 

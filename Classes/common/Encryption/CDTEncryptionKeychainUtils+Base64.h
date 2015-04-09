@@ -18,7 +18,7 @@
 
 @interface CDTEncryptionKeychainUtils (Base64)
 
-+ (NSString *)base64StringFromData:(NSData *)data length:(int)length isSafeUrl:(bool)isSafeUrl;
++ (NSString *)base64StringFromData:(NSData *)data length:(int)length;
 + (NSData *)base64DataFromString:(NSString *)string;
 + (BOOL)isBase64Encoded:(NSString *)str;
 

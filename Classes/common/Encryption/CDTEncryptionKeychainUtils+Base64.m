@@ -24,16 +24,10 @@ const static char base64EncodingTable[64] = {
     'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
     'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
-const static char base64EncodingTableUrlSafe[64] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'};
-
 @implementation CDTEncryptionKeychainUtils (Base64)
 
 #pragma mark - Public class methods
-+ (NSString *)base64StringFromData:(NSData *)data length:(int)length isSafeUrl:(bool)isSafeUrl
++ (NSString *)base64StringFromData:(NSData *)data length:(int)length
 {
     unsigned long ixtext, lentext;
     long ctremaining;
@@ -82,11 +76,7 @@ const static char base64EncodingTableUrlSafe[64] = {
             }
         }
         for (i = 0; i < ctcopy; i++) {
-            [result
-             appendString:[NSString
-                           stringWithFormat:@"%c", isSafeUrl
-                           ? base64EncodingTableUrlSafe[output[i]]
-                           : base64EncodingTable[output[i]]]];
+            [result appendString:[NSString stringWithFormat:@"%c", base64EncodingTable[output[i]]]];
         }
         for (i = ctcopy; i < 4; i++) {
             [result appendString:@"="];
