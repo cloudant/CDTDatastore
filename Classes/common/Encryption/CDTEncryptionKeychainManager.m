@@ -45,7 +45,6 @@
     NSString *decryptedKey = [CDTEncryptionKeychainUtils decryptWithKey:pwKey
                                                          withCipherText:dpk
                                                                  withIV:iv
-                                            decodeBase64AfterDecryption:NO
                                                     checkBase64Encoding:YES];
 
     return decryptedKey;
@@ -104,8 +103,7 @@
 
     NSString *encyptedDPK = [CDTEncryptionKeychainUtils encryptWithKey:pwKey
                                                               withText:dpk
-                                                                withIV:hexEncodedIv
-                                          covertBase64BeforeEncryption:NO];
+                                                                withIV:hexEncodedIv];
 
     NSDictionary *jsonEntriesDict = @{
         CDTENCRYPTION_KEYCHAIN_KEY_IV : hexEncodedIv,

@@ -33,14 +33,10 @@
  * @param key The key used for encryption
  * @param text The text to encrypt
  * @param iv The IV used for encryption
- * @param covertBase64BeforeEncryptionFlag When true, convert to base64 before encrypting
  *
  * @return The encrypted text
  */
-+ (NSString *)encryptWithKey:(NSString *)key
-                        withText:(NSString *)text
-                          withIV:(NSString *)iv
-    covertBase64BeforeEncryption:(BOOL)covertBase64BeforeEncryptionFlag;
++ (NSString *)encryptWithKey:(NSString *)key withText:(NSString *)text withIV:(NSString *)iv;
 
 /**
  * Decrypts an NSString by using a key and an Initialization Vector (IV).
@@ -48,15 +44,13 @@
  * @param key The key used for decryption
  * @param ciphertext The encrypted text to decrypt
  * @param iv The IV used for decryption
- * @param decodeBase64AfterDecryption When true, decode base64 after decryption
  *
  * @return The decrypted text
  */
 + (NSString *)decryptWithKey:(NSString *)key
-                 withCipherText:(NSString *)ciphertext
-                         withIV:(NSString *)iv
-    decodeBase64AfterDecryption:(BOOL)decodeBase64AfterDecryption
-            checkBase64Encoding:(BOOL)checkBase64Encoding;
+              withCipherText:(NSString *)ciphertext
+                      withIV:(NSString *)iv
+         checkBase64Encoding:(BOOL)checkBase64Encoding;
 
 /**
  * Generates a key by using the PBKDF2 algorithm.

@@ -49,10 +49,7 @@
     return randomStr;
 }
 
-+ (NSString *)encryptWithKey:(NSString *)key
-                        withText:(NSString *)text
-                          withIV:(NSString *)iv
-    covertBase64BeforeEncryption:(BOOL)covertBase64BeforeEncryptionFlag
++ (NSString *)encryptWithKey:(NSString *)key withText:(NSString *)text withIV:(NSString *)iv
 {
     if (![text isKindOfClass:[NSString class]] || [text length] < 1) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_ENCRYPT
@@ -69,13 +66,6 @@
                     format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_IV];
     }
 
-    if (covertBase64BeforeEncryptionFlag) {
-        NSData *data = [text dataUsingEncoding:NSUTF8StringEncoding];
-        text = [CDTEncryptionKeychainUtils base64StringFromData:data
-                                                         length:(int)text.length
-                                                      isSafeUrl:NO];
-    }
-
     NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
     NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData key:key withIV:iv];
 
@@ -87,10 +77,9 @@
 }
 
 + (NSString *)decryptWithKey:(NSString *)key
-                 withCipherText:(NSString *)ciphertext
-                         withIV:(NSString *)iv
-    decodeBase64AfterDecryption:(BOOL)decodeBase64AfterDecryption
-            checkBase64Encoding:(BOOL)checkBase64Encoding;
+              withCipherText:(NSString *)ciphertext
+                      withIV:(NSString *)iv
+         checkBase64Encoding:(BOOL)checkBase64Encoding
 {
     if (![ciphertext isKindOfClass:[NSString class]] || [ciphertext length] < 1) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_DECRYPT
@@ -107,14 +96,16 @@
                     format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_IV];
     }
 
-    NSString *returnText = [CDTEncryptionKeychainUtils decryptWithKey:key
-                                                       withCipherText:ciphertext
-                                                               withIV:iv
-                                                  checkBase64Encoding:checkBase64Encoding];
+    NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
+    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData key:key withIV:iv];
 
-    if (returnText != nil && decodeBase64AfterDecryption) {
-        NSData *inputBase64Data = [CDTEncryptionKeychainUtils base64DataFromString:returnText];
-        returnText = [[NSString alloc] initWithData:inputBase64Data encoding:NSUTF8StringEncoding];
+    NSString *returnText =
+        [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];
+
+    if (returnText != nil) {
+        if (checkBase64Encoding && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
+            returnText = nil;
+        }
     }
 
     return returnText;
@@ -164,27 +155,6 @@
     dataBytes = nil;
 
     return [NSString stringWithString:derivedKeyStr];
-}
-
-#pragma mark - Private class methods
-+ (NSString *)decryptWithKey:(NSString *)key
-              withCipherText:(NSString *)ciphertext
-                      withIV:(NSString *)iv
-         checkBase64Encoding:(BOOL)checkBase64Encoding
-{
-    NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
-    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData key:key withIV:iv];
-
-    NSString *returnText =
-        [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];
-
-    if (returnText != nil) {
-        if (checkBase64Encoding && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
-            returnText = nil;
-        }
-    }
-
-    return returnText;
 }
 
 @end
