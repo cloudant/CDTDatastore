@@ -1,16 +1,19 @@
 # CDTDatastore CHANGELOG
 
-## 0.16.0 (Unreleased)
+## 0.16.0 (2015-04-09)
 
 - [NEW] We've migrated the Cloudant Query for iOS code which
   used to live in the CloudantQueryObjc repository into
   CDTDatastore itself. Please be sure to remove references
   to the CloudantQueryObjc repository from your Podfiles.
   Including CloudantSync.h will include all necessary
-  Cloudant Query code. See /doc/ in this repo for documentation.
+  Cloudant Query code. See doc/query.md in this repo for documentation.
   We hope you enjoy using Query!
-- [FIX] Old indexing code had a bug where resolved conflicts
-  could cause documents not to be indexed. This is now fixed.
+- [FIX] Both Query and the old indexing code had a bug where
+  resolved conflicts could cause documents not to be indexed.
+  This is now fixed.
+- [PREVIEW] CloudKit-inspired changes fetcher, see commit
+  65fa9a63281c1fa4063f64e1df9dfe5b8d69384d or CDTFetchChanges.h.
 
 ## 0.15.0 (2015-03-24)
 
