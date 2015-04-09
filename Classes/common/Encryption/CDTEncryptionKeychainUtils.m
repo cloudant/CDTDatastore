@@ -76,7 +76,8 @@
                                                       isSafeUrl:NO];
     }
 
-    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:text key:key withIV:iv];
+    NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
+    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData key:key withIV:iv];
 
     NSString *encodedBase64CipherString =
         [CDTEncryptionKeychainUtils base64StringFromData:cipherDat
@@ -171,7 +172,8 @@
                       withIV:(NSString *)iv
          checkBase64Encoding:(BOOL)checkBase64Encoding
 {
-    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:ciphertext key:key withIV:iv];
+    NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
+    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData key:key withIV:iv];
 
     NSString *returnText =
         [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];

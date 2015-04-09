@@ -15,7 +15,6 @@
 //
 
 #import "CDTEncryptionKeychainUtils+AES.h"
-#import "CDTEncryptionKeychainUtils+Base64.h"
 
 #import <openssl/evp.h>
 #import <openssl/aes.h>
@@ -26,10 +25,8 @@
 @implementation CDTEncryptionKeychainUtils (AES)
 
 #pragma mark - Public class methods
-+ (NSData *)doDecrypt:(NSString *)ciphertextEncoded key:(NSString *)key withIV:(NSString *)iv
++ (NSData *)doDecrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
 {
-    NSData *cipherText = [CDTEncryptionKeychainUtils base64DataFromString:ciphertextEncoded];
-
     unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
     unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
 
@@ -37,15 +34,15 @@
     EVP_CIPHER_CTX_init(&ctx);
     EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, nativeKey, nativeIv);
 
-    unsigned char *cipherTextBytes = (unsigned char *)[cipherText bytes];
-    int cipherTextBytesLength = (int)[cipherText length];
+    unsigned char *cipherBytes = (unsigned char *)[data bytes];
+    int cipherBytesLength = (int)[data length];
 
-    unsigned char *decryptedBytes = aes_decrypt(&ctx, cipherTextBytes, &cipherTextBytesLength);
-    NSData *decryptedData = [NSData dataWithBytes:decryptedBytes length:cipherTextBytesLength];
+    unsigned char *decryptedBytes = aes_decrypt(&ctx, cipherBytes, &cipherBytesLength);
+    NSData *decryptedData = [NSData dataWithBytes:decryptedBytes length:cipherBytesLength];
 
     EVP_CIPHER_CTX_cleanup(&ctx);
 
-    bzero(decryptedBytes, cipherTextBytesLength);
+    bzero(decryptedBytes, cipherBytesLength);
     free(decryptedBytes);
 
     bzero(nativeKey, CDTkChosenCipherKeySize);
@@ -57,10 +54,8 @@
     return decryptedData;
 }
 
-+ (NSData *)doEncrypt:(NSString *)text key:(NSString *)key withIV:(NSString *)iv
++ (NSData *)doEncrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
 {
-    NSData *myText = [text dataUsingEncoding:NSUnicodeStringEncoding];
-
     unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
     unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
 
@@ -68,15 +63,15 @@
     EVP_CIPHER_CTX_init(&ctx);
     EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, nativeKey, nativeIv);
 
-    unsigned char *textBytes = (unsigned char *)[myText bytes];
-    int textBytesLength = (int)[myText length];
+    unsigned char *decryptedBytes = (unsigned char *)[data bytes];
+    int decryptedBytesLength = (int)[data length];
 
-    unsigned char *encryptedBytes = aes_encrypt(&ctx, textBytes, &textBytesLength);
-    NSData *encryptedData = [NSData dataWithBytes:encryptedBytes length:textBytesLength];
+    unsigned char *encryptedBytes = aes_encrypt(&ctx, decryptedBytes, &decryptedBytesLength);
+    NSData *encryptedData = [NSData dataWithBytes:encryptedBytes length:decryptedBytesLength];
 
     EVP_CIPHER_CTX_cleanup(&ctx);
 
-    bzero(encryptedBytes, textBytesLength);
+    bzero(encryptedBytes, decryptedBytesLength);
     free(encryptedBytes);
 
     bzero(nativeKey, CDTkChosenCipherKeySize);

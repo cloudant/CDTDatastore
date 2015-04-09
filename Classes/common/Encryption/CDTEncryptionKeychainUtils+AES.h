@@ -18,7 +18,7 @@
 
 @interface CDTEncryptionKeychainUtils (AES)
 
-+ (NSData *)doDecrypt:(NSString *)ciphertextEncoded key:(NSString *)key withIV:(NSString *)iv;
-+ (NSData *)doEncrypt:(NSString *)text key:(NSString *)key withIV:(NSString *)iv;
++ (NSData *)doDecrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv;
++ (NSData *)doEncrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv;
 
 @end
