@@ -51,6 +51,12 @@
                location = "group:CDTEncryptionKeychainUtils.m">
             </FileRef>
             <FileRef
+               location = "group:CDTEncryptionKeychainUtils+Base64.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeychainUtils+Base64.m">
+            </FileRef>
+            <FileRef
                location = "group:CDTEncryptionKeyNilProvider.h">
             </FileRef>
             <FileRef
