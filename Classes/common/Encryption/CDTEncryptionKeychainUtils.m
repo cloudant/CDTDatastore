@@ -79,7 +79,6 @@
 + (NSString *)decryptWithKey:(NSString *)key
               withCipherText:(NSString *)ciphertext
                       withIV:(NSString *)iv
-         checkBase64Encoding:(BOOL)checkBase64Encoding
 {
     if (![ciphertext isKindOfClass:[NSString class]] || [ciphertext length] < 1) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_DECRYPT
@@ -101,13 +100,10 @@
 
     NSString *returnText =
         [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];
-
-    if (returnText != nil) {
-        if (checkBase64Encoding && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
-            returnText = nil;
-        }
+    if (returnText && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
+        returnText = nil;
     }
-
+    
     return returnText;
 }
 

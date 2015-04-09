@@ -49,8 +49,7 @@
  */
 + (NSString *)decryptWithKey:(NSString *)key
               withCipherText:(NSString *)ciphertext
-                      withIV:(NSString *)iv
-         checkBase64Encoding:(BOOL)checkBase64Encoding;
+                      withIV:(NSString *)iv;
 
 /**
  * Generates a key by using the PBKDF2 algorithm.

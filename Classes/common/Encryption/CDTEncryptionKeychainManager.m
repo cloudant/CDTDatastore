@@ -42,10 +42,8 @@
     NSString *salt = [storedDict objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_SALT];
     NSString *pwKey = [self passwordToKey:password withSalt:salt];
     NSString *iv = [storedDict objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_IV];
-    NSString *decryptedKey = [CDTEncryptionKeychainUtils decryptWithKey:pwKey
-                                                         withCipherText:dpk
-                                                                 withIV:iv
-                                                    checkBase64Encoding:YES];
+    NSString *decryptedKey =
+        [CDTEncryptionKeychainUtils decryptWithKey:pwKey withCipherText:dpk withIV:iv];
 
     return decryptedKey;
 }
