@@ -13,7 +13,6 @@
 //  and limitations under the License.
 //
 
-#import <Cocoa/Cocoa.h>
 #import <XCTest/XCTest.h>
 
 #import "CDTEncryptionKeychainUtils+Base64.h"
