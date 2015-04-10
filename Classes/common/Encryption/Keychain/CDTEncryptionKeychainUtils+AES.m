@@ -14,10 +14,9 @@
 //  and limitations under the License.
 //
 
-#import "CDTEncryptionKeychainUtils+AES.h"
+#import <CommonCrypto/CommonCryptor.h>
 
-#import <openssl/evp.h>
-#import <openssl/aes.h>
+#import "CDTEncryptionKeychainUtils+AES.h"
 
 #import "CDTEncryptionKeychainConstants.h"
 #import "NSString+CharBufferFromHexString.h"
@@ -27,106 +26,60 @@
 #pragma mark - Public class methods
 + (NSData *)doDecrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
 {
-    unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
-    unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
-
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
-    EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, nativeKey, nativeIv);
-
-    unsigned char *cipherBytes = (unsigned char *)[data bytes];
-    int cipherBytesLength = (int)[data length];
-
-    unsigned char *decryptedBytes = aes_decrypt(&ctx, cipherBytes, &cipherBytesLength);
-    NSData *decryptedData = [NSData dataWithBytes:decryptedBytes length:cipherBytesLength];
-
-    EVP_CIPHER_CTX_cleanup(&ctx);
-
-    bzero(decryptedBytes, cipherBytesLength);
-    free(decryptedBytes);
-
-    bzero(nativeKey, CDTkChosenCipherKeySize);
-    free(nativeKey);
-
-    bzero(nativeIv, CDTkChosenCipherIVSize);
-    free(nativeIv);
-
-    return decryptedData;
+    return [CDTEncryptionKeychainUtils applyOperation:kCCDecrypt toData:data withKey:key iv:iv];
 }
 
 + (NSData *)doEncrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
 {
+    return [CDTEncryptionKeychainUtils applyOperation:kCCEncrypt toData:data withKey:key iv:iv];
+}
+
+#pragma mark - Private class method
++ (NSData *)applyOperation:(CCOperation)operation
+                    toData:(NSData *)data
+                   withKey:(NSString *)key
+                        iv:(NSString *)iv
+{
     unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
     unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
 
-    EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
-    EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, nativeKey, nativeIv);
+    // Generate context
+    CCCryptorRef cryptor = NULL;
+    CCCryptorStatus cryptorStatus =
+        CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, nativeKey,
+                        CDTkChosenCipherKeySize, nativeIv, &cryptor);
+    NSAssert((cryptorStatus == kCCSuccess) && cryptor, @"Cryptographic context not created");
 
-    unsigned char *decryptedBytes = (unsigned char *)[data bytes];
-    int decryptedBytesLength = (int)[data length];
+    // Encrypt
+    size_t dataOutSize = CCCryptorGetOutputLength(cryptor, (size_t)[data length], true);
+    void *dataOut = malloc(dataOutSize);
 
-    unsigned char *encryptedBytes = aes_encrypt(&ctx, decryptedBytes, &decryptedBytesLength);
-    NSData *encryptedData = [NSData dataWithBytes:encryptedBytes length:decryptedBytesLength];
+    size_t dataOutPartialSize = 0;
+    cryptorStatus = CCCryptorUpdate(cryptor, [data bytes], (size_t)[data length], dataOut,
+                                    dataOutSize, &dataOutPartialSize);
+    NSAssert(cryptorStatus == kCCSuccess, @"Data not encrypted (update)");
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    size_t dataOutTotalSize = dataOutPartialSize;
 
-    bzero(encryptedBytes, decryptedBytesLength);
-    free(encryptedBytes);
+    cryptorStatus = CCCryptorFinal(cryptor, dataOut + dataOutPartialSize,
+                                   dataOutSize - dataOutPartialSize, &dataOutPartialSize);
+    NSAssert(cryptorStatus == kCCSuccess, @"Data not encrypted (final)");
 
-    bzero(nativeKey, CDTkChosenCipherKeySize);
+    dataOutTotalSize += dataOutPartialSize;
+
+    // Free context
+    CCCryptorRelease(cryptor);
+    
+    bzero(nativeKey, CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE);
     free(nativeKey);
-
-    bzero(nativeIv, CDTkChosenCipherIVSize);
+    
+    bzero(nativeIv, CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE);
     free(nativeIv);
 
-    return encryptedData;
-}
+    // Return
+    NSData *processedData = [NSData dataWithBytesNoCopy:dataOut length:dataOutTotalSize];
 
-#pragma mark - Private class methods
-/*
- * Caller MUST FREE memory returned from this method
- * Decryption using OpenSSL decryption aes256
- * Decrypt *len bytes of ciphertext
- */
-static unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len)
-{
-    /* plaintext will always be equal to or lesser than length of ciphertext*/
-    int p_len = *len, f_len = 0;
-    unsigned char *plaintext = malloc(p_len + AES_BLOCK_SIZE);
-
-    EVP_DecryptInit_ex(e, NULL, NULL, NULL, NULL);
-    EVP_DecryptUpdate(e, plaintext, &p_len, ciphertext, *len);
-    EVP_DecryptFinal_ex(e, plaintext + p_len, &f_len);
-
-    *len = p_len + f_len;
-    return plaintext;
-}
-
-/*
- * Caller MUST FREE memory returned from this method
- * Encryption using OpenSSL encryption aes256
- * Encrypt *len bytes of data
- * All data going in & out is considered binary (unsigned char[])
- */
-static unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len)
-{
-    /* max ciphertext len for a n bytes of plaintext is n + AES_BLOCK_SIZE -1 bytes */
-    int c_len = *len + AES_BLOCK_SIZE, f_len = 0;
-    unsigned char *ciphertext = malloc(c_len);
-
-    /* allows reusing of 'e' for multiple encryption cycles */
-    EVP_EncryptInit_ex(e, NULL, NULL, NULL, NULL);
-
-    /* update ciphertext, c_len is filled with the length of ciphertext generated,
-     *len is the size of plaintext in bytes */
-    EVP_EncryptUpdate(e, ciphertext, &c_len, plaintext, *len);
-
-    /* update ciphertext with the final remaining bytes */
-    EVP_EncryptFinal_ex(e, ciphertext + c_len, &f_len);
-
-    *len = c_len + f_len;
-    return ciphertext;
+    return processedData;
 }
 
 @end
