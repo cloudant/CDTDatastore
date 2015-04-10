@@ -56,7 +56,7 @@
         [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                           key:self.key
                                        withIV:self.iv];
-    NSString *result = [CDTEncryptionKeychainUtils base64StringFromData:data length:0];
+    NSString *result = [CDTEncryptionKeychainUtils base64StringFromData:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"a1s2d3f4g5";
@@ -64,7 +64,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                              key:self.key
                                           withIV:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data length:0];
+    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇噺摃䈰婘栰";
@@ -72,7 +72,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                              key:self.key
                                           withIV:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data length:0];
+    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:§婘栰";
@@ -80,7 +80,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                              key:self.key
                                           withIV:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data length:0];
+    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:xx👹⌚️👽";
@@ -88,7 +88,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                              key:self.key
                                           withIV:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data length:0];
+    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 }
 

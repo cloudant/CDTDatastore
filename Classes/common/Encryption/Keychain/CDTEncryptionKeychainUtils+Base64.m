@@ -27,12 +27,12 @@ const static char base64EncodingTable[64] = {
 @implementation CDTEncryptionKeychainUtils (Base64)
 
 #pragma mark - Public class methods
-+ (NSString *)base64StringFromData:(NSData *)data length:(int)length
++ (NSString *)base64StringFromData:(NSData *)data
 {
     unsigned long ixtext, lentext;
     long ctremaining;
     unsigned char input[3], output[4];
-    short i, charsonline = 0, ctcopy;
+    short i, ctcopy;
     const unsigned char *raw;
     NSMutableString *result;
     
@@ -83,11 +83,6 @@ const static char base64EncodingTable[64] = {
         }
         
         ixtext += 3;
-        charsonline += 4;
-        
-        if ((length > 0) && (charsonline >= length)) {
-            charsonline = 0;
-        }
     }
     
     return result;

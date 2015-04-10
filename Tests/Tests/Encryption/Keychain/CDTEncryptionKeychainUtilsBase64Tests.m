@@ -45,36 +45,31 @@
     NSString *txt = @"1234567890";
     NSString *expectedResult = @"MTIzNDU2Nzg5MA==";
     NSString *result = [CDTEncryptionKeychainUtils
-        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]
-                      length:(int)[txt length]];
+        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"a1s2d3f4g5";
     expectedResult = @"YTFzMmQzZjRnNQ==";
     result = [CDTEncryptionKeychainUtils
-        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]
-                      length:(int)[txt length]];
+        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇噺摃䈰婘栰";
     expectedResult = @"5pGH5Zm65pGD5Iiw5amY5qCw";
     result = [CDTEncryptionKeychainUtils
-        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]
-                      length:(int)[txt length]];
+        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:§婘栰";
     expectedResult = @"5pGHO+aRgzrCp+WpmOagsA==";
     result = [CDTEncryptionKeychainUtils
-        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]
-                      length:(int)[txt length]];
+        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:xx👹⌚️👽";
     expectedResult = @"5pGHO+aRgzp4ePCfkbnijJrvuI/wn5G9";
     result = [CDTEncryptionKeychainUtils
-        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]
-                      length:(int)[txt length]];
+        base64StringFromData:[txt dataUsingEncoding:NSUTF8StringEncoding]];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 }
 

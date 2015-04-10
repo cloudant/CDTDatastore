@@ -18,7 +18,7 @@
 
 @interface CDTEncryptionKeychainUtils (Base64)
 
-+ (NSString *)base64StringFromData:(NSData *)data length:(int)length;
++ (NSString *)base64StringFromData:(NSData *)data;
 + (NSData *)base64DataFromString:(NSString *)string;
 + (BOOL)isBase64Encoded:(NSString *)str;
 
