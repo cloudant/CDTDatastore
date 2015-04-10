@@ -26,41 +26,63 @@
          <Group
             location = "group:Encryption"
             name = "Encryption">
+            <Group
+               location = "container:Classes/common/Encryption/Keychain"
+               name = "Keychain">
+               <FileRef
+                  location = "group:CDTEncryptionKeychainConstants.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainConstants.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainManager.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainManager.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+AES.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+AES.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+Base64.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+Base64.m">
+               </FileRef>
+               <FileRef
+                  location = "group:NSObject+CDTEncryptionKeychainJSON.h">
+               </FileRef>
+               <FileRef
+                  location = "group:NSObject+CDTEncryptionKeychainJSON.m">
+               </FileRef>
+               <FileRef
+                  location = "group:NSString+CDTEncryptionKeychainJSON.h">
+               </FileRef>
+               <FileRef
+                  location = "group:NSString+CDTEncryptionKeychainJSON.m">
+               </FileRef>
+               <FileRef
+                  location = "group:NSString+CharBufferFromHexString.h">
+               </FileRef>
+               <FileRef
+                  location = "group:NSString+CharBufferFromHexString.m">
+               </FileRef>
+            </Group>
             <FileRef
                location = "group:CDTDatastore+EncryptionKey.h">
             </FileRef>
             <FileRef
                location = "group:CDTDatastoreManager+EncryptionKey.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainConstants.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainConstants.m">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainManager.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainManager.m">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils.m">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils+AES.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils+AES.m">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils+Base64.h">
-            </FileRef>
-            <FileRef
-               location = "group:CDTEncryptionKeychainUtils+Base64.m">
             </FileRef>
             <FileRef
                location = "group:CDTEncryptionKeyNilProvider.h">
@@ -70,24 +92,6 @@
             </FileRef>
             <FileRef
                location = "group:CDTEncryptionKeyProvider.h">
-            </FileRef>
-            <FileRef
-               location = "group:NSObject+CDTEncryptionKeychainJSON.h">
-            </FileRef>
-            <FileRef
-               location = "group:NSObject+CDTEncryptionKeychainJSON.m">
-            </FileRef>
-            <FileRef
-               location = "group:NSString+CDTEncryptionKeychainJSON.h">
-            </FileRef>
-            <FileRef
-               location = "group:NSString+CDTEncryptionKeychainJSON.m">
-            </FileRef>
-            <FileRef
-               location = "group:NSString+CharBufferFromHexString.h">
-            </FileRef>
-            <FileRef
-               location = "group:NSString+CharBufferFromHexString.m">
             </FileRef>
          </Group>
          <Group
