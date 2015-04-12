@@ -54,6 +54,12 @@
                   location = "group:CDTEncryptionKeychainManager.m">
                </FileRef>
                <FileRef
+                  location = "group:CDTEncryptionKeychainStorage.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainStorage.m">
+               </FileRef>
+               <FileRef
                   location = "group:CDTEncryptionKeychainUtils.h">
                </FileRef>
                <FileRef
