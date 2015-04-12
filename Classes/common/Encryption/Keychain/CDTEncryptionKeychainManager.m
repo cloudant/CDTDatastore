@@ -18,6 +18,7 @@
 
 #import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainConstants.h"
+#import "CDTEncryptionKeychainData+KeychainStorage.h"
 #import "NSObject+CDTEncryptionKeychainJSON.h"
 #import "NSString+CDTEncryptionKeychainJSON.h"
 
@@ -32,18 +33,15 @@
 #pragma mark - Public methods
 - (NSString *)getDPK:(NSString *)password
 {
-    NSDictionary *storedDict = [self getDpKDocFromKeyChain];
-
-    if (storedDict == nil) {
+    CDTEncryptionKeychainData *data = [self getEncryptionDataFromKeyChain];
+    if (!data) {
         return nil;
     }
 
-    NSString *dpk = [storedDict objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_DPK];
-    NSString *salt = [storedDict objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_SALT];
-    NSString *pwKey = [self passwordToKey:password withSalt:salt];
-    NSString *iv = [storedDict objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_IV];
-    NSString *decryptedKey =
-        [CDTEncryptionKeychainUtils decryptWithKey:pwKey withCipherText:dpk withIV:iv];
+    NSString *pwKey = [self passwordToKey:password withSalt:data.salt];
+    NSString *decryptedKey = [CDTEncryptionKeychainUtils decryptWithKey:pwKey
+                                                         withCipherText:data.encryptedDPK
+                                                                 withIV:data.IV];
 
     return decryptedKey;
 }
@@ -99,20 +97,20 @@
     NSString *hexEncodedIv = [CDTEncryptionKeychainUtils
         generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_DEFAULT_IV_SIZE];
 
-    NSString *encyptedDPK = [CDTEncryptionKeychainUtils encryptWithKey:pwKey
-                                                              withText:dpk
-                                                                withIV:hexEncodedIv];
+    NSString *encyptedDPK =
+        [CDTEncryptionKeychainUtils encryptWithKey:pwKey withText:dpk withIV:hexEncodedIv];
 
-    NSDictionary *jsonEntriesDict = @{
-        CDTENCRYPTION_KEYCHAIN_KEY_IV : hexEncodedIv,
-        CDTENCRYPTION_KEYCHAIN_KEY_SALT : salt,
-        CDTENCRYPTION_KEYCHAIN_KEY_DPK : encyptedDPK,
-        CDTENCRYPTION_KEYCHAIN_KEY_ITERATIONS :
-            [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS],
-        CDTENCRYPTION_KEYCHAIN_KEY_VERSION : CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER
-    };
+    NSNumber *iterations =
+        [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS];
 
-    NSString *jsonStr = [jsonEntriesDict CDTEncryptionKeychainJSONRepresentation];
+    CDTEncryptionKeychainData *data =
+        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedDPK
+                                                   salt:salt
+                                                     iv:hexEncodedIv
+                                             iterations:iterations
+                                                version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
+
+    NSString *jsonStr = [[data dictionary] CDTEncryptionKeychainJSONRepresentation];
     NSMutableDictionary *jsonDocStoreDict =
         [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:jsonStr];
 
@@ -131,7 +129,7 @@
     return worked;
 }
 
-- (NSDictionary *)getDpKDocFromKeyChain
+- (CDTEncryptionKeychainData *)getEncryptionDataFromKeyChain
 {
     NSMutableDictionary *lookupDict = [self getDpkDocumentLookupDict];
 
@@ -147,18 +145,26 @@
         id jsonDoc = [jsonStr CDTEncryptionKeychainJSONValue];
 
         if (jsonDoc != nil && [jsonDoc isKindOfClass:[NSDictionary class]]) {
+            CDTEncryptionKeychainData *encryptionData =
+                [CDTEncryptionKeychainData dataWithDictionary:jsonDoc];
+            if (!encryptionData) {
+                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Stored dictionary is not complete");
+
+                return nil;
+            }
+
             // Ensure the num derivations saved, matches what we have
-            int iters = [[(NSDictionary *)jsonDoc
-                objectForKey:CDTENCRYPTION_KEYCHAIN_KEY_ITERATIONS] intValue];
+            int iters = [encryptionData.iterations intValue];
 
             if (iters != CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS) {
                 CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                            @"Number of iterations stored, does NOT match the constant value %u",
                            CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS);
+
                 return nil;
             }
 
-            return jsonDoc;
+            return encryptionData;
         }
     } else {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
