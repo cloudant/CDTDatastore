@@ -71,69 +71,53 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return randomStr;
 }
 
-+ (NSString *)encryptWithKey:(NSString *)key withText:(NSString *)text withIV:(NSString *)iv
++ (NSString *)encryptText:(NSString *)text withKey:(NSData *)key iv:(NSData *)iv
 {
-    if (![text isKindOfClass:[NSString class]] || [text length] < 1) {
+    if (![text isKindOfClass:[NSString class]] || (text.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT];
     }
 
-    if (![key isKindOfClass:[NSString class]] || [key length] < 1) {
+    if (![key isKindOfClass:[NSData class]] || (key.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_KEY];
     }
 
-    if (![iv isKindOfClass:[NSString class]] || [iv length] < 1) {
+    if (![iv isKindOfClass:[NSData class]] || (iv.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV];
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV];
     }
 
-    NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-    NSData *nativeIv =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
     NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
-    
-    NSData *cipherDat =
-        [CDTEncryptionKeychainUtils doEncrypt:decryptedData withKey:nativeKey iv:nativeIv];
+
+    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData withKey:key iv:iv];
 
     NSString *encodedBase64CipherString =
         [CDTEncryptionKeychainUtils base64StringFromData:cipherDat];
-    
+
     return encodedBase64CipherString;
 }
 
-+ (NSString *)decryptWithKey:(NSString *)key
-              withCipherText:(NSString *)ciphertext
-                      withIV:(NSString *)iv
++ (NSString *)decryptText:(NSString *)ciphertext withKey:(NSData *)key iv:(NSData *)iv
 {
-    if (![ciphertext isKindOfClass:[NSString class]] || [ciphertext length] < 1) {
+    if (![ciphertext isKindOfClass:[NSString class]] || (ciphertext.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_CIPHER];
     }
 
-    if (![key isKindOfClass:[NSString class]] || [key length] < 1) {
+    if (![key isKindOfClass:[NSData class]] || (key.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_KEY];
     }
 
-    if (![iv isKindOfClass:[NSString class]] || [iv length] < 1) {
+    if (![iv isKindOfClass:[NSData class]] || (iv.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV];
     }
 
-    NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-    NSData *nativeIv =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
     NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
 
-    NSData *decodedCipher =
-        [CDTEncryptionKeychainUtils doDecrypt:encryptedData withKey:nativeKey iv:nativeIv];
+    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData withKey:key iv:iv];
 
     NSString *returnText =
         [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];

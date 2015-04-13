@@ -22,6 +22,8 @@
 #import "CDTEncryptionKeychainStorage.h"
 #import "CDTEncryptionKeychainConstants.h"
 
+#import "NSData+CDTEncryptionKeychainHexString.h"
+
 #import "CDTLogging.h"
 
 @interface CDTEncryptionKeychainManager ()
@@ -40,10 +42,17 @@
         return nil;
     }
 
-    NSString *pwKey = [self passwordToKey:password withSalt:data.salt];
-    NSString *decryptedKey = [CDTEncryptionKeychainUtils decryptWithKey:pwKey
-                                                         withCipherText:data.encryptedDPK
-                                                                 withIV:data.IV];
+    NSString *key = [self passwordToKey:password withSalt:data.salt];
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+
+    NSData *nativeIv =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:data.IV
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+
+    NSString *decryptedKey =
+        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:nativeIv];
 
     return decryptedKey;
 }
@@ -71,13 +80,19 @@
 #pragma mark - Private methods
 - (BOOL)storeDPK:(NSString *)dpk usingPassword:(NSString *)password withSalt:(NSString *)salt
 {
-    NSString *pwKey = [self passwordToKey:password withSalt:salt];
+    NSString *key = [self passwordToKey:password withSalt:salt];
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
     NSString *hexEncodedIv = [CDTEncryptionKeychainUtils
         generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+    NSData *nativeIv =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:hexEncodedIv
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
 
     NSString *encyptedDPK =
-        [CDTEncryptionKeychainUtils encryptWithKey:pwKey withText:dpk withIV:hexEncodedIv];
+        [CDTEncryptionKeychainUtils encryptText:dpk withKey:nativeKey iv:nativeIv];
 
     NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
 

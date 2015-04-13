@@ -34,26 +34,24 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 /**
  * Encrypts an NSString by using a key and an Initialization Vector (IV).
  *
- * @param key The key used for encryption
  * @param text The text to encrypt
+ * @param key The key used for encryption
  * @param iv The IV used for encryption
  *
  * @return The encrypted text
  */
-+ (NSString *)encryptWithKey:(NSString *)key withText:(NSString *)text withIV:(NSString *)iv;
++ (NSString *)encryptText:(NSString *)text withKey:(NSData *)key iv:(NSData *)iv;
 
 /**
  * Decrypts an NSString by using a key and an Initialization Vector (IV).
  *
- * @param key The key used for decryption
  * @param ciphertext The encrypted text to decrypt
+ * @param key The key used for decryption
  * @param iv The IV used for decryption
  *
  * @return The decrypted text
  */
-+ (NSString *)decryptWithKey:(NSString *)key
-              withCipherText:(NSString *)ciphertext
-                      withIV:(NSString *)iv;
++ (NSString *)decryptText:(NSString *)ciphertext withKey:(NSData *)key iv:(NSData *)iv;
 
 /**
  * Generates a key by using the PBKDF2 algorithm.
