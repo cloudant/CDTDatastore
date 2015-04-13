@@ -20,6 +20,8 @@
 
 #import "TDBase64.h"
 
+NSString *const CDTENCRYPTION_KEYCHAIN_BASE64_REGEX = @"^[a-zA-Z0-9\\+=\\/]{%lu}$";
+
 @implementation CDTEncryptionKeychainUtils (Base64)
 
 #pragma mark - Public class methods
@@ -35,14 +37,14 @@
 
 + (BOOL)isBase64Encoded:(NSString *)str
 {
-    NSString *pattern =
-    [[NSString alloc] initWithFormat:CDTENCRYPTION_KEYCHAIN_BASE64_REGEX, [str length]];
-    
+    NSString *pattern = [[NSString alloc]
+        initWithFormat:CDTENCRYPTION_KEYCHAIN_BASE64_REGEX, (unsigned long)[str length]];
+
     NSError *error = NULL;
     NSRegularExpression *regex =
-    [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
+        [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:&error];
     NSUInteger numMatch =
-    [regex numberOfMatchesInString:str options:0 range:NSMakeRange(0, [str length])];
+        [regex numberOfMatchesInString:str options:0 range:NSMakeRange(0, [str length])];
     if (numMatch != 1 || [error code] != 0) {
         return NO;
     }

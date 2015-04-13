@@ -127,21 +127,22 @@
     NSData *passData = [pass dataUsingEncoding:NSUTF8StringEncoding];
     NSData *saltData = [salt dataUsingEncoding:NSUTF8StringEncoding];
 
-    NSMutableData *derivedKey = [NSMutableData dataWithLength:kCCKeySizeAES256];
+    NSMutableData *derivedKey = [NSMutableData dataWithLength:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
     int retVal = CCKeyDerivationPBKDF(kCCPBKDF2, passData.bytes, pass.length, saltData.bytes,
                                       salt.length, kCCPRFHmacAlgSHA1, (int)iterations,
-                                      derivedKey.mutableBytes, kCCKeySizeAES256);
+                                      derivedKey.mutableBytes, CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE);
 
     if (retVal != kCCSuccess) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_KEYGEN
                     format:@"Return value: %d", retVal];
     }
 
-    NSMutableString *derivedKeyStr = [NSMutableString stringWithCapacity:kCCKeySizeAES256 * 2];
+    NSMutableString *derivedKeyStr =
+        [NSMutableString stringWithCapacity:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE * 2];
     const unsigned char *dataBytes = [derivedKey bytes];
 
-    for (int idx = 0; idx < kCCKeySizeAES256; idx++) {
+    for (int idx = 0; idx < CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE; idx++) {
         [derivedKeyStr appendFormat:@"%02x", dataBytes[idx]];
     }
 

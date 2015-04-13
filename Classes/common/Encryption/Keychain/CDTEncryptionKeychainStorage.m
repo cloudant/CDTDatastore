@@ -58,10 +58,10 @@
             // Ensure the num derivations saved, matches what we have
             int iters = [encryptionData.iterations intValue];
 
-            if (iters != CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS) {
+            if (iters != CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS) {
                 CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                            @"Number of iterations stored, does NOT match the constant value %u",
-                           CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS);
+                           CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
 
                 return nil;
             }

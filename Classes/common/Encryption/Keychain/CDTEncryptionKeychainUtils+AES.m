@@ -40,14 +40,16 @@
                    withKey:(NSString *)key
                         iv:(NSString *)iv
 {
-    unsigned char *nativeIv = [iv charBufferFromHexStringWithSize:CDTkChosenCipherIVSize];
-    unsigned char *nativeKey = [key charBufferFromHexStringWithSize:CDTkChosenCipherKeySize];
+    unsigned char *nativeIv =
+        [iv charBufferFromHexStringWithSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+    unsigned char *nativeKey =
+        [key charBufferFromHexStringWithSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
     // Generate context
     CCCryptorRef cryptor = NULL;
     CCCryptorStatus cryptorStatus =
         CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, nativeKey,
-                        CDTkChosenCipherKeySize, nativeIv, &cryptor);
+                        CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE, nativeIv, &cryptor);
     NSAssert((cryptorStatus == kCCSuccess) && cryptor, @"Cryptographic context not created");
 
     // Encrypt

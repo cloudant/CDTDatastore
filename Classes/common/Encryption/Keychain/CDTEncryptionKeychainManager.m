@@ -14,6 +14,8 @@
 //  and limitations under the License.
 //
 
+#import <CommonCrypto/CommonCryptor.h>
+
 #import "CDTEncryptionKeychainManager.h"
 
 #import "CDTEncryptionKeychainUtils.h"
@@ -49,7 +51,7 @@
 - (BOOL)generateAndStoreDpkUsingPassword:(NSString *)password withSalt:(NSString *)salt
 {
     NSString *hexEncodedDpk = [CDTEncryptionKeychainUtils
-        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_DEFAULT_DPK_SIZE];
+        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
 
     BOOL worked = [self storeDPK:hexEncodedDpk usingPassword:password withSalt:salt];
 
@@ -72,13 +74,12 @@
     NSString *pwKey = [self passwordToKey:password withSalt:salt];
 
     NSString *hexEncodedIv = [CDTEncryptionKeychainUtils
-        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_DEFAULT_IV_SIZE];
+        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
 
     NSString *encyptedDPK =
         [CDTEncryptionKeychainUtils encryptWithKey:pwKey withText:dpk withIV:hexEncodedIv];
 
-    NSNumber *iterations =
-        [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS];
+    NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
 
     CDTEncryptionKeychainData *data =
         [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedDPK
@@ -86,7 +87,7 @@
                                                      iv:hexEncodedIv
                                              iterations:iterations
                                                 version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
-    
+
     return [self.storage saveEncryptionKeyData:data];
 }
 
@@ -95,7 +96,7 @@
     return [CDTEncryptionKeychainUtils
         generateKeyWithPassword:password
                         andSalt:salt
-                  andIterations:CDTENCRYPTION_KEYCHAIN_DEFAULT_PBKDF2_ITERATIONS];
+                  andIterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
 }
 
 @end
