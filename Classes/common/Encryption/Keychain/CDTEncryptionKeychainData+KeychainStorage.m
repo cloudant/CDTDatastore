@@ -16,6 +16,10 @@
 
 #import "CDTEncryptionKeychainData+KeychainStorage.h"
 
+#import "CDTEncryptionKeychainConstants.h"
+
+#import "NSData+CDTEncryptionKeychainHexString.h"
+
 NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK = @"dpk";
 NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT = @"jsonSalt";
 NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV = @"iv";
@@ -30,7 +34,7 @@ NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION = @"version";
     NSDictionary *dic = @{
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK : self.encryptedDPK,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT : self.salt,
-        CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV : self.IV,
+        CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV : self.ivHex,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_ITERATIONS : self.iterations,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION : self.version
     };
@@ -41,10 +45,15 @@ NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION = @"version";
 #pragma mark - Public class methods
 + (instancetype)dataWithDictionary:(NSDictionary *)dictionary
 {
+    NSString *ivHex = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV];
+    NSData *ivData =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivHex
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+
     return
         [[self class] dataWithEncryptedDPK:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK]
                                       salt:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT]
-                                        iv:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV]
+                                        iv:ivData
                                 iterations:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_ITERATIONS]
                                    version:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION]];
 }

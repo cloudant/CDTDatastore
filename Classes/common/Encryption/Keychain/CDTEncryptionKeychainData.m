@@ -16,6 +16,8 @@
 
 #import "CDTEncryptionKeychainData.h"
 
+#import "NSData+CDTEncryptionKeychainHexString.h"
+
 #import "CDTLogging.h"
 
 @interface CDTEncryptionKeychainData ()
@@ -32,7 +34,7 @@
 
 - (instancetype)initWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSString *)IV
+                                  iv:(NSData *)IV
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version
 {
@@ -41,7 +43,8 @@
         if (encryptedDPK && salt && IV && iterations && version) {
             _encryptedDPK = encryptedDPK;
             _salt = salt;
-            _IV = IV;
+            _ivData = IV;
+            _ivHex = [IV CDTEncryptionKeychainHexadecimalRepresentation];
             _iterations = iterations;
             _version = version;
         } else {
@@ -57,7 +60,7 @@
 #pragma mark - Public class methods
 + (instancetype)dataWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSString *)IV
+                                  iv:(NSData *)IV
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version
 {

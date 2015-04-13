@@ -45,12 +45,8 @@
     NSData *nativeKey =
         [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:data.salt];
 
-    NSData *nativeIv =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:data.IV
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-
     NSString *decryptedKey =
-        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:nativeIv];
+        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:data.ivData];
 
     return decryptedKey;
 }
@@ -65,7 +61,6 @@
     
     NSData *nativeIv = [CDTEncryptionKeychainUtils
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-    NSString *hexEncodedIv = [nativeIv CDTEncryptionKeychainHexadecimalRepresentation];
 
     NSString *encyptedText =
         [CDTEncryptionKeychainUtils encryptText:text withKey:nativeKey iv:nativeIv];
@@ -75,7 +70,7 @@
     CDTEncryptionKeychainData *keychainData =
         [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedText
                                                    salt:salt
-                                                     iv:hexEncodedIv
+                                                     iv:nativeIv
                                              iterations:iterations
                                                 version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
 
