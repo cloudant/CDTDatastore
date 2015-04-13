@@ -255,6 +255,8 @@ CDTQResultSet *result = [datastore find:query];
 
 See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md).
 
+As of version 0.16.0 the indexing and querying code has been re-written and has more features than the previous implementation.  For details about migrating to a 0.16.0+ indexing and query version from a previous version see [Index and Querying Migration](https://github.com/cloudant/CDTDatastore/blob/master/doc/query-migration.md).
+
 ### Conflicts
 
 An obvious repercussion of being able to replicate documents about the place
