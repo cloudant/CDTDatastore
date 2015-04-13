@@ -19,7 +19,8 @@
 #import "CDTEncryptionKeychainUtils+AES.h"
 
 #import "CDTEncryptionKeychainConstants.h"
-#import "NSString+CharBufferFromHexString.h"
+
+#import "NSData+CDTEncryptionKeychainHexString.h"
 
 @implementation CDTEncryptionKeychainUtils (AES)
 
@@ -40,16 +41,18 @@
                    withKey:(NSString *)key
                         iv:(NSString *)iv
 {
-    unsigned char *nativeIv =
-        [iv charBufferFromHexStringWithSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-    unsigned char *nativeKey =
-        [key charBufferFromHexStringWithSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    NSData *nativeIv =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
     // Generate context
     CCCryptorRef cryptor = NULL;
     CCCryptorStatus cryptorStatus =
-        CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, nativeKey,
-                        CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE, nativeIv, &cryptor);
+        CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, nativeKey.bytes,
+                        nativeKey.length, nativeIv.bytes, &cryptor);
     NSAssert((cryptorStatus == kCCSuccess) && cryptor, @"Cryptographic context not created");
 
     // Encrypt
@@ -71,12 +74,6 @@
 
     // Free context
     CCCryptorRelease(cryptor);
-    
-    bzero(nativeKey, CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE);
-    free(nativeKey);
-    
-    bzero(nativeIv, CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE);
-    free(nativeIv);
 
     // Return
     NSData *processedData = [NSData dataWithBytesNoCopy:dataOut length:dataOutTotalSize];

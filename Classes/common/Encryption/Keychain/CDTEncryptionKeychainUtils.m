@@ -21,6 +21,8 @@
 
 #import "CDTEncryptionKeychainConstants.h"
 
+#import "NSData+CDTEncryptionKeychainHexString.h"
+
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL = @"KEYGEN_ERROR";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_ITERATIONS =
     @"Number of iterations must greater than 0";
@@ -63,13 +65,9 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
         return nil;
     }
 
-    NSMutableString *hexEncoded = [NSMutableString new];
-    for (int i = 0; i < bytes; i++) {
-        [hexEncoded appendString:[NSString stringWithFormat:@"%02x", randBytes[i]]];
-    }
-
-    NSString *randomStr = [NSString stringWithFormat:@"%@", hexEncoded];
-
+    NSData *data = [NSData dataWithBytesNoCopy:randBytes length:bytes freeWhenDone:NO];
+    NSString *randomStr = [data CDTEncryptionKeychainHexadecimalRepresentation];
+    
     return randomStr;
 }
 
@@ -161,18 +159,9 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_PASS_NOT_DERIVED];
     }
 
-    NSMutableString *derivedKeyStr =
-        [NSMutableString stringWithCapacity:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE * 2];
-    const unsigned char *dataBytes = [derivedKey bytes];
-
-    for (int idx = 0; idx < CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE; idx++) {
-        [derivedKeyStr appendFormat:@"%02x", dataBytes[idx]];
-    }
-
-    derivedKey = nil;
-    dataBytes = nil;
-
-    return [NSString stringWithString:derivedKeyStr];
+    NSString *derivedKeyStr = [derivedKey CDTEncryptionKeychainHexadecimalRepresentation];
+    
+    return derivedKeyStr;
 }
 
 @end

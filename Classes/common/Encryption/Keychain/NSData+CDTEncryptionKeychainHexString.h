@@ -1,8 +1,8 @@
 //
-//  NSString+CharBufferFromHexString.h
+//  NSData+CDTEncryptionKeychainHexString.h
 //
 //
-//  Created by Enrique de la Torre Fernandez on 09/04/2015.
+//  Created by Enrique de la Torre Fernandez on 13/04/2015.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -18,11 +18,10 @@
 
 extern NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL;
 
-@interface NSString (CharBufferFromHexString)
+@interface NSData (CDTEncryptionKeychainHexString)
 
-/*
- * Caller MUST FREE the memory returned from this method
- */
-- (unsigned char *)charBufferFromHexStringWithSize:(int)size;
+- (NSString *)CDTEncryptionKeychainHexadecimalRepresentation;
+
++ (NSData *)CDTEncryptionKeychainDataFromHexadecimalString:(NSString *)hexString withSize:(int)size;
 
 @end
