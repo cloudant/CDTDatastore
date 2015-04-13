@@ -18,19 +18,15 @@
 
 #import "CDTEncryptionKeychainUtils+AES.h"
 
-#import "CDTEncryptionKeychainConstants.h"
-
-#import "NSData+CDTEncryptionKeychainHexString.h"
-
 @implementation CDTEncryptionKeychainUtils (AES)
 
 #pragma mark - Public class methods
-+ (NSData *)doDecrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
++ (NSData *)doDecrypt:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
 {
     return [CDTEncryptionKeychainUtils applyOperation:kCCDecrypt toData:data withKey:key iv:iv];
 }
 
-+ (NSData *)doEncrypt:(NSData *)data key:(NSString *)key withIV:(NSString *)iv
++ (NSData *)doEncrypt:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
 {
     return [CDTEncryptionKeychainUtils applyOperation:kCCEncrypt toData:data withKey:key iv:iv];
 }
@@ -38,21 +34,14 @@
 #pragma mark - Private class method
 + (NSData *)applyOperation:(CCOperation)operation
                     toData:(NSData *)data
-                   withKey:(NSString *)key
-                        iv:(NSString *)iv
+                   withKey:(NSData *)key
+                        iv:(NSData *)iv
 {
-    NSData *nativeIv =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-    NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-
     // Generate context
     CCCryptorRef cryptor = NULL;
     CCCryptorStatus cryptorStatus =
-        CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, nativeKey.bytes,
-                        nativeKey.length, nativeIv.bytes, &cryptor);
+        CCCryptorCreate(operation, kCCAlgorithmAES, kCCOptionPKCS7Padding, key.bytes, key.length,
+                        iv.bytes, &cryptor);
     NSAssert((cryptorStatus == kCCSuccess) && cryptor, @"Cryptographic context not created");
 
     // Encrypt

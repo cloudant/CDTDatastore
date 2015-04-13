@@ -88,11 +88,20 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
                     format:@"%@", CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV];
     }
 
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    NSData *nativeIv =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
     NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
-    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData key:key withIV:iv];
+    
+    NSData *cipherDat =
+        [CDTEncryptionKeychainUtils doEncrypt:decryptedData withKey:nativeKey iv:nativeIv];
 
     NSString *encodedBase64CipherString =
         [CDTEncryptionKeychainUtils base64StringFromData:cipherDat];
+    
     return encodedBase64CipherString;
 }
 
@@ -115,15 +124,23 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV];
     }
 
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    NSData *nativeIv =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:iv
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
     NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
-    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData key:key withIV:iv];
+
+    NSData *decodedCipher =
+        [CDTEncryptionKeychainUtils doDecrypt:encryptedData withKey:nativeKey iv:nativeIv];
 
     NSString *returnText =
         [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];
     if (returnText && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
         returnText = nil;
     }
-    
+
     return returnText;
 }
 
