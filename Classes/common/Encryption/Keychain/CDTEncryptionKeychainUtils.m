@@ -56,19 +56,18 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
 @implementation CDTEncryptionKeychainUtils
 
 #pragma mark - Public class methods
-+ (NSString *)generateRandomStringWithBytes:(int)bytes
++ (NSData *)generateRandomBytesInBufferWithLength:(NSUInteger)length
 {
-    uint8_t randBytes[bytes];
-
-    int rc = SecRandomCopyBytes(kSecRandomDefault, (size_t)bytes, randBytes);
+    uint8_t randBytes[length];
+    
+    int rc = SecRandomCopyBytes(kSecRandomDefault, (size_t)length, randBytes);
     if (rc != 0) {
         return nil;
     }
-
-    NSData *data = [NSData dataWithBytesNoCopy:randBytes length:bytes freeWhenDone:NO];
-    NSString *randomStr = [data CDTEncryptionKeychainHexadecimalRepresentation];
     
-    return randomStr;
+    NSData *data = [NSData dataWithBytes:randBytes length:length];
+    
+    return data;
 }
 
 + (NSString *)encryptText:(NSString *)text withKey:(NSData *)key iv:(NSData *)iv

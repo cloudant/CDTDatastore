@@ -23,13 +23,13 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 @interface CDTEncryptionKeychainUtils : NSObject
 
 /**
- * Generates a random string locally.
+ * Generates a buffer with random bytes in it.
  *
- * @param bytes Number of bytes that is used to generate the random string
+ * @param bytes Number of bytes in the buffer
  *
- * @return The random string, nil if the operation fails
+ * @return The buffer, nil if the operation fails
  */
-+ (NSString *)generateRandomStringWithBytes:(int)bytes;
++ (NSData *)generateRandomBytesInBufferWithLength:(NSUInteger)length;
 
 /**
  * Encrypts an NSString by using a key and an Initialization Vector (IV).

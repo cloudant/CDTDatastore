@@ -59,12 +59,32 @@
 
 - (BOOL)generateAndStoreDpkUsingPassword:(NSString *)password withSalt:(NSString *)salt
 {
-    NSString *hexEncodedDpk = [CDTEncryptionKeychainUtils
-        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
+    NSData *data = [CDTEncryptionKeychainUtils
+        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
+    NSString *text = [data CDTEncryptionKeychainHexadecimalRepresentation];
 
-    BOOL worked = [self storeDPK:hexEncodedDpk usingPassword:password withSalt:salt];
+    NSString *key = [self passwordToKey:password withSalt:salt];
+    NSData *nativeKey =
+        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
+                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
-    return worked;
+    NSData *nativeIv = [CDTEncryptionKeychainUtils
+        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+    NSString *hexEncodedIv = [nativeIv CDTEncryptionKeychainHexadecimalRepresentation];
+
+    NSString *encyptedText =
+        [CDTEncryptionKeychainUtils encryptText:text withKey:nativeKey iv:nativeIv];
+
+    NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
+
+    CDTEncryptionKeychainData *keychainData =
+        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedText
+                                                   salt:salt
+                                                     iv:hexEncodedIv
+                                             iterations:iterations
+                                                version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
+
+    return [self.storage saveEncryptionKeyData:keychainData];
 }
 
 - (BOOL)isKeyChainFullyPopulated
@@ -78,34 +98,6 @@
 }
 
 #pragma mark - Private methods
-- (BOOL)storeDPK:(NSString *)dpk usingPassword:(NSString *)password withSalt:(NSString *)salt
-{
-    NSString *key = [self passwordToKey:password withSalt:salt];
-    NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-
-    NSString *hexEncodedIv = [CDTEncryptionKeychainUtils
-        generateRandomStringWithBytes:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-    NSData *nativeIv =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:hexEncodedIv
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
-
-    NSString *encyptedDPK =
-        [CDTEncryptionKeychainUtils encryptText:dpk withKey:nativeKey iv:nativeIv];
-
-    NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
-
-    CDTEncryptionKeychainData *data =
-        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedDPK
-                                                   salt:salt
-                                                     iv:hexEncodedIv
-                                             iterations:iterations
-                                                version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
-
-    return [self.storage saveEncryptionKeyData:data];
-}
-
 - (NSString *)passwordToKey:(NSString *)password withSalt:(NSString *)salt
 {
     return [CDTEncryptionKeychainUtils
