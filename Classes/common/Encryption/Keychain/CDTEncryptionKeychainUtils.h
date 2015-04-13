@@ -59,11 +59,13 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
  * @param pass The password that is used to generate the key
  * @param salt The salt that is used to generate the key
  * @param iterations The number of iterations that is passed to the key generation algorithm
+ * @param length Size of the key
  *
  * @return The generated key
  */
-+ (NSString *)generateKeyWithPassword:(NSString *)pass
-                              andSalt:(NSString *)salt
-                        andIterations:(NSInteger)iterations;
++ (NSData *)generateKeyWithPassword:(NSString *)pass
+                               salt:(NSData *)salt
+                         iterations:(NSInteger)iterations
+                             length:(NSUInteger)length;
 
 @end

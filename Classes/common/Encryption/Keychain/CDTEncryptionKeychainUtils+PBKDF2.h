@@ -18,7 +18,7 @@
 
 @interface CDTEncryptionKeychainUtils (PBKDF2)
 
-+ (NSData *)derivePassword:(NSData *)password
++ (NSData *)derivePassword:(NSString *)password
                   withSalt:(NSData *)salt
                 iterations:(NSUInteger)iterations
                     length:(NSUInteger)length;

@@ -42,10 +42,8 @@
         return nil;
     }
 
-    NSString *key = [self passwordToKey:password withSalt:data.salt];
     NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+        [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:data.salt];
 
     NSData *nativeIv =
         [NSData CDTEncryptionKeychainDataFromHexadecimalString:data.IV
@@ -63,11 +61,8 @@
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
     NSString *text = [data CDTEncryptionKeychainHexadecimalRepresentation];
 
-    NSString *key = [self passwordToKey:password withSalt:salt];
-    NSData *nativeKey =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:key
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-
+    NSData *nativeKey = [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:salt];
+    
     NSData *nativeIv = [CDTEncryptionKeychainUtils
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
     NSString *hexEncodedIv = [nativeIv CDTEncryptionKeychainHexadecimalRepresentation];
@@ -98,12 +93,15 @@
 }
 
 #pragma mark - Private methods
-- (NSString *)passwordToKey:(NSString *)password withSalt:(NSString *)salt
++ (NSData *)generateKeyWithPassword:(NSString *)pass salt:(NSString *)salt
 {
-    return [CDTEncryptionKeychainUtils
-        generateKeyWithPassword:password
-                        andSalt:salt
-                  andIterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
+    NSData *saltData = [salt dataUsingEncoding:NSUTF8StringEncoding];
+
+    return
+        [CDTEncryptionKeychainUtils generateKeyWithPassword:pass
+                                                       salt:saltData
+                                                 iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
+                                                     length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 }
 
 @end

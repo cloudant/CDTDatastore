@@ -24,15 +24,17 @@
 @implementation CDTEncryptionKeychainUtils (PBKDF2)
 
 #pragma mark - Public class methods
-+ (NSData *)derivePassword:(NSData *)password
++ (NSData *)derivePassword:(NSString *)password
                   withSalt:(NSData *)salt
                 iterations:(NSUInteger)iterations
                     length:(NSUInteger)length
 {
+    NSData *passData = [password dataUsingEncoding:NSUTF8StringEncoding];
+    
     NSMutableData *derivedKey = [NSMutableData dataWithLength:length];
 
     int retVal =
-        CCKeyDerivationPBKDF(kCCPBKDF2, password.bytes, password.length, salt.bytes, salt.length,
+        CCKeyDerivationPBKDF(kCCPBKDF2, passData.bytes, passData.length, salt.bytes, salt.length,
                              kCCPRFHmacAlgSHA1, (uint)iterations, derivedKey.mutableBytes, length);
     if (retVal != kCCSuccess) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Password not derived. Return: %i", retVal);

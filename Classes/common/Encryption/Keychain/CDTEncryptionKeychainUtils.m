@@ -21,11 +21,11 @@
 
 #import "CDTEncryptionKeychainConstants.h"
 
-#import "NSData+CDTEncryptionKeychainHexString.h"
-
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL = @"KEYGEN_ERROR";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_ITERATIONS =
     @"Number of iterations must greater than 0";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_LENGTH =
+    @"Length must greater than 0";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_PASSWORD =
     @"Password cannot be nil/empty";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_SALT =
@@ -127,41 +127,41 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return returnText;
 }
 
-+ (NSString *)generateKeyWithPassword:(NSString *)pass
-                              andSalt:(NSString *)salt
-                        andIterations:(NSInteger)iterations
++ (NSData *)generateKeyWithPassword:(NSString *)pass
+                               salt:(NSData *)salt
+                         iterations:(NSInteger)iterations
+                             length:(NSUInteger)length
 {
     if (iterations < 1) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_ITERATIONS];
     }
 
-    if (![pass isKindOfClass:[NSString class]] || [pass length] < 1) {
+    if (length < 1) {
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_LENGTH];
+    }
+
+    if (![pass isKindOfClass:[NSString class]] || (pass.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_PASSWORD];
     }
 
-    if (![salt isKindOfClass:[NSString class]] || [salt length] < 1) {
+    if (![salt isKindOfClass:[NSData class]] || (salt.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_SALT];
     }
 
-    NSData *passData = [pass dataUsingEncoding:NSUTF8StringEncoding];
-    NSData *saltData = [salt dataUsingEncoding:NSUTF8StringEncoding];
-
-    NSData *derivedKey =
-        [CDTEncryptionKeychainUtils derivePassword:passData
-                                          withSalt:saltData
-                                        iterations:iterations
-                                            length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    NSData *derivedKey = [CDTEncryptionKeychainUtils derivePassword:pass
+                                                           withSalt:salt
+                                                         iterations:iterations
+                                                             length:length];
     if (!derivedKey) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_PASS_NOT_DERIVED];
     }
 
-    NSString *derivedKeyStr = [derivedKey CDTEncryptionKeychainHexadecimalRepresentation];
-    
-    return derivedKeyStr;
+    return derivedKey;
 }
 
 @end
