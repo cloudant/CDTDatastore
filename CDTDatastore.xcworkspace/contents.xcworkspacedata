@@ -78,6 +78,12 @@
                   location = "group:CDTEncryptionKeychainUtils+Base64.m">
                </FileRef>
                <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+PBKDF2.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+PBKDF2.m">
+               </FileRef>
+               <FileRef
                   location = "group:NSObject+CDTEncryptionKeychainJSON.h">
                </FileRef>
                <FileRef

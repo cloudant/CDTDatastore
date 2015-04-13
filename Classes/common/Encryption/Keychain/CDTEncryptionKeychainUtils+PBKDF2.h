@@ -1,8 +1,8 @@
 //
-//  CDTEncryptionKeychainConstants.h
+//  CDTEncryptionKeychainUtils+PBKDF2.h
 //
 //
-//  Created by Enrique de la Torre Fernandez on 09/04/2015.
+//  Created by Enrique de la Torre Fernandez on 13/04/2015.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -14,16 +14,13 @@
 //  and limitations under the License.
 //
 
-#import <CommonCrypto/CommonCryptor.h>
+#import "CDTEncryptionKeychainUtils.h"
 
-#define CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE 32
+@interface CDTEncryptionKeychainUtils (PBKDF2)
 
-#define CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS 10000
++ (NSData *)derivePassword:(NSData *)password
+                  withSalt:(NSData *)salt
+                iterations:(NSUInteger)iterations
+                    length:(NSUInteger)length;
 
-#define CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE kCCKeySizeAES256
-#define CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE kCCBlockSizeAES128
-
-extern NSString *const CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT;
-
-extern NSString *const CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER;
-extern NSString *const CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID;
+@end

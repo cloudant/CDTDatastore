@@ -17,9 +17,7 @@
 #import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainUtils+AES.h"
 #import "CDTEncryptionKeychainUtils+Base64.h"
-
-#import <CommonCrypto/CommonCryptor.h>
-#import <CommonCrypto/CommonKeyDerivation.h>
+#import "CDTEncryptionKeychainUtils+PBKDF2.h"
 
 #import "CDTEncryptionKeychainConstants.h"
 
@@ -30,6 +28,8 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_PASSWORD =
     @"Password cannot be nil/empty";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_SALT =
     @"Salt cannot be nil/empty";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_PASS_NOT_DERIVED =
+    @"Password not derived";
 
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL = @"ENCRYPT_ERROR";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT =
@@ -151,15 +151,14 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     NSData *passData = [pass dataUsingEncoding:NSUTF8StringEncoding];
     NSData *saltData = [salt dataUsingEncoding:NSUTF8StringEncoding];
 
-    NSMutableData *derivedKey = [NSMutableData dataWithLength:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
-
-    int retVal = CCKeyDerivationPBKDF(kCCPBKDF2, passData.bytes, pass.length, saltData.bytes,
-                                      salt.length, kCCPRFHmacAlgSHA1, (int)iterations,
-                                      derivedKey.mutableBytes, CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE);
-
-    if (retVal != kCCSuccess) {
+    NSData *derivedKey =
+        [CDTEncryptionKeychainUtils derivePassword:passData
+                                          withSalt:saltData
+                                        iterations:iterations
+                                            length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    if (!derivedKey) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
-                    format:@"Return value: %d", retVal];
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_PASS_NOT_DERIVED];
     }
 
     NSMutableString *derivedKeyStr =
