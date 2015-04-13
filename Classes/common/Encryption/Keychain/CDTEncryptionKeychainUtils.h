@@ -16,6 +16,10 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_KEYGEN;
+extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_ENCRYPT;
+extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
+
 @interface CDTEncryptionKeychainUtils : NSObject
 
 /**

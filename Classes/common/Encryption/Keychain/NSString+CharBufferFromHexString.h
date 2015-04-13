@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL;
+
 @interface NSString (CharBufferFromHexString)
 
 /*

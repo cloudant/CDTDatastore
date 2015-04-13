@@ -23,6 +23,30 @@
 
 #import "CDTEncryptionKeychainConstants.h"
 
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL = @"KEYGEN_ERROR";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_ITERATIONS =
+    @"Number of iterations must greater than 0";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_PASSWORD =
+    @"Password cannot be nil/empty";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_SALT =
+    @"Salt cannot be nil/empty";
+
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL = @"ENCRYPT_ERROR";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT =
+    @"Cannot encrypt empty/nil plaintext";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_KEY =
+    @"Cannot work with an empty/nil key";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV =
+    @"Cannot encrypt with empty/nil iv";
+
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL = @"DECRYPT_ERROR";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_CIPHER =
+    @"Cannot decrypt empty/nil cipher";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_KEY =
+    @"Cannot work with an empty/nil key";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
+    @"Cannot decrypt with empty/nil iv";
+
 @interface CDTEncryptionKeychainUtils ()
 
 @end
@@ -52,18 +76,18 @@
 + (NSString *)encryptWithKey:(NSString *)key withText:(NSString *)text withIV:(NSString *)iv
 {
     if (![text isKindOfClass:[NSString class]] || [text length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_ENCRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_TEXT];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT];
     }
 
     if (![key isKindOfClass:[NSString class]] || [key length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_ENCRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_KEY];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_KEY];
     }
 
     if (![iv isKindOfClass:[NSString class]] || [iv length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_ENCRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_IV];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
+                    format:@"%@", CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV];
     }
 
     NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
@@ -79,18 +103,18 @@
                       withIV:(NSString *)iv
 {
     if (![ciphertext isKindOfClass:[NSString class]] || [ciphertext length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_DECRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_CIPHER];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_CIPHER];
     }
 
     if (![key isKindOfClass:[NSString class]] || [key length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_DECRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_KEY];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_KEY];
     }
 
     if (![iv isKindOfClass:[NSString class]] || [iv length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_DECRYPT
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_IV];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV];
     }
 
     NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
@@ -110,18 +134,18 @@
                         andIterations:(NSInteger)iterations
 {
     if (iterations < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_KEYGEN
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_INVALID_ITERATIONS];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_INVALID_ITERATIONS];
     }
 
     if (![pass isKindOfClass:[NSString class]] || [pass length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_KEYGEN
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_PASSWORD];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_PASSWORD];
     }
 
     if (![salt isKindOfClass:[NSString class]] || [salt length] < 1) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_KEYGEN
-                    format:@"%@", CDTENCRYPTION_KEYCHAIN_ERROR_MSG_EMPTY_SALT];
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_EMPTY_SALT];
     }
 
     NSData *passData = [pass dataUsingEncoding:NSUTF8StringEncoding];
@@ -134,7 +158,7 @@
                                       derivedKey.mutableBytes, CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE);
 
     if (retVal != kCCSuccess) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL_KEYGEN
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
                     format:@"Return value: %d", retVal];
     }
 

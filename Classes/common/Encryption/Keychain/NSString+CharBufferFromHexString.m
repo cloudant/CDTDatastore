@@ -18,6 +18,11 @@
 
 #import "CDTEncryptionKeychainConstants.h"
 
+NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL = @"AES_ERROR";
+NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG_FORMAT =
+    @"String must be %i hex characters or %i bytes (%i bits)";
+
+
 @implementation NSString (CharBufferFromHexString)
 
 #pragma mark - Public methods
@@ -31,9 +36,9 @@
      since every two characters in the string corresponds to a single byte.
      */
     if ([self length] != (NSUInteger)(size * 2)) {
-        [NSException raise:CDTENCRYPTION_KEYCHAIN_ERROR_LABEL
-                    format:@"String must be %i hex characters or %i bytes (%i bits)", 2 * size,
-                           size, 8 * size];
+        [NSException
+             raise:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL
+            format:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG_FORMAT, 2 * size, size, 8 * size];
     }
 
     unsigned char *buff = malloc(size);
