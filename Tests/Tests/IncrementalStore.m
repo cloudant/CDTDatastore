@@ -12,6 +12,11 @@
 #import "CloudantSyncTests.h"
 #import "CDTIncrementalStore.h"
 
+/**
+ *	Support batch update requests.
+ */
+static BOOL CDTISSupportBatchUpdates = YES;
+
 /*
  *  ##Start Ripoff:
  *  The following code segment, that creates a managed object model
@@ -1044,18 +1049,28 @@ static void *ISContextProgress = &ISContextProgress;
         req.propertiesToUpdate = @{ @"check" : @(NO) };
         req.resultType = NSUpdatedObjectsCountResultType;
         NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
-        XCTAssertNotNil(res, @"Expected results: %@", err);
-        NSLog(@"%@ objects updated", res.result);
 
-        /**
-         *  Fetch checked entries
-         */
-        fr.predicate = checked;
-        results = [moc executeFetchRequest:fr error:&err];
-        XCTAssertNotNil(results, @"Expected results: %@", err);
+        if (!CDTISSupportBatchUpdates) {
+            XCTAssertNil(res, @"Result should be nil since batch updates are not supported");
+            XCTAssertTrue([err.domain isEqualToString:CDTISErrorDomain],
+                          @"Error domain should indicate error source");
+            XCTAssertTrue(err.code == CDTISErrorExectueRequestTypeUnkown,
+                          @"Error code should identify error reason");
+        } else {
+            XCTAssertNotNil(res, @"Expected results: %@", err);
+            NSLog(@"%@ objects updated", res.result);
 
-        XCTAssertTrue([results count] == (num_entries / 4), @"results count should be %d is %lu",
-                      (num_entries / 4), (unsigned long)[results count]);
+            /**
+             *  Fetch checked entries
+             */
+            fr.predicate = checked;
+            results = [moc executeFetchRequest:fr error:&err];
+            XCTAssertNotNil(results, @"Expected results: %@", err);
+
+            XCTAssertTrue([results count] == (num_entries / 4),
+                          @"results count should be %d is %lu", (num_entries / 4),
+                          (unsigned long)[results count]);
+        }
     }
 
     /**
@@ -1075,34 +1090,46 @@ static void *ISContextProgress = &ISContextProgress;
         };
         req.resultType = NSUpdatedObjectIDsResultType;
         NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
-        XCTAssertNotNil(res, @"Expected results: %@", err);
 
-        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
-                      (num_entries / 4), (unsigned long)[res.result count]);
+        if (!CDTISSupportBatchUpdates) {
+            XCTAssertNil(res, @"Result should be nil since batch updates are not supported");
+            XCTAssertTrue([err.domain isEqualToString:CDTISErrorDomain],
+                          @"Error domain should indicate error source");
+            XCTAssertTrue(err.code == CDTISErrorExectueRequestTypeUnkown,
+                          @"Error code should identify error reason");
+        } else {
+            XCTAssertNotNil(res, @"Expected results: %@", err);
 
-        [res.result enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx,
-                                                 BOOL *stop) {
-          Entry *e = (Entry *)[moc objectWithID:objID];
-          if (![e isFault]) {
-              [moc refreshObject:e mergeChanges:YES];
-              XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
-              XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
-              XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
-              XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2, @"fpDouble field not updated");
-              XCTAssertTrue([e.fpDouble doubleValue] == (double)M_PI,
-                            @"fpDouble field not updated");
-          }
-        }];
+            XCTAssertTrue([res.result count] == (num_entries / 4),
+                          @"results count should be %d is %lu", (num_entries / 4),
+                          (unsigned long)[res.result count]);
 
-        /**
-         *  Fetch checked entries
-         */
-        fr.predicate = [NSPredicate predicateWithFormat:@"text == 'foobar'"];
-        results = [moc executeFetchRequest:fr error:&err];
-        XCTAssertNotNil(results, @"Expected results: %@", err);
+            [res.result enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx,
+                                                     BOOL *stop) {
+              Entry *e = (Entry *)[moc objectWithID:objID];
+              if (![e isFault]) {
+                  [moc refreshObject:e mergeChanges:YES];
+                  XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
+                  XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
+                  XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
+                  XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2,
+                                @"fpDouble field not updated");
+                  XCTAssertTrue([e.fpDouble doubleValue] == (double)M_PI,
+                                @"fpDouble field not updated");
+              }
+            }];
 
-        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
-                      (num_entries / 4), (unsigned long)[res.result count]);
+            /**
+             *  Fetch checked entries
+             */
+            fr.predicate = [NSPredicate predicateWithFormat:@"text == 'foobar'"];
+            results = [moc executeFetchRequest:fr error:&err];
+            XCTAssertNotNil(results, @"Expected results: %@", err);
+
+            XCTAssertTrue([res.result count] == (num_entries / 4),
+                          @"results count should be %d is %lu", (num_entries / 4),
+                          (unsigned long)[res.result count]);
+        }
     }
 }
 

@@ -109,6 +109,11 @@ static BOOL CDTISFixUpDatabaseName = NO;
  */
 static BOOL CDTISCheckForSubEntities = NO;
 
+/**
+ *	Support batch update requests.
+ */
+static BOOL CDTISSupportBatchUpdates = YES;
+
 @implementation CDTIncrementalStore
 
 #pragma mark - Init
@@ -2214,7 +2219,7 @@ NSString *kNorOperator = @"$nor";
         return [self executeSaveRequest:saveRequest withContext:context error:error];
     }
 
-    if (requestType == NSBatchUpdateRequestType) {
+    if (requestType == NSBatchUpdateRequestType && CDTISSupportBatchUpdates) {
         NSBatchUpdateRequest *updateRequest = (NSBatchUpdateRequest *)request;
         return [self executeBatchUpdateRequest:updateRequest withContext:context error:error];
     }
