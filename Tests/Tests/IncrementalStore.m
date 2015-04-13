@@ -378,6 +378,9 @@ static void *ISContextProgress = &ISContextProgress;
 
     NSArray *textvals = @[ @"apple", @"orange", @"banana", @"strawberry" ];
 
+    // A local array for verifying predicate results
+    NSMutableArray *entries = [NSMutableArray array];
+
     for (int i = 0; i < max; i++) {
         Entry *e = MakeEntry(moc);
         // check will indicate if value is an even number
@@ -385,33 +388,33 @@ static void *ISContextProgress = &ISContextProgress;
         e.i64 = @(i);
         e.fpFloat = @(((float)(M_PI)) * (float)i);
         e.text = textvals[i % [textvals count]];
+        [entries addObject:e];
     }
 
     // push it out
     XCTAssertTrue([moc save:&err], @"Save Failed: %@", err);
 
-    NSArray *results;
+    NSArray *results, *expected, *check;
     /**
      *  Fetch boolean == value
      */
-    NSPredicate *even = [NSPredicate predicateWithFormat:@"check == YES"];
 
     NSFetchRequest *fr = [NSFetchRequest fetchRequestWithEntityName:@"Entry"];
     fr.shouldRefreshRefetchedObjects = YES;
-    fr.predicate = even;
+    fr.predicate = [NSPredicate predicateWithFormat:@"check == YES"];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
-    XCTAssertTrue([results count] == (max / 2), @"results count should be %d is %@", max / 2,
-                  @([results count]));
+    expected = [entries filteredArrayUsingPredicate:fr.predicate];
 
-    for (Entry *e in results) {
-        XCTAssertTrue([e.check boolValue], @"not even?");
+    XCTAssertTrue([results count] == [expected count], @"results count is %ld but should be %ld",
+                  [results count], [expected count]);
 
-        long long val = [e.i64 longLongValue];
-        XCTAssertTrue((val % 2) == 0, @"entry.i64 should be even");
-    }
+    check = [results filteredArrayUsingPredicate:fr.predicate];
+
+    XCTAssertTrue([check count] == [results count],
+                  @"results array contains entries that do not satisfy predicate");
 
     /**
      *  Fetch boolean == value
