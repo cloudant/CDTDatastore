@@ -37,6 +37,13 @@
                    withKey:(NSData *)key
                         iv:(NSData *)iv
 {
+    // Validations
+    NSAssert((key.length == kCCKeySizeAES128) || (key.length == kCCKeySizeAES192) ||
+                 (key.length == kCCKeySizeAES256),
+             @"Key length must be appropriate for the selected operation and algorithm.");
+    NSAssert(iv.length == kCCBlockSizeAES128,
+             @"IV length must be the same length as the selected algorithm's block size");
+
     // Generate context
     CCCryptorRef cryptor = NULL;
     CCCryptorStatus cryptorStatus =
