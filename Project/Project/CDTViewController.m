@@ -121,23 +121,18 @@
  */
 - (void)reloadTasks
 {
-    CDTAppDelegate *delegate = (CDTAppDelegate *)[[UIApplication sharedApplication] delegate];
-    CDTIndexManager *m = delegate.indexManager;
-
     // Query for completed items based on whether we're showing only completed
     // items or active ones
-    NSError *error;
-    CDTQueryResult *result = [m queryWithDictionary:@{@"completed": @(self.showOnlyCompleted)}
-                                              error:&error];
-    if (error) {
-        NSLog(@"Error querying for tasks: %@", error);
+    CDTQResultSet *result = [self.datastore find:@{@"completed": @(self.showOnlyCompleted)}];
+    if (!result) {
+        NSLog(@"Error querying for tasks.");
         exit(1);
     }
 
     NSMutableArray *tasks = [NSMutableArray array];
-    for (CDTDocumentRevision *revision in result) {
-        [tasks addObject:revision];
-    }
+    [result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
+        [tasks addObject:rev];
+    }];
 
     self.taskRevisions = [NSArray arrayWithArray:tasks];
 }

@@ -107,7 +107,7 @@
                 NSLocalizedDescriptionKey : NSLocalizedString(@"Problem updating index.", nil)
             };
             *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
-                                         code:CDTIndexErrorSqlError
+                                         code:CDTQIndexErrorSqlError
                                      userInfo:userInfo];
             LogError(@"Problem updating index %@", indexName);
         }

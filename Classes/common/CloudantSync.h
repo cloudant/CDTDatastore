@@ -30,8 +30,5 @@
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicatorDelegate.h"
 
-#import "CDTIndexManager.h"
-#import "CDTIndexer.h"
-
 #import "CDTDatastore+Query.h"
 #import "CDTQResultSet.h"

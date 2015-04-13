@@ -515,11 +515,8 @@ static NSUInteger largeRevTreeSize = 1500;
  */
 -(void) testPullLotsOfOneRevDocumentsIndexed {
     
-    NSError *error;
-    
     // set up indexing
-    CDTIndexManager *im = [[CDTIndexManager alloc] initWithDatastore:self.datastore error:&error];
-    [im ensureIndexedWithIndexName:@"hello" fieldName:@"hello" error:&error];
+    [self.datastore ensureIndexed:@[@"hello"] withName:@"hello"];
     
     // Create docs in remote database
     NSLog(@"Creating documents...");
@@ -534,8 +531,8 @@ static NSUInteger largeRevTreeSize = 1500;
                           withDatabase:self.primaryRemoteDatabaseURL];
     XCTAssertTrue(same, @"Remote and local databases differ");
     
-    CDTQueryResult *res = [im queryWithDictionary:@{@"hello":@"world"} error:&error];
-    XCTAssertEqual([[res documentIds] count], n_docs, @"Index does not return correct count");
+    CDTQResultSet *res = [self.datastore find:@{@"hello":@"world"}];
+    XCTAssertEqual(res.documentIds.count, n_docs, @"Index does not return correct count");
 }
 
 -(void) testPullFilteredReplication {

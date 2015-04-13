@@ -15,7 +15,6 @@
 
 #import "CDTAppDelegate.h"
 
-#import "CDTCompletedIndexer.h"
 #import "CDTTodoReplicator.h"
 #import "CDTLogging.h"
 #import <CloudantSync.h>
@@ -42,24 +41,10 @@
     
     self.datastore = [self create_datastore];
 
-    // Create the indexManager and add an index on the "completed" field with a
-    // custom indexer (so we can index the BOOL value).
-    NSError *error;
-    self.indexManager = [[CDTIndexManager alloc] initWithDatastore:self.datastore
-                                                             error:&error];
-    if (!self.indexManager) {
-        NSLog(@"Error creating indexManager: %@", error);
-        exit(1);
-    }
-
-    error = nil;
-    CDTCompletedIndexer *fi = [[CDTCompletedIndexer alloc] init];
-    BOOL ensuredIndex = [self.indexManager ensureIndexedWithIndexName:@"completed"
-                                                                 type:CDTIndexTypeInteger
-                                                              indexer:fi
-                                                                error:&error];
+    // Create the indexManager and add an index on the "completed" field.
+    NSString *ensuredIndex = [self.datastore ensureIndexed:@[@"completed"] withName:@"comp_index"];
     if (!ensuredIndex) {
-        NSLog(@"Error creating indexManager: %@", error);
+        NSLog(@"Error creating indexManager.");
         exit(1);
     }
 

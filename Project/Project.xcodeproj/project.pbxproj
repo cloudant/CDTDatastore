@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2796596F18D9DE1900A6C32F /* CDTCompletedIndexer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */; };
 		2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
 		2799959718D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
 		2799959B18D9D7910042301D /* CDTTodo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959A18D9D7910042301D /* CDTTodo.m */; };
@@ -40,8 +39,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2796596D18D9DE1900A6C32F /* CDTCompletedIndexer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTCompletedIndexer.h; sourceTree = "<group>"; };
-		2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTCompletedIndexer.m; sourceTree = "<group>"; };
 		2799959418D9D19D0042301D /* CDTTodoReplicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodoReplicator.h; sourceTree = "<group>"; };
 		2799959518D9D19D0042301D /* CDTTodoReplicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTTodoReplicator.m; sourceTree = "<group>"; };
 		2799959918D9D7910042301D /* CDTTodo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodo.h; sourceTree = "<group>"; };
@@ -149,8 +146,6 @@
 				2799959518D9D19D0042301D /* CDTTodoReplicator.m */,
 				27C1CDDE184E2D9C000604EF /* Images.xcassets */,
 				27C1CDCD184E2D9C000604EF /* Supporting Files */,
-				2796596D18D9DE1900A6C32F /* CDTCompletedIndexer.h */,
-				2796596E18D9DE1900A6C32F /* CDTCompletedIndexer.m */,
 			);
 			path = Project;
 			sourceTree = "<group>";
@@ -327,7 +322,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2799959B18D9D7910042301D /* CDTTodo.m in Sources */,
-				2796596F18D9DE1900A6C32F /* CDTCompletedIndexer.m in Sources */,
 				27C1CDD7184E2D9C000604EF /* CDTAppDelegate.m in Sources */,
 				2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */,
 				27C1CDD3184E2D9C000604EF /* main.m in Sources */,
