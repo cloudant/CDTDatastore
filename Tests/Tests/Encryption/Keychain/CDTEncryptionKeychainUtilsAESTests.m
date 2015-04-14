@@ -16,9 +16,8 @@
 #import <XCTest/XCTest.h>
 
 #import "CDTEncryptionKeychainUtils+AES.h"
-#import "CDTEncryptionKeychainUtils+Base64.h"
 
-#import "NSData+CDTEncryptionKeychainHexString.h"
+#import "TDBase64.h"
 
 @interface CDTEncryptionKeychainUtilsAESTests : XCTestCase
 
@@ -38,8 +37,8 @@
     NSString *keyStr = @"3271b0b2ae09cf10128893abba0871b64ea933253378d0c65bcbe05befe636c3";
     NSString *ivStr = @"10327cc29f13539f8ce5378318f46137";
 
-    self.key = [NSData CDTEncryptionKeychainDataFromHexadecimalString:keyStr];
-    self.iv = [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivStr];
+    self.key = [CDTEncryptionKeychainUtilsAESTests dataFromHexadecimalString:keyStr];
+    self.iv = [CDTEncryptionKeychainUtilsAESTests dataFromHexadecimalString:ivStr];
 }
 
 - (void)tearDown
@@ -60,7 +59,7 @@
         [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                       withKey:self.key
                                            iv:self.iv];
-    NSString *result = [CDTEncryptionKeychainUtils base64StringFromData:data];
+    NSString *result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"a1s2d3f4g5";
@@ -68,7 +67,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                          withKey:self.key
                                               iv:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
+    result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇噺摃䈰婘栰";
@@ -76,7 +75,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                          withKey:self.key
                                               iv:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
+    result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:§婘栰";
@@ -84,7 +83,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                          withKey:self.key
                                               iv:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
+    result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 
     txt = @"摇;摃:xx👹⌚️👽";
@@ -92,7 +91,7 @@
     data = [CDTEncryptionKeychainUtils doEncrypt:[txt dataUsingEncoding:NSUnicodeStringEncoding]
                                          withKey:self.key
                                               iv:self.iv];
-    result = [CDTEncryptionKeychainUtils base64StringFromData:data];
+    result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
 }
 
@@ -101,7 +100,7 @@
     NSString *txt = @"ExUL75zXTBiQKHAqYeR3Glt+EXMR25qmNTdeToHdA40=";
     NSString *expectedResult = @"1234567890";
     NSData *data =
-        [CDTEncryptionKeychainUtils doDecrypt:[CDTEncryptionKeychainUtils base64DataFromString:txt]
+        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:txt]
                                       withKey:self.key
                                            iv:self.iv];
     NSString *result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
@@ -110,7 +109,7 @@
     txt = @"jEcy1ZxPXMJ9aX2kzHVX5eaWtMAJZQhPrfgLadcAKus=";
     expectedResult = @"a1s2d3f4g5";
     data =
-        [CDTEncryptionKeychainUtils doDecrypt:[CDTEncryptionKeychainUtils base64DataFromString:txt]
+        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:txt]
                                       withKey:self.key
                                            iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
@@ -119,7 +118,7 @@
     txt = @"Wfip2t2sH9ojHHsEN7B6Uw==";
     expectedResult = @"摇噺摃䈰婘栰";
     data =
-        [CDTEncryptionKeychainUtils doDecrypt:[CDTEncryptionKeychainUtils base64DataFromString:txt]
+        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:txt]
                                       withKey:self.key
                                            iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
@@ -128,7 +127,7 @@
     txt = @"+B/AXr0PQrxQSAdMnE8BKKUymEak2akCuGGHIY99lNU=";
     expectedResult = @"摇;摃:§婘栰";
     data =
-        [CDTEncryptionKeychainUtils doDecrypt:[CDTEncryptionKeychainUtils base64DataFromString:txt]
+        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:txt]
                                       withKey:self.key
                                            iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
@@ -137,11 +136,46 @@
     txt = @"H6nWVwfuGB8hDv/dFVUXbU2yb07NzE2vf3HttPF/qps=";
     expectedResult = @"摇;摃:xx👹⌚️👽";
     data =
-        [CDTEncryptionKeychainUtils doDecrypt:[CDTEncryptionKeychainUtils base64DataFromString:txt]
+        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:txt]
                                       withKey:self.key
                                            iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedResult, result, @"Unexpected result");
+}
+
+
+#pragma mark - Private class methods
++ (NSData *)dataFromHexadecimalString:(NSString *)hexString
+{
+    /*
+     The string represent the hexadecimal values that should be used, so the string "4962"
+     represents byte values 0x49  0x62.
+     Note that the strings are twice the size since every two characters in the string
+     corresponds to a single byte.
+     */
+    if (([hexString length] % 2) != 0) {
+        return nil;
+    }
+    
+    NSUInteger size = ([hexString length] / (NSUInteger)2);
+    unsigned char buff[size];
+    
+    @autoreleasepool
+    {
+        for (NSUInteger i = 0; i < size; i++) {
+            NSString *hexChrStr = [hexString substringWithRange:NSMakeRange(i * 2, 2)];
+            
+            NSScanner *scanner = [[NSScanner alloc] initWithString:hexChrStr];
+            uint currInt;
+            [scanner scanHexInt:&currInt];
+            
+            buff[i] = (char)currInt;
+        }
+    }
+    
+    NSData *data = [NSData dataWithBytes:buff length:size];
+    
+    return data;
 }
 
 @end

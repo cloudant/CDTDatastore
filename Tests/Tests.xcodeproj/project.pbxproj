@@ -90,8 +90,6 @@
 		CD61DC8F1AD7D95F007D4A61 /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD61DC851AD7D95F007D4A61 /* DatastoreManagerEncryptionTests.m */; };
 		CD61DC921AD7D95F007D4A61 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD61DC871AD7D95F007D4A61 /* TD_DatabaseEncryptionTests.m */; };
 		CD61DC931AD7D95F007D4A61 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD61DC871AD7D95F007D4A61 /* TD_DatabaseEncryptionTests.m */; };
-		CD61DC981AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD61DC971AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m */; };
-		CD61DC991AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD61DC971AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m */; };
 		CD7E9D7B1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7E9D7A1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m */; };
 		CD7E9D7C1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7E9D7A1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m */; };
 		CD94A6FE1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
@@ -204,7 +202,6 @@
 		CD61DC841AD7D95F007D4A61 /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
 		CD61DC851AD7D95F007D4A61 /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD61DC871AD7D95F007D4A61 /* TD_DatabaseEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseEncryptionTests.m; sourceTree = "<group>"; };
-		CD61DC971AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeychainUtilsBase64Tests.m; sourceTree = "<group>"; };
 		CD7E9D7A1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeychainUtilsAESTests.m; sourceTree = "<group>"; };
 		CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencrypteddb.touchdb; path = Assets/emptyencrypteddb.touchdb; sourceTree = "<group>"; };
 		EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTDatastoreQueryTests.m; sourceTree = "<group>"; };
@@ -455,7 +452,6 @@
 			isa = PBXGroup;
 			children = (
 				CD7E9D7A1AD7FF42009C726A /* CDTEncryptionKeychainUtilsAESTests.m */,
-				CD61DC971AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m */,
 			);
 			path = Keychain;
 			sourceTree = "<group>";
@@ -662,7 +658,6 @@
 				9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D23FF188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
 				EC0C834A1AB217290051042F /* CDTQQueryExecutorTests.m in Sources */,
-				CD61DC981AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m in Sources */,
 				EC0C83521AB217290051042F /* CDTQValueExtractorTests.m in Sources */,
 				EC0C834C1AB217290051042F /* CDTQQuerySortTests.m in Sources */,
 				CD61DC8C1AD7D95F007D4A61 /* DatastoreEncryptionTests.m in Sources */,
@@ -724,7 +719,6 @@
 				985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				EC0C834B1AB217290051042F /* CDTQQueryExecutorTests.m in Sources */,
-				CD61DC991AD7DD95007D4A61 /* CDTEncryptionKeychainUtilsBase64Tests.m in Sources */,
 				EC0C83531AB217290051042F /* CDTQValueExtractorTests.m in Sources */,
 				EC0C834D1AB217290051042F /* CDTQQuerySortTests.m in Sources */,
 				CD61DC8D1AD7D95F007D4A61 /* DatastoreEncryptionTests.m in Sources */,

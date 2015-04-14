@@ -16,24 +16,24 @@
 
 #import <Foundation/Foundation.h>
 
-@interface CDTEncryptionKeychainData : NSObject
+@interface CDTEncryptionKeychainData : NSObject <NSCoding>
 
 @property (strong, nonatomic, readonly) NSData *encryptedDPK;
 @property (strong, nonatomic, readonly) NSString *salt;
 @property (strong, nonatomic, readonly) NSData *iv;
-@property (strong, nonatomic, readonly) NSNumber *iterations;
+@property (assign, nonatomic, readonly) NSInteger iterations;
 @property (strong, nonatomic, readonly) NSString *version;
 
 - (instancetype)initWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
-                          iterations:(NSNumber *)iterations
+                          iterations:(NSInteger)iterations
                              version:(NSString *)version;
 
 + (instancetype)dataWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
-                          iterations:(NSNumber *)iterations
+                          iterations:(NSInteger)iterations
                              version:(NSString *)version;
 
 @end

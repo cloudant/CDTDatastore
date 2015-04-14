@@ -22,8 +22,6 @@
 #import "CDTEncryptionKeychainConstants.h"
 #import "CDTEncryptionKeychainStorage+KeychainManager.h"
 
-#import "NSData+CDTEncryptionKeychainHexString.h"
-
 #import "CDTLogging.h"
 
 @interface CDTEncryptionKeychainManager ()
@@ -64,13 +62,11 @@
     NSData *encyptedData =
         [CDTEncryptionKeychainUtils encryptData:data withKey:nativeKey iv:nativeIv];
 
-    NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
-
     CDTEncryptionKeychainData *keychainData =
         [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedData
                                                    salt:salt
                                                      iv:nativeIv
-                                             iterations:iterations
+                                             iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
                                                 version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
 
     return [self.storage saveEncryptionKeyData:keychainData];

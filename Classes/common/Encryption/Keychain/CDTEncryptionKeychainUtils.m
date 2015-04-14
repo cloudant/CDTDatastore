@@ -16,7 +16,6 @@
 
 #import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainUtils+AES.h"
-#import "CDTEncryptionKeychainUtils+Base64.h"
 #import "CDTEncryptionKeychainUtils+PBKDF2.h"
 
 #import "CDTEncryptionKeychainConstants.h"

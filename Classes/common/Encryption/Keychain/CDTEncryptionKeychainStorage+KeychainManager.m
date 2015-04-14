@@ -31,10 +31,10 @@
     }
     
     // Ensure the num derivations saved, matches what we have
-    if ([data.iterations intValue] != CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS) {
+    if (data.iterations != CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS) {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Number of stored iterations does NOT match the constant value %i",
-                   CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
+                   @"Number of stored iterations does NOT match the constant value %li",
+                   (long)CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
         
         return nil;
     }

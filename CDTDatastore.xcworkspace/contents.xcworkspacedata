@@ -42,12 +42,6 @@
                   location = "group:CDTEncryptionKeychainData.m">
                </FileRef>
                <FileRef
-                  location = "group:CDTEncryptionKeychainData+KeychainStorage.h">
-               </FileRef>
-               <FileRef
-                  location = "group:CDTEncryptionKeychainData+KeychainStorage.m">
-               </FileRef>
-               <FileRef
                   location = "group:CDTEncryptionKeychainManager.h">
                </FileRef>
                <FileRef
@@ -78,34 +72,10 @@
                   location = "group:CDTEncryptionKeychainUtils+AES.m">
                </FileRef>
                <FileRef
-                  location = "group:CDTEncryptionKeychainUtils+Base64.h">
-               </FileRef>
-               <FileRef
-                  location = "group:CDTEncryptionKeychainUtils+Base64.m">
-               </FileRef>
-               <FileRef
                   location = "group:CDTEncryptionKeychainUtils+PBKDF2.h">
                </FileRef>
                <FileRef
                   location = "group:CDTEncryptionKeychainUtils+PBKDF2.m">
-               </FileRef>
-               <FileRef
-                  location = "group:NSData+CDTEncryptionKeychainHexString.h">
-               </FileRef>
-               <FileRef
-                  location = "group:NSData+CDTEncryptionKeychainHexString.m">
-               </FileRef>
-               <FileRef
-                  location = "group:NSData+CDTEncryptionKeychainJSON.h">
-               </FileRef>
-               <FileRef
-                  location = "group:NSData+CDTEncryptionKeychainJSON.m">
-               </FileRef>
-               <FileRef
-                  location = "group:NSObject+CDTEncryptionKeychainJSON.h">
-               </FileRef>
-               <FileRef
-                  location = "group:NSObject+CDTEncryptionKeychainJSON.m">
                </FileRef>
             </Group>
             <FileRef

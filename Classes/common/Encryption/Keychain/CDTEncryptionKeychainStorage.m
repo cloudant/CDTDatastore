@@ -18,10 +18,6 @@
 
 #import "CDTEncryptionKeychainConstants.h"
 
-#import "CDTEncryptionKeychainData+KeychainStorage.h"
-#import "NSData+CDTEncryptionKeychainJSON.h"
-#import "NSObject+CDTEncryptionKeychainJSON.h"
-
 #import "CDTLogging.h"
 
 @interface CDTEncryptionKeychainStorage ()
@@ -40,16 +36,12 @@
 
     OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&data);
     if (err == noErr) {
-        id jsonDoc = [data CDTEncryptionKeychainJSONObject];
+        id unarchiveObject = [NSKeyedUnarchiver unarchiveObjectWithData:data];
 
-        if (jsonDoc != nil && [jsonDoc isKindOfClass:[NSDictionary class]]) {
-            encryptionData = [CDTEncryptionKeychainData dataWithDictionary:jsonDoc];
-
-            if (!encryptionData) {
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Stored dictionary is not complete");
-            }
+        if ([unarchiveObject isKindOfClass:[CDTEncryptionKeychainData class]]) {
+            encryptionData = unarchiveObject;
         } else {
-            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Data not found or it is not a dictionary");
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Data found can is not as expected");
         }
     } else {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
@@ -63,11 +55,11 @@
 {
     BOOL worked = NO;
 
-    NSData *jsonData = [[data dictionary] CDTEncryptionKeychainJSONData];
-    NSMutableDictionary *jsonDocStoreDict =
-        [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:jsonData];
+    NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:data];
+    NSMutableDictionary *dataStoreDict =
+        [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:archivedData];
 
-    OSStatus err = SecItemAdd((__bridge CFDictionaryRef)jsonDocStoreDict, nil);
+    OSStatus err = SecItemAdd((__bridge CFDictionaryRef)dataStoreDict, nil);
     if (err == noErr) {
         worked = YES;
     } else if (err == errSecDuplicateItem) {
@@ -87,9 +79,11 @@
     BOOL worked = NO;
 
     NSMutableDictionary *dict = [self getDpkDocumentLookupDict];
-    [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
     [dict removeObjectForKey:(__bridge id)(kSecMatchLimit)];
     [dict removeObjectForKey:(__bridge id)(kSecReturnAttributes)];
+    [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
+    
+#warning Will we delete all accounts?
     [dict removeObjectForKey:(__bridge id)(kSecAttrAccount)];
 
     OSStatus err = SecItemDelete((__bridge CFDictionaryRef)dict);
@@ -163,7 +157,10 @@
     [genericPasswordQuery setObject:CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT
                              forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
     [genericPasswordQuery setObject:identifier forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+    
     [genericPasswordQuery setObject:data forKey:(__bridge id<NSCopying>)(kSecValueData)];
+    
+#warning This does not look like the best option
     [genericPasswordQuery setObject:(__bridge id)(kSecAttrAccessibleAlways)
                              forKey:(__bridge id<NSCopying>)(kSecAttrAccessible)];
 

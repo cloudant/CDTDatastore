@@ -16,9 +16,13 @@
 
 #import "CDTEncryptionKeychainData.h"
 
-#import "NSData+CDTEncryptionKeychainHexString.h"
-
 #import "CDTLogging.h"
+
+#define CDTENCRYPTION_KEYCHAINDATA_KEY_DPK @"dpk"
+#define CDTENCRYPTION_KEYCHAINDATA_KEY_SALT @"salt"
+#define CDTENCRYPTION_KEYCHAINDATA_KEY_IV @"iv"
+#define CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS @"iterations"
+#define CDTENCRYPTION_KEYCHAINDATA_KEY_VERSION @"version"
 
 @interface CDTEncryptionKeychainData ()
 
@@ -29,25 +33,41 @@
 #pragma mark - Init object
 - (instancetype)init
 {
-    return [self initWithEncryptedDPK:nil salt:nil iv:nil iterations:nil version:nil];
+    return [self initWithEncryptedDPK:nil salt:nil iv:nil iterations:NSIntegerMin version:nil];
+}
+
+- (id)initWithCoder:(NSCoder *)aDecoder
+{
+    NSData *encryptedDPK = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_DPK];
+    NSString *salt = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_SALT];
+    NSData *iv = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_IV];
+    NSInteger iterations = [aDecoder decodeIntegerForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS];
+    NSString *version = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_VERSION];
+
+    return [self initWithEncryptedDPK:encryptedDPK
+                                 salt:salt
+                                   iv:iv
+                           iterations:iterations
+                              version:version];
 }
 
 - (instancetype)initWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
-                          iterations:(NSNumber *)iterations
+                          iterations:(NSInteger)iterations
                              version:(NSString *)version
 {
     self = [super init];
     if (self) {
-        if (encryptedDPK && salt && iv && iterations && version) {
+        if (encryptedDPK && salt && iv && (iterations >= 0) && version) {
             _encryptedDPK = encryptedDPK;
             _salt = salt;
             _iv = iv;
             _iterations = iterations;
             _version = version;
         } else {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"All params are mandatory");
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT,
+                        @"All params are mandatory (and iterations has to be positive)");
 
             self = nil;
         }
@@ -56,11 +76,21 @@
     return self;
 }
 
+#pragma mark - NSCoding methods
+- (void)encodeWithCoder:(NSCoder *)aCoder
+{
+    [aCoder encodeObject:self.encryptedDPK forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_DPK];
+    [aCoder encodeObject:self.salt forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_SALT];
+    [aCoder encodeObject:self.iv forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_IV];
+    [aCoder encodeInteger:self.iterations forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS];
+    [aCoder encodeObject:self.version forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_VERSION];
+}
+
 #pragma mark - Public class methods
 + (instancetype)dataWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
-                          iterations:(NSNumber *)iterations
+                          iterations:(NSInteger)iterations
                              version:(NSString *)version
 {
     return [[[self class] alloc] initWithEncryptedDPK:encryptedDPK
