@@ -35,6 +35,9 @@ params["couch"] = "couchdb1.6" unless params["couch"]
 params["platform-version"] = "latest" unless params["platform-version"]
 params["hardware"] = "iPhone 4S" unless params["hardware"]
 
+#kill any docker container that may be running on the machine.
+#we don't want to effected by another failing build
+system("docker rm --force couchdb")
 
 #launch docker
 puts "Starting docker container #{$couch}"
