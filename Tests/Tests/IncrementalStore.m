@@ -1056,21 +1056,21 @@ static void *ISContextProgress = &ISContextProgress;
                           @"Error domain should indicate error source");
             XCTAssertTrue(err.code == CDTISErrorExectueRequestTypeUnkown,
                           @"Error code should identify error reason");
-        } else {
-            XCTAssertNotNil(res, @"Expected results: %@", err);
-            NSLog(@"%@ objects updated", res.result);
-
-            /**
-             *  Fetch checked entries
-             */
-            fr.predicate = checked;
-            results = [moc executeFetchRequest:fr error:&err];
-            XCTAssertNotNil(results, @"Expected results: %@", err);
-
-            XCTAssertTrue([results count] == (num_entries / 4),
-                          @"results count should be %d is %lu", (num_entries / 4),
-                          (unsigned long)[results count]);
+            return;
         }
+
+        XCTAssertNotNil(res, @"Expected results: %@", err);
+        NSLog(@"%@ objects updated", res.result);
+
+        /**
+         *  Fetch checked entries
+         */
+        fr.predicate = checked;
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+
+        XCTAssertTrue([results count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[results count]);
     }
 
     /**
@@ -1091,45 +1091,34 @@ static void *ISContextProgress = &ISContextProgress;
         req.resultType = NSUpdatedObjectIDsResultType;
         NSBatchUpdateResult *res = (NSBatchUpdateResult *)[moc executeRequest:req error:&err];
 
-        if (!CDTISSupportBatchUpdates) {
-            XCTAssertNil(res, @"Result should be nil since batch updates are not supported");
-            XCTAssertTrue([err.domain isEqualToString:CDTISErrorDomain],
-                          @"Error domain should indicate error source");
-            XCTAssertTrue(err.code == CDTISErrorExectueRequestTypeUnkown,
-                          @"Error code should identify error reason");
-        } else {
-            XCTAssertNotNil(res, @"Expected results: %@", err);
+        XCTAssertNotNil(res, @"Expected results: %@", err);
 
-            XCTAssertTrue([res.result count] == (num_entries / 4),
-                          @"results count should be %d is %lu", (num_entries / 4),
-                          (unsigned long)[res.result count]);
+        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[res.result count]);
 
-            [res.result enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx,
-                                                     BOOL *stop) {
-              Entry *e = (Entry *)[moc objectWithID:objID];
-              if (![e isFault]) {
-                  [moc refreshObject:e mergeChanges:YES];
-                  XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
-                  XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
-                  XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
-                  XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2,
-                                @"fpDouble field not updated");
-                  XCTAssertTrue([e.fpDouble doubleValue] == (double)M_PI,
-                                @"fpDouble field not updated");
-              }
-            }];
+        [res.result enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx,
+                                                 BOOL *stop) {
+          Entry *e = (Entry *)[moc objectWithID:objID];
+          if (![e isFault]) {
+              [moc refreshObject:e mergeChanges:YES];
+              XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
+              XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
+              XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
+              XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2, @"fpDouble field not updated");
+              XCTAssertTrue([e.fpDouble doubleValue] == (double)M_PI,
+                            @"fpDouble field not updated");
+          }
+        }];
 
-            /**
-             *  Fetch checked entries
-             */
-            fr.predicate = [NSPredicate predicateWithFormat:@"text == 'foobar'"];
-            results = [moc executeFetchRequest:fr error:&err];
-            XCTAssertNotNil(results, @"Expected results: %@", err);
+        /**
+         *  Fetch checked entries
+         */
+        fr.predicate = [NSPredicate predicateWithFormat:@"text == 'foobar'"];
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
 
-            XCTAssertTrue([res.result count] == (num_entries / 4),
-                          @"results count should be %d is %lu", (num_entries / 4),
-                          (unsigned long)[res.result count]);
-        }
+        XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
+                      (num_entries / 4), (unsigned long)[res.result count]);
     }
 }
 

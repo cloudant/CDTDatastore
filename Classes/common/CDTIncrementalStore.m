@@ -2140,7 +2140,7 @@ NSString *kNorOperator = @"$nor";
 {
     NSError *err = nil;
 
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+	NSFetchRequest *fetchRequest = [NSFetchRequest new];
     fetchRequest.entity = updateRequest.entity;
     fetchRequest.predicate = updateRequest.predicate;
 
@@ -2153,7 +2153,6 @@ NSString *kNorOperator = @"$nor";
 
     err = nil;
     CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:nil error:&err];
-    // hits == nil is valid, get rid of this once tested
     if (!hits && err) {
         if (error) *error = err;
         return nil;
@@ -2183,7 +2182,10 @@ NSString *kNorOperator = @"$nor";
         [results addObject:moid];
     }
 
-    CDTISBatchUpdateResult *updateResult = [[CDTISBatchUpdateResult alloc] init];
+	// HACK: We should return an NSBatchUpdateResult from this method, but we can't, because
+	// that class doesn't provide setters for fields we need to set. So instead we return a
+	// CDTISBatchUpdateResult, which has the same public properties as NSBatchUpdateRequest.
+    CDTISBatchUpdateResult *updateResult = [CDTISBatchUpdateResult new];
     updateResult.resultType = updateRequest.resultType;
 
     switch (updateRequest.resultType) {
@@ -2195,8 +2197,11 @@ NSString *kNorOperator = @"$nor";
             updateResult.result = @([results count]);
             break;
 
-        case NSStatusOnlyResultType:  // Don't return anything
-        default:
+        case NSStatusOnlyResultType:  // Just return status
+			updateResult.result = @(YES);
+			break;
+
+		default:
             break;
     }
 
