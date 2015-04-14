@@ -97,7 +97,7 @@
                                                    salt:pbkdf2Salt
                                                      iv:aesIv
                                              iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
-                                                version:CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER];
+                                                version:CDTENCRYPTION_KEYCHAIN_VERSION];
 
     BOOL isSaved = [self.storage saveEncryptionKeyData:keychainData];
 

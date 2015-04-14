@@ -33,9 +33,6 @@
                   location = "group:CDTEncryptionKeychainConstants.h">
                </FileRef>
                <FileRef
-                  location = "group:CDTEncryptionKeychainConstants.m">
-               </FileRef>
-               <FileRef
                   location = "group:CDTEncryptionKeychainData.h">
                </FileRef>
                <FileRef

@@ -20,11 +20,39 @@
 
 #import "CDTLogging.h"
 
+#define CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DOCUMENTID @"CDTDatastoreKey"
+
 @interface CDTEncryptionKeychainStorage ()
+
+@property (strong, nonatomic, readonly) NSString *service;
+@property (strong, nonatomic, readonly) NSString *account;
 
 @end
 
 @implementation CDTEncryptionKeychainStorage
+
+#pragma mark - Init object
+- (instancetype)init
+{
+    return [self initWithIdentifier:nil];
+}
+
+- (instancetype)initWithIdentifier:(NSString *)identifier
+{
+    self = [super init];
+    if (self) {
+        if (identifier) {
+            _service = CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DOCUMENTID;
+            _account = identifier;
+        } else {
+            self = nil;
+            
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"identifier is mandatory");
+        }
+    }
+    
+    return self;
+}
 
 #pragma mark - Public methods
 - (CDTEncryptionKeychainData *)encryptionKeyData
@@ -32,7 +60,9 @@
     CDTEncryptionKeychainData *encryptionData = nil;
 
     NSData *data = nil;
-    NSMutableDictionary *lookupDict = [self getDpkDocumentLookupDict];
+    NSMutableDictionary *lookupDict =
+        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
+                                                             account:self.account];
 
     OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&data);
     if (err == noErr) {
@@ -57,7 +87,9 @@
 
     NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:data];
     NSMutableDictionary *dataStoreDict =
-        [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:archivedData];
+        [CDTEncryptionKeychainStorage genericPwStoreDictWithService:self.service
+                                                            account:self.account
+                                                               data:archivedData];
 
     OSStatus err = SecItemAdd((__bridge CFDictionaryRef)dataStoreDict, nil);
     if (err == noErr) {
@@ -78,11 +110,13 @@
 {
     BOOL worked = NO;
 
-    NSMutableDictionary *dict = [self getDpkDocumentLookupDict];
+    NSMutableDictionary *dict =
+        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
+                                                             account:self.account];
     [dict removeObjectForKey:(__bridge id)(kSecMatchLimit)];
     [dict removeObjectForKey:(__bridge id)(kSecReturnAttributes)];
     [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
-    
+
 #warning Will we delete all accounts?
     [dict removeObjectForKey:(__bridge id)(kSecAttrAccount)];
 
@@ -103,12 +137,14 @@
     BOOL result = NO;
 
     NSData *data = nil;
-    NSMutableDictionary *lookupDict = [self getDpkDocumentLookupDict];
+    NSMutableDictionary *lookupDict =
+        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
+                                                             account:self.account];
 
     OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&data);
     if (err == noErr) {
         result = ((data != nil) && (data.length > 0));
-        
+
         if (!result) {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Found a match in keychain, but it was empty");
         }
@@ -122,22 +158,16 @@
     return result;
 }
 
-#pragma mark - Private methods
-- (NSMutableDictionary *)getDpkDocumentLookupDict
-{
-    NSMutableDictionary *dpkQuery =
-        [self getGenericPwLookupDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID];
-    return dpkQuery;
-}
-
-- (NSMutableDictionary *)getGenericPwLookupDict:(NSString *)identifier
+#pragma mark - Private class methods
++ (NSMutableDictionary *)genericPwLookupDictWithService:(NSString *)service
+                                                account:(NSString *)account
 {
     NSMutableDictionary *genericPasswordQuery = [[NSMutableDictionary alloc] init];
+    
     [genericPasswordQuery setObject:(__bridge id)kSecClassGenericPassword
                              forKey:(__bridge id)kSecClass];
-    [genericPasswordQuery setObject:CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT
-                             forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    [genericPasswordQuery setObject:identifier forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+    [genericPasswordQuery setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+    [genericPasswordQuery setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
 
     // Use the proper search constants, return only the attributes of the first match.
     [genericPasswordQuery setObject:(__bridge id)kSecMatchLimitOne
@@ -146,20 +176,23 @@
                              forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
     [genericPasswordQuery setObject:(__bridge id)kCFBooleanTrue
                              forKey:(__bridge id<NSCopying>)(kSecReturnData)];
+    
     return genericPasswordQuery;
 }
 
-- (NSMutableDictionary *)getGenericPwStoreDict:(NSString *)identifier data:(NSData *)data
++ (NSMutableDictionary *)genericPwStoreDictWithService:(NSString *)service
+                                               account:(NSString *)account
+                                                  data:(NSData *)data
 {
     NSMutableDictionary *genericPasswordQuery = [[NSMutableDictionary alloc] init];
+    
     [genericPasswordQuery setObject:(__bridge id)kSecClassGenericPassword
                              forKey:(__bridge id)kSecClass];
-    [genericPasswordQuery setObject:CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT
-                             forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
-    [genericPasswordQuery setObject:identifier forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    
+    [genericPasswordQuery setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
+    [genericPasswordQuery setObject:account forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
+
     [genericPasswordQuery setObject:data forKey:(__bridge id<NSCopying>)(kSecValueData)];
-    
+
 #warning This does not look like the best option
     [genericPasswordQuery setObject:(__bridge id)(kSecAttrAccessibleAlways)
                              forKey:(__bridge id<NSCopying>)(kSecAttrAccessible)];

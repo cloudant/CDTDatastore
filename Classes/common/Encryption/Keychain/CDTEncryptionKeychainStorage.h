@@ -20,6 +20,8 @@
 
 @interface CDTEncryptionKeychainStorage : NSObject
 
+- (instancetype)initWithIdentifier:(NSString *)identifier;
+
 - (CDTEncryptionKeychainData *)encryptionKeyData;
 - (BOOL)saveEncryptionKeyData:(CDTEncryptionKeychainData *)data;
 - (BOOL)clearEncryptionKeyData;

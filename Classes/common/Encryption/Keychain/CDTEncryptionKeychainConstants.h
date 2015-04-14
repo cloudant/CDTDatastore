@@ -14,7 +14,12 @@
 //  and limitations under the License.
 //
 
+#ifndef _CDTEncryptionKeychainConstants_h
+#define _CDTEncryptionKeychainConstants_h
+
 #import <CommonCrypto/CommonCryptor.h>
+
+#define CDTENCRYPTION_KEYCHAIN_VERSION @"1.0"
 
 #define CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE 32
 
@@ -24,7 +29,4 @@
 #define CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE kCCKeySizeAES256
 #define CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE kCCBlockSizeAES128
 
-extern NSString *const CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT;
-
-extern NSString *const CDTENCRYPTION_KEYCHAIN_KEY_VERSION_NUMBER;
-extern NSString *const CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID;
+#endif
