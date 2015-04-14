@@ -39,7 +39,7 @@
 - (id)initWithCoder:(NSCoder *)aDecoder
 {
     NSData *encryptedDPK = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_DPK];
-    NSString *salt = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_SALT];
+    NSData *salt = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_SALT];
     NSData *iv = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_IV];
     NSInteger iterations = [aDecoder decodeIntegerForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS];
     NSString *version = [aDecoder decodeObjectForKey:CDTENCRYPTION_KEYCHAINDATA_KEY_VERSION];
@@ -52,7 +52,7 @@
 }
 
 - (instancetype)initWithEncryptedDPK:(NSData *)encryptedDPK
-                                salt:(NSString *)salt
+                                salt:(NSData *)salt
                                   iv:(NSData *)iv
                           iterations:(NSInteger)iterations
                              version:(NSString *)version
@@ -88,7 +88,7 @@
 
 #pragma mark - Public class methods
 + (instancetype)dataWithEncryptedDPK:(NSData *)encryptedDPK
-                                salt:(NSString *)salt
+                                salt:(NSData *)salt
                                   iv:(NSData *)iv
                           iterations:(NSInteger)iterations
                              version:(NSString *)version

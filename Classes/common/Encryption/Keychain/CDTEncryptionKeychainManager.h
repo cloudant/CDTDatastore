@@ -16,7 +16,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "CDTEncryptionKeychainStorage.h"
+
 @interface CDTEncryptionKeychainManager : NSObject
+
+- (instancetype)initWithStorage:(CDTEncryptionKeychainStorage *)storage;
 
 /**
  * Returns the decrypted Data Protection Key (DPK) from the keychain.
@@ -25,30 +29,29 @@
  *
  * @return The DPK
  */
-- (NSData *)getDPK:(NSString *)password;
+- (NSData *)retrieveEncryptionKeyDataUsingPassword:(NSString *)password;
 
 /**
  * Generates the Data Protection Key (DPK) locally, encrypts it, and stores it inside the keychain.
  *
  * @param password Password used for the Client Based Key (CBK) to encrypt the DPK
- * @param salt The salt
  *
- * @return Success (true) or failure (false)
+ * @return The DPK
  */
-- (BOOL)generateAndStoreDpkUsingPassword:(NSString *)password withSalt:(NSString *)salt;
+- (NSData *)generateEncryptionKeyDataUsingPassword:(NSString *)password;
 
 /**
  * Checks if the encrypted Data Protection Key (DPK) is inside the keychain.
  *
  * @return True if the encrypted DPK is inside the keychain, false otherwise
  */
-- (BOOL)isKeyChainFullyPopulated;
+- (BOOL)encryptionKeyDataAlreadyGenerated;
 
 /**
- * Clears JSONStore security metadata from the keychain.
+ * Clears security metadata from the keychain.
  *
  * @return Success (true) or failure (false)
  */
-- (BOOL)clearKeyChain;
+- (BOOL)clearEncryptionKeyData;
 
 @end

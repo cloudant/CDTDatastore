@@ -19,19 +19,19 @@
 @interface CDTEncryptionKeychainData : NSObject <NSCoding>
 
 @property (strong, nonatomic, readonly) NSData *encryptedDPK;
-@property (strong, nonatomic, readonly) NSString *salt;
+@property (strong, nonatomic, readonly) NSData *salt;
 @property (strong, nonatomic, readonly) NSData *iv;
 @property (assign, nonatomic, readonly) NSInteger iterations;
 @property (strong, nonatomic, readonly) NSString *version;
 
 - (instancetype)initWithEncryptedDPK:(NSData *)encryptedDPK
-                                salt:(NSString *)salt
+                                salt:(NSData *)salt
                                   iv:(NSData *)iv
                           iterations:(NSInteger)iterations
                              version:(NSString *)version;
 
 + (instancetype)dataWithEncryptedDPK:(NSData *)encryptedDPK
-                                salt:(NSString *)salt
+                                salt:(NSData *)salt
                                   iv:(NSData *)iv
                           iterations:(NSInteger)iterations
                              version:(NSString *)version;
