@@ -19,7 +19,7 @@
 #import "CDTEncryptionKeychainConstants.h"
 
 #import "CDTEncryptionKeychainData+KeychainStorage.h"
-#import "NSString+CDTEncryptionKeychainJSON.h"
+#import "NSData+CDTEncryptionKeychainJSON.h"
 #import "NSObject+CDTEncryptionKeychainJSON.h"
 
 #import "CDTLogging.h"
@@ -33,56 +33,39 @@
 #pragma mark - Public methods
 - (CDTEncryptionKeychainData *)encryptionKeyData
 {
+    CDTEncryptionKeychainData *encryptionData = nil;
+
+    NSData *data = nil;
     NSMutableDictionary *lookupDict = [self getDpkDocumentLookupDict];
 
-    NSData *theData = nil;
-
-    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&theData);
-
+    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&data);
     if (err == noErr) {
-        NSString *jsonStr = [[NSString alloc] initWithBytes:[theData bytes]
-                                                     length:[theData length]
-                                                   encoding:NSUTF8StringEncoding];
-
-        id jsonDoc = [jsonStr CDTEncryptionKeychainJSONValue];
+        id jsonDoc = [data CDTEncryptionKeychainJSONObject];
 
         if (jsonDoc != nil && [jsonDoc isKindOfClass:[NSDictionary class]]) {
-            CDTEncryptionKeychainData *encryptionData =
-                [CDTEncryptionKeychainData dataWithDictionary:jsonDoc];
+            encryptionData = [CDTEncryptionKeychainData dataWithDictionary:jsonDoc];
+
             if (!encryptionData) {
                 CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Stored dictionary is not complete");
-
-                return nil;
             }
-
-            // Ensure the num derivations saved, matches what we have
-            int iters = [encryptionData.iterations intValue];
-
-            if (iters != CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS) {
-                CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                           @"Number of iterations stored, does NOT match the constant value %u",
-                           CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
-
-                return nil;
-            }
-
-            return encryptionData;
+        } else {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Data not found or it is not a dictionary");
         }
     } else {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                    @"Error getting DPK doc from keychain, SecItemCopyMatching returned: %d", err);
     }
 
-    return nil;
+    return encryptionData;
 }
 
 - (BOOL)saveEncryptionKeyData:(CDTEncryptionKeychainData *)data
 {
     BOOL worked = NO;
 
-    NSString *jsonStr = [[data dictionary] CDTEncryptionKeychainJSONRepresentation];
+    NSData *jsonData = [[data dictionary] CDTEncryptionKeychainJSONData];
     NSMutableDictionary *jsonDocStoreDict =
-        [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:jsonStr];
+        [self getGenericPwStoreDict:CDTENCRYPTION_KEYCHAIN_KEY_DOCUMENT_ID data:jsonData];
 
     OSStatus err = SecItemAdd((__bridge CFDictionaryRef)jsonDocStoreDict, nil);
     if (err == noErr) {
@@ -123,34 +106,26 @@
 
 - (BOOL)areThereEncryptionKeyData
 {
-    NSData *dpkData = nil;
+    BOOL result = NO;
 
-    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)[self getDpkDocumentLookupDict],
-                                       (void *)&dpkData);
+    NSData *data = nil;
+    NSMutableDictionary *lookupDict = [self getDpkDocumentLookupDict];
 
+    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)lookupDict, (void *)&data);
     if (err == noErr) {
-        NSString *dpk = [[NSString alloc] initWithBytes:[dpkData bytes]
-                                                 length:[dpkData length]
-                                               encoding:NSUTF8StringEncoding];
-
-        if (dpk != nil && [dpk length] > 0) {
-            return YES;
-
-        } else {
-            // Found a match in keychain, but it was empty
-            return NO;
+        result = ((data != nil) && (data.length > 0));
+        
+        if (!result) {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Found a match in keychain, but it was empty");
         }
-
     } else if (err == errSecItemNotFound) {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"DPK doc not found in keychain");
-
-        return NO;
     } else {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                    @"Error getting DPK doc from keychain, SecItemCopyMatching returned: %d", err);
-
-        return NO;
     }
+
+    return result;
 }
 
 #pragma mark - Private methods
@@ -180,7 +155,7 @@
     return genericPasswordQuery;
 }
 
-- (NSMutableDictionary *)getGenericPwStoreDict:(NSString *)identifier data:(NSString *)theData
+- (NSMutableDictionary *)getGenericPwStoreDict:(NSString *)identifier data:(NSData *)data
 {
     NSMutableDictionary *genericPasswordQuery = [[NSMutableDictionary alloc] init];
     [genericPasswordQuery setObject:(__bridge id)kSecClassGenericPassword
@@ -188,8 +163,7 @@
     [genericPasswordQuery setObject:CDTENCRYPTION_KEYCHAIN_DEFAULT_ACCOUNT
                              forKey:(__bridge id<NSCopying>)(kSecAttrAccount)];
     [genericPasswordQuery setObject:identifier forKey:(__bridge id<NSCopying>)(kSecAttrService)];
-    [genericPasswordQuery setObject:[theData dataUsingEncoding:NSUTF8StringEncoding]
-                             forKey:(__bridge id<NSCopying>)(kSecValueData)];
+    [genericPasswordQuery setObject:data forKey:(__bridge id<NSCopying>)(kSecValueData)];
     [genericPasswordQuery setObject:(__bridge id)(kSecAttrAccessibleAlways)
                              forKey:(__bridge id<NSCopying>)(kSecAttrAccessible)];
 

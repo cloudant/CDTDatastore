@@ -22,6 +22,6 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL;
 
 - (NSString *)CDTEncryptionKeychainHexadecimalRepresentation;
 
-+ (NSData *)CDTEncryptionKeychainDataFromHexadecimalString:(NSString *)hexString withSize:(int)size;
++ (NSData *)CDTEncryptionKeychainDataFromHexadecimalString:(NSString *)hexString;
 
 @end

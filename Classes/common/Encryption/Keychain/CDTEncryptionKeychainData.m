@@ -34,17 +34,16 @@
 
 - (instancetype)initWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSData *)IV
+                                  iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version
 {
     self = [super init];
     if (self) {
-        if (encryptedDPK && salt && IV && iterations && version) {
+        if (encryptedDPK && salt && iv && iterations && version) {
             _encryptedDPK = encryptedDPK;
             _salt = salt;
-            _ivData = IV;
-            _ivHex = [IV CDTEncryptionKeychainHexadecimalRepresentation];
+            _iv = iv;
             _iterations = iterations;
             _version = version;
         } else {
@@ -60,13 +59,13 @@
 #pragma mark - Public class methods
 + (instancetype)dataWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSData *)IV
+                                  iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version
 {
     return [[[self class] alloc] initWithEncryptedDPK:encryptedDPK
                                                  salt:salt
-                                                   iv:IV
+                                                   iv:iv
                                            iterations:iterations
                                               version:version];
 }

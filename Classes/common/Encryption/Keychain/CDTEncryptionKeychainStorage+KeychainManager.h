@@ -1,8 +1,8 @@
 //
-//  NSObject+CDTEncryptionKeychainJSON.h
+//  CDTEncryptionKeychainStorage+KeychainManager.h
+//  
 //
-//
-//  Created by Enrique de la Torre Fernandez on 09/04/2015.
+//  Created by Enrique de la Torre Fernandez on 14/04/2015.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -14,10 +14,10 @@
 //  and limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
+#import "CDTEncryptionKeychainStorage.h"
 
-@interface NSObject (CDTEncryptionKeychainJSON)
+@interface CDTEncryptionKeychainStorage (KeychainManager)
 
-- (NSData *)CDTEncryptionKeychainJSONData;
+- (CDTEncryptionKeychainData *)validatedEncryptionKeyData;
 
 @end

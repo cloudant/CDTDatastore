@@ -31,10 +31,12 @@ NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION = @"version";
 #pragma mark - Public methods
 - (NSDictionary *)dictionary
 {
+    NSString *ivHex = [self.iv CDTEncryptionKeychainHexadecimalRepresentation];
+
     NSDictionary *dic = @{
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK : self.encryptedDPK,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT : self.salt,
-        CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV : self.ivHex,
+        CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV : ivHex,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_ITERATIONS : self.iterations,
         CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION : self.version
     };
@@ -45,17 +47,19 @@ NSString *const CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION = @"version";
 #pragma mark - Public class methods
 + (instancetype)dataWithDictionary:(NSDictionary *)dictionary
 {
+    NSString *encryptedDPK = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK];
+    NSString *salt = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT];
     NSString *ivHex = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_IV];
-    NSData *ivData =
-        [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivHex
-                                                      withSize:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+    NSNumber *iterations = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_ITERATIONS];
+    NSString *version = dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION];
 
-    return
-        [[self class] dataWithEncryptedDPK:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_DPK]
-                                      salt:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_SALT]
-                                        iv:ivData
-                                iterations:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_ITERATIONS]
-                                   version:dictionary[CDTENCRYPTION_KEYCHAINSTORAGE_KEY_VERSION]];
+    NSData *iv = [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivHex];
+
+    return [[self class] dataWithEncryptedDPK:encryptedDPK
+                                         salt:salt
+                                           iv:iv
+                                   iterations:iterations
+                                      version:version];
 }
 
 @end

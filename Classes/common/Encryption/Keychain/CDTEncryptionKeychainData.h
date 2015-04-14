@@ -20,20 +20,19 @@
 
 @property (strong, nonatomic, readonly) NSString *encryptedDPK;
 @property (strong, nonatomic, readonly) NSString *salt;
-@property (strong, nonatomic, readonly) NSData *ivData;
-@property (strong, nonatomic, readonly) NSString *ivHex;
+@property (strong, nonatomic, readonly) NSData *iv;
 @property (strong, nonatomic, readonly) NSNumber *iterations;
 @property (strong, nonatomic, readonly) NSString *version;
 
 - (instancetype)initWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSData *)IV
+                                  iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version;
 
 + (instancetype)dataWithEncryptedDPK:(NSString *)encryptedDPK
                                 salt:(NSString *)salt
-                                  iv:(NSData *)IV
+                                  iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
                              version:(NSString *)version;
 

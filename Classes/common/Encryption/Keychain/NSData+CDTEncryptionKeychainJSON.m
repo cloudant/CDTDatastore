@@ -1,8 +1,8 @@
 //
-//  NSObject+CDTEncryptionKeychainJSON.m
+//  NSData+CDTEncryptionKeychainJSON.m
+//  
 //
-//
-//  Created by Enrique de la Torre Fernandez on 09/04/2015.
+//  Created by Enrique de la Torre Fernandez on 14/04/2015.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -14,29 +14,25 @@
 //  and limitations under the License.
 //
 
-#import "NSObject+CDTEncryptionKeychainJSON.h"
+#import "NSData+CDTEncryptionKeychainJSON.h"
 
 #import "CDTLogging.h"
 
-@implementation NSObject (CDTEncryptionKeychainJSON)
+@implementation NSData (CDTEncryptionKeychainJSON)
 
 #pragma mark - Public methods
-- (NSData *)CDTEncryptionKeychainJSONData
-{
-    return [self CDTEncryptionKeychainJSONDataWithOption:0];
-}
-
-#pragma mark - Private methods
-- (NSData *)CDTEncryptionKeychainJSONDataWithOption:(int)options
+- (id)CDTEncryptionKeychainJSONObject
 {
     NSError *error = nil;
-
-    NSData *data = [NSJSONSerialization dataWithJSONObject:self options:options error:&error];
-    if (!data) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Failed to get Data with JSONObject: %@", error);
+    id jsonObj = [NSJSONSerialization
+        JSONObjectWithData:self
+                   options:(NSJSONReadingMutableContainers | NSJSONReadingMutableLeaves)
+                     error:&error];
+    if (!jsonObj) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Error getting JSON objec: %@", error);
     }
 
-    return data;
+    return jsonObj;
 }
 
 @end

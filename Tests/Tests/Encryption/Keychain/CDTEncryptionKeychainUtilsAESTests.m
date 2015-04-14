@@ -38,10 +38,8 @@
     NSString *keyStr = @"3271b0b2ae09cf10128893abba0871b64ea933253378d0c65bcbe05befe636c3";
     NSString *ivStr = @"10327cc29f13539f8ce5378318f46137";
 
-    self.key = [NSData CDTEncryptionKeychainDataFromHexadecimalString:keyStr
-                                                             withSize:((int)keyStr.length / 2)];
-    self.iv = [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivStr
-                                                            withSize:((int)ivStr.length / 2)];
+    self.key = [NSData CDTEncryptionKeychainDataFromHexadecimalString:keyStr];
+    self.iv = [NSData CDTEncryptionKeychainDataFromHexadecimalString:ivStr];
 }
 
 - (void)tearDown

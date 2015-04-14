@@ -17,8 +17,8 @@
 #import "NSData+CDTEncryptionKeychainHexString.h"
 
 NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL = @"HEXADECIMAL_ERROR";
-NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG_FORMAT =
-    @"String must be %i hex characters or %i bytes (%i bits)";
+NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG =
+    @"A hexadecimal string has a even length";
 
 @implementation NSData (CDTEncryptionKeychainHexString)
 
@@ -37,25 +37,25 @@ NSString *const CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG_FORMAT =
 }
 
 #pragma mark - Public class methods
-+ (NSData *)CDTEncryptionKeychainDataFromHexadecimalString:(NSString *)hexString withSize:(int)size
++ (NSData *)CDTEncryptionKeychainDataFromHexadecimalString:(NSString *)hexString
 {
     /*
-     Make sure the key length represents 32 byte (256 bit) values. The string represent the
-     hexadecimal values that should be used, so the string "4962" represents byte values 0x49  0x62.
-     Note that the constant value is the actual byte size, and the strings are twice that size
-     since every two characters in the string corresponds to a single byte.
+     The string represent the hexadecimal values that should be used, so the string "4962"
+     represents byte values 0x49  0x62.
+     Note that the strings are twice the size since every two characters in the string
+     corresponds to a single byte.
      */
-    if ([hexString length] != (NSUInteger)(size * 2)) {
-        [NSException
-             raise:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL
-            format:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG_FORMAT, 2 * size, size, 8 * size];
+    if (([hexString length] % 2) != 0) {
+        [NSException raise:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_LABEL
+                    format:CDTENCRYPTION_KEYCHAIN_HEXSTRING_ERROR_MSG];
     }
 
+    NSUInteger size = ([hexString length] / (NSUInteger)2);
     unsigned char buff[size];
 
     @autoreleasepool
     {
-        for (int i = 0; i < size; i++) {
+        for (NSUInteger i = 0; i < size; i++) {
             NSString *hexChrStr = [hexString substringWithRange:NSMakeRange(i * 2, 2)];
 
             NSScanner *scanner = [[NSScanner alloc] initWithString:hexChrStr];

@@ -19,8 +19,8 @@
 #import "CDTEncryptionKeychainManager.h"
 
 #import "CDTEncryptionKeychainUtils.h"
-#import "CDTEncryptionKeychainStorage.h"
 #import "CDTEncryptionKeychainConstants.h"
+#import "CDTEncryptionKeychainStorage+KeychainManager.h"
 
 #import "NSData+CDTEncryptionKeychainHexString.h"
 
@@ -37,7 +37,7 @@
 #pragma mark - Public methods
 - (NSString *)getDPK:(NSString *)password
 {
-    CDTEncryptionKeychainData *data = [self.storage encryptionKeyData];
+    CDTEncryptionKeychainData *data = [self.storage validatedEncryptionKeyData];
     if (!data) {
         return nil;
     }
@@ -46,7 +46,7 @@
         [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:data.salt];
 
     NSString *decryptedKey =
-        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:data.ivData];
+        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:data.iv];
 
     return decryptedKey;
 }
