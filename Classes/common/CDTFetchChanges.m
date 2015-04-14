@@ -49,6 +49,10 @@
     SequenceNumber lastSequence = [_startSequenceValue longLongValue];
 
     do {
+        if (self.cancelled) {
+            return;  // Bail early, don't call completion block
+        }
+
         changes = [[_datastore database] changesSinceSequence:lastSequence
                                                       options:&options
                                                        filter:nil
@@ -91,7 +95,10 @@
     }
     
     for (TD_Revision *change in changes) {
-        
+        if (self.cancelled) {
+            return lastSequence;  // We processed changes up to this sequence
+        }
+
         CDTDocumentRevision *updatedRevision;
         if ((updatedRevision = updatedRevisions[change.docID]) != nil) {
             void (^dcb)(CDTDocumentRevision *r) = self.documentChangedBlock;
