@@ -25,7 +25,7 @@
  *
  * @return The DPK
  */
-- (NSString *)getDPK:(NSString *)password;
+- (NSData *)getDPK:(NSString *)password;
 
 /**
  * Generates the Data Protection Key (DPK) locally, encrypts it, and stores it inside the keychain.

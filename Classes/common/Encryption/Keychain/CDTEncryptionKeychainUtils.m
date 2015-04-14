@@ -34,8 +34,8 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_MSG_PASS_NOT_DERIVED =
     @"Password not derived";
 
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL = @"ENCRYPT_ERROR";
-NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT =
-    @"Cannot encrypt empty/nil plaintext";
+NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_DATA =
+    @"Cannot encrypt empty/nil data";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_KEY =
     @"Cannot work with an empty/nil key";
 NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV =
@@ -70,11 +70,11 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return data;
 }
 
-+ (NSString *)encryptText:(NSString *)text withKey:(NSData *)key iv:(NSData *)iv
++ (NSData *)encryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
 {
-    if (![text isKindOfClass:[NSString class]] || (text.length < 1)) {
+    if (![data isKindOfClass:[NSData class]] || (data.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
-                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_TEXT];
+                    format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_DATA];
     }
 
     if (![key isKindOfClass:[NSData class]] || (key.length < 1)) {
@@ -87,19 +87,14 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_MSG_EMPTY_IV];
     }
 
-    NSData *decryptedData = [text dataUsingEncoding:NSUnicodeStringEncoding];
+    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:data withKey:key iv:iv];
 
-    NSData *cipherDat = [CDTEncryptionKeychainUtils doEncrypt:decryptedData withKey:key iv:iv];
-
-    NSString *encodedBase64CipherString =
-        [CDTEncryptionKeychainUtils base64StringFromData:cipherDat];
-
-    return encodedBase64CipherString;
+    return cipherDat;
 }
 
-+ (NSString *)decryptText:(NSString *)ciphertext withKey:(NSData *)key iv:(NSData *)iv
++ (NSData *)decryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
 {
-    if (![ciphertext isKindOfClass:[NSString class]] || (ciphertext.length < 1)) {
+    if (![data isKindOfClass:[NSData class]] || (data.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_CIPHER];
     }
@@ -114,17 +109,9 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
                     format:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV];
     }
 
-    NSData *encryptedData = [CDTEncryptionKeychainUtils base64DataFromString:ciphertext];
-
-    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:encryptedData withKey:key iv:iv];
-
-    NSString *returnText =
-        [[NSString alloc] initWithData:decodedCipher encoding:NSUnicodeStringEncoding];
-    if (returnText && ![CDTEncryptionKeychainUtils isBase64Encoded:returnText]) {
-        returnText = nil;
-    }
-
-    return returnText;
+    NSData *decodedCipher = [CDTEncryptionKeychainUtils doDecrypt:data withKey:key iv:iv];
+    
+    return decodedCipher;
 }
 
 + (NSData *)generateKeyWithPassword:(NSString *)pass

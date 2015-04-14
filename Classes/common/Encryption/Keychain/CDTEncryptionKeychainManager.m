@@ -35,7 +35,7 @@
 @implementation CDTEncryptionKeychainManager
 
 #pragma mark - Public methods
-- (NSString *)getDPK:(NSString *)password
+- (NSData *)getDPK:(NSString *)password
 {
     CDTEncryptionKeychainData *data = [self.storage validatedEncryptionKeyData];
     if (!data) {
@@ -45,30 +45,29 @@
     NSData *nativeKey =
         [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:data.salt];
 
-    NSString *decryptedKey =
-        [CDTEncryptionKeychainUtils decryptText:data.encryptedDPK withKey:nativeKey iv:data.iv];
+    NSData *decryptedDPK =
+        [CDTEncryptionKeychainUtils decryptData:data.encryptedDPK withKey:nativeKey iv:data.iv];
 
-    return decryptedKey;
+    return decryptedDPK;
 }
 
 - (BOOL)generateAndStoreDpkUsingPassword:(NSString *)password withSalt:(NSString *)salt
 {
     NSData *data = [CDTEncryptionKeychainUtils
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
-    NSString *text = [data CDTEncryptionKeychainHexadecimalRepresentation];
 
     NSData *nativeKey = [CDTEncryptionKeychainManager generateKeyWithPassword:password salt:salt];
-    
+
     NSData *nativeIv = [CDTEncryptionKeychainUtils
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
 
-    NSString *encyptedText =
-        [CDTEncryptionKeychainUtils encryptText:text withKey:nativeKey iv:nativeIv];
+    NSData *encyptedData =
+        [CDTEncryptionKeychainUtils encryptData:data withKey:nativeKey iv:nativeIv];
 
     NSNumber *iterations = [NSNumber numberWithInt:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS];
 
     CDTEncryptionKeychainData *keychainData =
-        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedText
+        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedData
                                                    salt:salt
                                                      iv:nativeIv
                                              iterations:iterations

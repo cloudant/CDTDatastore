@@ -32,26 +32,26 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 + (NSData *)generateRandomBytesInBufferWithLength:(NSUInteger)length;
 
 /**
- * Encrypts an NSString by using a key and an Initialization Vector (IV).
+ * Encrypts a buffer by using a key and an Initialization Vector (IV).
  *
- * @param text The text to encrypt
+ * @param data The data to encrypt
  * @param key The key used for encryption
  * @param iv The IV used for encryption
  *
- * @return The encrypted text
+ * @return The encrypted data
  */
-+ (NSString *)encryptText:(NSString *)text withKey:(NSData *)key iv:(NSData *)iv;
++ (NSData *)encryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
 
 /**
- * Decrypts an NSString by using a key and an Initialization Vector (IV).
+ * Decrypts a buffer by using a key and an Initialization Vector (IV).
  *
- * @param ciphertext The encrypted text to decrypt
+ * @param data The encrypted data to decrypt
  * @param key The key used for decryption
  * @param iv The IV used for decryption
  *
- * @return The decrypted text
+ * @return The decrypted data
  */
-+ (NSString *)decryptText:(NSString *)ciphertext withKey:(NSData *)key iv:(NSData *)iv;
++ (NSData *)decryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
 
 /**
  * Generates a key by using the PBKDF2 algorithm.

@@ -32,7 +32,7 @@
     return [self initWithEncryptedDPK:nil salt:nil iv:nil iterations:nil version:nil];
 }
 
-- (instancetype)initWithEncryptedDPK:(NSString *)encryptedDPK
+- (instancetype)initWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
@@ -57,7 +57,7 @@
 }
 
 #pragma mark - Public class methods
-+ (instancetype)dataWithEncryptedDPK:(NSString *)encryptedDPK
++ (instancetype)dataWithEncryptedDPK:(NSData *)encryptedDPK
                                 salt:(NSString *)salt
                                   iv:(NSData *)iv
                           iterations:(NSNumber *)iterations
