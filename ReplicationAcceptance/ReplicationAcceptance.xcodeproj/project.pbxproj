@@ -347,6 +347,7 @@
 				27A7E68618997412007FAF1C /* Frameworks */,
 				27A7E68718997412007FAF1C /* Resources */,
 				DA7978ED7F6244DC8D4D91B8 /* Copy Pods Resources */,
+				982BBD681ADD31FA00D2F9F1 /* Set Replication Settings */,
 			);
 			buildRules = (
 			);
@@ -551,6 +552,20 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
+		};
+		982BBD681ADD31FA00D2F9F1 /* Set Replication Settings */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Set Replication Settings";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/buildplist.sh\"";
 		};
 		9847750B1AB9CDE50024B64C /* Set replication settings */ = {
 			isa = PBXShellScriptBuildPhase;
