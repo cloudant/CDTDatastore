@@ -16,12 +16,9 @@
 #import "CDTDatastore+Query.h"
 #import "CDTISGraphviz.h"
 
-@interface CDTISBatchUpdateResult : NSPersistentStoreResult
-@property (nonatomic, strong) id result;
-@property (nonatomic, assign) NSBatchUpdateRequestResultType resultType;
-@end
-
-@implementation CDTISBatchUpdateResult
+@implementation NSBatchUpdateResult
+- (void)setResultType:(NSBatchUpdateRequestResultType)resultType { _resultType = resultType; }
+- (void)setResult:(id)result { _result = result; }
 @end
 
 #pragma mark - properties
@@ -2190,10 +2187,7 @@ NSString *kNorOperator = @"$nor";
         [results addObject:moid];
     }
 
-    // HACK: We should return an NSBatchUpdateResult from this method, but we can't, because
-    // that class doesn't provide setters for fields we need to set. So instead we return a
-    // CDTISBatchUpdateResult, which has the same public properties as NSBatchUpdateRequest.
-    CDTISBatchUpdateResult *updateResult = [CDTISBatchUpdateResult new];
+    NSBatchUpdateResult *updateResult = [NSBatchUpdateResult new];
     updateResult.resultType = updateRequest.resultType;
 
     switch (updateRequest.resultType) {
