@@ -20,7 +20,6 @@
 
 #import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainConstants.h"
-#import "CDTEncryptionKeychainStorage+KeychainManager.h"
 
 #import "CDTLogging.h"
 
@@ -33,10 +32,7 @@
 @implementation CDTEncryptionKeychainManager
 
 #pragma mark - Init object
-- (instancetype)init
-{
-    return [self initWithStorage:nil];
-}
+- (instancetype)init { return [self initWithStorage:nil]; }
 
 - (instancetype)initWithStorage:(CDTEncryptionKeychainStorage *)storage
 {
@@ -46,72 +42,152 @@
             _storage = storage;
         } else {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Storage is mandatory");
-            
+
             self = nil;
         }
     }
-    
+
     return self;
 }
 
 #pragma mark - Public methods
 - (NSData *)retrieveEncryptionKeyDataUsingPassword:(NSString *)password
 {
-    CDTEncryptionKeychainData *data = [self.storage validatedEncryptionKeyData];
-    if (!data) {
+    CDTEncryptionKeychainData *data = [self.storage encryptionKeyData];
+    if (!data || ![self validatedEncryptionKeyData:data]) {
         return nil;
     }
-
+    
     NSData *aesKey =
-        [CDTEncryptionKeychainUtils generateKeyWithPassword:password
-                                                       salt:data.salt
-                                                 iterations:data.iterations
-                                                     length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+        [self generateAESKeyUsingPBKDF2ToDerivePassword:password
+                                               withSalt:data.salt
+                                             iterations:data.iterations
+                                                 length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
 
-    NSData *dpk =
-        [CDTEncryptionKeychainUtils decryptData:data.encryptedDPK withKey:aesKey iv:data.iv];
+    NSData *dpk = [self decryptCipheredDpk:data.encryptedDPK usingAESWithKey:aesKey iv:data.iv];
 
     return dpk;
 }
 
 - (NSData *)generateEncryptionKeyDataUsingPassword:(NSString *)password
 {
-    NSData *pbkdf2Salt = [CDTEncryptionKeychainUtils
-        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_PBKDF2_SALT_SIZE];
+    NSData *dpk = nil;
 
-    NSData *aesKey =
-        [CDTEncryptionKeychainUtils generateKeyWithPassword:password
-                                                       salt:pbkdf2Salt
-                                                 iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
-                                                     length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+    if (![self encryptionKeyDataAlreadyGenerated]) {
+        dpk = [self generateDpk];
 
-    NSData *aesIv = [CDTEncryptionKeychainUtils
-        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+        CDTEncryptionKeychainData *keychainData =
+            [self keychainDataToStoreDpk:dpk encryptedWithPassword:password];
 
+        if (![self.storage saveEncryptionKeyData:keychainData]) {
+            dpk = nil;
+        }
+    }
+
+    return dpk;
+}
+
+- (BOOL)encryptionKeyDataAlreadyGenerated { return [self.storage areThereEncryptionKeyData]; }
+
+- (BOOL)clearEncryptionKeyData { return [self.storage clearEncryptionKeyData]; }
+
+#pragma mark - CDTEncryptionKeychainManager+Internal methods
+- (BOOL)validatedEncryptionKeyData:(CDTEncryptionKeychainData *)data
+{
+    // Ensure the num derivations saved, matches what we have
+    if (data.iterations != CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS) {
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                   @"Number of stored iterations does NOT match the constant value %li",
+                   (long)CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
+
+        return NO;
+    }
+
+    // Ensure IV has the correct length
+    if (data.iv.length != CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE) {
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"IV does not have the expected size: %i bytes",
+                   CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE);
+
+        return NO;
+    }
+
+    return YES;
+}
+
+- (NSData *)generateDpk
+{
     NSData *dpk = [CDTEncryptionKeychainUtils
         generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
-    NSData *encyptedDpk = [CDTEncryptionKeychainUtils encryptData:dpk withKey:aesKey iv:aesIv];
+
+    return dpk;
+}
+
+- (CDTEncryptionKeychainData *)keychainDataToStoreDpk:(NSData *)dpk
+                                encryptedWithPassword:(NSString *)password
+{
+    NSData *pbkdf2Salt = [self generatePBKDF2Salt];
+
+    NSData *aesKey =
+        [self generateAESKeyUsingPBKDF2ToDerivePassword:password
+                                               withSalt:pbkdf2Salt
+                                             iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
+                                                 length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+
+    NSData *aesIv = [self generateAESIv];
+
+    NSData *encryptedDpk = [self encryptDpk:dpk usingAESWithKey:aesKey iv:aesIv];
 
     CDTEncryptionKeychainData *keychainData =
-        [CDTEncryptionKeychainData dataWithEncryptedDPK:encyptedDpk
+        [CDTEncryptionKeychainData dataWithEncryptedDPK:encryptedDpk
                                                    salt:pbkdf2Salt
                                                      iv:aesIv
                                              iterations:CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS
                                                 version:CDTENCRYPTION_KEYCHAIN_VERSION];
 
-    BOOL isSaved = [self.storage saveEncryptionKeyData:keychainData];
-
-    return (isSaved ? dpk : nil);
+    return keychainData;
 }
 
-- (BOOL)encryptionKeyDataAlreadyGenerated
+- (NSData *)generatePBKDF2Salt
 {
-    return [self.storage areThereEncryptionKeyData];
+    NSData *salt = [CDTEncryptionKeychainUtils
+        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_PBKDF2_SALT_SIZE];
+
+    return salt;
 }
 
-- (BOOL)clearEncryptionKeyData
+- (NSData *)generateAESKeyUsingPBKDF2ToDerivePassword:(NSString *)password
+                                             withSalt:(NSData *)salt
+                                           iterations:(NSInteger)iterations
+                                               length:(NSUInteger)length
 {
-    return [self.storage clearEncryptionKeyData];
+    NSData *aesKey = [CDTEncryptionKeychainUtils generateKeyWithPassword:password
+                                                                    salt:salt
+                                                              iterations:iterations
+                                                                  length:length];
+
+    return aesKey;
+}
+
+- (NSData *)generateAESIv
+{
+    NSData *iv = [CDTEncryptionKeychainUtils
+        generateRandomBytesInBufferWithLength:CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE];
+
+    return iv;
+}
+
+- (NSData *)encryptDpk:(NSData *)dpk usingAESWithKey:(NSData *)key iv:(NSData *)iv
+{
+    NSData *encyptedDpk = [CDTEncryptionKeychainUtils encryptData:dpk withKey:key iv:iv];
+
+    return encyptedDpk;
+}
+
+- (NSData *)decryptCipheredDpk:(NSData *)cipheredDpk usingAESWithKey:(NSData *)key iv:(NSData *)iv
+{
+    NSData *dpk = [CDTEncryptionKeychainUtils decryptData:cipheredDpk withKey:key iv:iv];
+
+    return dpk;
 }
 
 @end
