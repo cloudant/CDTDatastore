@@ -998,6 +998,7 @@ static void *ISContextProgress = &ISContextProgress;
 - (void)testBatchUpdates
 {
     int num_entries = 100;
+    const double TIME_PRECISION = 0.000001;  // one microsecond
 
     XCTAssertTrue((num_entries % 4) == 0, @"Test assumes num_entries is mod 4: %d", num_entries);
 
@@ -1006,8 +1007,11 @@ static void *ISContextProgress = &ISContextProgress;
     NSManagedObjectContext *moc = self.managedObjectContext;
     XCTAssertNotNil(moc, @"could not create Context");
 
+    NSDate *now = [NSDate date];
+
     for (int i = 0; i < num_entries; i++) {
         Entry *e = MakeEntry(moc);
+        e.created_at = [now dateByAddingTimeInterval:(NSTimeInterval)(-num_entries + i)];
         e.text = NSStringFromSelector(_cmd);
         e.check = (i % 2) ? @NO : @YES;
         e.i64 = @(i);
@@ -1080,7 +1084,6 @@ static void *ISContextProgress = &ISContextProgress;
     {
         NSBatchUpdateRequest *req = [[NSBatchUpdateRequest alloc] initWithEntityName:@"Entry"];
         req.predicate = [NSPredicate predicateWithFormat:@"check == YES"];
-        NSDate *now = [NSDate date];
         req.propertiesToUpdate = @{
             @"created_at" : now,
             @"text" : @"foobar",
@@ -1101,7 +1104,8 @@ static void *ISContextProgress = &ISContextProgress;
           Entry *e = (Entry *)[moc objectWithID:objID];
           if (![e isFault]) {
               [moc refreshObject:e mergeChanges:YES];
-              XCTAssertTrue([e.created_at isEqualToDate:now], @"created_at field not updated");
+              XCTAssertTrue(fabs([e.created_at timeIntervalSinceDate:now]) < TIME_PRECISION,
+                            @"created_at field not updated");
               XCTAssertTrue([e.text isEqualToString:@"foobar"], @"text field not updated");
               XCTAssertTrue([e.i16 intValue] == 32, @"i16 field not updated");
               XCTAssertTrue([e.fpFloat floatValue] == (float)M_PI_2, @"fpDouble field not updated");
@@ -1119,6 +1123,19 @@ static void *ISContextProgress = &ISContextProgress;
 
         XCTAssertTrue([res.result count] == (num_entries / 4), @"results count should be %d is %lu",
                       (num_entries / 4), (unsigned long)[res.result count]);
+    }
+
+    /**
+     *  Batch update error case: update specifies field not in managed object
+     */
+    {
+        NSBatchUpdateRequest *req = [[NSBatchUpdateRequest alloc] initWithEntityName:@"Entry"];
+        req.predicate = [NSPredicate predicateWithFormat:@"i64>=%d", num_entries / 2];
+        req.propertiesToUpdate = @{ @"foobar" : @(NO) };
+        req.resultType = NSUpdatedObjectsCountResultType;
+
+        XCTAssertThrowsSpecificNamed([moc executeRequest:req error:&err], NSException,
+                                     NSInvalidArgumentException, @"Expected Exception");
     }
 }
 

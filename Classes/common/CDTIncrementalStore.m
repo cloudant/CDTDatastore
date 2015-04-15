@@ -845,11 +845,14 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
  *  Update existing object in the database
  *
  *  @param mo    Managed Object
+ *  @param changes Dictionary of [key:NSString, value:id] of changes to make to mo contents
  *  @param error Error
  *
  *  @return YES/NO
  */
-- (BOOL)updateManagedObject:(NSManagedObject *)mo error:(NSError **)error
+- (BOOL)updateManagedObject:(NSManagedObject *)mo
+                withChanges:(NSDictionary *)changes
+                      error:(NSError **)error
 {
     NSError *err = nil;
     NSManagedObjectID *moid = [mo objectID];
@@ -863,9 +866,8 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 
     NSMutableDictionary *props = [NSMutableDictionary dictionary];
     NSMutableDictionary *blobStore = [NSMutableDictionary dictionary];
-    NSDictionary *changed = [mo changedValues];
 
-    for (NSString *name in changed) {
+    for (NSString *name in changes) {
         NSDictionary *enc = nil;
         id prop = propDic[name];
         if ([prop isTransient]) {
@@ -873,10 +875,10 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
         }
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
-            enc = [self encodeAttribute:att withValue:changed[name] blobStore:blobStore error:&err];
+            enc = [self encodeAttribute:att withValue:changes[name] blobStore:blobStore error:&err];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
-            enc = [self encodeRelation:rel withValue:changed[name] error:&err];
+            enc = [self encodeRelation:rel withValue:changes[name] error:&err];
         } else {
             oops(@"bad prop?");
         }
@@ -945,6 +947,11 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     }
 
     return YES;
+}
+
+- (BOOL)updateManagedObject:(NSManagedObject *)mo error:(NSError **)error
+{
+    return [self updateManagedObject:mo withChanges:[mo changedValues] error:error];
 }
 
 /**
@@ -2140,7 +2147,7 @@ NSString *kNorOperator = @"$nor";
 {
     NSError *err = nil;
 
-	NSFetchRequest *fetchRequest = [NSFetchRequest new];
+    NSFetchRequest *fetchRequest = [NSFetchRequest new];
     fetchRequest.entity = updateRequest.entity;
     fetchRequest.predicate = updateRequest.predicate;
 
@@ -2162,6 +2169,12 @@ NSString *kNorOperator = @"$nor";
     // The keys have all been transformed from attribute names into NSAttributeDescriptions
     NSDictionary *updates = updateRequest.propertiesToUpdate;
 
+    NSMutableDictionary *changes = [NSMutableDictionary dictionary];
+    for (NSAttributeDescription *attr in updates) {
+        id newValue = [updates[attr] constantValue];
+        [changes setValue:newValue forKey:attr.name];
+    }
+
     NSEntityDescription *entity = [updateRequest entity];
 
     NSMutableArray *results = [NSMutableArray array];
@@ -2169,12 +2182,7 @@ NSString *kNorOperator = @"$nor";
         NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
         NSManagedObject *mo = [context objectWithID:moid];
 
-        for (NSAttributeDescription *attr in [updates allKeys]) {
-            id newValue = [updates[attr] constantValue];
-            [mo setValue:newValue forKey:attr.name];
-        }
-
-        if (![self updateManagedObject:mo error:&err]) {
+        if (![self updateManagedObject:mo withChanges:changes error:&err]) {
             if (error) *error = err;
             return nil;
         }
@@ -2182,9 +2190,9 @@ NSString *kNorOperator = @"$nor";
         [results addObject:moid];
     }
 
-	// HACK: We should return an NSBatchUpdateResult from this method, but we can't, because
-	// that class doesn't provide setters for fields we need to set. So instead we return a
-	// CDTISBatchUpdateResult, which has the same public properties as NSBatchUpdateRequest.
+    // HACK: We should return an NSBatchUpdateResult from this method, but we can't, because
+    // that class doesn't provide setters for fields we need to set. So instead we return a
+    // CDTISBatchUpdateResult, which has the same public properties as NSBatchUpdateRequest.
     CDTISBatchUpdateResult *updateResult = [CDTISBatchUpdateResult new];
     updateResult.resultType = updateRequest.resultType;
 
@@ -2198,10 +2206,10 @@ NSString *kNorOperator = @"$nor";
             break;
 
         case NSStatusOnlyResultType:  // Just return status
-			updateResult.result = @(YES);
-			break;
+            updateResult.result = @(YES);
+            break;
 
-		default:
+        default:
             break;
     }
 
