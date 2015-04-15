@@ -62,7 +62,12 @@
 
     void (^f)(NSString *nsv, NSString *ssv, NSError *fe) = self.fetchRecordChangesCompletionBlock;
     if (f) {
-        f([[NSNumber numberWithLongLong:lastSequence] stringValue], _startSequenceValue, nil);
+        // Try our best to avoid calling the completion block if cancelled is set:
+        //  - after the check in the loop above 
+        //  - where there are no remaining changes, so we fall through to here
+        if (!self.cancelled) {
+            f([[NSNumber numberWithLongLong:lastSequence] stringValue], _startSequenceValue, nil);
+        }
     }
 }
 
