@@ -117,9 +117,6 @@
     [dict removeObjectForKey:(__bridge id)(kSecReturnAttributes)];
     [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
 
-#warning Will we delete all accounts?
-    [dict removeObjectForKey:(__bridge id)(kSecAttrAccount)];
-
     OSStatus err = SecItemDelete((__bridge CFDictionaryRef)dict);
 
     if (err == noErr || err == errSecItemNotFound) {
