@@ -725,7 +725,7 @@ static void *ISContextProgress = &ISContextProgress;
     fr.predicate = [NSCompoundPredicate orPredicateWithSubpredicates:@[
         [NSPredicate predicateWithValue:NO],
         [NSPredicate predicateWithFormat:@"i64 < %u", max / 2]
-		]];
+    ]];
 
     results = [moc executeFetchRequest:fr error:&err];
     XCTAssertNotNil(results, @"Expected results: %@", err);
@@ -739,6 +739,16 @@ static void *ISContextProgress = &ISContextProgress;
 
     XCTAssertTrue([check count] == [results count],
                   @"results array contains entries that do not satisfy predicate");
+
+    /**
+     *  Error cases
+     */
+
+    fr.predicate = (NSPredicate *)@"foobar";
+
+    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                 CDTISException, @"Expected Exception");
+
 }
 
 - (void)testFetchConstraints

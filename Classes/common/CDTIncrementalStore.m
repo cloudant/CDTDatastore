@@ -1858,7 +1858,7 @@ NSString *kNorOperator = @"$nor";
     }
 
     [NSException raise:CDTISException
-                format:@"Unsupported compound predicate of type: %@", NSStringFromClass([p class])];
+                format:@"Unsupported predicate of type: %@", NSStringFromClass([p class])];
 
     return nil;
 }
