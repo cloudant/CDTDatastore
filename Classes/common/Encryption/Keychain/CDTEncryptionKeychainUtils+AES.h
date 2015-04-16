@@ -16,9 +16,32 @@
 
 #import "CDTEncryptionKeychainUtils.h"
 
+/**
+ Utility class to encrypt/decrypt a NSData based on AES algorithim:
+ http://en.wikipedia.org/wiki/Advanced_Encryption_Standard
+ */
 @interface CDTEncryptionKeychainUtils (AES)
 
+/**
+ Decrypts a buffer by using a key and an Initialization Vector (IV).
+
+ @param data The encrypted data to decrypt
+ @param key The key used for decryption
+ @param iv The IV used for decryption
+
+ @return The decrypted data
+ */
 + (NSData *)doDecrypt:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
+
+/**
+ Encrypts a buffer by using a key and an Initialization Vector (IV).
+
+ @param data The data to encrypt
+ @param key The key used for encryption
+ @param iv The IV used for encryption
+
+ @return The encrypted data
+ */
 + (NSData *)doEncrypt:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
 
 @end

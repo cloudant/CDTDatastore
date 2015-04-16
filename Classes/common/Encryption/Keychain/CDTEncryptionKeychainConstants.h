@@ -19,14 +19,22 @@
 
 #import <CommonCrypto/CommonCryptor.h>
 
+// Define the version of the implementation used to cipher/decipher DPKs
 #define CDTENCRYPTION_KEYCHAIN_VERSION @"1.0"
 
+// Size (bytes) of the DPK (Data Protection Key)
 #define CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE 32
 
+// PBKDF2: Size (bytes) of the salt value used to derive a user-provided password
 #define CDTENCRYPTION_KEYCHAIN_PBKDF2_SALT_SIZE 32
+
+// PBKDF2: Number of times the derivation process is applied to a user-provided password
 #define CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS (NSInteger)10000
 
+// AES: Size (bytes) of the key used to encrypt/decrypt a DPK
 #define CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE kCCKeySizeAES256
+
+// AES: Size (bytes) of the IV (Initialization Vector) used to encrypt/decrypt a DPK
 #define CDTENCRYPTION_KEYCHAIN_AES_IV_SIZE kCCBlockSizeAES128
 
 #endif

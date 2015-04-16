@@ -16,8 +16,25 @@
 
 #import "CDTEncryptionKeychainUtils.h"
 
+/**
+ Utility class to derive a key from a user-provided password using PBKDF2:
+ http://en.wikipedia.org/wiki/PBKDF2
+
+ The resulting key is a stronger password that can be used as a cryptographic key in subsequent
+ operations.
+ */
 @interface CDTEncryptionKeychainUtils (PBKDF2)
 
+/**
+ Generates a key by using the PBKDF2 algorithm.
+
+ @param pass The password that is used to generate the key
+ @param salt The salt that is used to generate the key
+ @param iterations The number of iterations that is passed to the key generation algorithm
+ @param length Size of the key
+
+ @return The generated key
+ */
 + (NSData *)derivePassword:(NSString *)password
                   withSalt:(NSData *)salt
                 iterations:(NSUInteger)iterations

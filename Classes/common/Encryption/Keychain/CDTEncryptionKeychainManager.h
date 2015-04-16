@@ -18,39 +18,58 @@
 
 #import "CDTEncryptionKeychainStorage.h"
 
+/**
+ Use this class to generate a Data Protection Key (DPK), i.e. a strong password that can be used
+ later on for other purposes like ciphering a database.
+ 
+ The generated DPK is automatically encrypted and saved to the keychain, for this reason, it is
+ neccesary to provide a password to generate and retrieve the DPK.
+ */
 @interface CDTEncryptionKeychainManager : NSObject
 
+/**
+ Initialise a manager with a CDTEncryptionKeychainStorage instance.
+ 
+ A CDTEncryptionKeychainStorage gives access to the keychain throught an identifier, this means
+ that the DPK saved to the keychain is bound to this identifier. If a new manager is created with
+ a storage pointing to another identifier, the previous DPK will not be accesible. So you can
+ create as many DPKs as you want as long as you provide different identifiers.
+ 
+ @param storage 
+ 
+ @see CDTEncryptionKeychainStorage
+ */
 - (instancetype)initWithStorage:(CDTEncryptionKeychainStorage *)storage;
 
 /**
- * Returns the decrypted Data Protection Key (DPK) from the keychain.
- *
- * @param password Password used to decrypt the DPK
- *
- * @return The DPK
+ Returns the decrypted Data Protection Key (DPK) from the keychain.
+ 
+ @param password Password used to decrypt the DPK
+ 
+ @return The DPK
  */
 - (NSData *)retrieveEncryptionKeyDataUsingPassword:(NSString *)password;
 
 /**
- * Generates the Data Protection Key (DPK) locally, encrypts it, and stores it inside the keychain.
- *
- * @param password Password used for the Client Based Key (CBK) to encrypt the DPK
- *
- * @return The DPK
+ Generates a Data Protection Key (DPK), encrypts it, and stores it inside the keychain.
+ 
+ @param password Password used to encrypt the DPK
+ 
+ @return The DPK
  */
 - (NSData *)generateEncryptionKeyDataUsingPassword:(NSString *)password;
 
 /**
- * Checks if the encrypted Data Protection Key (DPK) is inside the keychain.
- *
- * @return True if the encrypted DPK is inside the keychain, false otherwise
+ Checks if the encrypted Data Protection Key (DPK) is inside the keychain.
+ 
+ @return YES if the encrypted DPK is inside the keychain, NO otherwise
  */
 - (BOOL)encryptionKeyDataAlreadyGenerated;
 
 /**
- * Clears security metadata from the keychain.
- *
- * @return Success (true) or failure (false)
+ Clears security metadata from the keychain.
+ 
+ @return Success (true) or failure (false)
  */
 - (BOOL)clearEncryptionKeyData;
 

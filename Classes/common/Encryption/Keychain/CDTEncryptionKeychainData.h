@@ -1,6 +1,6 @@
 //
 //  CDTEncryptionKeychainData.h
-//  
+//
 //
 //  Created by Enrique de la Torre Fernandez on 12/04/2015.
 //
@@ -16,6 +16,15 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ It is never safe storing a DPK (Data Protection Key), it is a better idea to store an encrypted
+ version of it. However, to use it again, it has to be decrypted which means that it has to be
+ saved with enough data to inverse the process but without exposing too much information.
+
+ This class defines all the values required to store an encrypted DPK and decipher it later on.
+
+ @see CDTEncryptionKeychainStorage
+ */
 @interface CDTEncryptionKeychainData : NSObject <NSCoding>
 
 @property (strong, nonatomic, readonly) NSData *encryptedDPK;

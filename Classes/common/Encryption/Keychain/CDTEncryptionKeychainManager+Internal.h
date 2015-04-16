@@ -16,6 +16,14 @@
 
 #import "CDTEncryptionKeychainManager.h"
 
+/**
+ This category is only for testing purposes. It presents some of the private methods used by
+ CDTEncryptionKeychainManager to complete its job.
+ 
+ Notice that although all these methods are instance methods, none of them modifies the state of a
+ CDTEncryptionKeychainManager instance or writes to disk, however they are easier to override
+ this way.
+ */
 @interface CDTEncryptionKeychainManager (Internal)
 
 - (BOOL)validatedEncryptionKeyData:(CDTEncryptionKeychainData *)data;
