@@ -703,6 +703,42 @@ static void *ISContextProgress = &ISContextProgress;
     XCTAssertNotNil(results, @"Expected results: %@", err);
 
     XCTAssertTrue([results count] == 2, @"results count should be %d is %@", 2, @([results count]));
+
+    /**
+     *  test predicateWithaValue style predicates
+     */
+    fr.predicate = [NSPredicate predicateWithValue:YES];
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    expected = [entries filteredArrayUsingPredicate:fr.predicate];
+
+    XCTAssertTrue([results count] == [expected count], @"results count is %ld but should be %ld",
+                  [results count], [expected count]);
+
+    check = [results filteredArrayUsingPredicate:fr.predicate];
+
+    /**
+     * test predicate with FALSEPREDICATE
+     */
+    fr.predicate = [NSCompoundPredicate orPredicateWithSubpredicates:@[
+        [NSPredicate predicateWithValue:NO],
+        [NSPredicate predicateWithFormat:@"i64 < %u", max / 2]
+		]];
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    expected = [entries filteredArrayUsingPredicate:fr.predicate];
+
+    XCTAssertTrue([results count] == [expected count], @"results count is %ld but should be %ld",
+                  [results count], [expected count]);
+
+    check = [results filteredArrayUsingPredicate:fr.predicate];
+
+    XCTAssertTrue([check count] == [results count],
+                  @"results array contains entries that do not satisfy predicate");
 }
 
 - (void)testFetchConstraints

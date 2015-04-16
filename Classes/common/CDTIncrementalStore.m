@@ -1849,7 +1849,17 @@ NSString *kNorOperator = @"$nor";
     } else if ([p isKindOfClass:[NSComparisonPredicate class]]) {
         NSComparisonPredicate *cp = (NSComparisonPredicate *)p;
         return [self comparisonPredicate:cp];
+    } else if ([p isKindOfClass:[[NSPredicate predicateWithValue:YES] class]]) {
+        // Here we need a *simple* predicate that we *know* will be true
+        return @{ @"_id" : @{@"$exists" : @YES} };
+    } else if ([p isKindOfClass:[[NSPredicate predicateWithValue:NO] class]]) {
+        // Here we need a *simple* predicate that we *know* will be false
+        return @{ @"_id" : @{@"$exists" : @NO} };
     }
+
+    [NSException raise:CDTISException
+                format:@"Unsupported compound predicate of type: %@", NSStringFromClass([p class])];
+
     return nil;
 }
 
