@@ -1689,6 +1689,11 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
                 if (![fields containsObject:field]) {
                     [fields addObject:field];
                 }
+            } else if ([lhs expressionType] == NSEvaluatedObjectExpressionType) {
+                NSString *field = CDTISIdentifierKey;
+                if (![fields containsObject:field]) {
+                    [fields addObject:field];
+                }
             }
         }
     }
@@ -1724,19 +1729,18 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     NSExpression *lhs = [cp leftExpression];
     NSExpression *rhs = [cp rightExpression];
 
-    NSString *key = @"";
+    NSString *keyStr = @"";
     if ([lhs expressionType] == NSKeyPathExpressionType) {
-        key = [lhs keyPath];
+        keyStr = [lhs keyPath];
     } else if ([lhs expressionType] == NSEvaluatedObjectExpressionType) {
-        key = CDTISIdentifierKey;
+        keyStr = CDTISIdentifierKey;
     }
 
     id value = [rhs expressionValueWithObject:nil context:nil];
     NSDictionary *result = nil;
-    if (!key || !value) {
+    if (!keyStr || !value) {
         return nil;
     }
-    NSString *keyStr = key;
 
     // process the predicate operator and create the key-value string
     NSPredicateOperatorType predType = [cp predicateOperatorType];
@@ -1966,7 +1970,6 @@ NSString *kNorOperator = @"$nor";
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
 {
-    NSError *err;
     NSFetchRequestResultType fetchType = [fetchRequest resultType];
 
     /**
