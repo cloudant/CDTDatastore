@@ -2138,7 +2138,7 @@ NSString *kNorOperator = @"$nor";
     return @[];
 }
 
-- (id)executeBatchUpdateRequest:(NSBatchUpdateRequest *)updateRequest
+- (NSBatchUpdateResult *)executeBatchUpdateRequest:(NSBatchUpdateRequest *)updateRequest
                     withContext:(NSManagedObjectContext *)context
                           error:(NSError **)error
 {
