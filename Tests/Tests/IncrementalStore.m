@@ -187,6 +187,9 @@ Entry *MakeEntry(NSManagedObjectContext *moc)
 
 @implementation IncrementalStore
 
+// quick hack to enable a known store type for testing
+const BOOL sql = NO;
+
 static void *ISContextProgress = &ISContextProgress;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -218,9 +221,9 @@ static void *ISContextProgress = &ISContextProgress;
         return _managedObjectContext;
     }
 
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+    _managedObjectContext = [NSManagedObjectContext new];
+    NSPersistentStoreCoordinator *coordinator = self.persistentStoreCoordinator;
     if (coordinator != nil) {
-        _managedObjectContext = [NSManagedObjectContext new];
         [_managedObjectContext setPersistentStoreCoordinator:coordinator];
     }
     return _managedObjectContext;
@@ -235,9 +238,23 @@ static void *ISContextProgress = &ISContextProgress;
         [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 
     NSError *err = nil;
-    NSURL *storeURL = [NSURL URLWithString:@"cdtis_test"];
     NSPersistentStore *theStore;
-    theStore = [_persistentStoreCoordinator addPersistentStoreWithType:[CDTIncrementalStore type]
+
+    NSString *storeType;
+    NSURL *storeURL;
+
+    if (sql) {
+        storeType = NSSQLiteStoreType;
+        NSURL *docDir =
+            [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
+                                                    inDomains:NSUserDomainMask] lastObject];
+        storeURL = [docDir URLByAppendingPathComponent:@"cdtis_test.sqlite"];
+    } else {
+        storeType = [CDTIncrementalStore type];
+        storeURL = [NSURL URLWithString:@"cdtis_test"];
+    }
+
+    theStore = [_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                          configuration:nil
                                                                    URL:storeURL
                                                                options:nil
@@ -246,6 +263,7 @@ static void *ISContextProgress = &ISContextProgress;
     return _persistentStoreCoordinator;
 }
 
+// This method is called before the invocation of each test method in the class.
 - (void)setUp
 {
     [super setUp];
@@ -256,11 +274,21 @@ static void *ISContextProgress = &ISContextProgress;
         initialized = YES;
     }
 
-    // remove the entire database directory
-    NSError *err = nil;
-    NSURL *dir = [CDTIncrementalStore localDir];
     NSFileManager *fm = [NSFileManager defaultManager];
-    if (![fm removeItemAtURL:dir error:&err]) {
+    NSURL *storeURL;
+
+    if (sql) {
+        NSURL *docDir =
+            [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
+                                                    inDomains:NSUserDomainMask] lastObject];
+        storeURL = [docDir URLByAppendingPathComponent:@"cdtis_test.sqlite"];
+    } else {
+        // remove the entire database directory
+        storeURL = [CDTIncrementalStore localDir];
+    }
+
+    NSError *err = nil;
+    if (![fm removeItemAtURL:storeURL error:&err]) {
         if (err.code != NSFileNoSuchFileError) {
             XCTAssertNil(err, @"%@", err);
         }
@@ -547,6 +575,18 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
+     *  fetch a specific object
+     */
+    fr.predicate =
+        [NSPredicate predicateWithFormat:@"(SELF = %@)", ((Entry *)entries[max / 2]).objectID];
+
+    results = [moc executeFetchRequest:fr error:&err];
+    XCTAssertNotNil(results, @"Expected results: %@", err);
+
+    XCTAssertTrue([results count] == 1, @"results count is %ld but should be %ld", [results count],
+                  (long)1);
+
+    /**
      *  fetch NSNumber between lower and upper bound
      */
     int start = max / 4;
@@ -607,10 +647,10 @@ static void *ISContextProgress = &ISContextProgress;
     // we will borrow the results from the test above
     NSMutableSet *ids = [NSMutableSet set];
     for (Entry *e in results) {
-        NSManagedObjectID *moid = e.objectID;
-        NSURL *uri = [moid URIRepresentation];
-        NSString *s = [uri absoluteString];
-        [ids addObject:s];
+        // NSManagedObjectID *moid = e.objectID;
+        // NSURL *uri = [moid URIRepresentation];
+        // NSString *s = [uri absoluteString];
+        [ids addObject:e.objectID];
     }
 
     lhs = [NSExpression expressionForEvaluatedObject];
@@ -632,19 +672,18 @@ static void *ISContextProgress = &ISContextProgress;
     }
 
     /**
-     *  No support for substring "in" predicated
+     *  Predicate for String CONTAINS
      */
-    lhs = [NSExpression expressionForKeyPath:@"text"];
-    rhs = [NSExpression expressionForConstantValue:@"0"];
-    cp = [NSComparisonPredicate predicateWithLeftExpression:lhs
-                                            rightExpression:rhs
-                                                   modifier:NSDirectPredicateModifier
-                                                       type:NSInPredicateOperatorType
-                                                    options:0];
-    fr.predicate = cp;
+    fr.predicate = [NSPredicate predicateWithFormat:@"Any text CONTAINS[cd] %@", @"0"];
 
-    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 CDTISException, @"Expected Exception");
+    if (sql) {
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+    } else {
+        // No support for substring "in" predicate
+        XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                     CDTISException, @"Expected Exception");
+    }
 
     /**
      *  Compound Predicates
@@ -676,8 +715,13 @@ static void *ISContextProgress = &ISContextProgress;
      */
     fr.predicate = [NSPredicate predicateWithFormat:@"!(text == %@)", textvals[1]];
 
-    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 CDTISException, @"Expected Exception");
+    if (sql) {
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+    } else {
+        XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                     CDTISException, @"Expected Exception");
+    }
 
     /**
      *  Special cases
@@ -746,9 +790,22 @@ static void *ISContextProgress = &ISContextProgress;
 
     fr.predicate = (NSPredicate *)@"foobar";
 
-    XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
-                                 CDTISException, @"Expected Exception");
+    XCTAssertThrows([moc executeFetchRequest:fr error:&err], @"Expected Exception");
 
+    /**
+     *  predicate names a field not present in the entity
+     */
+    fr.predicate = [NSPredicate predicateWithFormat:@"foobar <= %f", M_PI * 2];
+
+    if (sql) {
+        XCTAssertThrowsSpecificNamed([moc executeFetchRequest:fr error:&err], NSException,
+                                     NSInvalidArgumentException, @"Expected Exception");
+    } else {
+        // CDTIS behavior for this case differs from CoreData, because the keys in the predicate
+        // are not validated but simply passed into the query
+        results = [moc executeFetchRequest:fr error:&err];
+        XCTAssertNotNil(results, @"Expected results: %@", err);
+    }
 }
 
 - (void)testFetchConstraints

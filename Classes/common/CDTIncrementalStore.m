@@ -1737,12 +1737,27 @@ NSDictionary *decodeCoreDataMeta(NSDictionary *storedMetaData)
     }
 
     id value = [rhs expressionValueWithObject:nil context:nil];
-    NSDictionary *result = nil;
     if (!keyStr || !value) {
         return nil;
     }
 
+    // Need to munge the objectIDs for CDT queries
+    if ([keyStr isEqualToString:CDTISIdentifierKey]) {
+        if ([value respondsToSelector:@selector(objectEnumerator)]) {
+            NSMutableArray *arr = [NSMutableArray array];
+            for (NSManagedObjectID *moid in value) {
+                [arr addObject:[[moid URIRepresentation] absoluteString]];
+            }
+            value = arr;
+        } else {
+            NSManagedObjectID *moid = (NSManagedObjectID *)value;
+            value = [[moid URIRepresentation] absoluteString];
+        }
+    }
+
     // process the predicate operator and create the key-value string
+    NSDictionary *result = nil;
+
     NSPredicateOperatorType predType = [cp predicateOperatorType];
     switch (predType) {
         case NSLessThanPredicateOperatorType:
