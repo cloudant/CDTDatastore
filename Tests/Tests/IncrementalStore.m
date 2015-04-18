@@ -1007,6 +1007,8 @@ static void *ISContextProgress = &ISContextProgress;
     NSManagedObjectContext *moc = self.managedObjectContext;
     XCTAssertNotNil(moc, @"could not create Context");
 
+    moc.stalenessInterval = 0; // no staleness acceptable
+
     NSDate *now = [NSDate date];
 
     for (int i = 0; i < num_entries; i++) {
