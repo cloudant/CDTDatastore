@@ -2002,8 +2002,6 @@ NSString *kNorOperator = @"$nor";
               withContext:(NSManagedObjectContext *)context
                     error:(NSError **)error
 {
-    NSFetchRequestResultType fetchType = [fetchRequest resultType];
-
     /**
      *  The document, [Responding to Fetch
      * Requests](https://developer.apple.com/library/ios/documentation/DataManagement/Conceptual/IncrementalStorePG/ImplementationStrategy/ImplementationStrategy.html#//apple_ref/doc/uid/TP40010706-CH2-SW6),
@@ -2038,6 +2036,7 @@ NSString *kNorOperator = @"$nor";
                                           fields:nil
                                             sort:sort];
 
+    NSFetchRequestResultType fetchType = [fetchRequest resultType];
     switch (fetchType) {
         case NSManagedObjectResultType: {
             NSMutableArray *results = [NSMutableArray array];
@@ -2139,28 +2138,34 @@ NSString *kNorOperator = @"$nor";
 }
 
 - (NSBatchUpdateResult *)executeBatchUpdateRequest:(NSBatchUpdateRequest *)updateRequest
-                    withContext:(NSManagedObjectContext *)context
-                          error:(NSError **)error
+                                       withContext:(NSManagedObjectContext *)context
+                                             error:(NSError **)error
 {
-    NSError *err = nil;
+    NSEntityDescription *entity = [updateRequest entity];
+    if (badEntityVersion(entity, self.metadata)) oops(@"bad entity mismatch: %@", entity);
 
     NSFetchRequest *fetchRequest = [NSFetchRequest new];
     fetchRequest.entity = updateRequest.entity;
     fetchRequest.predicate = updateRequest.predicate;
 
-    NSDictionary *query = [self queryForFetchRequest:fetchRequest error:&err];
-
+    NSDictionary *query = [self queryForFetchRequest:fetchRequest];
     if (!query) {
-        if (error) *error = err;
+        if (error) {
+            NSDictionary *userInfo = @{
+                NSLocalizedFailureReasonErrorKey :
+                    @"Error processing predicate for batch update request"
+            };
+            *error = [NSError errorWithDomain:CDTISErrorDomain
+                                         code:CDTISErrorNotSupported
+                                     userInfo:userInfo];
+        }
         return nil;
     }
 
-    err = nil;
-    CDTQueryResult *hits = [self.indexManager queryWithDictionary:query options:nil error:&err];
-    if (!hits && err) {
-        if (error) *error = err;
-        return nil;
-    }
+    // Create(ensure) and index appropriate for this fetch request
+    [self ensureIndexForFetchRequest:fetchRequest];
+
+    CDTQResultSet *result = [self.datastore find:query skip:0 limit:0 fields:nil sort:nil];
 
     // Note: This dictionary is *not* the same dictionary specified in the original request.
     // The keys have all been transformed from attribute names into NSAttributeDescriptions
@@ -2172,19 +2177,23 @@ NSString *kNorOperator = @"$nor";
         [changes setValue:newValue forKey:attr.name];
     }
 
-    NSEntityDescription *entity = [updateRequest entity];
-
     NSMutableArray *results = [NSMutableArray array];
-    for (CDTDocumentRevision *rev in hits) {
-        NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
-        NSManagedObject *mo = [context objectWithID:moid];
+    NSError __block *updateError;
+    [result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
+      NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
+      NSManagedObject *mo = [context objectWithID:moid];
 
-        if (![self updateManagedObject:mo withChanges:changes error:&err]) {
-            if (error) *error = err;
-            return nil;
-        }
+      [self updateManagedObject:mo withChanges:changes error:&updateError];
+      if (updateError) {
+          *stop = YES;
+      } else {
+          [results addObject:moid];
+      }
+    }];
 
-        [results addObject:moid];
+    if (updateError) {
+        if (error) *error = updateError;
+        return nil;
     }
 
     NSBatchUpdateResult *updateResult = [NSBatchUpdateResult new];
