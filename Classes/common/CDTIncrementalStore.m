@@ -839,48 +839,72 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
 }
 
 /**
- *  Update existing object in the database
+ *  Update existing managed object
  *
  *  @param mo    Managed Object
- *  @param changes Dictionary of [key:NSString, value:id] of changes to make to mo contents
  *  @param error Error
  *
  *  @return YES/NO
  */
-- (BOOL)updateManagedObject:(NSManagedObject *)mo
-                withChanges:(NSDictionary *)changes
-                      error:(NSError **)error
+- (BOOL)updateManagedObject:(NSManagedObject *)mo error:(NSError **)error
 {
-    NSError *err = nil;
     NSManagedObjectID *moid = [mo objectID];
+    NSDictionary *changes = [mo changedValues];
 
     if (badObjectVersion(moid, self.metadata)) oops(@"hash mismatch?: %@", moid);
 
     NSString *docID = [self stringReferenceObjectForObjectID:moid];
 
     NSEntityDescription *entity = [mo entity];
-    NSDictionary *propDic = [entity propertiesByName];
+    return [self updateDocumentID:docID withChanges:changes entity:entity error:error];
+}
 
+/**
+ *  Update existing document in the database
+ *
+ *  @param docID    Document ID
+ *  @param changes  Dictionary of [key:NSString, value:id] of changes to make to mo contents
+ *  @param entity   Entity description
+ *  @param error    Error
+ *
+ *  @return YES/NO
+ */
+- (BOOL)updateDocumentID:(NSString *)docID
+             withChanges:(NSDictionary *)changes
+                  entity:(NSEntityDescription *)entity
+                   error:(NSError **)error
+{
+    NSDictionary *propsByName = [entity propertiesByName];
     NSMutableDictionary *props = [NSMutableDictionary dictionary];
     NSMutableDictionary *blobStore = [NSMutableDictionary dictionary];
 
     for (NSString *name in changes) {
         NSDictionary *enc = nil;
-        id prop = propDic[name];
+        id prop = propsByName[name];
         if ([prop isTransient]) {
             continue;
         }
         if ([prop isKindOfClass:[NSAttributeDescription class]]) {
             NSAttributeDescription *att = prop;
-            enc = [self encodeAttribute:att withValue:changes[name] blobStore:blobStore error:&err];
+            enc = [self encodeAttribute:att withValue:changes[name] blobStore:blobStore error:error];
         } else if ([prop isKindOfClass:[NSRelationshipDescription class]]) {
             NSRelationshipDescription *rel = prop;
-            enc = [self encodeRelation:rel withValue:changes[name] error:&err];
+            enc = [self encodeRelation:rel withValue:changes[name] error:error];
         } else {
             oops(@"bad prop?");
         }
         [props addEntriesFromDictionary:enc];
     }
+
+    return [self updateDocumentID:docID withProperties:props blobStore:blobStore error:error];
+}
+
+- (BOOL)updateDocumentID:(NSString *)docID
+          withProperties:(NSMutableDictionary *)props
+               blobStore:(NSDictionary *)blobStore
+                   error:(NSError **)error
+{
+    NSError *err = nil;
 
     CDTDocumentRevision *oldRev = [self.datastore getDocumentWithId:docID error:&err];
     if (!oldRev) {
@@ -944,11 +968,6 @@ static BOOL badObjectVersion(NSManagedObjectID *moid, NSDictionary *metadata)
     }
 
     return YES;
-}
-
-- (BOOL)updateManagedObject:(NSManagedObject *)mo error:(NSError **)error
-{
-    return [self updateManagedObject:mo withChanges:[mo changedValues] error:error];
 }
 
 /**
@@ -2138,7 +2157,6 @@ NSString *kNorOperator = @"$nor";
 }
 
 - (NSBatchUpdateResult *)executeBatchUpdateRequest:(NSBatchUpdateRequest *)updateRequest
-                                       withContext:(NSManagedObjectContext *)context
                                              error:(NSError **)error
 {
     NSEntityDescription *entity = [updateRequest entity];
@@ -2180,15 +2198,14 @@ NSString *kNorOperator = @"$nor";
     NSMutableArray *results = [NSMutableArray array];
     NSError __block *updateError;
     [result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
-      NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
-      NSManagedObject *mo = [context objectWithID:moid];
+        NSManagedObjectID *moid = [self newObjectIDForEntity:entity referenceObject:rev.docId];
 
-      [self updateManagedObject:mo withChanges:changes error:&updateError];
-      if (updateError) {
-          *stop = YES;
-      } else {
-          [results addObject:moid];
-      }
+        [self updateDocumentID:rev.docId withChanges:changes entity:entity error:&updateError];
+        if (updateError) {
+            *stop = YES;
+        } else {
+            [results addObject:moid];
+        }
     }];
 
     if (updateError) {
@@ -2237,7 +2254,7 @@ NSString *kNorOperator = @"$nor";
 
     if (requestType == NSBatchUpdateRequestType && CDTISSupportBatchUpdates) {
         NSBatchUpdateRequest *updateRequest = (NSBatchUpdateRequest *)request;
-        return [self executeBatchUpdateRequest:updateRequest withContext:context error:error];
+        return [self executeBatchUpdateRequest:updateRequest error:error];
     }
 
     NSString *s = [NSString localizedStringWithFormat:@"Unknown request type: %@", @(requestType)];
