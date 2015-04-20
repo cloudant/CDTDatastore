@@ -26,6 +26,28 @@
          <Group
             location = "group:Encryption"
             name = "Encryption">
+            <Group
+               location = "group:Keychain"
+               name = "Keychain">
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+AES.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+AES.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+PBKDF2.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainUtils+PBKDF2.m">
+               </FileRef>
+            </Group>
             <FileRef
                location = "group:CDTDatastore+EncryptionKey.h">
             </FileRef>
