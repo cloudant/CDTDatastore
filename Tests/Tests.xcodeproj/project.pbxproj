@@ -76,22 +76,26 @@
 		CD00CBBF1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */; };
 		CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
 		CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
+		CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
+		CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
+		CD2188D81AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */; };
+		CD2188D91AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */; };
+		CD2188DA1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D31AE5711A0036F59F /* DatastoreEncryptionTests.m */; };
+		CD2188DB1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D31AE5711A0036F59F /* DatastoreEncryptionTests.m */; };
+		CD2188DC1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D41AE5711A0036F59F /* DatastoreManagerEncryptionTests.m */; };
+		CD2188DD1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D41AE5711A0036F59F /* DatastoreManagerEncryptionTests.m */; };
+		CD2188DE1AE5711A0036F59F /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */; };
+		CD2188DF1AE5711A0036F59F /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */; };
+		CD2188E31AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188E11AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m */; };
+		CD2188E41AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188E11AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m */; };
+		CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188E21AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m */; };
+		CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188E21AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m */; };
 		CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
 		CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
-		CD55A1981AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */; };
-		CD55A1991AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */; };
-		CD7110421AB6282500558645 /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */; };
-		CD7110431AB6282500558645 /* DatastoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */; };
-		CD7110441AB6282500558645 /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */; };
-		CD7110451AB6282500558645 /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */; };
 		CD94A6FE1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
 		CD94A6FF1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
-		CDE860371A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */; };
-		CDE860381A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */; };
-		CDEE6ED11AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEE6ED01AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m */; };
-		CDEE6ED21AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEE6ED01AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m */; };
 		EC0C833C1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */; };
 		EC0C833D1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */; };
 		EC0C833E1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */; };
@@ -194,17 +198,19 @@
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencryptedindex.sqlite; path = Assets/emptyencryptedindex.sqlite; sourceTree = "<group>"; };
 		CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseDeletionTests.m; sourceTree = "<group>"; };
+		CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
+		CD2188D11AE5711A0036F59F /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
+		CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
+		CD2188D31AE5711A0036F59F /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
+		CD2188D41AE5711A0036F59F /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
+		CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseEncryptionTests.m; sourceTree = "<group>"; };
+		CD2188E11AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeychainUtilsAESTests.m; sourceTree = "<group>"; };
+		CD2188E21AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeychainUtilsPBKDF2Tests.m; sourceTree = "<group>"; };
 		CD3FBCA21AB05A170032376E /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperOneUseKeyProvider.m; sourceTree = "<group>"; };
-		CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
-		CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
-		CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencrypteddb.touchdb; path = Assets/emptyencrypteddb.touchdb; sourceTree = "<group>"; };
-		CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseEncryptionTests.m; sourceTree = "<group>"; };
-		CDEE6ECF1AAF3C17002C96C0 /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
-		CDEE6ED01AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
 		EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTDatastoreQueryTests.m; sourceTree = "<group>"; };
 		EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQFilterFieldsTest.m; sourceTree = "<group>"; };
 		EC0C83211AB217290051042F /* CDTQIndexCreatorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexCreatorTests.m; sourceTree = "<group>"; };
@@ -296,13 +302,13 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				CD2188CF1AE570480036F59F /* Encryption */,
 				CD3FBCA11AB05A170032376E /* Helpers */,
 				ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */,
 				EC578D891AE67D60003D6006 /* CDTQIndexTests.m */,
 				EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */,
 				EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */,
 				EC0C83211AB217290051042F /* CDTQIndexCreatorTests.m */,
-				CD55A1971AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m */,
 				EC0C83221AB217290051042F /* CDTQIndexManagerTests.m */,
 				EC0C83231AB217290051042F /* CDTQIndexUpdaterTests.m */,
 				EC0C83241AB217290051042F /* CDTQInvalidQuerySyntax.m */,
@@ -317,8 +323,6 @@
 				EC0C833B1AB217290051042F /* Tests.m */,
 				98BB73FE19E5927600C57866 /* CloudantTests.h */,
 				98BB73FF19E5927600C57866 /* CloudantTests.m */,
-				CDEE6ECF1AAF3C17002C96C0 /* CloudantTests+EncryptionTests.h */,
-				CDEE6ED01AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m */,
 				98DDEB9E1A41CD3400767178 /* DatastoreManagerTests.m */,
 				27D96E3318E0996C00DEA006 /* Attachments */,
 				27389E2D18534E050027A404 /* CloudantSyncTests.h */,
@@ -327,8 +331,6 @@
 				9FC082961913378F0024EA1E /* DatastoreConflictResolvers.h */,
 				985A188919D2CCEB000283E9 /* DatastoreConflicts.m */,
 				9FC082971913378F0024EA1E /* DatastoreConflictResolvers.m */,
-				CD7110401AB6282500558645 /* DatastoreEncryptionTests.m */,
-				CD7110411AB6282500558645 /* DatastoreManagerEncryptionTests.m */,
 				989E6E21198799AE00FB8510 /* DatastoreCRUD.m */,
 				9F95D60E18CF6A580006D349 /* DBQueryUtils.h */,
 				9F95D60F18CF6A580006D349 /* DBQueryUtils.m */,
@@ -340,7 +342,6 @@
 				CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */,
 				9F0D23FE188DF96600D3D04E /* TD_DatabaseManagerTests.m */,
 				9F0D23F9188DF36800D3D04E /* TD_DatabaseTests.m */,
-				CDE860361A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m */,
 				9F0D2401188DFE8600D3D04E /* TD_RevisionTests.m */,
 				9F0D2407188E378700D3D04E /* TDCanonicalJSONTests.m */,
 				9F0D240A188E3C3A00D3D04E /* TDCollateJSONTests.m */,
@@ -431,6 +432,29 @@
 				03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		CD2188CF1AE570480036F59F /* Encryption */ = {
+			isa = PBXGroup;
+			children = (
+				CD2188E01AE571250036F59F /* Keychain */,
+				CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */,
+				CD2188D11AE5711A0036F59F /* CloudantTests+EncryptionTests.h */,
+				CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */,
+				CD2188D31AE5711A0036F59F /* DatastoreEncryptionTests.m */,
+				CD2188D41AE5711A0036F59F /* DatastoreManagerEncryptionTests.m */,
+				CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */,
+			);
+			path = Encryption;
+			sourceTree = "<group>";
+		};
+		CD2188E01AE571250036F59F /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				CD2188E11AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m */,
+				CD2188E21AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m */,
+			);
+			path = Keychain;
 			sourceTree = "<group>";
 		};
 		CD3FBCA11AB05A170032376E /* Helpers */ = {
@@ -645,25 +669,27 @@
 				9F0D2408188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				9F0D23F1188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				9F0D23FF188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
+				CD2188DE1AE5711A0036F59F /* TD_DatabaseEncryptionTests.m in Sources */,
 				EC0C834A1AB217290051042F /* CDTQQueryExecutorTests.m in Sources */,
 				EC0C83521AB217290051042F /* CDTQValueExtractorTests.m in Sources */,
 				EC0C834C1AB217290051042F /* CDTQQuerySortTests.m in Sources */,
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				EC0C835E1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
+				CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				EC0C83421AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				ECA0DC611AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,
 				27389E3618534E050027A404 /* DatastoreActions.m in Sources */,
 				27389E3518534E050027A404 /* CloudantSyncTests.m in Sources */,
+				CD2188D81AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */,
 				9F0D24111890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */,
 				EC0C83501AB217290051042F /* CDTQUnindexedMatcherTests.m in Sources */,
+				CD2188E31AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */,
 				EC0C83481AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835C1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
-				CDEE6ED11AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
-				CD55A1981AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				EC0C83621AB217290051042F /* Tests.m in Sources */,
 				9F0D23FA188DF36800D3D04E /* TD_DatabaseTests.m in Sources */,
@@ -682,20 +708,20 @@
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				EC0C83601AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
 				CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
+				CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				9F0D24171893161000D3D04E /* TDReachabilityTests.m in Sources */,
 				EC0C834E1AB217290051042F /* CDTQQuerySqlTranslatorTests.m in Sources */,
 				EC0C835A1AB217290051042F /* CDTQMatcherIndexManager.m in Sources */,
 				EC0C83581AB217290051042F /* CDTQQueryMatcher.m in Sources */,
 				EC0C83561AB217290051042F /* CDTQEitherMatcher.m in Sources */,
 				EC0C83401AB217290051042F /* CDTQIndexCreatorTests.m in Sources */,
-				CD7110441AB6282500558645 /* DatastoreManagerEncryptionTests.m in Sources */,
 				9F95D61018CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				EC0C83441AB217290051042F /* CDTQIndexUpdaterTests.m in Sources */,
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				CD2188DC1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */,
 				CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
-				CDE860371A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */,
-				CD7110421AB6282500558645 /* DatastoreEncryptionTests.m in Sources */,
 				CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
+				CD2188DA1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
 				EC578D8A1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);
@@ -708,24 +734,26 @@
 				985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				EC0C834B1AB217290051042F /* CDTQQueryExecutorTests.m in Sources */,
+				CD2188DF1AE5711A0036F59F /* TD_DatabaseEncryptionTests.m in Sources */,
 				EC0C83531AB217290051042F /* CDTQValueExtractorTests.m in Sources */,
 				EC0C834D1AB217290051042F /* CDTQQuerySortTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				EC0C835F1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				EC0C83431AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
+				CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				9F0D2400188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
 				9F0D240F188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				ECA0DC621AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,
 				9F0D23F8188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */,
+				CD2188D91AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */,
 				9F0D24121890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */,
 				EC0C83511AB217290051042F /* CDTQUnindexedMatcherTests.m in Sources */,
+				CD2188E41AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */,
 				EC0C83491AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835D1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
-				CDEE6ED21AAF3C17002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
-				CD55A1991AD56B3600A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				EC0C83631AB217290051042F /* Tests.m in Sources */,
@@ -745,20 +773,20 @@
 				9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */,
 				EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
 				CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
+				CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				EC0C834F1AB217290051042F /* CDTQQuerySqlTranslatorTests.m in Sources */,
 				EC0C835B1AB217290051042F /* CDTQMatcherIndexManager.m in Sources */,
 				EC0C83591AB217290051042F /* CDTQQueryMatcher.m in Sources */,
 				EC0C83571AB217290051042F /* CDTQEitherMatcher.m in Sources */,
 				9F95D61118CF6A580006D349 /* DBQueryUtils.m in Sources */,
 				EC0C83411AB217290051042F /* CDTQIndexCreatorTests.m in Sources */,
-				CD7110451AB6282500558645 /* DatastoreManagerEncryptionTests.m in Sources */,
 				27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */,
 				EC0C83451AB217290051042F /* CDTQIndexUpdaterTests.m in Sources */,
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
+				CD2188DD1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */,
 				CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
-				CDE860381A97AF2B00828AC4 /* TD_DatabaseEncryptionTests.m in Sources */,
-				CD7110431AB6282500558645 /* DatastoreEncryptionTests.m in Sources */,
 				CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
+				CD2188DB1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,
 				EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);
