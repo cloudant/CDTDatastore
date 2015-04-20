@@ -54,8 +54,8 @@
 		CD55A19A1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD5D68301AB347D700F0BF8A /* DatastoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreEncryptionTests.m; sourceTree = "<group>"; };
 		CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
-		CDEE6ECB1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CloudantTests+EncryptionTests.h"; path = "../../Tests/Tests/CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
-		CDEE6ECC1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "CloudantTests+EncryptionTests.m"; path = "../../Tests/Tests/CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
+		CDEE6ECB1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CloudantTests+EncryptionTests.h"; path = "../../Tests/Tests/Encryption/CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
+		CDEE6ECC1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "CloudantTests+EncryptionTests.m"; path = "../../Tests/Tests/Encryption/CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
