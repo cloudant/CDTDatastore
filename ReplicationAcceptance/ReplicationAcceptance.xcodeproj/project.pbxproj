@@ -39,6 +39,10 @@
 		27ED10AE192CF8FF00F75E95 /* CloudantReplicationBase+CompareDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 27BE3CEE189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m */; };
 		27ED10AF192CF8FF00F75E95 /* ReplicationAcceptance+CRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 277992B718A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m */; };
 		4510BA04F5FB481E882AF5EE /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
+		4D3CBFDF1A76BDFB00153940 /* CDE.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */; };
+		4D3CBFE01A76BDFB00153940 /* CDE.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */; };
+		4D3E3EF51A44602800972659 /* ReplicatorCoreData.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */; };
+		4D3E3EF61A44602800972659 /* ReplicatorCoreData.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */; };
 		86A30343408047EEBBF8EC4C /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C61CF9A9D4564F53BC1F7321 /* libPods-ios.a */; };
 		8E89B680A5F347559033D1B3 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97F72706FFD44D88B6E5E667 /* libPods-osx.a */; };
 		984775051AB886790024B64C /* ReplicationSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 984775041AB886790024B64C /* ReplicationSettings.m */; };
@@ -108,6 +112,10 @@
 		27ED1097192CF8DB00F75E95 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		27ED109F192CF8DB00F75E95 /* ReplicationAcceptanceAppTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReplicationAcceptanceAppTests-Info.plist"; sourceTree = "<group>"; };
 		27ED10A1192CF8DB00F75E95 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CDEv1.0.xcdatamodel; sourceTree = "<group>"; };
+		4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CDEv1.1.xcdatamodel; sourceTree = "<group>"; };
+		4D3E3EF31A44602800972659 /* ReplicatorCoreData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicatorCoreData.h; sourceTree = "<group>"; };
+		4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicatorCoreData.m; sourceTree = "<group>"; };
 		5E90CA923A123284AF6B8CE0 /* Pods-osx.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-osx.release.xcconfig"; path = "Pods/Target Support Files/Pods-osx/Pods-osx.release.xcconfig"; sourceTree = "<group>"; };
 		6A9AF7E2659CCF39B5454D35 /* Pods-ios.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.debug.xcconfig"; sourceTree = "<group>"; };
 		97F72706FFD44D88B6E5E667 /* libPods-osx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-osx.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -237,6 +245,8 @@
 				9F8CA2CB1A64E63F00A0E91C /* CDTRunBlocksForReplicatorDelegate.m */,
 				9F95598D1A5F184000435808 /* ChangeTrackerDelegate.h */,
 				9F95598E1A5F184000435808 /* ChangeTrackerDelegate.m */,
+				4D3E3EF31A44602800972659 /* ReplicatorCoreData.h */,
+				4D3E3EF41A44602800972659 /* ReplicatorCoreData.m */,
 				9FC2F12E19F070950032A074 /* ReplicatorURLProtocol.h */,
 				9FC2F12B19F070710032A074 /* ReplicatorURLProtocol.m */,
 				9F8CA2C51A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.h */,
@@ -256,6 +266,7 @@
 				27A7E67C189973EE007FAF1C /* InfoPlist.strings */,
 				27A7E681189973EE007FAF1C /* ReplicationAcceptance-Prefix.pch */,
 				984775071AB888F40024B64C /* ReplicationSettings.plist */,
+				4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -621,6 +632,7 @@
 			files = (
 				27BE3CEF189FBEA9000CD30D /* CloudantReplicationBase+CompareDb.m in Sources */,
 				9FC2F13119F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */,
+				4D3E3EF51A44602800972659 /* ReplicatorCoreData.m in Sources */,
 				277992B818A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B118997673007FAF1C /* ReplicationAcceptance.m in Sources */,
 				9F8CA2CC1A64E63F00A0E91C /* CDTRunBlocksForReplicatorDelegate.m in Sources */,
@@ -630,6 +642,7 @@
 				9F8CA2C71A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775051AB886790024B64C /* ReplicationSettings.m in Sources */,
+				4D3CBFDF1A76BDFB00153940 /* CDE.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -639,6 +652,7 @@
 			files = (
 				27E75E8D18B383CB004317D1 /* CloudantReplicationBase+CompareDb.m in Sources */,
 				9FC2F13219F72B710032A074 /* ReplicatorURLProtocolTester.m in Sources */,
+				4D3E3EF61A44602800972659 /* ReplicatorCoreData.m in Sources */,
 				277992B918A24F0900BAB6ED /* ReplicationAcceptance+CRUD.m in Sources */,
 				27A7E6B218997677007FAF1C /* ReplicationAcceptance.m in Sources */,
 				9F8CA2CD1A64E63F00A0E91C /* CDTRunBlocksForReplicatorDelegate.m in Sources */,
@@ -648,6 +662,7 @@
 				9F8CA2C81A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775061AB886790024B64C /* ReplicationSettings.m in Sources */,
+				4D3CBFE01A76BDFB00153940 /* CDE.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1158,6 +1173,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		4D3CBFDD1A76BDFB00153940 /* CDE.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */,
+				4D3CBFDE1A76BDFB00153940 /* CDEv1.0.xcdatamodel */,
+			);
+			currentVersion = 4D3CBFEB1A76F84A00153940 /* CDEv1.1.xcdatamodel */;
+			path = CDE.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 27A7E666189973D6007FAF1C /* Project object */;
 }

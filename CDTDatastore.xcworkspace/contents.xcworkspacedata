@@ -185,6 +185,12 @@
             location = "group:CDTDocumentRevision.m">
          </FileRef>
          <FileRef
+            location = "group:CDTIncrementalStore.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTIncrementalStore.m">
+         </FileRef>
+         <FileRef
             location = "group:CDTMutableDocumentRevision.h">
          </FileRef>
          <FileRef
