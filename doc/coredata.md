@@ -1,7 +1,9 @@
 ## Using Core Data
 
-> ***Warning***: This document assumes you are familiar with
-> [Core Data].
+CDTDatastore provides an *incremental store* class that can be used as the *persistent store* provider in a [Core Data] application.
+This incremental store uses a CloudantSync datastore on the device to persist any data that the application stores to CoreData.
+
+> ***Warning***: This document assumes you are familiar with [Core Data].
 
 From the [Apple documents][core data]:
 >  The Core Data framework provides generalized and automated
@@ -16,37 +18,21 @@ this.
 Thankfully, the user does not need to know these details to exploit
 `CDTDatastore` from an application that uses [Core Data].
 
-### Example Application
-
-There is an example application based on
-[Apple's iPhoneCoreDataRecipes][recipe] and can be found in this
-[git tree][gitrecipe].
-
 ### Getting started
 
-A `CDTIncrementalStore` object is used to "link" everything
-together. In order for [Core Data] to recognize
-`CDTIncrementalStore` as a store, it must be initialized. This happens
-automatically in OSX, but must be called manually in iOS, usually in
-the `UIApplicationDelegate`, example:
+If you have not already done so, add the CDTDatastore CocoaPod to your project.
+
+If your application is not already using Core Data, see the [Core Data] documentation for the proper setup for a persistent store.
+This generally involves the initialization of a persistent store coordinator followed by a request to add a persistent store of a specific type to the persistent store coordinator.
+This setup is commonly done in the application delegate, but could be done elsewhere.
+The common persistent store implementation is the NSSQLiteStoreType, which uses sqlite for persistent storage.
+To use CDTDatastore for CoreData persistent storage, specify ```[CDTIncrementalStore type]``` as the persistent store type, as follows:
 
 ```objc
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+#import <CloudantSync.h>
+#import "CDTIncrementalStore.h"
 
-    [CDTIncrementalStore initialize];
-	...
-
-```
-
-> ***Note***: it is safe to call `+initialize` multiple times.
-
-Then you may use [Core Data] as usual, however, now when you set up
-your persistent store you request the `CDTIncrementalStore` in the
-following manner, using `+type` static method to identify the correct
-store type:
-
-```objc
-NSURL *storeURL = [NSURL URLWithString:databaseURI];
+NSURL *storeURL = [docsDir URLByAppendingPathComponent:@"mystore"];
 NSString *myType = [CDTIncrementalStore type];
 NSPersistentStoreCoordinator *psc = ...
 [psc addPersistentStoreWithType:myType
@@ -56,13 +42,11 @@ NSPersistentStoreCoordinator *psc = ...
                           error:&error])];
 ```
 
-The last component of `databaseURI` should be the name of your
-database. If `databaseURI` has a host component, then that URL will be
-used to specify the remote database where push, pull and sync
-operations will target.
+CDTIncrementalStore will use the last component of the storeURL as the name of the database.  This name must follow the cloudant conventions, including containing only lowercase alpha, numeric, and underscore characters.
+Do not specify a suffix, e.g. ".sqlite", as this is also not allowed.
+If the storeURL has a host component, then it is also used as the remote database target of push, pull and sync operations.
 
-> ***Note***: the remote database details can be defined later in your
-> code.
+> ***Note***: the remote database details can be defined later in your code.
 
 At this point you can use [Core Data] normally and your changes will
 be saved in the local `CDTDatastore` image.
@@ -148,7 +132,30 @@ while (!done) {
 Synchronization can be taken care of by some combination of push and
 pull, see [replication] and [conflicts].
 
-## The Document Store
+## Supported Features
+
+The Cloudant persistent store for CoreData supports the following features:
+
+- Save, fetch, update, and delete of Managed Objects to the on-device CDTDatastore.
+- Batch update requests
+- Asynchronous fetch operations
+- Schema migration
+
+## Unsupported Features
+
+The following features of CoreData are currently not supported by the CDTIncrementalStore:
+
+* Predicates on string attributes using BEGINSWITH, ENDSWITH, LIKE, or MATCHES
+* Compound predicates using the NOT operator
+* Predicates on relationship attributes.
+
+## Example Application
+
+There is an example application based on
+[Apple's iPhoneCoreDataRecipes][recipe] and can be found in this
+[git tree][gitrecipe].
+
+## Internal Details
 Translating [Core Data] objects to a document store requires some
 special treatment. Not only do we desire the resulting remote store to
 be as portable as possible to other platforms and architectures, we
