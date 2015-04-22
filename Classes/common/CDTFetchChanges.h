@@ -144,7 +144,7 @@
 /**
  Initializes and returns an object configured to fetch changes in the specified database.
 
- When initializing the fetch object, use the sequence value from a previous fetch operation if
+ When initializing the fetch operation, use the sequence value from a previous fetch operation if
  you have one. You can archive sequence values and write them to disk for later use if needed.
 
  After initializing the operation, associate at least one progress block with the operation
@@ -156,7 +156,7 @@
             the changes retrieved to those occuring after this sequence value. Pass `nil` to
             receive all changes.
 
- @return An initialised fetch object.
+ @return An initialised fetch operation.
  */
 - (instancetype)initWithDatastore:(CDTDatastore *)datastore
                startSequenceValue:(NSString *)startSequenceValue;
