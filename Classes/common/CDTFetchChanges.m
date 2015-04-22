@@ -55,10 +55,9 @@
 - (void)main
 {
     // Ensure our settings are not changed during execution
-    self.mDocumentChangedBlock = [self.documentChangedBlock copy];
-    self.mDocumentWithIDWasDeletedBlock = [self.documentWithIDWasDeletedBlock copy];
-    self.mFetchRecordChangesCompletionBlock = [self.fetchRecordChangesCompletionBlock copy];
-
+    self.mDocumentChangedBlock = self.documentChangedBlock;
+    self.mDocumentWithIDWasDeletedBlock = self.documentWithIDWasDeletedBlock;
+    self.mFetchRecordChangesCompletionBlock = self.fetchRecordChangesCompletionBlock;
     self.mDatastore = self.datastore;
     self.mStartSequenceValue = self.startSequenceValue;
 
@@ -83,14 +82,14 @@
         lastSequence = [self notifyChanges:changes startingSequence:lastSequence];
     } while (changes.count > 0);
 
-    void (^f)(NSString *nsv, NSString *ssv, NSError *fe) = self.mFetchRecordChangesCompletionBlock;
-    if (f) {
+    if (self.mFetchRecordChangesCompletionBlock) {
         // Try our best to avoid calling the completion block if cancelled is set:
         //  - after the check in the loop above 
         //  - where there are no remaining changes, so we fall through to here
         if (!self.cancelled) {
-            f([[NSNumber numberWithLongLong:lastSequence] stringValue], self.mStartSequenceValue,
-              nil);
+            self.mFetchRecordChangesCompletionBlock(
+                [[NSNumber numberWithLongLong:lastSequence] stringValue], self.mStartSequenceValue,
+                nil);
         }
     }
 }
