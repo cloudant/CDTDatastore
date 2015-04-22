@@ -38,10 +38,9 @@
  The sequence value should be treated as an opaque value, but can be saved and used across
  application sessions.
 
- The blocks you assign to process the fetched documents are executed serially on an
- internal queue managed by the operation. Your blocks must be capable of executing
- on a background thread, so any tasks that require access to the main thread must
- be redirected accordingly.
+ The blocks you assign to process the fetched documents are executed serially. Your blocks must
+ be capable of executing on a background thread, so any tasks that require access to the main
+ thread must be redirected accordingly.
  */
 @interface CDTFetchChanges : NSOperation
 

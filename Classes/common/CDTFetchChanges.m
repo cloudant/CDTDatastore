@@ -86,6 +86,10 @@
 - (SequenceNumber)notifyChanges:(TD_RevisionList *)changes
                startingSequence:(SequenceNumber)startingSequence
 {
+    if (self.cancelled) {
+        return startingSequence;  // processed no changes
+    }
+
     SequenceNumber lastSequence = startingSequence;
     
     // _changes provides the revs with highest rev ID, which might not be the
