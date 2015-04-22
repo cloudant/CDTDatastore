@@ -20,6 +20,21 @@
 
 #import "TD_Database.h"
 
+@interface CDTFetchChanges ()
+
+@property (nonatomic, copy) void (^mDocumentChangedBlock)(CDTDocumentRevision *revision);
+
+@property (nonatomic, copy) void (^mDocumentWithIDWasDeletedBlock)(NSString *docId);
+
+@property (nonatomic, copy) void (^mFetchRecordChangesCompletionBlock)
+    (NSString *newSequenceValue, NSString *startSequenceValue, NSError *fetchError);
+
+@property (nonatomic, strong) CDTDatastore *mDatastore;
+
+@property (nonatomic, copy) NSString *mStartSequenceValue;
+
+@end
+
 @implementation CDTFetchChanges
 
 #pragma mark Initialisers
@@ -39,6 +54,14 @@
 
 - (void)main
 {
+    // Ensure our settings are not changed during execution
+    self.mDocumentChangedBlock = [self.documentChangedBlock copy];
+    self.mDocumentWithIDWasDeletedBlock = [self.documentWithIDWasDeletedBlock copy];
+    self.mFetchRecordChangesCompletionBlock = [self.fetchRecordChangesCompletionBlock copy];
+
+    self.mDatastore = self.datastore;
+    self.mStartSequenceValue = self.startSequenceValue;
+
     TDChangesOptions options = {.limit = 500,
         .contentOptions = 0,                                
         .includeDocs = NO,  // we only need the docIDs and sequences, body is retrieved separately
@@ -46,27 +69,28 @@
         .sortBySequence = TRUE};
     
     TD_RevisionList *changes;
-    SequenceNumber lastSequence = [_startSequenceValue longLongValue];
+    SequenceNumber lastSequence = [self.mStartSequenceValue longLongValue];
 
     do {
         if (self.cancelled) {
             return;  // Bail early, don't call completion block
         }
 
-        changes = [[_datastore database] changesSinceSequence:lastSequence
-                                                      options:&options
-                                                       filter:nil
-                                                       params:nil];
+        changes = [[self.mDatastore database] changesSinceSequence:lastSequence
+                                                           options:&options
+                                                            filter:nil
+                                                            params:nil];
         lastSequence = [self notifyChanges:changes startingSequence:lastSequence];
     } while (changes.count > 0);
 
-    void (^f)(NSString *nsv, NSString *ssv, NSError *fe) = self.fetchRecordChangesCompletionBlock;
+    void (^f)(NSString *nsv, NSString *ssv, NSError *fe) = self.mFetchRecordChangesCompletionBlock;
     if (f) {
         // Try our best to avoid calling the completion block if cancelled is set:
         //  - after the check in the loop above 
         //  - where there are no remaining changes, so we fall through to here
         if (!self.cancelled) {
-            f([[NSNumber numberWithLongLong:lastSequence] stringValue], _startSequenceValue, nil);
+            f([[NSNumber numberWithLongLong:lastSequence] stringValue], self.mStartSequenceValue,
+              nil);
         }
     }
 }
@@ -97,7 +121,7 @@
     // that are updated rather than deleted, we need to be sure we index the
     // winning revision. This loop gets those revisions.
     NSMutableDictionary *updatedRevisions = [NSMutableDictionary dictionary];
-    for (CDTDocumentRevision *rev in [_datastore getDocumentsWithIds:[changes allDocIDs]]) {
+    for (CDTDocumentRevision *rev in [self.mDatastore getDocumentsWithIds:[changes allDocIDs]]) {
         if (rev != nil && !rev.deleted) {
             updatedRevisions[rev.docId] = rev;
         }
@@ -110,14 +134,12 @@
 
         CDTDocumentRevision *updatedRevision;
         if ((updatedRevision = updatedRevisions[change.docID]) != nil) {
-            void (^dcb)(CDTDocumentRevision *r) = self.documentChangedBlock;
-            if (dcb) {
-                dcb(updatedRevision);
+            if (self.mDocumentChangedBlock) {
+                self.mDocumentChangedBlock(updatedRevision);
             }
         } else {
-            void (^ddb)(NSString *docId) = self.documentWithIDWasDeletedBlock;
-            if (ddb) {
-                ddb(change.docID);
+            if (self.mDocumentWithIDWasDeletedBlock) {
+                self.mDocumentWithIDWasDeletedBlock(change.docID);
             }
         }
         
