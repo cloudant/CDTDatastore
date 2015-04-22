@@ -29,9 +29,9 @@
 #import "TDInternal.h"
 #import "TDMisc.h"
 
-#import "FMDatabase.h"
-#import "FMDatabaseAdditions.h"
-#import "FMDatabaseQueue.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseAdditions.h>
+#import <FMDB/FMDatabaseQueue.h>
 
 #import "Version.h"
 

@@ -21,8 +21,8 @@
 #import "TDInternal.h"
 #import "TDJSON.h"
 
-#import "FMDatabase.h"
-#import "FMDatabaseQueue.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseQueue.h>
 
 @implementation TD_Database (LocalDocs)
 

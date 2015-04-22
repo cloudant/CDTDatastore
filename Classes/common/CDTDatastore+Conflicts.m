@@ -27,7 +27,7 @@
 #import "TDStatus.h"
 #import "CDTMutableDocumentRevision.h"
 #import "TDInternal.h"
-#import "fmdb.h"
+#import <FMDB/FMDB.h>
 #import "TD_Body.h"
 #import "CDTLogging.h"
 

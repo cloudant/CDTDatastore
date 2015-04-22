@@ -37,10 +37,10 @@
 #import "TDInternal.h"
 
 #import "CollectionUtils.h"
-#import "FMDatabase.h"
-#import "FMDatabaseQueue.h"
-#import "FMDatabaseAdditions.h"
-#import "FMResultSet.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseQueue.h>
+#import <FMDB/FMDatabaseAdditions.h>
+#import <FMDB/FMResultSet.h>
 #import "GTMNSData+zlib.h"
 
 #import "CDTLogging.h"

@@ -49,7 +49,7 @@
 #import "TD_Body.h"
 
 #import <CloudantSync.h>
-#import <FMDB.h>
+#import <FMDB/FMDB.h>
 
 NSString *const CDTQIndexManagerErrorDomain = @"CDTIndexManagerErrorDomain";
 

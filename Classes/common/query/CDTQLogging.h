@@ -15,7 +15,7 @@
 #ifndef Pods_CDTQueryLogging_h
 #define Pods_CDTQueryLogging_h
 
-#import "CocoaLumberjack.h"
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
 #define CDTQ_LOGGING_CONTEXT 17  // one level higher than CDT logger myabe should be 20?
 static DDLogLevel CDTQLogLevel = DDLogLevelWarning;

@@ -27,10 +27,10 @@
 #import "TDMisc.h"
 #import "TDJSON.h"
 
-#import "FMDatabase.h"
-#import "FMDatabaseAdditions.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseAdditions.h>
 #import "FMDatabase+LongLong.h"
-#import "FMDatabaseQueue.h"
+#import <FMDB/FMDatabaseQueue.h>
 #import "CDTLogging.h"
 
 NSString* const TD_DatabaseWillCloseNotification = @"TD_DatabaseWillClose";
