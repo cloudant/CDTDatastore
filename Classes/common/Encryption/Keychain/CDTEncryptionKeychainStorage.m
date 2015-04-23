@@ -61,13 +61,9 @@
 {
     CDTEncryptionKeychainData *encryptionData = nil;
 
-    NSData *data = nil;
-    NSMutableDictionary *query =
-        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
-                                                             account:self.account];
-
-    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, (void *)&data);
-    if (err == noErr) {
+    NSData *data =
+        [CDTEncryptionKeychainStorage genericPwWithService:self.service account:self.account];
+    if (data) {
         NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
         [unarchiver setRequiresSecureCoding:YES];
 
@@ -75,9 +71,6 @@
                                                   forKey:CDTENCRYPTION_KEYCHAINSTORAGE_ARCHIVE_KEY];
 
         [unarchiver finishDecoding];
-    } else {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Error getting DPK doc from keychain, SecItemCopyMatching returned: %d", err);
     }
 
     return encryptionData;
@@ -85,89 +78,143 @@
 
 - (BOOL)saveEncryptionKeyData:(CDTEncryptionKeychainData *)data
 {
-    BOOL success = NO;
-
     NSMutableData *archivedData = [NSMutableData data];
-    NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:archivedData];
+    NSKeyedArchiver *archiver =
+        [[NSKeyedArchiver alloc] initForWritingWithMutableData:archivedData];
     [archiver setRequiresSecureCoding:YES];
     [archiver encodeObject:data forKey:CDTENCRYPTION_KEYCHAINSTORAGE_ARCHIVE_KEY];
     [archiver finishEncoding];
-    
-    NSMutableDictionary *dataStoreDict =
-        [CDTEncryptionKeychainStorage genericPwStoreDictWithService:self.service
-                                                            account:self.account
-                                                               data:archivedData];
 
-    OSStatus err = SecItemAdd((__bridge CFDictionaryRef)dataStoreDict, nil);
-    if (err == noErr) {
-        success = YES;
-    } else if (err == errSecDuplicateItem) {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Doc already exists in keychain");
-        success = NO;
-    } else {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Unable to store Doc in keychain, SecItemAdd returned: %d", err);
-        success = NO;
-    }
+    BOOL success = [CDTEncryptionKeychainStorage storeGenericPwWithService:self.service
+                                                                   account:self.account
+                                                                      data:archivedData];
 
     return success;
 }
 
 - (BOOL)clearEncryptionKeyData
 {
-    BOOL success = NO;
-
-    NSMutableDictionary *dict =
-        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
-                                                             account:self.account];
-    [dict removeObjectForKey:(__bridge id)(kSecMatchLimit)];
-    [dict removeObjectForKey:(__bridge id)(kSecReturnAttributes)];
-    [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
-
-    OSStatus err = SecItemDelete((__bridge CFDictionaryRef)dict);
-
-    if (err == noErr || err == errSecItemNotFound) {
-        success = YES;
-    } else {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Error getting DPK doc from keychain, SecItemDelete returned: %d", err);
-    }
+    BOOL success =
+        [CDTEncryptionKeychainStorage deleteGenericPwWithService:self.service account:self.account];
 
     return success;
 }
 
 - (BOOL)encryptionKeyDataExists
 {
-    BOOL result = NO;
+    NSData *data =
+        [CDTEncryptionKeychainStorage genericPwWithService:self.service account:self.account];
 
-    NSData *data = nil;
-    NSMutableDictionary *query =
-        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:self.service
-                                                             account:self.account];
-
-    OSStatus err = SecItemCopyMatching((__bridge CFDictionaryRef)query, (void *)&data);
-    if (err == noErr) {
-        result = ((data != nil) && (data.length > 0));
-
-        if (!result) {
-            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Found a match in keychain, but it was empty");
-        }
-    } else if (err == errSecItemNotFound) {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"DPK doc not found in keychain");
-    } else {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Error getting DPK doc from keychain, SecItemCopyMatching returned: %d", err);
-    }
-
-    return result;
+    return (data != nil);
 }
 
 #pragma mark - Private class methods
+
++ (NSData *)genericPwWithService:(NSString *)service account:(NSString *)account
+{
+    OSStatus err = errSecSuccess;
+    NSData *data = [CDTEncryptionKeychainStorage targetSpecificGenericPwWithService:service
+                                                                            account:account
+                                                                             status:&err];
+    if (err != errSecSuccess) {
+        if (err == errSecItemNotFound) {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"DPK doc not found in keychain");
+        } else {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                       @"Error getting DPK doc from keychain, value returned: %d", err);
+        }
+
+        data = nil;
+    }
+
+    return data;
+}
+
++ (BOOL)deleteGenericPwWithService:(NSString *)service account:(NSString *)account
+{
+    OSStatus status =
+        [CDTEncryptionKeychainStorage targetSpecificDeleteGenericPwWithService:service
+                                                                       account:account];
+    BOOL success = ((status == errSecSuccess) || (status == errSecItemNotFound));
+    if (!success) {
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                   @"Error getting DPK doc from keychain, value returned: %d", status);
+    }
+
+    return success;
+}
+
++ (BOOL)storeGenericPwWithService:(NSString *)service
+                          account:(NSString *)account
+                             data:(NSData *)data
+{
+    OSStatus err = [CDTEncryptionKeychainStorage targetSpecificStoreGenericPwWithService:service
+                                                                                 account:account
+                                                                                    data:data];
+    BOOL success = (err == errSecSuccess);
+    if (!success) {
+        if (err == errSecDuplicateItem) {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Doc already exists in keychain");
+        } else {
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
+                       @"Unable to store Doc in keychain, value returned: %d", err);
+        }
+    }
+    
+    return success;
+}
+
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+
++ (NSData *)targetSpecificGenericPwWithService:(NSString *)service
+                                       account:(NSString *)account
+                                        status:(OSStatus *)status
+{
+    NSData *data = nil;
+
+    NSMutableDictionary *query =
+        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:service account:account];
+
+    OSStatus thisStatus = SecItemCopyMatching((__bridge CFDictionaryRef)query, (void *)&data);
+    if (status) {
+        *status = thisStatus;
+    }
+
+    return data;
+}
+
++ (OSStatus)targetSpecificDeleteGenericPwWithService:(NSString *)service account:(NSString *)account
+{
+    NSMutableDictionary *dict =
+        [CDTEncryptionKeychainStorage genericPwLookupDictWithService:service account:account];
+    [dict removeObjectForKey:(__bridge id)(kSecMatchLimit)];
+    [dict removeObjectForKey:(__bridge id)(kSecReturnAttributes)];
+    [dict removeObjectForKey:(__bridge id)(kSecReturnData)];
+
+    OSStatus status = SecItemDelete((__bridge CFDictionaryRef)dict);
+
+    return status;
+}
+
++ (OSStatus)targetSpecificStoreGenericPwWithService:(NSString *)service
+                                            account:(NSString *)account
+                                               data:(NSData *)data
+{
+    NSMutableDictionary *dataStoreDict =
+        [CDTEncryptionKeychainStorage genericPwStoreDictWithService:service
+                                                            account:account
+                                                               data:data];
+
+    OSStatus status = SecItemAdd((__bridge CFDictionaryRef)dataStoreDict, nil);
+
+    return status;
+}
+
 + (NSMutableDictionary *)genericPwLookupDictWithService:(NSString *)service
                                                 account:(NSString *)account
 {
     NSMutableDictionary *genericPasswordQuery = [[NSMutableDictionary alloc] init];
-    
+
     [genericPasswordQuery setObject:(__bridge id)kSecClassGenericPassword
                              forKey:(__bridge id)kSecClass];
     [genericPasswordQuery setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
@@ -180,7 +227,7 @@
                              forKey:(__bridge id<NSCopying>)(kSecReturnAttributes)];
     [genericPasswordQuery setObject:(__bridge id)kCFBooleanTrue
                              forKey:(__bridge id<NSCopying>)(kSecReturnData)];
-    
+
     return genericPasswordQuery;
 }
 
@@ -189,7 +236,7 @@
                                                   data:(NSData *)data
 {
     NSMutableDictionary *genericPasswordQuery = [[NSMutableDictionary alloc] init];
-    
+
     [genericPasswordQuery setObject:(__bridge id)kSecClassGenericPassword
                              forKey:(__bridge id)kSecClass];
     [genericPasswordQuery setObject:service forKey:(__bridge id<NSCopying>)(kSecAttrService)];
@@ -202,5 +249,91 @@
 
     return genericPasswordQuery;
 }
+
+#else
+
++ (NSData *)targetSpecificGenericPwWithService:(NSString *)service
+                                       account:(NSString *)account
+                                        status:(OSStatus *)status
+{
+    NSData *data = nil;
+
+    const char *serviceUTF8Str = service.UTF8String;
+    UInt32 serviceUTF8StrLength = (UInt32)strlen(serviceUTF8Str);
+
+    const char *accountUTF8Str = account.UTF8String;
+    UInt32 accountUTF8StrLength = (UInt32)strlen(accountUTF8Str);
+
+    void *passwordData = NULL;
+    UInt32 passwordDataLength = 0;
+
+    OSStatus thisStatus = SecKeychainFindGenericPassword(NULL, serviceUTF8StrLength, serviceUTF8Str,
+                                                         accountUTF8StrLength, accountUTF8Str,
+                                                         &passwordDataLength, &passwordData, NULL);
+    if (passwordData) {
+        if (thisStatus == errSecSuccess) {
+            data = [NSData dataWithBytes:passwordData length:passwordDataLength];
+        }
+
+        SecKeychainItemFreeContent(NULL, passwordData);
+    }
+
+    if (status) {
+        *status = thisStatus;
+    }
+
+    return data;
+}
+
++ (OSStatus)targetSpecificDeleteGenericPwWithService:(NSString *)service account:(NSString *)account
+{
+    // Find the item
+    const char *serviceUTF8Str = service.UTF8String;
+    UInt32 serviceUTF8StrLength = (UInt32)strlen(serviceUTF8Str);
+
+    const char *accountUTF8Str = account.UTF8String;
+    UInt32 accountUTF8StrLength = (UInt32)strlen(accountUTF8Str);
+
+    SecKeychainItemRef itemRef = NULL;
+
+    OSStatus status =
+        SecKeychainFindGenericPassword(NULL, serviceUTF8StrLength, serviceUTF8Str,
+                                       accountUTF8StrLength, accountUTF8Str, NULL, NULL, &itemRef);
+    if (status != errSecSuccess) {
+        if (itemRef) {
+            CFRelease(itemRef);
+        }
+
+        return status;
+    }
+
+    // Delete the item
+    status = SecKeychainItemDelete(itemRef);
+    CFRelease(itemRef);
+
+    return status;
+}
+
++ (OSStatus)targetSpecificStoreGenericPwWithService:(NSString *)service
+                                            account:(NSString *)account
+                                               data:(NSData *)data
+{
+    const char *serviceUTF8Str = service.UTF8String;
+    UInt32 serviceUTF8StrLength = (UInt32)strlen(serviceUTF8Str);
+
+    const char *accountUTF8Str = account.UTF8String;
+    UInt32 accountUTF8StrLength = (UInt32)strlen(accountUTF8Str);
+
+    const void *passwordData = data.bytes;
+    UInt32 passwordDataLength = (UInt32)data.length;
+
+    OSStatus status = SecKeychainAddGenericPassword(NULL, serviceUTF8StrLength, serviceUTF8Str,
+                                                    accountUTF8StrLength, accountUTF8Str,
+                                                    passwordDataLength, passwordData, NULL);
+
+    return status;
+}
+
+#endif
 
 @end
