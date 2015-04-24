@@ -28,7 +28,7 @@
 /**
  Generates a key by using the PBKDF2 algorithm.
 
- @param length Size of the key
+ @param length Size of the key in bytes
  @param password The password that is used to generate the key
  @param salt The salt that is used to generate the key
  @param iterations The number of iterations that is passed to the key generation algorithm
