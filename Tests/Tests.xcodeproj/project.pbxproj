@@ -112,6 +112,8 @@
 		EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833A1AB217290051042F /* CDTQSQLOnlyQueryExecutor.m */; };
 		EC0C83621AB217290051042F /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833B1AB217290051042F /* Tests.m */; };
 		EC0C83631AB217290051042F /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833B1AB217290051042F /* Tests.m */; };
+		EC578D8A1AE67D60003D6006 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC578D891AE67D60003D6006 /* CDTQIndexTests.m */; };
+		EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC578D891AE67D60003D6006 /* CDTQIndexTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -195,6 +197,7 @@
 		EC0C83391AB217290051042F /* CDTQSQLOnlyQueryExecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQSQLOnlyQueryExecutor.h; sourceTree = "<group>"; };
 		EC0C833A1AB217290051042F /* CDTQSQLOnlyQueryExecutor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQSQLOnlyQueryExecutor.m; sourceTree = "<group>"; };
 		EC0C833B1AB217290051042F /* Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
+		EC578D891AE67D60003D6006 /* CDTQIndexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -257,6 +260,7 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				EC578D891AE67D60003D6006 /* CDTQIndexTests.m */,
 				EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */,
 				EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */,
 				EC0C83211AB217290051042F /* CDTQIndexCreatorTests.m */,
@@ -622,6 +626,7 @@
 				EC0C83441AB217290051042F /* CDTQIndexUpdaterTests.m in Sources */,
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
+				EC578D8A1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -675,6 +680,7 @@
 				EC0C83451AB217290051042F /* CDTQIndexUpdaterTests.m in Sources */,
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,
+				EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

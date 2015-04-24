@@ -27,6 +27,12 @@
             location = "container:"
             name = "Query">
             <FileRef
+               location = "group:Classes/common/query/CDTQIndex.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/query/CDTQIndex.m">
+            </FileRef>
+            <FileRef
                location = "group:Classes/common/query/CDTDatastore+Query.h">
             </FileRef>
             <FileRef
