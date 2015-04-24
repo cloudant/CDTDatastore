@@ -53,7 +53,7 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
 @implementation CDTEncryptionKeychainUtils
 
 #pragma mark - Public class methods
-+ (NSData *)generateRandomBytesInBufferWithLength:(NSUInteger)length
++ (NSData *)generateSecureRandomBytesWithLength:(NSUInteger)length
 {
     NSAssert((size_t)length <= SIZE_T_MAX, @"length %lu out of bound", (unsigned long)length);
     
@@ -69,7 +69,7 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return data;
 }
 
-+ (NSData *)encryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
++ (NSData *)aesEncryptedDataForData:(NSData *)data key:(NSData *)key iv:(NSData *)iv
 {
     if (![data isKindOfClass:[NSData class]] || (data.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_ENCRYPT_LABEL
@@ -91,7 +91,7 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return cipherDat;
 }
 
-+ (NSData *)decryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv
++ (NSData *)dataForAESEncryptedData:(NSData *)data key:(NSData *)key iv:(NSData *)iv
 {
     if (![data isKindOfClass:[NSData class]] || (data.length < 1)) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_LABEL
@@ -113,10 +113,10 @@ NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_DECRYPT_MSG_EMPTY_IV =
     return decodedCipher;
 }
 
-+ (NSData *)generateKeyOfLength:(NSUInteger)length
-                  usingPassword:(NSString *)pass
-                       withSalt:(NSData *)salt
-                     iterations:(NSInteger)iterations
++ (NSData *)pbkdf2DerivedKeyForPassword:(NSString *)pass
+                                   salt:(NSData *)salt
+                             iterations:(NSInteger)iterations
+                                 length:(NSUInteger)length
 {
     if (length < 1) {
         [NSException raise:CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_KEYGEN_LABEL
