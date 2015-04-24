@@ -31,17 +31,16 @@
  documentWithIDWasDeletedBlock is just passed the id of the deleted document.
 
  In addition, CDTFetchChanges is able to report on changes since a given point. The completion
- block provides a sequence value which can be passed to future requests to have only changes
+ block provides a sequence value which can be passed to future operations to have only changes
  from that point reported. This allows your application to make incremental updates
  in response to changes in a database.
 
  The sequence value should be treated as an opaque value, but can be saved and used across
  application sessions.
 
- The blocks you assign to process the fetched documents are executed serially on an
- internal queue managed by the operation. Your blocks must be capable of executing
- on a background thread, so any tasks that require access to the main thread must
- be redirected accordingly.
+ The blocks you assign to process the fetched documents are executed serially. Your blocks must
+ be capable of executing on a background thread, so any tasks that require access to the main
+ thread must be redirected accordingly.
  */
 @interface CDTFetchChanges : NSOperation
 
@@ -57,9 +56,9 @@
 /**
  The sequence value identifying the starting point for reading changes.
 
- The value to use for this is returned by the completion block for a fetch request. This sequence
- value can be used to
- receive changes that have occured since the previous request.
+ The value to use for this is returned by the completion block for a fetch operation. This
+ sequence value can be used to receive changes that have occured since the previous operation.
+
  Treat the sequence value as an opaque string; different implementations may provide
  differently formatted values. A given sequence value should only be used with the
  database that it was received from.
@@ -81,7 +80,7 @@
  </dl>
 
  The operation object executes this block once for each document in the database that changed
- since the previous fetch request. Each time the block is executed, it is executed
+ since the previous fetch operation. Each time the block is executed, it is executed
  serially with respect to the other progress blocks of the operation. If no documents
  changed, the block is not executed.
 
@@ -90,24 +89,23 @@
  */
 @property (nonatomic, copy) void (^documentChangedBlock)(CDTDocumentRevision *revision);
 
-
 /**
  The block to execute for each deleted document.
- 
+
  The block returns no value and takes the following parameters:
- 
+
  <dl>
  <dt>docId</dt>
  <dd>The document id for the deleted document.</dd>
  </dl>
- 
+
  The operation object executes this block once for each document in the database that
- was deleted since the previous fetch request. Each time the block is executed, it 
- is executed serially with respect to the other progress blocks of the operation. 
+ was deleted since the previous fetch operation. Each time the block is executed, it
+ is executed serially with respect to the other progress blocks of the operation.
  If no documents were deleted, the block is not executed.
- 
- If you intend to use this block to process results, set it before executing the 
- operation or submitting it to a queue. 
+
+ If you intend to use this block to process results, set it before executing the
+ operation or submitting it to a queue.
  */
 @property (nonatomic, copy) void (^documentWithIDWasDeletedBlock)(NSString *docId);
 
@@ -145,20 +143,20 @@
 
 /**
  Initializes and returns an object configured to fetch changes in the specified database.
- 
- When initializing the fetch object, use the sequence value from a previous fetch request if 
+
+ When initializing the fetch operation, use the sequence value from a previous fetch operation if
  you have one. You can archive sequence values and write them to disk for later use if needed.
- 
- After initializing the operation, associate at least one progress block with the operation 
- object (excluding the completion block) to process the results. 
- 
+
+ After initializing the operation, associate at least one progress block with the operation
+ object (excluding the completion block) to process the results.
+
  @param datastore The datastore containing the changes that should be fetched.
- @param previousServerChangeToken The sequence value from a previous fetch. This is the value
-            passed to the completionHandler for this object. This value limits the changes
-            retrieved to those occuring after this sequence value. Pass `nil` to receive
-            all changes.
- 
- @return An initialised fetch object.
+ @param previousServerChangeToken The sequence value from a previous fetch operation. This
+            is the value passed to the completionHandler for this object. This value limits
+            the changes retrieved to those occuring after this sequence value. Pass `nil` to
+            receive all changes.
+
+ @return An initialised fetch operation.
  */
 - (instancetype)initWithDatastore:(CDTDatastore *)datastore
                startSequenceValue:(NSString *)startSequenceValue;
