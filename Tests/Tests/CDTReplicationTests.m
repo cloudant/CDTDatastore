@@ -34,6 +34,13 @@
 
 @implementation CDTReplicationTests
 
+
+-(void)testReplicatorIsNilForNilDatastoreManager {
+    
+    XCTAssertNil([[CDTReplicatorFactory alloc] initWithDatastoreManager:nil], @"Replication factory should be nil");
+    
+}
+
 -(void)testDictionaryForPullReplicationDocument
 {
     NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
