@@ -9,11 +9,13 @@
 // LongLong feature added by Jens Alfke
 // https://github.com/couchbaselabs/fmdb/commit/1a3cf0f872b9d017eb1eb977df85cfeedce45156
 //
+//
+// Modified for distribution by IBM Cloudant, (c) copyright IBM Cloudant 2015
 
 #import "FMDatabase+LongLong.h"
 
-#import "FMDatabase.h"
-#import "FMDatabaseAdditions.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseAdditions.h>
 
 @interface FMDatabase (PrivateStuff)
 - (FMResultSet *)executeQuery:(NSString *)sql withArgumentsInArray:(NSArray*)arrayArgs orDictionary:(NSDictionary *)dictionaryArgs orVAList:(va_list)args;

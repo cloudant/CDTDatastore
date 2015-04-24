@@ -21,9 +21,9 @@
 #import "TDJSON.h"
 #import "MYBlockUtils.h"
 
-#import "FMDatabase.h"
-#import "FMDatabaseAdditions.h"
-#import "FMDatabaseQueue.h"
+#import <FMDB/FMDatabase.h>
+#import <FMDB/FMDatabaseAdditions.h>
+#import <FMDB/FMDatabaseQueue.h>
 
 #define kActiveReplicatorCleanupDelay 10.0
 

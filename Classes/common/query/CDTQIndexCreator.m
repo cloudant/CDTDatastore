@@ -19,7 +19,7 @@
 #import "CDTQLogging.h"
 
 #import "CloudantSync.h"
-#import "FMDB.h"
+#import <FMDB/FMDB.h>
 
 @interface CDTQIndexCreator ()
 
