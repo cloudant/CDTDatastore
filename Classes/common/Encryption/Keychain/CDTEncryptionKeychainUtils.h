@@ -34,10 +34,11 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 
  @return The buffer, nil if the operation fails
  */
-+ (NSData *)generateRandomBytesInBufferWithLength:(NSUInteger)length;
++ (NSData *)generateSecureRandomBytesWithLength:(NSUInteger)length;
 
 /**
- Encrypts a buffer by using a key and an Initialization Vector (IV).
+ Generates a new buffer by applying AES to the buffer passed as a parameter with the key and
+ Initialization Vector (IV) also supplied as parameters.
 
  This method asummes correct inputs:
  - The key length must be kCCKeySizeAES128(16), kCCKeySizeAES192(24) or kCCKeySizeAES256(32)
@@ -50,10 +51,11 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 
  @return The encrypted data
  */
-+ (NSData *)encryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
++ (NSData *)aesEncryptedDataForData:(NSData *)data key:(NSData *)key iv:(NSData *)iv;
 
 /**
- Decrypts a buffer by using a key and an Initialization Vector (IV).
+ Generates a new buffer using AES to decrypt the buffer passed as a parameter with the key and
+ Initialization Vector (IV) also supplied as parameters.
 
  This method asummes correct inputs:
  - The key length must be kCCKeySizeAES128(16), kCCKeySizeAES192(24) or kCCKeySizeAES256(32)
@@ -66,21 +68,21 @@ extern NSString *const CDTENCRYPTION_KEYCHAIN_UTILS_ERROR_LABEL_DECRYPT;
 
  @return The decrypted data
  */
-+ (NSData *)decryptData:(NSData *)data withKey:(NSData *)key iv:(NSData *)iv;
++ (NSData *)dataForAESEncryptedData:(NSData *)data key:(NSData *)key iv:(NSData *)iv;
 
 /**
  Generates a key by using the PBKDF2 algorithm.
 
- @param length Size of the key
  @param pass The password that is used to generate the key
  @param salt The salt that is used to generate the key
  @param iterations The number of iterations that is passed to the key generation algorithm
+ @param length Size of the key in bytes
 
  @return The generated key
  */
-+ (NSData *)generateKeyOfLength:(NSUInteger)length
-                  usingPassword:(NSString *)pass
-                       withSalt:(NSData *)salt
-                     iterations:(NSInteger)iterations;
++ (NSData *)pbkdf2DerivedKeyForPassword:(NSString *)pass
+                                   salt:(NSData *)salt
+                             iterations:(NSInteger)iterations
+                                 length:(NSUInteger)length;
 
 @end
