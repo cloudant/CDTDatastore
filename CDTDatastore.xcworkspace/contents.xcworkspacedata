@@ -30,10 +30,22 @@
                location = "group:Keychain"
                name = "Keychain">
                <FileRef
+                  location = "group:CDTEncryptionKeychainConstants.h">
+               </FileRef>
+               <FileRef
                   location = "group:CDTEncryptionKeychainData.h">
                </FileRef>
                <FileRef
                   location = "group:CDTEncryptionKeychainData.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainManager.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainManager.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTEncryptionKeychainManager+Internal.h">
                </FileRef>
                <FileRef
                   location = "group:CDTEncryptionKeychainStorage.h">
