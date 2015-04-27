@@ -48,7 +48,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
     TD_Database *db = [self.manager databaseNamed:name];
 
     if (db) {
-        return [[CDTDatastore alloc] initWithDatabase:db];
+        return [[CDTDatastore alloc] initWithManager:self database:db];
     } else {
         if (error) {
             NSDictionary *userInfo = @{
