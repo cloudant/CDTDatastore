@@ -30,7 +30,7 @@
 #import <FMDB/FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 #import "FMDatabase+LongLong.h"
-#import "FMDatabase+SQLCipher.h"
+#import "FMDatabase+EncryptionKey.h"
 #import <FMDB/FMDatabaseQueue.h>
 #import "CDTEncryptionKeyProvider.h"
 #import "CDTLogging.h"
@@ -209,43 +209,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 - (BOOL)openFMDBWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
 {
     __block BOOL result = YES;
-    
-    // Cipher/Not cipher the database
-    NSString* key = [provider encryptionKey];
-    if (!key) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Provider does not return a key to open DB at %@. "
-                    @"Checking whether DB is encrypted ...",
-                    _path);
 
-        switch ([FMDatabase isDatabaseUnencryptedAtPath:_path]) {
-            case kFMDatabaseUnencryptedNotFound: {
-                CDTLogDebug(
-                    CDTDATASTORE_LOG_CONTEXT,
-                    @"No DB found at %@. Carry on and try to open/create a new not encrypted DB.",
-                    _path);
-
-                break;
-            }
-            case kFMDatabaseUnencryptedIsUnencrypted: {
-                CDTLogDebug(
-                    CDTDATASTORE_LOG_CONTEXT,
-                    @"DB at %@ is not encrypted. No key is neccesary, carry on and try to open it.",
-                    _path);
-
-                break;
-            }
-            case kFMDatabaseUnencryptedIsEncrypted:
-            default: {
-                CDTLogError(CDTDATASTORE_LOG_CONTEXT,
-                            @"DB at %@ is encrypted and can not be opened without a key.", _path);
-
-                result = NO;
-
-                break;
-            }
-        }
-    }
-    
     // Create database
     FMDatabaseQueue* queue = nil;
     
@@ -267,9 +231,13 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     }
 
     // Set key to cipher database (if available)
-    if (result && key) {
+    if (result) {
         [queue inDatabase:^(FMDatabase* db) {
-            result = [db setValidKey:key];
+          NSError* error = nil;
+          result = [db setKeyWithProvider:provider error:&error];
+          if (!result) {
+              CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Key not set for DB at %@: %@", _path, error);
+          }
         }];
     }
 
