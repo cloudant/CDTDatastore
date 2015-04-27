@@ -102,6 +102,8 @@
 		CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
 		CD94A6FE1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
 		CD94A6FF1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
+		CDADD5BF1AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */ = {isa = PBXBuildFile; fileRef = CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */; };
+		CDADD5C01AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */ = {isa = PBXBuildFile; fileRef = CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */; };
 		CDBC57361AE66CD700CF9E6B /* CDTEncryptionKeychainProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDBC57351AE66CD700CF9E6B /* CDTEncryptionKeychainProviderTests.m */; };
 		CDBC57371AE66CD700CF9E6B /* CDTEncryptionKeychainProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDBC57351AE66CD700CF9E6B /* CDTEncryptionKeychainProviderTests.m */; };
 		CDBC573A1AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDBC57391AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m */; };
@@ -225,6 +227,8 @@
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperOneUseKeyProvider.m; sourceTree = "<group>"; };
 		CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencrypteddb.touchdb; path = Assets/emptyencrypteddb.touchdb; sourceTree = "<group>"; };
+		CDADD5BD1AEFD643003CA9EF /* FMDatabase+SQLCipher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FMDatabase+SQLCipher.h"; sourceTree = "<group>"; };
+		CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+SQLCipher.m"; sourceTree = "<group>"; };
 		CDBC57351AE66CD700CF9E6B /* CDTEncryptionKeychainProviderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeychainProviderTests.m; sourceTree = "<group>"; };
 		CDBC57381AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeychainManager.h; sourceTree = "<group>"; };
 		CDBC57391AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeychainManager.m; sourceTree = "<group>"; };
@@ -460,6 +464,8 @@
 				CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */,
 				CD2188D31AE5711A0036F59F /* DatastoreEncryptionTests.m */,
 				CD2188D41AE5711A0036F59F /* DatastoreManagerEncryptionTests.m */,
+				CDADD5BD1AEFD643003CA9EF /* FMDatabase+SQLCipher.h */,
+				CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */,
 				CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */,
 			);
 			path = Encryption;
@@ -740,6 +746,7 @@
 				985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				EC0C83601AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
+				CDADD5BF1AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */,
 				CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
 				CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EB1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,
@@ -810,6 +817,7 @@
 				9F0D240C188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */,
 				EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
+				CDADD5C01AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */,
 				CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
 				CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EC1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,

@@ -24,8 +24,6 @@
 #define kCDTQueryIndexFolder @"com.cloudant.sync.query"  // in CDTQIndexManager.m. Move it into .h?
 #define kCDTQueryIndexFilename @"indexes.sqlite"
 
-#define kCDTSQLiteStandardHeader @"SQLite format 3"
-
 @interface CloudantTests (EncryptionTests)
 
 /**
