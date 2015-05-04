@@ -42,15 +42,13 @@
 
 #pragma mark Convenience methods
 
-+ (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName
-                       type:(NSString *)indexType
++ (NSString *)ensureIndexed:(CDTQIndex *)index
                  inDatabase:(FMDatabaseQueue *)database
               fromDatastore:(CDTDatastore *)datastore
 {
     CDTQIndexCreator *executor =
         [[CDTQIndexCreator alloc] initWithDatabase:database datastore:datastore];
-    return [executor ensureIndexed:fieldNames withName:indexName type:indexType];
+    return [executor ensureIndexed:index];
 }
 
 #pragma mark Instance methods
@@ -62,21 +60,13 @@
  @param indexName Name of index to create.
  @returns name of created index
  */
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName
-                       type:(NSString *)indexType
+- (NSString *)ensureIndexed:(CDTQIndex *)index
 {
-    if (!fieldNames || fieldNames.count == 0) {
-        LogError(@"No fieldnames were passed to ensureIndexed");
+    if (!index) {
         return nil;
     }
 
-    if (!indexName) {
-        LogError(@"No index name was passed to ensureIndexed");
-        return nil;
-    }
-
-    fieldNames = [CDTQIndexCreator removeDirectionsFromFields:fieldNames];
+    NSArray *fieldNames = [CDTQIndexCreator removeDirectionsFromFields:index.fieldNames];
 
     for (NSString *fieldName in fieldNames) {
         if (![CDTQIndexCreator validFieldName:fieldName]) {
@@ -104,21 +94,29 @@
         fieldNames = [NSArray arrayWithArray:tmp];
     }
 
-    // Does the index already exist; return success if it does and is same, else fail
+    // Check the index limit.  Limit is 1 for "text" indexes and unlimited for "json" indexes.
+    // Then check whether the index already exists; return success if it does and is same,
+    // else fail.
     NSDictionary *existingIndexes = [CDTQIndexManager listIndexesInDatabaseQueue:self.database];
-    if (existingIndexes[indexName] != nil) {
-        NSDictionary *index = existingIndexes[indexName];
-        NSString *existingType = index[@"type"];
-        NSSet *existingFields = [NSSet setWithArray:index[@"fields"]];
+    if ([CDTQIndexCreator indexLimitReached:index basedOnIndexes:existingIndexes]) {
+        LogError(@"Index limit reached.  Cannot create index %@.", index.indexName);
+        return nil;
+    }
+    if (existingIndexes[index.indexName] != nil) {
+        NSDictionary *existingIndex = existingIndexes[index.indexName];
+        NSString *existingType = existingIndex[@"type"];
+        NSString *existingSettings = existingIndex[@"settings"];
+        NSSet *existingFields = [NSSet setWithArray:existingIndex[@"fields"]];
         NSSet *newFields = [NSSet setWithArray:fieldNames];
 
-        if ([existingType isEqualToString:indexType] && [existingFields isEqualToSet:newFields]) {
-            BOOL success = [CDTQIndexUpdater updateIndex:indexName
+        if ([existingFields isEqualToSet:newFields] &&
+            [index compareIndexTypeTo:existingType withIndexSettings:existingSettings]) {
+            BOOL success = [CDTQIndexUpdater updateIndex:index.indexName
                                               withFields:fieldNames
                                               inDatabase:_database
                                            fromDatastore:_datastore
                                                    error:nil];
-            return success ? indexName : nil;
+            return success ? index.indexName : nil;
         } else {
             return nil;
         }
@@ -129,29 +127,44 @@
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
         // Insert metadata table entries
-        NSArray *inserts = [CDTQIndexCreator insertMetadataStatementsForIndexName:indexName
-                                                                             type:indexType
-                                                                       fieldNames:fieldNames];
+        NSArray *inserts = [CDTQIndexCreator
+                            insertMetadataStatementsForIndexName:index.indexName
+                                                            type:index.indexType
+                                                        settings:index.settingsAsJSON
+                                                      fieldNames:fieldNames];
         for (CDTQSqlParts *sql in inserts) {
             success = success && [db executeUpdate:sql.sqlWithPlaceholders
                                      withArgumentsInArray:sql.placeholderValues];
         }
 
-        // Create the table for the index
-        CDTQSqlParts *createTable =
-            [CDTQIndexCreator createIndexTableStatementForIndexName:indexName
+        // Create SQLite data structures to support the index
+        // For JSON index type create a SQLite table and a SQLite index
+        // For TEXT index type create a SQLite virtual table
+        if ([index.indexType.lowercaseString isEqualToString:kCDTQTextType]) {
+            // Create the virtual table for the TEXT index
+            CDTQSqlParts *createVirtualTable =
+            [CDTQIndexCreator createVirtualTableStatementForIndexName:index.indexName
+                                                           fieldNames:fieldNames
+                                                             settings:index.indexSettings];
+            success = success && [db executeUpdate:createVirtualTable.sqlWithPlaceholders
+                              withArgumentsInArray:createVirtualTable.placeholderValues];
+        } else {
+            // Create the table for the index
+            CDTQSqlParts *createTable =
+            [CDTQIndexCreator createIndexTableStatementForIndexName:index.indexName
                                                          fieldNames:fieldNames];
-        success = success && [db executeUpdate:createTable.sqlWithPlaceholders
-                                 withArgumentsInArray:createTable.placeholderValues];
-
-        // Create the SQLite index on the index table
-
-        CDTQSqlParts *createIndex =
-            [CDTQIndexCreator createIndexIndexStatementForIndexName:indexName
+            success = success && [db executeUpdate:createTable.sqlWithPlaceholders
+                              withArgumentsInArray:createTable.placeholderValues];
+            
+            // Create the SQLite index on the index table
+            
+            CDTQSqlParts *createIndex =
+            [CDTQIndexCreator createIndexIndexStatementForIndexName:index.indexName
                                                          fieldNames:fieldNames];
-        success = success && [db executeUpdate:createIndex.sqlWithPlaceholders
-                                 withArgumentsInArray:createIndex.placeholderValues];
-
+            success = success && [db executeUpdate:createIndex.sqlWithPlaceholders
+                              withArgumentsInArray:createIndex.placeholderValues];
+        }
+        
         if (!success) {
             *rollback = YES;
         }
@@ -159,14 +172,14 @@
 
     // Update the new index if it's been created
     if (success) {
-        success = success && [CDTQIndexUpdater updateIndex:indexName
+        success = success && [CDTQIndexUpdater updateIndex:index.indexName
                                                 withFields:fieldNames
                                                 inDatabase:_database
                                              fromDatastore:_datastore
                                                      error:nil];
     }
 
-    return success ? indexName : nil;
+    return success ? index.indexName : nil;
 }
 
 /**
@@ -210,8 +223,37 @@
     return result;
 }
 
+/**
+ * Based on the proposed index and the list of existing indexes, this function checks
+ * whether another index can be created.  Currently the limit for TEXT indexes is 1.
+ * JSON indexes are unlimited.
+ *
+ * @param existingIndexes the list of already existing indexes
+ * @param index the proposed index
+ * @return whether the index limit has been reached
+ */
++ (BOOL) indexLimitReached:(CDTQIndex *)index basedOnIndexes:(NSDictionary *)existingIndexes
+{
+    if ([index.indexType.lowercaseString isEqualToString:kCDTQTextType]) {
+        for (NSString *name in existingIndexes.allKeys) {
+            NSDictionary *existingIndex = existingIndexes[name];
+            NSString *type = existingIndex[@"type"];
+            if ([type.lowercaseString isEqualToString:kCDTQTextType] &&
+                ![name.lowercaseString isEqualToString:index.indexName.lowercaseString]) {
+                LogError(@"The text index %@ already exists.  "
+                          "One text index per datastore permitted.  "
+                          "Delete %@ and recreate %@", name, name, index.indexName);
+                return YES;
+            }
+        }
+    }
+    
+    return NO;
+}
+
 + (NSArray /*CDTQSqlParts*/ *)insertMetadataStatementsForIndexName:(NSString *)indexName
                                                               type:(NSString *)indexType
+                                                          settings:(NSString *)indexSettings
                                                         fieldNames:
                                                             (NSArray /*NSString*/ *)fieldNames
 {
@@ -225,13 +267,22 @@
 
     NSMutableArray *result = [NSMutableArray array];
     for (NSString *fieldName in fieldNames) {
-        NSString *sql = @"INSERT INTO %@ "
-                         "(index_name, index_type, field_name, last_sequence) "
-                         "VALUES (?, ?, ?, 0);";
+        NSString *sql;
+        NSArray *metaParameters;
+        if (indexSettings) {
+            sql = @"INSERT INTO %@"
+                   " (index_name, index_type, index_settings, field_name, last_sequence) "
+                   "VALUES (?, ?, ?, ?, 0);";
+            metaParameters = @[ indexName, indexType, indexSettings, fieldName ];
+        } else {
+            sql = @"INSERT INTO %@"
+                   " (index_name, index_type, field_name, last_sequence) "
+                   "VALUES (?, ?, ?, 0);";
+            metaParameters = @[ indexName, indexType, fieldName ];
+        }
         sql = [NSString stringWithFormat:sql, kCDTQIndexMetadataTableName];
-
-        CDTQSqlParts *parts =
-            [CDTQSqlParts partsForSql:sql parameters:@[ indexName, indexType, fieldName ]];
+        
+        CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:metaParameters];
         [result addObject:parts];
     }
     return result;
@@ -281,6 +332,49 @@
 
     NSString *sql = [NSString stringWithFormat:@"CREATE INDEX %@ ON %@ ( %@ );", sqlIndexName,
                                                tableName, [clauses componentsJoinedByString:@", "]];
+    return [CDTQSqlParts partsForSql:sql parameters:@[]];
+}
+
+/**
+ * This function generates the virtual table create SQL for the specified index.
+ * Note:  Any column that contains an '=' will cause the statement to fail
+ *        because it triggers SQLite to expect that a parameter/value is being passed in.
+ *
+ * @param indexName the index name to be used when creating the SQLite virtual table
+ * @param fieldNames the columns in the table
+ * @param indexSettings the special settings to apply to the virtual table -
+ *                      (only 'tokenize' is current supported)
+ * @return the SQL to create the SQLite virtual table
+ */
++ (CDTQSqlParts *)createVirtualTableStatementForIndexName:(NSString *)indexName
+                                               fieldNames:(NSArray /*NSString*/ *)fieldNames
+                                                 settings:(NSDictionary *)indexSettings;
+{
+    if (!indexName) {
+        return nil;
+    }
+    
+    if (!fieldNames || fieldNames.count == 0) {
+        return nil;
+    }
+    
+    NSString *tableName = [CDTQIndexManager tableNameForIndex:indexName];
+    NSMutableArray *clauses = [NSMutableArray array];
+    for (NSString *fieldName in fieldNames) {
+        [clauses addObject:[NSString stringWithFormat:@"\"%@\"", fieldName]];
+    }
+    
+    NSMutableArray *settingsClauses = [NSMutableArray array];
+    for (NSString *parameter in indexSettings.allKeys) {
+        [settingsClauses addObject:[NSString stringWithFormat:@"%@=%@",
+                                    parameter,
+                                    indexSettings[parameter]]];
+    }
+    
+    NSString *sql = [NSString stringWithFormat:@"CREATE VIRTUAL TABLE %@ USING FTS4 ( %@, %@ );",
+                     tableName,
+                     [clauses componentsJoinedByString:@", "],
+                     [settingsClauses componentsJoinedByString:@", "]];
     return [CDTQSqlParts partsForSql:sql parameters:@[]];
 }
 
