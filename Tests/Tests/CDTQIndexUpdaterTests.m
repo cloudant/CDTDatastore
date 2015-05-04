@@ -333,6 +333,47 @@ SpecBegin(CDTQIndexUpdater)
                 expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
 
             });
+            
+            describe(@"when using a text index", ^{
+                it(@"sets correct sequence number", ^{
+                    
+                    expect([im ensureIndexed:@[ @"pet", @"name" ]
+                                    withName:@"basic"
+                                        type:@"text"]).toNot.beNil();
+                    
+                    FMDatabaseQueue *queue =
+                        (FMDatabaseQueue *)[im performSelector:@selector(database)];
+                    
+                    CDTQIndexUpdater *updater =
+                    [[CDTQIndexUpdater alloc] initWithDatabase:queue datastore:ds];
+                    expect([updater sequenceNumberForIndex:@"basic"]).to.equal(6);
+                    
+                    expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
+                    
+                    expect([updater sequenceNumberForIndex:@"basic"]).to.equal(6);
+                    
+                });
+                
+                it(@"sets correct sequence number after update", ^{
+                    expect([im ensureIndexed:@[ @"pet", @"name" ]
+                                    withName:@"basic"
+                                        type:@"text"]).toNot.beNil();
+                    FMDatabaseQueue *queue =
+                        (FMDatabaseQueue *)[im performSelector:@selector(database)];
+                    CDTQIndexUpdater *updater =
+                        [[CDTQIndexUpdater alloc] initWithDatabase:queue datastore:ds];
+                    
+                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+                    rev.docId = @"newdoc";
+                    rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                    [ds createDocumentFromRevision:rev error:nil];
+                    
+                    expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
+                    
+                    expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
+                    
+                });
+            });
 
         });
     });
