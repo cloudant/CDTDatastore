@@ -280,6 +280,15 @@
 {
     NSString *chosenIndex = nil;
     for (NSString *indexName in indexes) {
+        
+        // TODO - Remove once the query component of full text search is added.
+        NSString *indexType = indexes[indexName][@"type"];
+        if ([indexType.lowercaseString isEqualToString:@"text"]) {
+            LogInfo(@"Full text search is not yet supported.  "
+                     "Text index %@ is being ignored.", indexName);
+            continue;
+        }
+        
         NSSet *providedFields = [NSSet setWithArray:indexes[indexName][@"fields"]];
         if ([neededFields isSubsetOfSet:providedFields]) {
             chosenIndex = indexName;
