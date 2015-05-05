@@ -22,6 +22,15 @@
             <FileRef
                location = "group:Classes/common/Attachments/CDTAttachment.m">
             </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlob.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobRawData.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobRawData.m">
+            </FileRef>
          </Group>
          <Group
             location = "group:Encryption"
