@@ -48,4 +48,10 @@
 #pragma mark - CDTBlob methods
 - (NSData *)data { return self.rawData; }
 
+#pragma mark - Public class methods
++ (instancetype)blobWithRawData:(NSData *)rawData
+{
+    return [[[self class] alloc] initWithRawData:rawData];
+}
+
 @end

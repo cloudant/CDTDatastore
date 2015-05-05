@@ -23,6 +23,8 @@
 
 #import "TDStatus.h"
 
+#import "CDTBlobRawData.h"
+
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
 #define NSDataWritingAtomic NSAtomicWrite
@@ -98,10 +100,13 @@
     return YES;
 }
 
-- (NSData*)blobForKey:(TDBlobKey)key
+- (id<CDTBlob>)blobForKey:(TDBlobKey)key
 {
-    NSString* path = [self pathForKey:key];
-    return [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:NULL];
+    NSString *path = [self pathForKey:key];
+    NSData *rawData =
+        [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:NULL];
+
+    return [CDTBlobRawData blobWithRawData:rawData];
 }
 
 - (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength

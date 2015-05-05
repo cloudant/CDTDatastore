@@ -357,7 +357,8 @@
             if ((options & kTDBigAttachmentsFollow) && effectiveLength >= kBigAttachmentLength) {
                 dataSuppressed = YES;
             } else {
-                data = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                id<CDTBlob> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                data = (blob ? [blob data] : nil);
                 if (!data)
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"TD_Database: Failed to get attachment for key %@", keyData);

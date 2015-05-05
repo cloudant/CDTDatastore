@@ -16,6 +16,8 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
+#import "CDTBlob.h"
+
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
 {
@@ -31,7 +33,7 @@ typedef struct TDBlobKey
 
 - (id)initWithPath:(NSString*)dir error:(NSError**)outError;
 
-- (NSData*)blobForKey:(TDBlobKey)key;
+- (id<CDTBlob>)blobForKey:(TDBlobKey)key;
 - (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength;
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;

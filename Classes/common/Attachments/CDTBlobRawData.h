@@ -22,4 +22,6 @@
 
 - (instancetype)initWithRawData:(NSData *)rawData;
 
++ (instancetype)blobWithRawData:(NSData *)rawData;
+
 @end
