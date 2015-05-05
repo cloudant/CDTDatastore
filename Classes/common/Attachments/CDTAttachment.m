@@ -45,24 +45,24 @@
 @interface CDTSavedAttachment ()
 
 // Used to allow the input stream to be opened.
-@property (nonatomic, strong, readonly) NSString *filePath;
+@property (nonatomic, strong, readonly) id<CDTBlob> blob;
 
 @end
 
 @implementation CDTSavedAttachment
 
-- (instancetype)initWithPath:(NSString *)filePath
+- (instancetype)initWithBlob:(id<CDTBlob>)blob
                         name:(NSString *)name
                         type:(NSString *)type
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
                     sequence:(SequenceNumber)sequence
                          key:(NSData *)keyData
-                    encoding:(TDAttachmentEncoding)encoding;
+                    encoding:(TDAttachmentEncoding)encoding
 {
     self = [super initWithName:name type:type size:size];
     if (self) {
-        _filePath = filePath;
+        _blob = blob;
         _revpos = revpos;
         _sequence = sequence;
         _key = keyData;
@@ -73,30 +73,22 @@
 
 - (NSData *)dataFromAttachmentContent
 {
-    NSFileManager *fm = [NSFileManager defaultManager];
-    if (![fm fileExistsAtPath:self.filePath]) {
-        CDTLogInfo(CDTDOCUMENT_REVISION_LOG_CONTEXT,
-                @"When creating stream for saved attachment %@, no file at %@, "
-                @"-dataFromAttachmentContent failed.",
-                self.name, self.filePath);
-        return nil;
-    }
+#warning It would be better to read the file here
+    
+    NSData *data = nil;
 
     if (self.encoding == kTDAttachmentEncodingNone) {
-        return [NSData dataWithContentsOfFile:self.filePath
-                                      options:NSDataReadingMappedIfSafe
-                                        error:nil];
+        data = [self.blob data];
     } else if (self.encoding == kTDAttachmentEncodingGZIP) {
-        NSData *gzippedData = [NSData dataWithContentsOfFile:self.filePath
-                                                     options:NSDataReadingMappedIfSafe
-                                                       error:nil];
-        NSData *inflatedData = [NSData gtm_dataByInflatingData:gzippedData];
-        return inflatedData;
+        NSData *gzippedData = [self.blob data];
+
+        data = [NSData gtm_dataByInflatingData:gzippedData];
     } else {
-        CDTLogWarn(CDTDOCUMENT_REVISION_LOG_CONTEXT, @"Unknown attachment encoding %i, returning nil",
-                self.encoding);
-        return nil;
+        CDTLogWarn(CDTDOCUMENT_REVISION_LOG_CONTEXT,
+                   @"Unknown attachment encoding %i, returning nil", self.encoding);
     }
+
+    return data;
 }
 
 @end

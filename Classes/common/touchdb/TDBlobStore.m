@@ -103,10 +103,14 @@
 - (id<CDTBlob>)blobForKey:(TDBlobKey)key
 {
     NSString *path = [self pathForKey:key];
+    NSError *error = nil;
     NSData *rawData =
-        [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:NULL];
+        [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
+    if (!rawData) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ not loaded: %@", path, error);
+    }
 
-    return [CDTBlobRawData blobWithRawData:rawData];
+    return (rawData ? [CDTBlobRawData blobWithRawData:rawData] : nil);
 }
 
 - (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength

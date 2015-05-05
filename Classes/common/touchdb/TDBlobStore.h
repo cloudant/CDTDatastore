@@ -51,10 +51,6 @@ typedef struct TDBlobKey
 + (TDBlobKey)keyForBlob:(NSData*)blob;
 + (NSData*)keyDataForBlob:(NSData*)blob;
 
-/** Returns the path of the file storing the attachment with the given key, or nil.
-    DO NOT MODIFY THIS FILE! */
-- (NSString*)pathForKey:(TDBlobKey)key;
-
 @end
 
 typedef struct
