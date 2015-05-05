@@ -126,13 +126,13 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         return nil;
     }
 
-    NSString *filePath = [self.database.attachmentStore pathForKey:*(TDBlobKey *)keyData.bytes];
+    id<CDTBlobReader> blob = [self.database.attachmentStore blobForKey:*(TDBlobKey *)keyData.bytes];
 
     NSString *type = [r stringForColumn:@"type"];
     NSInteger size = [r longForColumn:@"length"];
     NSInteger revpos = [r longForColumn:@"revpos"];
     TDAttachmentEncoding encoding = [r intForColumn:@"encoding"];
-    CDTSavedAttachment *attachment = [[CDTSavedAttachment alloc] initWithPath:filePath
+    CDTSavedAttachment *attachment = [[CDTSavedAttachment alloc] initWithBlob:blob
                                                                          name:name
                                                                          type:type
                                                                          size:size
