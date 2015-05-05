@@ -23,6 +23,8 @@
 
 #import "TDStatus.h"
 
+#import "CDTBlobData.h"
+
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
 #define NSDataWritingAtomic NSAtomicWrite
@@ -68,8 +70,6 @@
     return [NSData dataWithBytes:&key length:sizeof(key)];
 }
 
-@synthesize path = _path;
-
 - (NSString*)pathForKey:(TDBlobKey)key
 {
     char out[2 * sizeof(key.bytes) + 1 + strlen(kFileExtension) + 1];
@@ -98,22 +98,11 @@
     return YES;
 }
 
-- (NSData*)blobForKey:(TDBlobKey)key
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key
 {
-    NSString* path = [self pathForKey:key];
-    return [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:NULL];
-}
-
-- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength
-{
-    NSString* path = [self pathForKey:key];
-    if (outLength) {
-        NSDictionary* info =
-            [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
-        if (!info) return nil;
-        *outLength = [info fileSize];
-    }
-    return [NSInputStream inputStreamWithFileAtPath:path];
+    NSString *path = [self pathForKey:key];
+    
+    return [CDTBlobData blobWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -122,23 +111,35 @@
     return [self storeBlob:blob creatingKey:outKey error:&error];
 }
 
-- (BOOL)storeBlob:(NSData*)blob
-      creatingKey:(TDBlobKey*)outKey
-            error:(NSError* __autoreleasing*)outError
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+            error:(NSError *__autoreleasing *)outError
 {
-    *outKey = [[self class] keyForBlob:blob];
-    NSString* path = [self pathForKey:*outKey];
-    if ([[NSFileManager defaultManager] isReadableFileAtPath:path]) return YES;
-    if (![blob writeToFile:path
-                   options:NSDataWritingAtomic
-#if TARGET_OS_IPHONE
-                           | NSDataWritingFileProtectionCompleteUnlessOpen
-#endif
-                     error:outError]) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore: Couldn't write to %@: %@", path, *outError);
-        return NO;
+    TDBlobKey thisKey = [[self class] keyForBlob:blob];
+    NSString *path = [self pathForKey:thisKey];
+
+    BOOL success = [[NSFileManager defaultManager] isReadableFileAtPath:path];
+    if (success) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
+    } else {
+        id<CDTBlobWriter> writer = [CDTBlobData blobWithPath:path];
+
+        NSError *thisError = nil;
+        success = [writer writeEntireBlobWithData:blob error:&thisError];
+        if (!success) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
+
+            if (outError) {
+                *outError = thisError;
+            }
+        }
     }
-    return YES;
+
+    if (success && outKey) {
+        *outKey = thisKey;
+    }
+
+    return success;
 }
 
 - (NSArray*)allKeys
@@ -257,8 +258,8 @@
                                                    attributes:attributes]) {
             return nil;
         }
-        _out = [NSFileHandle fileHandleForWritingAtPath:_tempPath];
-        if (!_out) {
+        _blobWriter = [CDTBlobData blobWithPath:_tempPath];
+        if (![_blobWriter openForWriting]) {
             return nil;
         }
     }
@@ -267,7 +268,7 @@
 
 - (void)appendData:(NSData*)data
 {
-    [_out writeData:data];
+    [_blobWriter appendData:data];
     NSUInteger dataLen = data.length;
     _length += dataLen;
     SHA1_Update(&_shaCtx, data.bytes, dataLen);
@@ -276,13 +277,13 @@
 
 - (void)closeFile
 {
-    [_out closeFile];
-    _out = nil;
+    [_blobWriter close];
+    _blobWriter = nil;
 }
 
 - (void)finish
 {
-    Assert(_out, @"Already finished");
+    Assert(_blobWriter, @"Already finished");
     [self closeFile];
     SHA1_Final(_blobKey.bytes, &_shaCtx);
     MD5_Final(_MD5Digest.bytes, &_md5Ctx);
@@ -302,7 +303,7 @@
 - (BOOL)install
 {
     if (!_tempPath) return YES;  // already installed
-    Assert(!_out, @"Not finished");
+    Assert(!_blobWriter, @"Not finished");
     // Move temp file to correct location in blob store:
     NSString* dstPath = [_store pathForKey:_blobKey];
     if ([[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:NULL]) {
