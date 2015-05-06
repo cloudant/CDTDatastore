@@ -1,5 +1,5 @@
 //
-//  CDTBlobRawData.m
+//  CDTBlobData.m
 //  CloudantSync
 //
 //  Created by Enrique de la Torre Fernandez on 05/05/2015.
@@ -14,17 +14,17 @@
 //  and limitations under the License.
 //
 
-#import "CDTBlobRawData.h"
+#import "CDTBlobData.h"
 
 #import "CDTLogging.h"
 
-@interface CDTBlobRawData ()
+@interface CDTBlobData ()
 
 @property (strong, nonatomic, readonly) NSString *path;
 
 @end
 
-@implementation CDTBlobRawData
+@implementation CDTBlobData
 
 #pragma mark - Init object
 - (instancetype)init { return [self initWithPath:nil]; }

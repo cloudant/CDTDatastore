@@ -26,10 +26,10 @@
                location = "group:Classes/common/Attachments/CDTBlob.h">
             </FileRef>
             <FileRef
-               location = "group:Classes/common/Attachments/CDTBlobRawData.h">
+               location = "group:Classes/common/Attachments/CDTBlobData.h">
             </FileRef>
             <FileRef
-               location = "group:Classes/common/Attachments/CDTBlobRawData.m">
+               location = "group:Classes/common/Attachments/CDTBlobData.m">
             </FileRef>
          </Group>
          <Group

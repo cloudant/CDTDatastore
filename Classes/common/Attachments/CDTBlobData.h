@@ -1,5 +1,5 @@
 //
-//  CDTBlobRawData.h
+//  CDTBlobData.h
 //  CloudantSync
 //
 //  Created by Enrique de la Torre Fernandez on 05/05/2015.
@@ -18,7 +18,7 @@
 
 #import "CDTBlob.h"
 
-@interface CDTBlobRawData : NSObject <CDTBlob>
+@interface CDTBlobData : NSObject <CDTBlob>
 
 - (instancetype)initWithPath:(NSString *)path;
 

@@ -1,5 +1,5 @@
 //
-//  CDTBlobRawDataTests.m
+//  CDTBlobDataTests.m
 //  Tests
 //
 //  Created by Enrique de la Torre Fernandez on 05/05/2015.
@@ -16,13 +16,13 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CDTBlobRawData.h"
+#import "CDTBlobData.h"
 
-@interface CDTBlobRawDataTests : XCTestCase
+@interface CDTBlobDataTests : XCTestCase
 
 @end
 
-@implementation CDTBlobRawDataTests
+@implementation CDTBlobDataTests
 
 - (void)setUp
 {
@@ -38,21 +38,21 @@
     [super tearDown];
 }
 
-- (void)testSimpleInitFails { XCTAssertNil([[CDTBlobRawData alloc] init], @"A path is mandatory"); }
+- (void)testSimpleInitFails { XCTAssertNil([[CDTBlobData alloc] init], @"A path is mandatory"); }
 
 - (void)testInitWithPathEqualToNilFails
 {
-    XCTAssertNil([[CDTBlobRawData alloc] initWithPath:nil], @"A path is mandatory");
+    XCTAssertNil([[CDTBlobData alloc] initWithPath:nil], @"A path is mandatory");
 }
 
 - (void)testInitWithEmptyPathFails
 {
-    XCTAssertNil([[CDTBlobRawData alloc] initWithPath:@""], @"A path is mandatory");
+    XCTAssertNil([[CDTBlobData alloc] initWithPath:@""], @"A path is mandatory");
 }
 
 - (void)testInitWithNonEmptyStringSucceeds
 {
-    XCTAssertNotNil([[CDTBlobRawData alloc] initWithPath:@"This is not a path"],
+    XCTAssertNotNil([[CDTBlobData alloc] initWithPath:@"This is not a path"],
                     @"Any string is valid as long as it is not empty");
 }
 

@@ -23,7 +23,7 @@
 
 #import "TDStatus.h"
 
-#import "CDTBlobRawData.h"
+#import "CDTBlobData.h"
 
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
@@ -104,7 +104,7 @@
 {
     NSString *path = [self pathForKey:key];
     
-    return [CDTBlobRawData blobWithPath:path];
+    return [CDTBlobData blobWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -124,7 +124,7 @@
     if (success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
     } else {
-        id<CDTBlob> writter = [CDTBlobRawData blobWithPath:path];
+        id<CDTBlob> writter = [CDTBlobData blobWithPath:path];
 
         NSError *thisError = nil;
         success = [writter storeData:blob error:&thisError];
