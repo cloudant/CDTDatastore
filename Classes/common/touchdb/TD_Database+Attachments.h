@@ -69,11 +69,6 @@ typedef enum { kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP } TDAttachme
  * its blob. */
 - (id<CDTBlob>)blobForAttachmentDict:(NSDictionary *)attachmentDict;
 
-/** Uses the "digest" field of the attachment dict to look up the attachment in the store and return
- * a stream pointing to it. */
-- (NSInputStream *)blobInputStreamForAttachmentDict:(NSDictionary *)attachmentDict
-                                             length:(UInt64 *)outLength;
-
 /** Deletes obsolete attachments from the database and blob store. */
 - (TDStatus)garbageCollectAttachments:(FMDatabase *)db;
 

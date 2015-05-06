@@ -103,26 +103,8 @@
 - (id<CDTBlob>)blobForKey:(TDBlobKey)key
 {
     NSString *path = [self pathForKey:key];
-    NSError *error = nil;
-    NSData *rawData =
-        [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:&error];
-    if (!rawData) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ not loaded: %@", path, error);
-    }
-
-    return (rawData ? [CDTBlobRawData blobWithRawData:rawData] : nil);
-}
-
-- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength
-{
-    NSString* path = [self pathForKey:key];
-    if (outLength) {
-        NSDictionary* info =
-            [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
-        if (!info) return nil;
-        *outLength = [info fileSize];
-    }
-    return [NSInputStream inputStreamWithFileAtPath:path];
+    
+    return [CDTBlobRawData blobWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -131,23 +113,35 @@
     return [self storeBlob:blob creatingKey:outKey error:&error];
 }
 
-- (BOOL)storeBlob:(NSData*)blob
-      creatingKey:(TDBlobKey*)outKey
-            error:(NSError* __autoreleasing*)outError
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+            error:(NSError *__autoreleasing *)outError
 {
-    *outKey = [[self class] keyForBlob:blob];
-    NSString* path = [self pathForKey:*outKey];
-    if ([[NSFileManager defaultManager] isReadableFileAtPath:path]) return YES;
-    if (![blob writeToFile:path
-                   options:NSDataWritingAtomic
-#if TARGET_OS_IPHONE
-                           | NSDataWritingFileProtectionCompleteUnlessOpen
-#endif
-                     error:outError]) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore: Couldn't write to %@: %@", path, *outError);
-        return NO;
+    TDBlobKey thisKey = [[self class] keyForBlob:blob];
+    NSString *path = [self pathForKey:thisKey];
+
+    BOOL success = [[NSFileManager defaultManager] isReadableFileAtPath:path];
+    if (success) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
+    } else {
+        id<CDTBlob> writter = [CDTBlobRawData blobWithPath:path];
+
+        NSError *thisError = nil;
+        success = [writter storeData:blob error:&thisError];
+        if (!success) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
+
+            if (outError) {
+                *outError = thisError;
+            }
+        }
     }
-    return YES;
+
+    if (success && outKey) {
+        *outKey = thisKey;
+    }
+
+    return success;
 }
 
 - (NSArray*)allKeys

@@ -20,23 +20,23 @@
 
 @interface CDTBlobRawData ()
 
-@property (strong, nonatomic, readonly) NSData *rawData;
+@property (strong, nonatomic, readonly) NSString *path;
 
 @end
 
 @implementation CDTBlobRawData
 
 #pragma mark - Init object
-- (instancetype)init { return [self initWithRawData:nil]; }
+- (instancetype)init { return [self initWithPath:nil]; }
 
-- (instancetype)initWithRawData:(NSData *)rawData
+- (instancetype)initWithPath:(NSString *)path
 {
     self = [super init];
     if (self) {
-        if (rawData) {
-            _rawData = rawData;
+        if (path && ([path length] > 0)) {
+            _path = path;
         } else {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Param is mandatory");
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"A non-empty path is mandatory");
 
             self = nil;
         }
@@ -46,12 +46,67 @@
 }
 
 #pragma mark - CDTBlob methods
-- (NSData *)data { return self.rawData; }
+- (NSData *)dataWithError:(NSError **)error
+{
+    NSError *thisError = nil;
+    NSData *data = [NSData dataWithContentsOfFile:self.path
+                                          options:NSDataReadingMappedIfSafe
+                                            error:&thisError];
+    if (!data) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Data object could not be created with file %@: %@",
+                    self.path, thisError);
+
+        if (error) {
+            *error = thisError;
+        }
+    }
+
+    return data;
+}
+
+- (NSInputStream *)inputStreamWithOutputLength:(UInt64 *)outputLength
+{
+    NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath:self.path];
+
+    if (inputStream && outputLength) {
+        NSFileManager *defaultManager = [NSFileManager defaultManager];
+
+        NSError *error = nil;
+        NSDictionary *info = [defaultManager attributesOfItemAtPath:self.path error:&error];
+        if (info) {
+            *outputLength = [info fileSize];
+        } else {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT,
+                        @"Attributes for file %@ could not be obtained: %@", self.path, error);
+
+            inputStream = nil;
+        }
+    }
+
+    return inputStream;
+}
+
+- (BOOL)storeData:(NSData *)data error:(NSError **)error
+{
+    NSDataWritingOptions options = NSDataWritingAtomic;
+#if TARGET_OS_IPHONE
+    options |= NSDataWritingFileProtectionCompleteUnlessOpen;
+#endif
+    NSError *thisError = nil;
+    BOOL success = [data writeToFile:self.path options:options error:&thisError];
+    if (!success) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Could not write data to file %@: %@", self.path,
+                    thisError);
+
+        if (error) {
+            *error = thisError;
+        }
+    }
+
+    return success;
+}
 
 #pragma mark - Public class methods
-+ (instancetype)blobWithRawData:(NSData *)rawData
-{
-    return [[[self class] alloc] initWithRawData:rawData];
-}
++ (instancetype)blobWithPath:(NSString *)path { return [[[self class] alloc] initWithPath:path]; }
 
 @end

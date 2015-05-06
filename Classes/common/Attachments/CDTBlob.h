@@ -18,6 +18,9 @@
 
 @protocol CDTBlob
 
-- (NSData *)data;
+- (NSData *)dataWithError:(NSError **)error;
+- (NSInputStream *)inputStreamWithOutputLength:(UInt64 *)outputLength;
+
+- (BOOL)storeData:(NSData *)data error:(NSError **)error;
 
 @end

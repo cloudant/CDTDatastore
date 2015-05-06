@@ -38,19 +38,22 @@
     [super tearDown];
 }
 
-- (void)testSimpleInitFails
+- (void)testSimpleInitFails { XCTAssertNil([[CDTBlobRawData alloc] init], @"A path is mandatory"); }
+
+- (void)testInitWithPathEqualToNilFails
 {
-    XCTAssertNil([[CDTBlobRawData alloc] init], @"Raw data is mandatory");
+    XCTAssertNil([[CDTBlobRawData alloc] initWithPath:nil], @"A path is mandatory");
 }
 
-- (void)testInitWithoutRawDataFails
+- (void)testInitWithEmptyPathFails
 {
-    XCTAssertNil([[CDTBlobRawData alloc] initWithRawData:nil], @"Raw data is mandatory");
+    XCTAssertNil([[CDTBlobRawData alloc] initWithPath:@""], @"A path is mandatory");
 }
 
-- (void)testInitSucceedsWithAnyData
+- (void)testInitWithNonEmptyStringSucceeds
 {
-    XCTAssertNotNil([[CDTBlobRawData alloc] initWithRawData:[NSData data]], @"Any data is valid");
+    XCTAssertNotNil([[CDTBlobRawData alloc] initWithPath:@"This is not a path"],
+                    @"Any string is valid as long as it is not empty");
 }
 
 @end

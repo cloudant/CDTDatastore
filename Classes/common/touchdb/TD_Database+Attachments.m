@@ -304,11 +304,11 @@
         return nil;
     }
 
-#warning Read the file here and return an error if it fails
-    NSData *contents = [blob data];
+    NSError *error = nil;
+    NSData *contents = [blob dataWithError:&error];
     if (!contents) {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@'", self,
-                   sequence, filename);
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
+                   sequence, filename, error);
 
         *outStatus = kTDStatusCorruptError;
 
@@ -365,7 +365,7 @@
                 dataSuppressed = YES;
             } else {
                 id<CDTBlob> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
-                data = (blob ? [blob data] : nil);
+                data = (blob ? [blob dataWithError:nil] : nil);
                 if (!data)
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"TD_Database: Failed to get attachment for key %@", keyData);
@@ -413,26 +413,6 @@
     }
     
     return [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
-}
-
-/**
- Return a stream to the file in the blob store pointed out by attachments dict.
- */
-- (NSInputStream *)blobInputStreamForAttachmentDict:(NSDictionary *)attachmentDict
-                                             length:(UInt64 *)outLength
-{
-#warning Duplicated
-    NSString *digest = attachmentDict[@"digest"];
-    if (![digest hasPrefix:@"sha1-"]) {
-        return nil;
-    }
-
-    NSData *keyData = [TDBase64 decode:[digest substringFromIndex:5]];
-    if (!keyData) {
-        return nil;
-    }
-
-    return [_attachments blobInputStreamForKey:*(TDBlobKey *)keyData.bytes length:outLength];
 }
 
 // Calls the block on every attachment dictionary. The block can return a different dictionary,
@@ -508,7 +488,7 @@
 }
 
 // Replaces the "follows" key with the real attachment data in all attachments to 'doc'.
-- (BOOL)inlineFollowingAttachmentsIn:(TD_Revision*)rev error:(NSError**)outError
+- (BOOL)inlineFollowingAttachmentsIn:(TD_Revision *)rev error:(NSError **)outError
 {
     __block NSError *error = nil;
     
@@ -519,11 +499,8 @@
                                 }
                                 
                                 id<CDTBlob> blob = [self blobForAttachmentDict:attachment];
-                                NSData *fileData = (blob ? [blob data] : nil);
+                                NSData *fileData = (blob ? [blob dataWithError:&error] : nil);
                                 if (!fileData){
-#warning This error is not right, read the file here and get a proper error
-                                    error = [NSError errorWithDomain:@"Error" code:0 userInfo:nil];
-                                    
                                     return nil;
                                 }
                                 
@@ -687,9 +664,9 @@
                 $sprintf(@"attachment; filename=%@", TDQuoteString(attachmentName));
             [writer setNextPartsHeaders:$dict({ @"Content-Disposition", disposition })];
 
+            id<CDTBlob> blob = [self blobForAttachmentDict:attachment];
             UInt64 length = 0;
-            NSInputStream* inputStream =
-                [self blobInputStreamForAttachmentDict:attachment length:&length];
+            NSInputStream* inputStream = [blob inputStreamWithOutputLength:&length];
             [writer addStream:inputStream length:length];
         }
     }

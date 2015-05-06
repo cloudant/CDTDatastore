@@ -20,8 +20,8 @@
 
 @interface CDTBlobRawData : NSObject <CDTBlob>
 
-- (instancetype)initWithRawData:(NSData *)rawData;
+- (instancetype)initWithPath:(NSString *)path;
 
-+ (instancetype)blobWithRawData:(NSData *)rawData;
++ (instancetype)blobWithPath:(NSString *)path;
 
 @end
