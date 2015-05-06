@@ -1,8 +1,8 @@
 //
-//  CDTBlob.h
+//  CDTBlobWriter.h
 //  CloudantSync
 //
-//  Created by Enrique de la Torre Fernandez on 05/05/2015.
+//  Created by Enrique de la Torre Fernandez on 06/05/2015.
 //  Copyright (c) 2015 IBM Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -16,14 +16,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTBlobWriter.h"
+@protocol CDTBlobWriter <NSObject>
 
-@protocol CDTBlob
-
-- (NSData *)dataWithError:(NSError **)error;
-- (NSInputStream *)inputStreamWithOutputLength:(UInt64 *)outputLength;
-
-- (BOOL)storeData:(NSData *)data error:(NSError **)error;
-- (id<CDTBlobWriter>)writer;
+- (void)appendData:(NSData *)data;
+- (void)closeFile;
 
 @end

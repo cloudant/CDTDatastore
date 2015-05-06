@@ -16,6 +16,8 @@
 
 #import "CDTBlobData.h"
 
+#import "CDTBlobDataWriter.h"
+
 #import "CDTLogging.h"
 
 @interface CDTBlobData ()
@@ -105,6 +107,8 @@
 
     return success;
 }
+
+- (id<CDTBlobWriter>)writer { return [CDTBlobDataWriter dataWriterWithPath:self.path]; }
 
 #pragma mark - Public class methods
 + (instancetype)blobWithPath:(NSString *)path { return [[[self class] alloc] initWithPath:path]; }
