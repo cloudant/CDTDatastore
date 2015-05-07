@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTDatastoreManager.h"
 
 @class CDTDocumentRevision;
 @class CDTDocumentBody;
@@ -70,7 +71,15 @@ extern NSString *const CDTDatastoreChangeNotification;
 
 + (NSString *)versionString;
 
-- (id)initWithDatabase:(TD_Database *)database;
+/**
+ *
+ * Creates a CDTDatastore instance.
+ *
+ * @param manager this datastore's maanger, must not be nil.
+ * @param database the database where this datastore should save documents
+ *
+ */
+- (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database;
 
 /**
  * The number of document in the datastore.

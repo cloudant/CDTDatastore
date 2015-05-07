@@ -39,6 +39,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @interface CDTDatastore ()
 
+@property (readonly) CDTDatastoreManager *manager;
 - (void)TDdbChanged:(NSNotification *)n;
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error;
 
@@ -50,10 +51,11 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 + (NSString *)versionString { return @CLOUDANT_SYNC_VERSION; }
 
-- (id)initWithDatabase:(TD_Database *)database
+- (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database
 {
     self = [super init];
     if (self) {
+        NSParameterAssert(manager);
         _database = database;
         if (![_database open]) {
             return nil;
@@ -63,6 +65,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         NSString *name = [database name];
         _extensionsDir =
             [dir stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_extensions", name]];
+        _manager = manager;
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(TDdbChanged:)
