@@ -20,7 +20,12 @@
 
 @interface CDTBlobDataTests : XCTestCase
 
+@property (strong, nonatomic) NSData *data;
 @property (strong, nonatomic) NSString *pathToExistingFile;
+@property (strong, nonatomic) CDTBlobData *blob;
+
+@property (strong, nonatomic) NSString *pathToNonExistingFile;
+@property (strong, nonatomic) CDTBlobData *blobForNotPrexistingFile;
 
 @end
 
@@ -32,24 +37,37 @@
 
     // Put setup code here. This method is called before the invocation of each test method in the
     // class.
+    self.data = [@"text" dataUsingEncoding:NSUnicodeStringEncoding];
+
     self.pathToExistingFile =
         [NSTemporaryDirectory() stringByAppendingPathComponent:@"CDTBlobDataTests.txt"];
     [[NSFileManager defaultManager] createFileAtPath:self.pathToExistingFile
                                             contents:nil
                                           attributes:nil];
+
+    self.blob = [[CDTBlobData alloc] initWithPath:self.pathToExistingFile];
+
+    self.pathToNonExistingFile =
+        [NSTemporaryDirectory() stringByAppendingPathComponent:@"nonExistingFile.txt"];
+    self.blobForNotPrexistingFile = [[CDTBlobData alloc] initWithPath:self.pathToNonExistingFile];
 }
 
 - (void)tearDown
 {
     // Put teardown code here. This method is called after the invocation of each test method in the
     // class.
+    self.blobForNotPrexistingFile = nil;
+    self.pathToNonExistingFile = nil;
+
+    self.blob = nil;
+
     [[NSFileManager defaultManager] removeItemAtPath:self.pathToExistingFile error:nil];
     self.pathToExistingFile = nil;
 
+    self.data = nil;
+
     [super tearDown];
 }
-
-- (void)testSimpleInitFails { XCTAssertNil([[CDTBlobData alloc] init], @"A path is mandatory"); }
 
 - (void)testInitWithPathEqualToNilFails
 {
@@ -67,38 +85,117 @@
                     @"Any string is valid as long as it is not empty");
 }
 
-- (void)testWriterReturnNilIfPathIsNotValid
+- (void)testBlobIsNotOpenAfterCreation
 {
-    CDTBlobData *blob = [[CDTBlobData alloc] initWithPath:@"This is not a path"];
-
-    XCTAssertNil([blob writer], @"A writer can not be created without a valid path");
+    XCTAssertFalse([self.blob isBlobOpen], @"After init, blob is not open");
 }
 
-- (void)testWriterReturnNilIfFileDoesNotExist
+- (void)testOpenBlobToAddDataFailsIfFileDoesNotExist
 {
-    NSString *path =
-        [NSTemporaryDirectory() stringByAppendingPathComponent:@"CDTBlobDataTests-nofile.txt"];
-
-    CDTBlobData *blob = [[CDTBlobData alloc] initWithPath:path];
-
-    XCTAssertNil([blob writer], @"The file must exist before creating the writer");
+    XCTAssertFalse([self.blobForNotPrexistingFile openBlobToAddData],
+                   @"If the file does not exist yet, it can not be open");
 }
 
-- (void)testWriterReturnAValueIfFileExists
+- (void)testOpenBlobToAddDataSucceedsIfFileExists
 {
-    CDTBlobData *blob = [[CDTBlobData alloc] initWithPath:self.pathToExistingFile];
-    
-    XCTAssertNotNil([blob writer], @"It should return an object if the file exists");
+    XCTAssertTrue([self.blob openBlobToAddData],
+                  @"If the file exists, we should be able to open it");
 }
 
-- (void)testWriterAlwaysReturnsADifferentObject
+- (void)testOpenBlobToAddDataSucceedsIfAlreadyOpen
 {
-    CDTBlobData *blob = [[CDTBlobData alloc] initWithPath:self.pathToExistingFile];
+    [self.blob openBlobToAddData];
+
+    XCTAssertTrue(
+        [self.blob openBlobToAddData],
+        @"If the blob is already opened, open it again let the file open, thefore it succeeds");
+}
+
+- (void)testOpenBlobToAddDataSucceedsAfterClosingBlob
+{
+    [self.blob openBlobToAddData];
+    [self.blob closeBlob];
+
+    XCTAssertTrue([self.blob openBlobToAddData],
+                  @"As long as the file still exists, we should be able to open it again");
+}
+
+- (void)testAddDataFailsIfBlobIsNotOpen
+{
+    XCTAssertFalse([self.blob addData:self.data], @"Open blob before adding data");
+}
+
+- (void)testDataWithErrorFailsIfBlobIsOpen
+{
+    [self.blob openBlobToAddData];
+
+    NSError *error = nil;
+    NSData *data = [self.blob dataWithError:&error];
+
+    XCTAssertNil(data, @"Blob can not be read if it is open");
+    XCTAssertTrue([error.domain isEqualToString:CDTBlobDataErrorDomain] &&
+                      error.code == CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen,
+                  @"In this situation the expected error is: (%@, %li)", CDTBlobDataErrorDomain,
+                  (long)CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen);
+}
+
+- (void)testDataWithErrorFailsIfFileDoesNotExist
+{
+    NSError *error = nil;
+    NSData *data = [self.blobForNotPrexistingFile dataWithError:&error];
+
+    XCTAssertNil(data, @"No data to read if file does not exist");
+    XCTAssertNotNil(error, @"An error must be informed");
+}
+
+- (void)testInputStreamWithOutputLengthFailsIfBlobIsOpen
+{
+    [self.blob openBlobToAddData];
+
+    UInt64 length = 0;
+    XCTAssertNil([self.blob inputStreamWithOutputLength:&length],
+                 @"Close the blob in order to create an input stream bound to the same filea");
+}
+
+- (void)testInputStreamWithOutputLengthFailsIfFileDoesNotExist
+{
+    UInt64 length = 0;
+    XCTAssertNil([self.blobForNotPrexistingFile inputStreamWithOutputLength:&length],
+                 @"File must exist in order to create an input stream");
+}
+
+- (void)testInputStreamWithOutputLengthFailsIfFileDoesNotExistEvenIfIDoNotGetTheLength
+{
+    XCTAssertNil([self.blobForNotPrexistingFile inputStreamWithOutputLength:nil],
+                 @"File must exist in order to create an input stream");
+}
+
+- (void)testCreateBlobWithDataFailsIfBlobIsOpen
+{
+    [self.blob openBlobToAddData];
+
+    NSError *error = nil;
+    BOOL success = [self.blob createBlobWithData:self.data error:&error];
+
+    XCTAssertFalse(success, @"Close the blob in order to overwrite it");
+    XCTAssertTrue([error.domain isEqualToString:CDTBlobDataErrorDomain] &&
+                      error.code == CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen,
+                  @"In this situation the expected error is: (%@, %li)", CDTBlobDataErrorDomain,
+                  (long)CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen);
+}
+
+- (void)testCreateBlobWithDataSucceedsIfFileExists
+{
+    XCTAssertTrue([self.blob createBlobWithData:self.data error:nil],
+                  @"The previous data will be overwritten with the next one");
+}
+
+- (void)testCreateBlobWithDataSucceedsIfFileDoesNotExist
+{
+    BOOL success = [self.blobForNotPrexistingFile createBlobWithData:self.data error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:self.pathToNonExistingFile error:nil];
     
-    id<CDTBlobWriter> writer01 = [blob writer];
-    id<CDTBlobWriter> writer02 = [blob writer];
-    
-    XCTAssertNotEqual(writer01, writer02, @"A new writer is created each time");
+    XCTAssertTrue(success, @"A new file will be created");
 }
 
 @end

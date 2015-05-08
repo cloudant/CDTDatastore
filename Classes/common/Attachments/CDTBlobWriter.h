@@ -18,7 +18,11 @@
 
 @protocol CDTBlobWriter <NSObject>
 
-- (void)appendData:(NSData *)data;
-- (void)closeFile;
+- (BOOL)createBlobWithData:(NSData *)data error:(NSError **)error;
+
+- (BOOL)isBlobOpen;
+- (BOOL)openBlobToAddData;
+- (BOOL)addData:(NSData *)data;
+- (void)closeBlob;
 
 @end

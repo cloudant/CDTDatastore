@@ -1,5 +1,5 @@
 //
-//  CDTBlob.h
+//  CDTBlobReader.h
 //  CloudantSync
 //
 //  Created by Enrique de la Torre Fernandez on 05/05/2015.
@@ -16,14 +16,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTBlobWriter.h"
-
-@protocol CDTBlob
+@protocol CDTBlobReader
 
 - (NSData *)dataWithError:(NSError **)error;
 - (NSInputStream *)inputStreamWithOutputLength:(UInt64 *)outputLength;
-
-- (BOOL)storeData:(NSData *)data error:(NSError **)error;
-- (id<CDTBlobWriter>)writer;
 
 @end

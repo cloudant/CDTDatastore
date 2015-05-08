@@ -100,7 +100,7 @@
     return YES;
 }
 
-- (id<CDTBlob>)blobForKey:(TDBlobKey)key
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key
 {
     NSString *path = [self pathForKey:key];
     
@@ -124,10 +124,10 @@
     if (success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
     } else {
-        id<CDTBlob> writter = [CDTBlobData blobWithPath:path];
+        id<CDTBlobWriter> writer = [CDTBlobData blobWithPath:path];
 
         NSError *thisError = nil;
-        success = [writter storeData:blob error:&thisError];
+        success = [writer createBlobWithData:blob error:&thisError];
         if (!success) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
 

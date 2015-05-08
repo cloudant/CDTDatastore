@@ -10,7 +10,7 @@
 
 #import "TD_Database.h"
 
-#import "CDTBlob.h"
+#import "CDTBlobReader.h"
 
 @class TDBlobStoreWriter, TDMultipartWriter, FMDatabase;
 
@@ -59,15 +59,15 @@ typedef enum { kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP } TDAttachme
                               status:(TDStatus *)outStatus;
 
 /** Returns the blob for an attachment in the blob store. */
-- (id<CDTBlob>)getAttachmentBlobForSequence:(SequenceNumber)sequence
-                                      named:(NSString *)filename
-                                       type:(NSString **)outType
-                                   encoding:(TDAttachmentEncoding *)outEncoding
-                                     status:(TDStatus *)outStatus;
+- (id<CDTBlobReader>)getAttachmentBlobForSequence:(SequenceNumber)sequence
+                                            named:(NSString *)filename
+                                             type:(NSString **)outType
+                                         encoding:(TDAttachmentEncoding *)outEncoding
+                                           status:(TDStatus *)outStatus;
 
 /** Uses the "digest" field of the attachment dict to look up the attachment in the store and return
  * its blob. */
-- (id<CDTBlob>)blobForAttachmentDict:(NSDictionary *)attachmentDict;
+- (id<CDTBlobReader>)blobForAttachmentDict:(NSDictionary *)attachmentDict;
 
 /** Deletes obsolete attachments from the database and blob store. */
 - (TDStatus)garbageCollectAttachments:(FMDatabase *)db;

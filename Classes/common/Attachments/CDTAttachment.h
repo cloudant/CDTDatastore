@@ -19,7 +19,7 @@
 #import "TD_Database.h"
 #import "TD_Database+Attachments.h"
 
-#import "CDTBlob.h"
+#import "CDTBlobReader.h"
 
 /**
  Base class for attachments in the datastore.
@@ -75,7 +75,7 @@
 /** sha of file, used for file path on disk. */
 @property (nonatomic, readonly) NSData *key;
 
-- (instancetype)initWithBlob:(id<CDTBlob>)blob
+- (instancetype)initWithBlob:(id<CDTBlobReader>)blob
                         name:(NSString *)name
                         type:(NSString *)type
                         size:(NSInteger)size

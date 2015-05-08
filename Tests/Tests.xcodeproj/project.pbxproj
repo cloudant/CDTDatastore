@@ -98,8 +98,6 @@
 		CD2188F11AE576740036F59F /* CDTMockEncryptionKeychainStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188EF1AE576740036F59F /* CDTMockEncryptionKeychainStorage.m */; };
 		CD25B2841AFA49E2001113BB /* CDTBlobDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */; };
 		CD25B2851AFA49E2001113BB /* CDTBlobDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */; };
-		CD25B2871AFA74E0001113BB /* CDTBlobDataWriterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2861AFA74E0001113BB /* CDTBlobDataWriterTests.m */; };
-		CD25B2881AFA74E0001113BB /* CDTBlobDataWriterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2861AFA74E0001113BB /* CDTBlobDataWriterTests.m */; };
 		CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
@@ -227,7 +225,6 @@
 		CD2188EE1AE576740036F59F /* CDTMockEncryptionKeychainStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeychainStorage.h; sourceTree = "<group>"; };
 		CD2188EF1AE576740036F59F /* CDTMockEncryptionKeychainStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeychainStorage.m; sourceTree = "<group>"; };
 		CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTBlobDataTests.m; path = Attachments/CDTBlobDataTests.m; sourceTree = "<group>"; };
-		CD25B2861AFA74E0001113BB /* CDTBlobDataWriterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTBlobDataWriterTests.m; path = Attachments/CDTBlobDataWriterTests.m; sourceTree = "<group>"; };
 		CD3FBCA21AB05A170032376E /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
@@ -426,7 +423,6 @@
 			children = (
 				985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */,
 				CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */,
-				CD25B2861AFA74E0001113BB /* CDTBlobDataWriterTests.m */,
 			);
 			name = Attachments;
 			sourceTree = "<group>";
@@ -736,7 +732,6 @@
 				CD2188E31AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */,
 				EC0C83481AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835C1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
-				CD25B2871AFA74E0001113BB /* CDTBlobDataWriterTests.m in Sources */,
 				989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
 				9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
@@ -809,7 +804,6 @@
 				CD2188E41AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */,
 				EC0C83491AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835D1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
-				CD25B2881AFA74E0001113BB /* CDTBlobDataWriterTests.m in Sources */,
 				989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
 				9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082991913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,

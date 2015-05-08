@@ -442,7 +442,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
                                                   { @"Content-Type", contentType },
                                                   { @"Content-Encoding", contentEncoding })];
             
-            id<CDTBlob> blob = [_db blobForAttachmentDict:attachment];
+            id<CDTBlobReader> blob = [_db blobForAttachmentDict:attachment];
             UInt64 length = 0;
             NSInputStream* inputStream = [blob inputStreamWithOutputLength:&length];
             [bodyStream addStream:inputStream length:length];

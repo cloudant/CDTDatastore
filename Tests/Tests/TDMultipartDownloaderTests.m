@@ -63,7 +63,7 @@
               TDBlobStoreWriter* writer = [db attachmentWriterForAttachment: attachment];
               XCTAssertNotNil(writer, @"TDBlobStoreWriter is nil in %s", __PRETTY_FUNCTION__);
               XCTAssertTrue([writer install], @"TDBlobStoreWriter install returned NO in %s", __PRETTY_FUNCTION__);
-              id<CDTBlob> blob = [db.attachmentStore blobForKey:writer.blobKey];
+              id<CDTBlobReader> blob = [db.attachmentStore blobForKey:writer.blobKey];
               NSData *data = [blob dataWithError:nil];
 //              NSLog(@"Found %u bytes of data for attachment %@", (unsigned)blob.length, attachment);
               NSNumber* lengthObj = attachment[@"encoded_length"] ?: attachment[@"length"];

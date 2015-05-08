@@ -242,15 +242,15 @@
  The encoding type kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP
  is set as an out parameter
  */
-- (id<CDTBlob>)getAttachmentBlobForSequence:(SequenceNumber)sequence
-                                      named:(NSString *)filename
-                                       type:(NSString **)outType
-                                   encoding:(TDAttachmentEncoding *)outEncoding
-                                     status:(TDStatus *)outStatus
+- (id<CDTBlobReader>)getAttachmentBlobForSequence:(SequenceNumber)sequence
+                                            named:(NSString *)filename
+                                             type:(NSString **)outType
+                                         encoding:(TDAttachmentEncoding *)outEncoding
+                                           status:(TDStatus *)outStatus
 {
     Assert(sequence > 0);
     Assert(filename);
-    __block id<CDTBlob> blob = nil;
+    __block id<CDTBlobReader> blob = nil;
 
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
         FMResultSet* r =
@@ -295,11 +295,11 @@
                               status:(TDStatus *)outStatus
 {
     TDAttachmentEncoding encoding;
-    id<CDTBlob> blob = [self getAttachmentBlobForSequence:sequence
-                                                    named:filename
-                                                     type:outType
-                                                 encoding:&encoding
-                                                   status:outStatus];
+    id<CDTBlobReader> blob = [self getAttachmentBlobForSequence:sequence
+                                                          named:filename
+                                                           type:outType
+                                                       encoding:&encoding
+                                                         status:outStatus];
     if (!blob) {
         return nil;
     }
@@ -364,7 +364,7 @@
             if ((options & kTDBigAttachmentsFollow) && effectiveLength >= kBigAttachmentLength) {
                 dataSuppressed = YES;
             } else {
-                id<CDTBlob> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                id<CDTBlobReader> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
                 data = (blob ? [blob dataWithError:nil] : nil);
                 if (!data)
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
@@ -400,7 +400,7 @@
 /**
  Return the blob for the file in the blob store pointed out by attachments dict.
  */
-- (id<CDTBlob>)blobForAttachmentDict:(NSDictionary *)attachmentDict
+- (id<CDTBlobReader>)blobForAttachmentDict:(NSDictionary *)attachmentDict
 {
     NSString* digest = attachmentDict[@"digest"];
     if (![digest hasPrefix:@"sha1-"]) {
@@ -498,7 +498,7 @@
                                     return attachment;
                                 }
                                 
-                                id<CDTBlob> blob = [self blobForAttachmentDict:attachment];
+                                id<CDTBlobReader> blob = [self blobForAttachmentDict:attachment];
                                 NSData *fileData = (blob ? [blob dataWithError:&error] : nil);
                                 if (!fileData){
                                     return nil;
@@ -664,7 +664,7 @@
                 $sprintf(@"attachment; filename=%@", TDQuoteString(attachmentName));
             [writer setNextPartsHeaders:$dict({ @"Content-Disposition", disposition })];
 
-            id<CDTBlob> blob = [self blobForAttachmentDict:attachment];
+            id<CDTBlobReader> blob = [self blobForAttachmentDict:attachment];
             UInt64 length = 0;
             NSInputStream* inputStream = [blob inputStreamWithOutputLength:&length];
             [writer addStream:inputStream length:length];

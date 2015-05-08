@@ -16,13 +16,15 @@
 
 #import "CDTBlobData.h"
 
-#import "CDTBlobDataWriter.h"
-
 #import "CDTLogging.h"
+
+NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
 
 @interface CDTBlobData ()
 
 @property (strong, nonatomic, readonly) NSString *path;
+
+@property (strong, nonatomic) NSFileHandle *outFileHandle;
 
 @end
 
@@ -37,6 +39,7 @@
     if (self) {
         if (path && ([path length] > 0)) {
             _path = path;
+            _outFileHandle = nil;
         } else {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"A non-empty path is mandatory");
 
@@ -47,20 +50,32 @@
     return self;
 }
 
-#pragma mark - CDTBlob methods
+#pragma mark - Memory management
+- (void)dealloc { [self closeBlob]; }
+
+#pragma mark - CDTBlobReader methods
 - (NSData *)dataWithError:(NSError **)error
 {
+    NSData *data = nil;
     NSError *thisError = nil;
-    NSData *data = [NSData dataWithContentsOfFile:self.path
-                                          options:NSDataReadingMappedIfSafe
-                                            error:&thisError];
-    if (!data) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Data object could not be created with file %@: %@",
-                    self.path, thisError);
 
-        if (error) {
-            *error = thisError;
+    if ([self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT,
+                    @"Blob at %@ is open. Close it before reading its content", self.path);
+
+        thisError = [CDTBlobData errorOperationNotPossibleIfBlobIsOpen];
+    } else {
+        data = [NSData dataWithContentsOfFile:self.path
+                                      options:NSDataReadingMappedIfSafe
+                                        error:&thisError];
+        if (!data) {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT,
+                        @"Data object could not be created with file %@: %@", self.path, thisError);
         }
+    }
+
+    if (!data && error) {
+        *error = thisError;
     }
 
     return data;
@@ -68,11 +83,22 @@
 
 - (NSInputStream *)inputStreamWithOutputLength:(UInt64 *)outputLength
 {
+    if ([self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Close blob in order to create an input stream");
+
+        return nil;
+    }
+
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+    if (![defaultManager fileExistsAtPath:self.path isDirectory:NO]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"No file found in %@", self.path);
+        
+        return nil;
+    }
+    
     NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath:self.path];
 
     if (inputStream && outputLength) {
-        NSFileManager *defaultManager = [NSFileManager defaultManager];
-
         NSError *error = nil;
         NSDictionary *info = [defaultManager attributesOfItemAtPath:self.path error:&error];
         if (info) {
@@ -88,29 +114,93 @@
     return inputStream;
 }
 
-- (BOOL)storeData:(NSData *)data error:(NSError **)error
+#pragma mark - CDTBlobWriter methods
+- (BOOL)createBlobWithData:(NSData *)data error:(NSError **)error
 {
-    NSDataWritingOptions options = NSDataWritingAtomic;
-#if TARGET_OS_IPHONE
-    options |= NSDataWritingFileProtectionCompleteUnlessOpen;
-#endif
+    BOOL success = NO;
     NSError *thisError = nil;
-    BOOL success = [data writeToFile:self.path options:options error:&thisError];
-    if (!success) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Could not write data to file %@: %@", self.path,
-                    thisError);
 
-        if (error) {
-            *error = thisError;
+    if ([self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT,
+                    @"Blob at %@ is open. Close it before saving the data", self.path);
+
+        thisError = [CDTBlobData errorOperationNotPossibleIfBlobIsOpen];
+    } else {
+        NSDataWritingOptions options = NSDataWritingAtomic;
+#if TARGET_OS_IPHONE
+        options |= NSDataWritingFileProtectionCompleteUnlessOpen;
+#endif
+
+        success = [data writeToFile:self.path options:options error:&thisError];
+        if (!success) {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Could not write data to file %@: %@", self.path,
+                        thisError);
         }
+    }
+
+    if (!success && error) {
+        *error = thisError;
     }
 
     return success;
 }
 
-- (id<CDTBlobWriter>)writer { return [CDTBlobDataWriter dataWriterWithPath:self.path]; }
+- (BOOL)isBlobOpen { return (self.outFileHandle != nil); }
+
+- (BOOL)openBlobToAddData
+{
+    if ([self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ already open", self.path);
+
+        return YES;
+    }
+
+    self.outFileHandle = [NSFileHandle fileHandleForWritingAtPath:self.path];
+
+    return [self isBlobOpen];
+}
+
+- (BOOL)addData:(NSData *)data
+{
+    if (![self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ is not open. No data can be added",
+                    self.path);
+
+        return NO;
+    }
+
+    [self.outFileHandle writeData:data];
+
+    return YES;
+}
+
+- (void)closeBlob
+{
+    if (![self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ already closed", self.path);
+
+        return;
+    }
+
+    [self.outFileHandle closeFile];
+    self.outFileHandle = nil;
+}
 
 #pragma mark - Public class methods
 + (instancetype)blobWithPath:(NSString *)path { return [[[self class] alloc] initWithPath:path]; }
+
+#pragma mark - Private class methods
++ (NSError *)errorOperationNotPossibleIfBlobIsOpen
+{
+    NSDictionary *userInfo = @{
+        NSLocalizedDescriptionKey :
+            NSLocalizedString(@"Close blob in order to perform this operation",
+                              @"Close blob in order to perform this operation")
+    };
+
+    return [NSError errorWithDomain:CDTBlobDataErrorDomain
+                               code:CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen
+                           userInfo:userInfo];
+}
 
 @end

@@ -126,7 +126,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
         return nil;
     }
 
-    id<CDTBlob> blob = [self.database.attachmentStore blobForKey:*(TDBlobKey *)keyData.bytes];
+    id<CDTBlobReader> blob = [self.database.attachmentStore blobForKey:*(TDBlobKey *)keyData.bytes];
 
     NSString *type = [r stringForColumn:@"type"];
     NSInteger size = [r longForColumn:@"length"];

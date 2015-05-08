@@ -16,11 +16,20 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTBlob.h"
+#import "CDTBlobReader.h"
+#import "CDTBlobWriter.h"
 
-@interface CDTBlobData : NSObject <CDTBlob>
+extern NSString *const CDTBlobDataErrorDomain;
 
-- (instancetype)initWithPath:(NSString *)path;
+typedef NS_ENUM(NSInteger, CDTBlobDataError) {
+    CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen
+};
+
+@interface CDTBlobData : NSObject <CDTBlobReader, CDTBlobWriter>
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+- (instancetype)initWithPath:(NSString *)path NS_DESIGNATED_INITIALIZER;
 
 + (instancetype)blobWithPath:(NSString *)path;
 

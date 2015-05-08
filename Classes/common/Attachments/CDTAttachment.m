@@ -45,13 +45,13 @@
 @interface CDTSavedAttachment ()
 
 // Used to allow the input stream to be opened.
-@property (nonatomic, strong, readonly) id<CDTBlob> blob;
+@property (nonatomic, strong, readonly) id<CDTBlobReader> blob;
 
 @end
 
 @implementation CDTSavedAttachment
 
-- (instancetype)initWithBlob:(id<CDTBlob>)blob
+- (instancetype)initWithBlob:(id<CDTBlobReader>)blob
                         name:(NSString *)name
                         type:(NSString *)type
                         size:(NSInteger)size
