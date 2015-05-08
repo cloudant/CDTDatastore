@@ -17,6 +17,7 @@
 #endif
 
 #import "CDTBlobReader.h"
+#import "CDTBlobWriter.h"
 
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
@@ -63,7 +64,7 @@ typedef struct
    @private
     TDBlobStore* _store;
     NSString* _tempPath;
-    NSFileHandle* _out;
+    id<CDTBlobWriter> _blobWriter;
     UInt64 _length;
     SHA_CTX _shaCtx;
     MD5_CTX _md5Ctx;

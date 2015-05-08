@@ -260,8 +260,8 @@
                                                    attributes:attributes]) {
             return nil;
         }
-        _out = [NSFileHandle fileHandleForWritingAtPath:_tempPath];
-        if (!_out) {
+        _blobWriter = [CDTBlobData blobWithPath:_tempPath];
+        if (![_blobWriter openBlobToAddData]) {
             return nil;
         }
     }
@@ -270,7 +270,7 @@
 
 - (void)appendData:(NSData*)data
 {
-    [_out writeData:data];
+    [_blobWriter addData:data];
     NSUInteger dataLen = data.length;
     _length += dataLen;
     SHA1_Update(&_shaCtx, data.bytes, dataLen);
@@ -279,13 +279,13 @@
 
 - (void)closeFile
 {
-    [_out closeFile];
-    _out = nil;
+    [_blobWriter closeBlob];
+    _blobWriter = nil;
 }
 
 - (void)finish
 {
-    Assert(_out, @"Already finished");
+    Assert(_blobWriter, @"Already finished");
     [self closeFile];
     SHA1_Final(_blobKey.bytes, &_shaCtx);
     MD5_Final(_MD5Digest.bytes, &_md5Ctx);
@@ -305,7 +305,7 @@
 - (BOOL)install
 {
     if (!_tempPath) return YES;  // already installed
-    Assert(!_out, @"Not finished");
+    Assert(!_blobWriter, @"Not finished");
     // Move temp file to correct location in blob store:
     NSString* dstPath = [_store pathForKey:_blobKey];
     if ([[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:NULL]) {
