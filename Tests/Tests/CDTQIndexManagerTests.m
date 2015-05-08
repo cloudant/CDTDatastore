@@ -179,6 +179,26 @@ SpecBegin(CDTQIndexManager)
             expect([im listIndexes][@"basic3"]).toNot.beNil();
 
         });
+        
+        it(@"text index", ^{
+            
+            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            
+            rev.body = @{
+                         @"name" : @"mike",
+                         @"age" : @12,
+                         @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
+                         };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            expect([im ensureIndexed:@[ @"name" ]
+                            withName:@"basic"
+                                type:@"text"]).to.equal(@"basic");
+            expect([im listIndexes][@"basic"]).toNot.beNil();
+            
+            expect([im deleteIndexNamed:@"basic"]).to.equal(@YES);
+            expect([im listIndexes][@"basic"]).to.beNil();
+        });
 
     });
 

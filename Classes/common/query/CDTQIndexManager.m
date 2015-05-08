@@ -39,6 +39,7 @@
 
 #import "CDTQIndexManager.h"
 
+#import "CDTQIndex.h"
 #import "CDTQResultSet.h"
 #import "CDTQIndexUpdater.h"
 #import "CDTQQueryExecutor.h"
@@ -59,7 +60,7 @@ NSString *const kCDTQIndexMetadataTableName = @"_t_cloudant_sync_query_metadata"
 static NSString *const kCDTQExtensionName = @"com.cloudant.sync.query";
 static NSString *const kCDTQIndexFieldNamePattern = @"^[a-zA-Z][a-zA-Z0-9_]*$";
 
-static const int VERSION = 1;
+static const int VERSION = 2;
 
 @interface CDTQIndexManager ()
 
@@ -171,20 +172,26 @@ static const int VERSION = 1;
 
     NSMutableDictionary *indexes = [NSMutableDictionary dictionary];
 
-    NSString *sql = @"SELECT index_name, index_type, field_name FROM %@;";
+    NSString *sql = @"SELECT index_name, index_type, field_name, index_settings FROM %@;";
     sql = [NSString stringWithFormat:sql, kCDTQIndexMetadataTableName];
     FMResultSet *rs = [db executeQuery:sql];
     while ([rs next]) {
         NSString *rowIndex = [rs stringForColumn:@"index_name"];
         NSString *rowType = [rs stringForColumn:@"index_type"];
         NSString *rowField = [rs stringForColumn:@"field_name"];
+        NSString *rowSettings = [rs stringForColumn:@"index_settings"];
 
         if (indexes[rowIndex] == nil) {
-            indexes[rowIndex] = @{
-                @"type" : rowType,
-                @"name" : rowIndex,
-                @"fields" : [NSMutableArray array]
-            };
+            if (rowSettings) {
+                indexes[rowIndex] = @{@"type" : rowType,
+                                      @"name" : rowIndex,
+                                      @"fields" : [NSMutableArray array],
+                                      @"settings" : rowSettings};
+            } else {
+                indexes[rowIndex] = @{@"type" : rowType,
+                                      @"name" : rowIndex,
+                                      @"fields" : [NSMutableArray array]};
+            }
         }
 
         [indexes[rowIndex][@"fields"] addObject:rowField];
@@ -195,11 +202,20 @@ static const int VERSION = 1;
 
     for (NSString *indexName in [indexes allKeys]) {
         NSMutableDictionary *details = indexes[indexName];
-        indexes[indexName] = @{
-            @"type" : details[@"type"],
-            @"name" : details[@"name"],
-            @"fields" : [details[@"fields"] copy]  // -copy makes arrays immutable
-        };
+        if (details[@"settings"]) {
+            indexes[indexName] = @{
+                @"type" : details[@"type"],
+                @"name" : details[@"name"],
+                @"fields" : [details[@"fields"] copy],  // -copy makes arrays immutable
+                @"settings" : details[@"settings"]
+            };
+        } else {
+            indexes[indexName] = @{
+                @"type" : details[@"type"],
+                @"name" : details[@"name"],
+                @"fields" : [details[@"fields"] copy]  // -copy makes arrays immutable
+            };
+        }
     }
 
     return [NSDictionary dictionaryWithDictionary:indexes];  // make dictionary immutable
@@ -230,7 +246,9 @@ static const int VERSION = 1;
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames withName:(NSString *)indexName
 {
-    return [self ensureIndexed:fieldNames withName:indexName type:@"json"];
+    return [CDTQIndexCreator ensureIndexed:[CDTQIndex index:indexName withFields:fieldNames]
+                                inDatabase:_database
+                             fromDatastore:_datastore];
 }
 
 /**
@@ -238,28 +256,35 @@ static const int VERSION = 1;
 
  @param fieldNames List of fieldnames in the sort format
  @param indexName Name of index to create.
- @param type "json" is the only supported type for now
+ @param type The type of index (json or text currently supported)
  @returns name of created index
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
                        type:(NSString *)type
 {
-    if (fieldNames.count == 0) {
-        return nil;
-    }
+    return [self ensureIndexed:fieldNames withName:indexName type:type settings:nil];
+}
 
-    if (!indexName) {
-        return nil;
-    }
-
-    if (![type isEqualToString:@"json"]) {
-        return nil;
-    }
-
-    return [CDTQIndexCreator ensureIndexed:fieldNames
-                                  withName:indexName
-                                      type:type
+/**
+ Add a single, possibly compound, index for the given field names.
+ 
+ @param fieldNames List of fieldnames in the sort format
+ @param indexName Name of index to create.
+ @param type The type of index (json or text currently supported)
+ @param indexSettings The optional settings to be applied to an index
+ *                    Only text indexes support settings - Ex. { "tokenize" : "simple" }
+ @returns name of created index
+ */
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type
+                   settings:(NSDictionary *)indexSettings
+{
+    return [CDTQIndexCreator ensureIndexed:[CDTQIndex index:indexName
+                                                 withFields:fieldNames
+                                                     ofType:type
+                                               withSettings:indexSettings]
                                 inDatabase:_database
                              fromDatastore:_datastore];
 }
@@ -365,6 +390,10 @@ static const int VERSION = 1;
         if (version < 1) {
             success = [self migrate_0_1:db];
         }
+        
+        if (version < 2) {
+            success = success && [self migrate_1_2:db];
+        }
 
         // Set user_version unconditionally
         NSString *sql = [NSString stringWithFormat:@"pragma user_version = %d", currentVersion];
@@ -384,6 +413,13 @@ static const int VERSION = 1;
     NSString *SCHEMA_INDEX = @"CREATE TABLE _t_cloudant_sync_query_metadata ( "
         @"        index_name TEXT NOT NULL, " @"        index_type TEXT NOT NULL, "
         @"        field_name TEXT NOT NULL, " @"        last_sequence INTEGER NOT NULL);";
+    return [db executeUpdate:SCHEMA_INDEX];
+}
+
+- (BOOL)migrate_1_2:(FMDatabase *)db
+{
+    NSString *SCHEMA_INDEX = @"ALTER TABLE _t_cloudant_sync_query_metadata "
+                             @"        ADD COLUMN index_settings TEXT NULL;";
     return [db executeUpdate:SCHEMA_INDEX];
 }
 

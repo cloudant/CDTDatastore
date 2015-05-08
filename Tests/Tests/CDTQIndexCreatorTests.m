@@ -12,6 +12,7 @@
 #import <CDTQIndexCreator.h>
 #import <CDTQResultSet.h>
 #import <CDTQQueryExecutor.h>
+#import "Matchers/CDTQContainsAllElementsMatcher.h"
 
 SpecBegin(CDTQIndexCreator)
 
@@ -226,13 +227,55 @@ SpecBegin(CDTQIndexCreator)
                 expect(name).to.equal(@"basic");
             });
 
-            it(@"doesn't support using the text type", ^{
-                NSString *name =
-                    [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{
-                        @"age" : @"desc"
-                    } ] withName:@"basic"
-                                 type:@"text"];
-                expect(name).to.beNil();
+            it(@"supports using the text type", ^{
+                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                          withName:@"basic"
+                                              type:@"text"];
+                expect(name).to.equal(@"basic");
+                NSDictionary *indexes = im.listIndexes;
+                expect(indexes.count).to.equal(1);
+                NSDictionary *index = indexes[@"basic"];
+                expect(index[@"type"]).to.equal(@"text");
+                expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"simple\"}");
+            });
+            
+            it(@"supports using the text type with a tokenize setting", ^{
+                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                          withName:@"basic"
+                                              type:@"text"
+                                          settings:@{ @"tokenize" : @"porter" }];
+                expect(name).to.equal(@"basic");
+                NSDictionary *indexes = im.listIndexes;
+                expect(indexes.count).to.equal(1);
+                NSDictionary *index = indexes[@"basic"];
+                expect(index[@"type"]).to.equal(@"text");
+                expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"porter\"}");
+            });
+            
+            it(@"supports coexistence of text and json indexes", ^{
+                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                          withName:@"textIndex"
+                                              type:@"text"];
+                expect(name).to.equal(@"textIndex");
+                name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                withName:@"jsonIndex"
+                                    type:@"json"];
+                expect(name).to.equal(@"jsonIndex");
+                expect(im.listIndexes.allKeys).to.containsAllElements(@[ @"textIndex",
+                                                                         @"jsonIndex" ]);
+                
+            });
+            
+            
+            it(@"correctly limits text index creation to one", ^{
+                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                          withName:@"basic"
+                                              type:@"text"];
+                expect(name).to.equal(@"basic");
+                name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
+                                withName:@"anotherTextIndex"
+                                    type:@"text"];
+                expect(name).to.beNil;
             });
 
             it(@"doesn't support using the geo type", ^{
@@ -341,9 +384,11 @@ SpecBegin(CDTQIndexCreator)
 
             it(@"doesn't create insert statements when there are no fields", ^{
                 NSArray *fieldNames = @[];
-                NSArray *parts = [CDTQIndexCreator insertMetadataStatementsForIndexName:@"anIndex"
-                                                                                   type:@"json"
-                                                                             fieldNames:fieldNames];
+                NSArray *parts = [CDTQIndexCreator
+                                  insertMetadataStatementsForIndexName:@"anIndex"
+                                                                  type:@"json"
+                                                              settings:nil
+                                                            fieldNames:fieldNames];
                 expect(parts).to.beNil();
             });
 
@@ -351,6 +396,7 @@ SpecBegin(CDTQIndexCreator)
                 NSArray *fieldNames = @[ @"_id", @"name" ];
                 NSArray *parts = [CDTQIndexCreator insertMetadataStatementsForIndexName:@"anIndex"
                                                                                    type:@"json"
+                                                                               settings:nil
                                                                              fieldNames:fieldNames];
 
                 CDTQSqlParts *part;
@@ -374,6 +420,7 @@ SpecBegin(CDTQIndexCreator)
                 NSArray *fieldNames = @[ @"_id", @"name", @"age", @"pet" ];
                 NSArray *parts = [CDTQIndexCreator insertMetadataStatementsForIndexName:@"anIndex"
                                                                                    type:@"json"
+                                                                               settings:nil
                                                                              fieldNames:fieldNames];
 
                 CDTQSqlParts *part;

@@ -90,6 +90,11 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
                    withName:(NSString *)indexName
                        type:(NSString *)type;
 
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type
+                   settings:(NSDictionary *)indexSettings;
+
 - (BOOL)deleteIndexNamed:(NSString *)indexName;
 
 - (BOOL)updateAllIndexes;

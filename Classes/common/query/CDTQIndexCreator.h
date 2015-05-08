@@ -13,6 +13,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTQIndex.h"
 
 @class FMDatabaseQueue;
 @class CDTDatastore;
@@ -27,9 +28,7 @@
  @param indexName Name of index to create.
  @returns name of created index
  */
-+ (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName
-                       type:(NSString *)type
++ (NSString *)ensureIndexed:(CDTQIndex *)index
                  inDatabase:(FMDatabaseQueue *)database
               fromDatastore:(CDTDatastore *)datastore;
 
@@ -39,6 +38,7 @@
 
 + (NSArray /*CDTQSqlParts*/ *)insertMetadataStatementsForIndexName:(NSString *)indexName
                                                               type:(NSString *)indexType
+                                                          settings:(NSString *)indexSettings
                                                         fieldNames:
                                                             (NSArray /*NSString*/ *)fieldNames;
 
@@ -47,5 +47,9 @@
 
 + (CDTQSqlParts *)createIndexIndexStatementForIndexName:(NSString *)indexName
                                              fieldNames:(NSArray /*NSString*/ *)fieldNames;
+
++ (CDTQSqlParts *)createVirtualTableStatementForIndexName:(NSString *)indexName
+                                               fieldNames:(NSArray /*NSString*/ *)fieldNames
+                                                 settings:(NSDictionary *)indexSettings;
 
 @end
