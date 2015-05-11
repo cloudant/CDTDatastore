@@ -19,8 +19,9 @@
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonKeyDerivation.h>
 
-
 #import "CDTEncryptionKeychainUtils+PBKDF2.h"
+
+#import "TDMisc.h"
 
 @interface CDTEncryptionKeychainUtilsPBKDF2Tests : XCTestCase
 
@@ -101,15 +102,9 @@
 #pragma mark - Private class methods
 + (NSString *)hexadecimalRepresentationForData:(NSData *)data
 {
-    NSUInteger dataLength = data.length;
-    const unsigned char *dataBytes = data.bytes;
-
-    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
-    for (NSUInteger idx = 0; idx < dataLength; idx++) {
-        [hexString appendFormat:@"%02x", dataBytes[idx]];
-    }
-
-    return [NSString stringWithString:hexString];
+    NSString *hexStr = TDHexFromBytes(data.bytes, data.length);
+    
+    return hexStr;
 }
 
 @end
