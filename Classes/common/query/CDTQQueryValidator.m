@@ -300,7 +300,19 @@
 
 #pragma validation class methods
 
+/**
+ * This method runs the list of clauses making up the selector through a series of
+ * validation steps and returns whether the clause list is valid or not.  An error 
+ * is logged if the clause list is found to be invalid.
+ *
+ * @param clauses An NSArray of clauses making up a query selector
+ * @param textClauseLimitReached A flag used to track the text clause limit
+ *                               throughout the validation process.  The
+ *                               current limit is one text clause per query.
+ * @return YES/NO whether the list of clauses passed validation.
+ */
 + (BOOL)validateCompoundOperatorClauses:(NSArray *)clauses
+                    withTextClauseLimit:(BOOL *)textClauseLimitReached
 {
     BOOL valid = NO;
 
@@ -323,12 +335,18 @@
             id compoundClauses = [obj objectForKey:key];
             if ([CDTQQueryValidator validateCompoundOperatorOperand:compoundClauses]) {
                 // validate array
-                valid = [CDTQQueryValidator validateCompoundOperatorClauses:compoundClauses];
+                valid = [CDTQQueryValidator validateCompoundOperatorClauses:compoundClauses
+                                                        withTextClauseLimit:textClauseLimitReached];
             }
         } else if (![key hasPrefix:@"$"]) {
             // this should have a dict
             // send this for validation
             valid = [CDTQQueryValidator validateClause:[obj objectForKey:key]];
+        } else if ([key.lowercaseString isEqualToString:TEXT]) {
+            // this should have a dict
+            // send this for validation
+            valid = [CDTQQueryValidator validateTextClause:clause[key]
+                                       withTextClauseLimit:textClauseLimitReached];
         } else {
             LogError(@"%@ operator cannot be a top level operator", key);
             break;
@@ -374,6 +392,46 @@
     return NO;
 }
 
+/**
+ * This method handles the special case where a text search clause is encountered.
+ * This case is special because a $text operator expects an NSDictionary value whose 
+ * key can only be the $search operator.
+ *
+ * @param clause The text clause to validate
+ * @param textClauseLimitReached A flag used to track the text clause limit
+ *                               throughout the validation process.  The
+ *                               current limit is one text clause per query.
+ * @return YES/NO whether the clause is valid
+ */
++ (BOOL)validateTextClause:(NSObject *)clause withTextClauseLimit:(BOOL *)textClauseLimitReached
+{
+    if (![clause isKindOfClass:[NSDictionary class]]) {
+        LogError(@"Text search expects an NSDictionary, found %@ instead.", clause);
+        return NO;
+    }
+    
+    NSDictionary *textClause = (NSDictionary *) clause;
+    if ([textClause count] != 1) {
+        LogError(@"Unexpected content %@ in text search.", textClause);
+        return NO;
+    }
+    
+    NSString *operator = [textClause allKeys][0];
+    if (![operator isEqualToString:SEARCH]) {
+        LogError(@"Invalid operator %@ in text search.", operator);
+        return NO;
+    }
+    
+    if (*textClauseLimitReached) {
+        LogError(@"Multiple text search clauses not allowed in a query.  "
+                  "Rewrite query to contain at most one text search clause.");
+        return NO;
+    }
+    
+    *textClauseLimitReached = YES;
+    return [CDTQQueryValidator validatePredicateValue:textClause[operator] forOperator:operator];
+}
+
 + (BOOL)validateListValues:(NSArray *)listValues
 {
     BOOL valid = YES;
@@ -392,10 +450,24 @@
 {
     if([operator isEqualToString:EXISTS]){
         return [CDTQQueryValidator validateExistsArgument:predicateValue];
+    } else if ([operator isEqualToString:SEARCH]) {
+        return [CDTQQueryValidator validateTextSearchArgument:predicateValue];
     } else {
         return (([predicateValue isKindOfClass:[NSString class]] ||
                  [predicateValue isKindOfClass:[NSNumber class]]));
     }
+}
+
++ (BOOL)validateTextSearchArgument:(NSObject *)textSearch
+{
+    BOOL valid = YES;
+    
+    if(![textSearch isKindOfClass:[NSString class]]){
+        valid = NO;
+        LogError(@"$search operator requires an NSString");
+    }
+    
+    return valid;
 }
 
 + (BOOL)validateExistsArgument:(NSObject *)exists
@@ -436,7 +508,9 @@
 
         if ([topLevelArg isKindOfClass:[NSArray class]]) {
             // safe we know its an NSArray
-            return [CDTQQueryValidator validateCompoundOperatorClauses:topLevelArg];
+            BOOL textClauseLimitReached = NO;
+            return [CDTQQueryValidator validateCompoundOperatorClauses:topLevelArg
+                                                   withTextClauseLimit:&textClauseLimitReached];
         }
     }
     return NO;

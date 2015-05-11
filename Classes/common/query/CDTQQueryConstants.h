@@ -20,6 +20,8 @@ extern NSString *const NOT;
 
 extern NSString *const EXISTS;
 
+extern NSString *const TEXT;
+
 extern NSString *const EQ;
 
 extern NSString *const NE;
@@ -35,3 +37,5 @@ extern NSString *const GTE;
 extern NSString *const IN;
 
 extern NSString *const NIN;
+
+extern NSString *const SEARCH;
