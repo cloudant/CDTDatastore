@@ -345,8 +345,12 @@
         } else if ([key.lowercaseString isEqualToString:TEXT]) {
             // this should have a dict
             // send this for validation
-            valid = [CDTQQueryValidator validateTextClause:clause[key]
-                                       withTextClauseLimit:textClauseLimitReached];
+            
+            // TODO Enable text search as part of text search unit tests PR.
+            //valid = [CDTQQueryValidator validateTextClause:clause[key]
+            //                           withTextClauseLimit:textClauseLimitReached];
+            LogInfo(@"Text search is currently not supported.");
+            break;
         } else {
             LogError(@"%@ operator cannot be a top level operator", key);
             break;
