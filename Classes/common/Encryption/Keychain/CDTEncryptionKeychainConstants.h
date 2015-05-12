@@ -22,9 +22,6 @@
 // Define the version of the implementation used to cipher/decipher DPKs
 #define CDTENCRYPTION_KEYCHAIN_VERSION @"1.0"
 
-// Size (bytes) of the DPK (Data Protection Key)
-#define CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE 32
-
 // PBKDF2: Size (bytes) of the salt value used to derive a user-provided password
 #define CDTENCRYPTION_KEYCHAIN_PBKDF2_SALT_SIZE 32
 

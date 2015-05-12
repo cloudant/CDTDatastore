@@ -16,6 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "CDTEncryptionKey.h"
 #import "CDTEncryptionKeychainStorage.h"
 
 /**
@@ -57,7 +58,7 @@
  
  @return The DPK
  */
-- (NSData *)loadKeyUsingPassword:(NSString *)password;
+- (CDTEncryptionKey *)loadKeyUsingPassword:(NSString *)password;
 
 /**
  Generates a Data Protection Key (DPK), encrypts it, and stores it inside the keychain.
@@ -66,7 +67,7 @@
  
  @return The DPK
  */
-- (NSData *)generateAndSaveKeyProtectedByPassword:(NSString *)password;
+- (CDTEncryptionKey *)generateAndSaveKeyProtectedByPassword:(NSString *)password;
 
 /**
  Checks if the encrypted Data Protection Key (DPK) is inside the keychain.
