@@ -111,11 +111,8 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Init with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
-    CDTHelperFixedKeyProvider *otherProvider =
-        [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
-
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
+    
     XCTAssertNil([[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
                                               database:db
                                  encryptionKeyProvider:otherProvider],
@@ -187,10 +184,7 @@
         [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
 
     // Init with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
-    CDTHelperFixedKeyProvider *otherProvider =
-        [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
 
     XCTAssertNil([[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
                                               database:db

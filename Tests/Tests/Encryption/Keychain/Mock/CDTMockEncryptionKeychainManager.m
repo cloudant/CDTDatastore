@@ -45,14 +45,14 @@
 }
 
 #pragma mark - Public methods
-- (NSData *)loadKeyUsingPassword:(NSString *)password
+- (CDTEncryptionKey *)loadKeyUsingPassword:(NSString *)password
 {
     self.loadKeyUsingPasswordExecuted = YES;
 
     return self.loadKeyUsingPasswordResult;
 }
 
-- (NSData *)generateAndSaveKeyProtectedByPassword:(NSString *)password
+- (CDTEncryptionKey *)generateAndSaveKeyProtectedByPassword:(NSString *)password
 {
     self.generateAndSaveKeyProtectedByPasswordExecuted = YES;
 
