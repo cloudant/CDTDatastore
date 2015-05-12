@@ -19,7 +19,7 @@
 @implementation CDTEncryptionKeyNilProvider
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSString *)encryptionKey { return nil; }
+- (NSData *)encryptionKey { return nil; }
 
 #pragma mark - Public class methods
 + (instancetype)provider { return [[[self class] alloc] init]; }

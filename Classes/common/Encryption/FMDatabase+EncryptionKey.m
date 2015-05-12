@@ -16,6 +16,7 @@
 
 #import "FMDatabase+EncryptionKey.h"
 
+#import "TDMisc.h"
 #import "CDTLogging.h"
 
 @implementation FMDatabase (EncryptionKey)
@@ -29,11 +30,12 @@ NSString *const FMDatabaseEncryptionKeyErrorDomain = @"FMDatabaseEncryptionKeyEr
     NSError *thisError = nil;
     
     // Get the key
-    NSString *encryptionKey = [provider encryptionKey];
+    NSData *encryptionKey = [provider encryptionKey];
 
     // Set the key (if there is any)
     if (encryptionKey) {
-        success = [self setKey:encryptionKey];
+        NSString *hexEncryptionKey = TDHexFromBytes(encryptionKey.bytes, encryptionKey.length);
+        success = [self setKey:hexEncryptionKey];
         if (!success) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT,
                         @"Key to de-encrypt DB at %@ not set. DB can not be opened.",

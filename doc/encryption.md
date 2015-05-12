@@ -20,7 +20,7 @@ Then, implement a class that conforms to protocol
 defines one method:
 
 ```
-- (NSString *)encryptionKey;
+- (NSData *)encryptionKey;
 ```
 
 Alternatively, you can use the class

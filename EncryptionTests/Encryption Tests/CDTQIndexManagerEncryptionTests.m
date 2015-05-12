@@ -181,8 +181,9 @@
     // Create datastore
     CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
 
-    NSString *otherKey =
-        [[provider encryptionKey] stringByAppendingString:[provider encryptionKey]];
+    NSData *thisKey = [provider encryptionKey];
+    NSMutableData *otherKey = [NSMutableData dataWithData:thisKey];
+    [otherKey appendData:thisKey];
     provider = [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
 
     CDTDatastore *datastore = [self.factory

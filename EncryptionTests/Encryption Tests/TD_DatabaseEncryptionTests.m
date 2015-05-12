@@ -132,8 +132,9 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Open with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
+    NSData *thisKey = [fixedProvider encryptionKey];
+    NSMutableData *otherKey = [NSMutableData dataWithData:thisKey];
+    [otherKey appendData:thisKey];
     CDTHelperFixedKeyProvider *otherProvider =
         [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
 
@@ -199,8 +200,9 @@
         [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
 
     // Open with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
+    NSData *thisKey = [fixedProvider encryptionKey];
+    NSMutableData *otherKey = [NSMutableData dataWithData:thisKey];
+    [otherKey appendData:thisKey];
     CDTHelperFixedKeyProvider *otherProvider =
         [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
 

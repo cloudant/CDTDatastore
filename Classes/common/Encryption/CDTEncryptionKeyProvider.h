@@ -27,6 +27,6 @@
  * @warning *Warning:* Encryption will not work unless subspec 'CDTDatastore/SQLCipher' is used.
  * However, data will not be encrypted if this method returns nil (regardless of the subspec).
  */
-- (NSString *)encryptionKey;
+- (NSData *)encryptionKey;
 
 @end

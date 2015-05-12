@@ -302,14 +302,14 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 + (BOOL)sameEncryptionKeyIn:(id<CDTEncryptionKeyProvider>)thisProvider
                         and:(id<CDTEncryptionKeyProvider>)otherProvider
 {
-    NSString *thisKey = [thisProvider encryptionKey];
-    NSString *otherKey = [otherProvider encryptionKey];
+    NSData *thisKey = [thisProvider encryptionKey];
+    NSData *otherKey = [otherProvider encryptionKey];
     
     BOOL sameKey = NO;
     if (thisKey == nil) {
         sameKey = (otherKey == nil);
     } else {
-        sameKey = ((otherKey != nil) && [otherKey isEqualToString:thisKey]);
+        sameKey = ((otherKey != nil) && [otherKey isEqualToData:thisKey]);
     }
 
     return sameKey;

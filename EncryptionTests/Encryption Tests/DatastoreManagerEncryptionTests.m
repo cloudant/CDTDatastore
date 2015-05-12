@@ -89,8 +89,9 @@
            withEncryptionKeyProvider:fixedProvider];
 
     // Get datastore
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
+    NSData *thisKey = [fixedProvider encryptionKey];
+    NSMutableData *otherKey = [NSMutableData dataWithData:thisKey];
+    [otherKey appendData:thisKey];
     CDTHelperFixedKeyProvider *otherProvider =
         [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
 
@@ -166,8 +167,9 @@
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
 
     // Get datastore
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
+    NSData *thisKey = [fixedProvider encryptionKey];
+    NSMutableData *otherKey = [NSMutableData dataWithData:thisKey];
+    [otherKey appendData:thisKey];
     CDTHelperFixedKeyProvider *otherProvider =
         [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
 

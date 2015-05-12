@@ -17,19 +17,19 @@
 
 @interface CDTHelperFixedKeyProvider ()
 
-@property (strong, nonatomic, readonly) NSString *fixedKey;
+@property (strong, nonatomic, readonly) NSData *fixedKey;
 
 @end
 
 @implementation CDTHelperFixedKeyProvider
 
 #pragma mark - Init object
-- (id)init
+- (instancetype)init
 {
-    return [self initWithKey:@"???"];
+    return [self initWithKey:[@"???" dataUsingEncoding:NSUnicodeStringEncoding]];
 }
 
-- (id)initWithKey:(NSString *)key
+- (instancetype)initWithKey:(NSData *)key
 {
     self = [super init];
     if (self) {
@@ -40,9 +40,6 @@
 }
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSString *)encryptionKey { return self.fixedKey; }
-
-#pragma mark - NSCopying methods
-- (id)copyWithZone:(NSZone *)zone { return [[[self class] alloc] initWithKey:self.fixedKey]; }
+- (NSData *)encryptionKey { return self.fixedKey; }
 
 @end

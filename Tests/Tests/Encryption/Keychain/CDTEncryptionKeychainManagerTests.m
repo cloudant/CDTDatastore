@@ -230,6 +230,14 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                  @"No key must be returned if it is not saved to the keychain");
 }
 
+- (void)testGenerateAndSaveKeyProtectedByPasswordReturnsKeyWithExpectedSize
+{
+    NSData *key = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
+
+    XCTAssertTrue([key length] == CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE, @"Key size must be %i",
+                  CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE);
+}
+
 - (void)testGenerateAndSaveKeyProtectedByPasswordPerformsExpectedHighlevelSteps
 {
     [self.manager generateAndSaveKeyProtectedByPassword:self.password];

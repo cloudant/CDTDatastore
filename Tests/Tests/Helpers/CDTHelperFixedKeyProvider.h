@@ -19,6 +19,6 @@
 
 @interface CDTHelperFixedKeyProvider : NSObject <CDTEncryptionKeyProvider>
 
-- (id)initWithKey:(NSString *)key;
+- (instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
 
 @end

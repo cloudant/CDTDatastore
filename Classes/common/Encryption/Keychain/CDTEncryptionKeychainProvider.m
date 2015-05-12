@@ -18,7 +18,6 @@
 
 #import "CDTEncryptionKeychainManager.h"
 
-#import "TDMisc.h"
 #import "CDTLogging.h"
 
 @interface CDTEncryptionKeychainProvider ()
@@ -52,7 +51,7 @@
 }
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSString *)encryptionKey
+- (NSData *)encryptionKey
 {
     NSData *data = nil;
     if ([self.manager keyExists]) {
@@ -60,10 +59,8 @@
     } else {
         data = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
     }
-    
-    NSString *hexStr = (data ? TDHexFromBytes(data.bytes, data.length) : nil);
-    
-    return hexStr;
+
+    return data;
 }
 
 #pragma mark - Public class methods
