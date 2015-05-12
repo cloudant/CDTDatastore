@@ -12,6 +12,7 @@
 #import <CDTQIndexCreator.h>
 #import <CDTQResultSet.h>
 #import <CDTQQueryExecutor.h>
+#import "DBQueryUtils.h"
 
 SpecBegin(CDTQIndexManager)
 
@@ -200,6 +201,60 @@ SpecBegin(CDTQIndexManager)
             expect([im listIndexes][@"basic"]).to.beNil();
         });
 
+    });
+
+    describe(@"when managing search limitations", ^{
+        
+        __block NSString *factoryPath;
+        __block CDTDatastoreManager *factory;
+        __block CDTDatastore *ds;
+        __block CDTQIndexManager *im;
+        
+        beforeEach(^{
+            // Create a new CDTDatastoreFactory at a temp path
+            
+            NSString *tempDirectoryTemplate = [NSTemporaryDirectory()
+                stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
+            const char *tempDirectoryTemplateCString =
+            [tempDirectoryTemplate fileSystemRepresentation];
+            char *tempDirectoryNameCString =
+            (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
+            strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
+            
+            char *result = mkdtemp(tempDirectoryNameCString);
+            expect(result).to.beTruthy();
+            
+            factoryPath = [[NSFileManager defaultManager]
+                           stringWithFileSystemRepresentation:tempDirectoryNameCString
+                           length:strlen(result)];
+            free(tempDirectoryNameCString);
+            
+            NSError *error;
+            factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
+            
+            ds = [factory datastoreNamed:@"test" error:nil];
+            expect(ds).toNot.beNil();
+            im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
+            expect(im).toNot.beNil();
+        });
+        
+        afterEach(^{
+            // Delete the databases we used
+            
+            factory = nil;
+            NSError *error;
+            [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:&error];
+        });
+        
+        it(@"validates that text search is available", ^{
+            NSSet *compileOptions = [DBQueryUtils compileOptions:im.database];
+            NSSet *ftsCompileOptions = [NSSet setWithArray:@[@"ENABLE_FTS3",
+                                                             @"ENABLE_FTS3_PARENTHESIS"]];
+            expect(compileOptions).to.beSupersetOf(ftsCompileOptions);
+            
+            expect([im isTextSearchEnabled]).to.equal(@YES);
+        });
+        
     });
 
 SpecEnd
