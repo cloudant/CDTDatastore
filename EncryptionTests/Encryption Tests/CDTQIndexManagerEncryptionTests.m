@@ -180,11 +180,7 @@
 {
     // Create datastore
     CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
-
-    NSString *otherKey =
-        [[provider encryptionKey] stringByAppendingString:[provider encryptionKey]];
-    provider = [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
-
+    
     CDTDatastore *datastore = [self.factory
                    datastoreNamed:@"create_query_index_textests_fixedprovider_fails_with_wrong_key"
         withEncryptionKeyProvider:provider

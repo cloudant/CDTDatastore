@@ -100,6 +100,12 @@
                location = "group:CDTDatastoreManager+EncryptionKey.h">
             </FileRef>
             <FileRef
+               location = "group:CDTEncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKey.m">
+            </FileRef>
+            <FileRef
                location = "group:CDTEncryptionKeyNilProvider.h">
             </FileRef>
             <FileRef
