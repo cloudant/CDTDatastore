@@ -185,5 +185,20 @@ NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
     }
 }
 
++(NSSet *) compileOptions:(FMDatabaseQueue *)queue
+{
+    __block NSMutableArray *compileOptions = [NSMutableArray array];
+    
+    [queue inDatabase:^(FMDatabase *db){
+        FMResultSet *result = [db executeQuery:@"PRAGMA compile_options"];
+        while ([result next]) {
+            [compileOptions addObject:[result stringForColumnIndex:0]];
+        }
+        [result close];
+    }];
+    
+    return [NSSet setWithArray:compileOptions];
+}
+
 
 @end

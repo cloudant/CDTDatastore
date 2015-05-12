@@ -65,6 +65,7 @@ static const int VERSION = 2;
 @interface CDTQIndexManager ()
 
 @property (nonatomic, strong) NSRegularExpression *validFieldName;
+@property BOOL textSearchEnabled;
 
 @end
 
@@ -135,6 +136,9 @@ static const int VERSION = 2;
             }
             return nil;
         }
+        
+        _textSearchEnabled = [CDTQIndexManager ftsAvailableInDatabase:_database];
+        
     }
     return self;
 }
@@ -368,6 +372,39 @@ static const int VERSION = 2;
 + (NSString *)tableNameForIndex:(NSString *)indexName
 {
     return [kCDTQIndexTablePrefix stringByAppendingString:indexName];
+}
+
++ (BOOL)ftsAvailableInDatabase:(FMDatabaseQueue *)db
+{
+    __block BOOL ftsOptionsExist = NO;
+    
+    [db inDatabase:^(FMDatabase *db) {
+        NSMutableArray *ftsCompileOptions =
+            [NSMutableArray arrayWithArray:@[ @"ENABLE_FTS3", @"ENABLE_FTS3_PARENTHESIS" ] ];
+        FMResultSet *rs = [db executeQuery:@"PRAGMA compile_options;"];
+        while ([rs next]) {
+            NSString *compileOption = [rs stringForColumnIndex:0];
+            [ftsCompileOptions removeObject:compileOption];
+            if ([ftsCompileOptions count] == 0) {
+                ftsOptionsExist = YES;
+                break;
+            }
+        }
+        [rs close];
+    }];
+    
+    return ftsOptionsExist;
+}
+
+- (BOOL)isTextSearchEnabled
+{
+    if ([self textSearchEnabled]) {
+        LogInfo(@"Based on SQLite compile options, "
+                @"text search is currently not supported.  "
+                @"To enable text search recompile SQLite with "
+                @"the full text saerch compile options turned on.");
+    }
+    return [self textSearchEnabled];
 }
 
 #pragma mark Setup methods

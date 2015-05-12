@@ -22,6 +22,8 @@ NSString *const NOT = @"$not";
 
 NSString *const EXISTS = @"$exists";
 
+NSString *const TEXT = @"$text";
+
 NSString *const EQ = @"$eq";
 
 NSString *const NE = @"$ne";
@@ -37,3 +39,5 @@ NSString *const GTE = @"$gte";
 NSString *const IN = @"$in";
 
 NSString *const NIN = @"$nin";
+
+NSString *const SEARCH = @"$search";

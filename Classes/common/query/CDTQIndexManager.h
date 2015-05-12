@@ -110,4 +110,9 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 /** Internal */
 + (NSString *)tableNameForIndex:(NSString *)indexName;
 
+/** Internal */
++ (BOOL)ftsAvailableInDatabase:(FMDatabaseQueue *)db;
+
+- (BOOL)isTextSearchEnabled;
+
 @end

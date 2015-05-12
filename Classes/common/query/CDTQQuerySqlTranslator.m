@@ -25,6 +25,8 @@
 @property (nonatomic) BOOL atLeastOneIndexUsed;       // if NO, need to generate a return all query
 @property (nonatomic) BOOL atLeastOneIndexMissing;    // i.e., we need to use posthoc matcher
 @property (nonatomic) BOOL atLeastOneORIndexMissing;  //       we need to use posthoc matcher
+@property (nonatomic) BOOL textIndexRequired;         // A text index needed for a text search
+@property (nonatomic) BOOL textIndexMissing;          // if NO and is required, cannot perform query
 
 @end
 
@@ -73,10 +75,19 @@
     CDTQQueryNode *node =
         [CDTQQuerySqlTranslator translateQuery:query toUseIndexes:indexes state:state];
 
-    // If we haven't used a single index, we need to return a query
-    // which returns every document, so the posthoc matcher can
-    // run over every document to manually carry out the query.
-    if (!state.atLeastOneIndexUsed || state.atLeastOneORIndexMissing) {
+    if (state.textIndexMissing) {
+        LogError(@"No text index defined, cannot execute query containing a text search.");
+        return nil;
+    } else if (state.textIndexRequired && state.atLeastOneIndexMissing) {
+        LogError(@"Query %@ contains a text search but is missing json index(es).  "
+                  "All indexes must exist in order to execute a query containing a text search.  "
+                  "Create all necessary indexes for the query and re-execute.", query);
+        return nil;
+    } else if (!state.textIndexRequired &&
+                  (!state.atLeastOneIndexUsed || state.atLeastOneORIndexMissing)) {
+        // If we haven't used a single index, we need to return a query
+        // which returns every document, so the posthoc matcher can
+        // run over every document to manually carry out the query.
         NSSet *neededFields = [NSSet setWithObject:@"_id"];
         NSString *allDocsIndex =
             [CDTQQuerySqlTranslator chooseIndexForFields:neededFields fromIndexes:indexes];
@@ -126,22 +137,26 @@
         root = [[CDTQOrQueryNode alloc] init];
     }
 
-    //
-    // First handle the simple @"field": @{ @"$operator": @"value" } clauses. These are
-    // handled differently for AND and OR parents, so we need to have the conditional
-    // logic below.
-    //
+    // Compile a list of simple clauses to be handled below.  If a text clause is
+    // encountered, store it separately from the simple clauses since it will be
+    // handled later on its own.
 
     NSMutableArray *basicClauses = [NSMutableArray array];
-
+    __block NSObject *textClause = nil;
+    
     [clauses enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSDictionary *clause = (NSDictionary *)obj;
         NSString *field = clause.allKeys[0];
         if (![field hasPrefix:@"$"]) {
             [basicClauses addObject:clauses[idx]];
+        } else if ([field.lowercaseString isEqualToString:TEXT]) {
+            textClause = clauses[idx];
         }
     }];
 
+    // Handle the simple "field": { "$operator": "value" } clauses. These are
+    // handled differently for AND and OR parents, so we need to have the
+    // conditional logic below.
     if (basicClauses.count > 0) {
         if (query[AND]) {
             // For an AND query, we require a single compound index and we generate a
@@ -217,6 +232,29 @@
             }
         }
     }
+    
+    // A text clause such as { "$text" : { "$search" : "foo bar baz" } }
+    // by nature uses its own text index.  It is therefor handled
+    // separately from other simple clauses.
+    if (textClause != nil) {
+        state.textIndexRequired = YES;
+        NSString *textIndex = [CDTQQuerySqlTranslator getTextIndexFromIndexes:indexes];
+        if (textIndex == nil || [textIndex length] == 0) {
+            state.textIndexMissing = YES;
+        } else {
+            CDTQSqlParts *select = [CDTQQuerySqlTranslator selectStatementForTextClause:textClause
+                                                                             usingIndex:textIndex];
+            if (!select) {
+                LogError(@"Error generating SELECT clause for %@", textClause);
+                return nil;
+            }
+            
+            CDTQSqlQueryNode *sql = [[CDTQSqlQueryNode alloc] init];
+            sql.sql = select;
+            
+            [root.children addObject:sql];
+        }
+    }
 
     //
     // AND and OR subclauses are handled identically whatever the parent is.
@@ -281,11 +319,9 @@
     NSString *chosenIndex = nil;
     for (NSString *indexName in indexes) {
         
-        // TODO - Remove once the query component of full text search is added.
+        // Don't choose a text index for a non-text query clause
         NSString *indexType = indexes[indexName][@"type"];
         if ([indexType.lowercaseString isEqualToString:@"text"]) {
-            LogInfo(@"Full text search is not yet supported.  "
-                     "Text index %@ is being ignored.", indexName);
             continue;
         }
         
@@ -297,6 +333,20 @@
     }
 
     return chosenIndex;
+}
+
++ (NSString *)getTextIndexFromIndexes:(NSDictionary *)indexes
+{
+    NSString *textIndex = nil;
+    for (NSString *indexName in [indexes allKeys]) {
+        NSDictionary *indexDefinition = indexes[indexName];
+        NSString *indexType = indexDefinition[@"type"];
+        if ([indexType.lowercaseString isEqualToString:@"text"]) {
+            textIndex = indexName;
+        }
+    }
+    
+    return textIndex;
 }
 
 + (CDTQSqlParts *)wherePartsForAndClause:(NSArray *)clause usingIndex:(NSString *)indexName
@@ -492,6 +542,34 @@
     sql = [NSString stringWithFormat:sql, tableName, where.sqlWithPlaceholders];
 
     CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:where.placeholderValues];
+    return parts;
+}
+
++ (CDTQSqlParts *)selectStatementForTextClause:(NSObject *)clause usingIndex:(NSString *)indexName
+{
+    if (!clause) {
+        return nil;  // no query here
+    }
+    
+    if (!indexName) {
+        return nil;
+    }
+    
+    if (![clause isKindOfClass:[NSDictionary class]]) {
+        return nil; // should never get here as this would not pass normalization
+    }
+    
+    NSDictionary *textClause = (NSDictionary *) clause;
+    NSDictionary *searchClause = textClause[TEXT];
+    
+    NSString *tableName = [CDTQIndexManager tableNameForIndex:indexName];
+    NSString *search = [searchClause[SEARCH] stringByReplacingOccurrencesOfString:@"'"
+                                                                       withString:@"''"];
+    
+    NSString *sql = @"SELECT _id FROM %@ WHERE %@ MATCH ?;";
+    sql = [NSString stringWithFormat:sql, tableName, tableName];
+    
+    CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:@[ search ]];
     return parts;
 }
 
