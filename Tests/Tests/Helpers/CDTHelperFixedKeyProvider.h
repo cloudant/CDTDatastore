@@ -21,4 +21,6 @@
 
 - (instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
 
+- (instancetype)negatedProvider;
+
 @end

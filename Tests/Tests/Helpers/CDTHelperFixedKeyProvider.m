@@ -42,4 +42,21 @@
 #pragma mark - CDTEncryptionKeyProvider methods
 - (NSData *)encryptionKey { return self.fixedKey; }
 
+#pragma mark - Public methods
+- (instancetype)negatedProvider
+{
+    const char *fixedKeyBytes = self.fixedKey.bytes;
+    NSUInteger fixedKeyLength = self.fixedKey.length;
+
+    char *negatedFixedKeyBytes = malloc(fixedKeyLength * sizeof(char));
+    for (NSUInteger i = 0; i < fixedKeyLength; i++) {
+        negatedFixedKeyBytes[i] = ~fixedKeyBytes[i];
+    }
+
+    NSData *negatedFixedKey =
+        [NSData dataWithBytesNoCopy:negatedFixedKeyBytes length:fixedKeyLength];
+
+    return [[CDTHelperFixedKeyProvider alloc] initWithKey:negatedFixedKey];
+}
+
 @end
