@@ -17,7 +17,7 @@
 
 @interface CDTHelperOneUseKeyProvider ()
 
-@property (strong, nonatomic) NSData *thisKey;
+@property (strong, nonatomic) CDTEncryptionKey *thisKey;
 
 @end
 
@@ -35,11 +35,16 @@
 }
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSData *)encryptionKey
+- (CDTEncryptionKey *)encryptionKey
 {
-    NSData *key = self.thisKey;
+    CDTEncryptionKey *key = self.thisKey;
     if (!self.thisKey) {
-        self.thisKey = [@"???" dataUsingEncoding:NSUnicodeStringEncoding];
+        char buffer[CDTENCRYPTIONKEY_KEYSIZE];
+        memset(buffer, '*', sizeof(buffer));
+        
+        NSData *data = [NSData dataWithBytes:buffer length:sizeof(buffer)];
+        
+        self.thisKey = [CDTEncryptionKey encryptionKeyWithData:data];
     }
 
     return key;

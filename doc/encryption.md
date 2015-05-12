@@ -20,8 +20,12 @@ Then, implement a class that conforms to protocol
 defines one method:
 
 ```
-- (NSData *)encryptionKey;
+- (CDTEncryptionKey *)encryptionKey;
 ```
+
+See that the method returns a [CDTEncryptionKey][CDTEncryptionKey] instance. The
+main purpose of this class is to ensure that the key has the right size
+(256 bits).
 
 Alternatively, you can use the class
 [CDTEncryptionKeychainProvider][CDTEncryptionKeychainProvider]. It already
@@ -35,5 +39,6 @@ To end, call `CDTDatastoreManager:datastoreNamed:withEncryptionKeyProvider:error
 to create `CDTDatastores` with encrypted databases (datastores and indexes are
 encrypted but not attachments and extensions)
 
+[CDTEncryptionKey]: ../Classes/common/Encryption/CDTEncryptionKey.h
 [CDTEncryptionKeyProvider]: ../Classes/common/Encryption/CDTEncryptionKeyProvider.h
 [CDTEncryptionKeychainProvider]: ../Classes/common/Encryption/Keychain/CDTEncryptionKeychainProvider.h

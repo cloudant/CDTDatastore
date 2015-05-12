@@ -73,7 +73,7 @@
 {
     CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
     NSString *path = [NSTemporaryDirectory()
-        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_OpenNotFail"];
+        stringByAppendingPathComponent:@"TD_DBEncryptionTests_openNotFail"];
 
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 

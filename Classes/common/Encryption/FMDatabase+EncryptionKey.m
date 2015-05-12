@@ -30,11 +30,11 @@ NSString *const FMDatabaseEncryptionKeyErrorDomain = @"FMDatabaseEncryptionKeyEr
     NSError *thisError = nil;
     
     // Get the key
-    NSData *encryptionKey = [provider encryptionKey];
+    CDTEncryptionKey *encryptionKey = [provider encryptionKey];
 
     // Set the key (if there is any)
     if (encryptionKey) {
-        NSString *hexEncryptionKey = TDHexFromBytes(encryptionKey.bytes, encryptionKey.length);
+        NSString *hexEncryptionKey = TDHexFromBytes(encryptionKey.bytes, CDTENCRYPTIONKEY_KEYSIZE);
         success = [self setKey:hexEncryptionKey];
         if (!success) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT,

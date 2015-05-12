@@ -51,16 +51,16 @@
 }
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSData *)encryptionKey
+- (CDTEncryptionKey *)encryptionKey
 {
-    NSData *data = nil;
+    CDTEncryptionKey *key = nil;
     if ([self.manager keyExists]) {
-        data = [self.manager loadKeyUsingPassword:self.password];
+        key = [self.manager loadKeyUsingPassword:self.password];
     } else {
-        data = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
+        key = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
     }
 
-    return data;
+    return key;
 }
 
 #pragma mark - Public class methods

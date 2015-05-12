@@ -149,8 +149,22 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testLoadKeyUsingPasswordDoesNotFailIfNumberOfIterationsIsNotAsExpected
 {
+    CDTMockEncryptionKeychainStorage *otherStorage =
+        [[CDTMockEncryptionKeychainStorage alloc] init];
+    CDTEncryptionKeychainManager *otherManager = [[CDTEncryptionKeychainManager alloc]
+        initWithStorage:(CDTEncryptionKeychainStorage *)otherStorage];
+    NSData *otherDpk = [otherManager generateDpk];
+    NSData *otherKey =
+        [otherManager pbkdf2DerivedKeyForPassword:self.password
+                                             salt:self.keychainData.salt
+                                       iterations:1
+                                           length:CDTENCRYPTION_KEYCHAIN_AES_KEY_SIZE];
+
+    NSData *otherEncryptedDpk =
+        [otherManager encryptDpk:otherDpk usingAESWithKey:otherKey iv:self.keychainData.iv];
+
     CDTEncryptionKeychainData *otherData =
-        [CDTEncryptionKeychainData dataWithEncryptedDPK:self.keychainData.encryptedDPK
+        [CDTEncryptionKeychainData dataWithEncryptedDPK:otherEncryptedDpk
                                                    salt:self.keychainData.salt
                                                      iv:self.keychainData.iv
                                              iterations:1
@@ -230,14 +244,6 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                  @"No key must be returned if it is not saved to the keychain");
 }
 
-- (void)testGenerateAndSaveKeyProtectedByPasswordReturnsKeyWithExpectedSize
-{
-    NSData *key = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
-
-    XCTAssertTrue([key length] == CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE, @"Key size must be %i",
-                  CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE);
-}
-
 - (void)testGenerateAndSaveKeyProtectedByPasswordPerformsExpectedHighlevelSteps
 {
     [self.manager generateAndSaveKeyProtectedByPassword:self.password];
@@ -258,8 +264,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testKeychainDataToStoreDpkPerformsExpectedHighlevelSteps
 {
-    NSData *dpk = [CDTEncryptionKeychainUtils
-        generateSecureRandomBytesWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
+    NSData *dpk =
+        [CDTEncryptionKeychainUtils generateSecureRandomBytesWithLength:CDTENCRYPTIONKEY_KEYSIZE];
     [self.manager keychainDataToStoreDpk:dpk encryptedWithPassword:self.password];
 
     NSSet *expectedSteps =

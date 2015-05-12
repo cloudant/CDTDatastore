@@ -16,6 +16,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "CDTEncryptionKey.h"
+
 #define CDTMOCKENCRYPTIONKEYCHAINMANAGER_DEFAULT_LOADKEY nil
 #define CDTMOCKENCRYPTIONKEYCHAINMANAGER_DEFAULT_GENERATEANDSAVEKEY nil
 #define CDTMOCKENCRYPTIONKEYCHAINMANAGER_DEFAULT_KEYEXISTS NO
@@ -24,10 +26,10 @@
 @interface CDTMockEncryptionKeychainManager : NSObject
 
 @property (assign, nonatomic) BOOL loadKeyUsingPasswordExecuted;
-@property (strong, nonatomic) NSData *loadKeyUsingPasswordResult;
+@property (strong, nonatomic) CDTEncryptionKey *loadKeyUsingPasswordResult;
 
 @property (assign, nonatomic) BOOL generateAndSaveKeyProtectedByPasswordExecuted;
-@property (strong, nonatomic) NSData *generateAndSaveKeyProtectedByPasswordResult;
+@property (strong, nonatomic) CDTEncryptionKey *generateAndSaveKeyProtectedByPasswordResult;
 
 @property (assign, nonatomic) BOOL keyExistsExecuted;
 @property (assign, nonatomic) BOOL keyExistsResult;
@@ -35,8 +37,8 @@
 @property (assign, nonatomic) BOOL clearKeyExecuted;
 @property (assign, nonatomic) BOOL clearKeyResult;
 
-- (NSData *)loadKeyUsingPassword:(NSString *)password;
-- (NSData *)generateAndSaveKeyProtectedByPassword:(NSString *)password;
+- (CDTEncryptionKey *)loadKeyUsingPassword:(NSString *)password;
+- (CDTEncryptionKey *)generateAndSaveKeyProtectedByPassword:(NSString *)password;
 - (BOOL)keyExists;
 - (BOOL)clearKey;
 
