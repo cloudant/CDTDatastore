@@ -66,6 +66,7 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 
 @property (nonatomic, strong) CDTDatastore *datastore;
 @property (nonatomic, strong) FMDatabaseQueue *database;
+@property (nonatomic, readonly, getter = isTextSearchEnabled) BOOL textSearchEnabled;
 
 /**
  Constructs a new CDTQIndexManager which indexes documents in `datastore`
@@ -109,5 +110,8 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 
 /** Internal */
 + (NSString *)tableNameForIndex:(NSString *)indexName;
+
+/** Internal */
++ (BOOL)ftsAvailableInDatabase:(FMDatabaseQueue *)db;
 
 @end
