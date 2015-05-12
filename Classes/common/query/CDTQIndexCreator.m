@@ -54,7 +54,8 @@
 #pragma mark Instance methods
 
 /**
- Add a single, possibly compound, index for the given field names.
+ Add a single, possibly compound index for the given field names and ensure all indexing
+ constraints are met.
 
  @param fieldNames List of fieldnames in the sort format
  @param indexName Name of index to create.
@@ -64,6 +65,14 @@
 {
     if (!index) {
         return nil;
+    }
+    
+    if ([index.indexType.lowercaseString isEqualToString:@"text"]) {
+        if (![CDTQIndexManager ftsAvailableInDatabase:self.database]) {
+            LogError(@"Text search not supported.  To add support for text "
+                     @"search, enable FTS compile options in SQLite.");
+            return nil;
+        }
     }
 
     NSArray *fieldNames = [CDTQIndexCreator removeDirectionsFromFields:index.fieldNames];
