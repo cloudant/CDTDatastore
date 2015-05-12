@@ -73,7 +73,7 @@
 {
     CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
     NSString *path = [NSTemporaryDirectory()
-        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_OpenNotFail"];
+        stringByAppendingPathComponent:@"TD_DBEncryptionTests_openNotFail"];
 
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
@@ -132,10 +132,7 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Open with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
-    CDTHelperFixedKeyProvider *otherProvider =
-        [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
 
     XCTAssertFalse([db openWithEncryptionKeyProvider:otherProvider],
                    @"An encrypted db can only be open with the same key it was created");
@@ -199,10 +196,7 @@
         [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
 
     // Open with another fixed provider
-    NSString *otherKey =
-        [fixedProvider.encryptionKey stringByAppendingString:fixedProvider.encryptionKey];
-    CDTHelperFixedKeyProvider *otherProvider =
-        [[CDTHelperFixedKeyProvider alloc] initWithKey:otherKey];
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
 
     XCTAssertFalse([db openWithEncryptionKeyProvider:otherProvider],
                    @"An encrypted db can only be open with the same key it was created");

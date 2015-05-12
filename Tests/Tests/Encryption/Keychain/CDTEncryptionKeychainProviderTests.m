@@ -93,17 +93,6 @@
                  @"If no data is generated, there is not key to return");
 }
 
-- (void)testEncryptionKeyReturnHexStringIfGenerateEncryptionKeyDataReturnsData
-{
-    self.mockManager.keyExistsResult = NO;
-    self.mockManager.generateAndSaveKeyProtectedByPasswordResult = self.encryptionKeyData;
-
-    NSString *key = [self.provider encryptionKey];
-
-    XCTAssertTrue([CDTEncryptionKeychainProviderTests isHexadecimalString:key],
-                  @"The key has to be a hexadecimal string");
-}
-
 - (void)testEncryptionKeyRetrieveEncryptionKeyDataIfDataWasGeneratedBefore
 {
     self.mockManager.keyExistsResult = YES;
@@ -121,17 +110,6 @@
 
     XCTAssertNil([self.provider encryptionKey],
                  @"If no data is retrieved, there is not key to return");
-}
-
-- (void)testEncryptionKeyReturnHexStringIfRetrieveEncryptionKeyDataReturnsData
-{
-    self.mockManager.keyExistsResult = YES;
-    self.mockManager.loadKeyUsingPasswordResult = self.encryptionKeyData;
-
-    NSString *key = [self.provider encryptionKey];
-
-    XCTAssertTrue([CDTEncryptionKeychainProviderTests isHexadecimalString:key],
-                  @"The key has to be a hexadecimal string");
 }
 
 #pragma mark - Private class methods

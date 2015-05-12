@@ -53,7 +53,7 @@
 }
 
 #pragma mark - Public methods
-- (NSData *)loadKeyUsingPassword:(NSString *)password
+- (CDTEncryptionKey *)loadKeyUsingPassword:(NSString *)password
 {
     CDTEncryptionKeychainData *data = [self.storage encryptionKeyData];
     if (!data || ![self validateEncryptionKeyData:data]) {
@@ -67,10 +67,10 @@
 
     NSData *dpk = [self decryptDpk:data.encryptedDPK usingAESWithKey:aesKey iv:data.iv];
 
-    return dpk;
+    return [CDTEncryptionKey encryptionKeyWithData:dpk];
 }
 
-- (NSData *)generateAndSaveKeyProtectedByPassword:(NSString *)password
+- (CDTEncryptionKey *)generateAndSaveKeyProtectedByPassword:(NSString *)password
 {
     NSData *dpk = nil;
 
@@ -85,7 +85,7 @@
         }
     }
 
-    return dpk;
+    return [CDTEncryptionKey encryptionKeyWithData:dpk];
 }
 
 - (BOOL)keyExists { return [self.storage encryptionKeyDataExists]; }
@@ -108,8 +108,8 @@
 
 - (NSData *)generateDpk
 {
-    NSData *dpk = [CDTEncryptionKeychainUtils
-        generateSecureRandomBytesWithLength:CDTENCRYPTION_KEYCHAIN_ENCRYPTIONKEY_SIZE];
+    NSData *dpk =
+        [CDTEncryptionKeychainUtils generateSecureRandomBytesWithLength:CDTENCRYPTIONKEY_KEYSIZE];
 
     return dpk;
 }
