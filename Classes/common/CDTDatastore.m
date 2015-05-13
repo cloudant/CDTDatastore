@@ -379,6 +379,18 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error
 {
+    
+    
+    //Firstly check if the document body is valid json
+    if(![NSJSONSerialization isValidJSONObject:body]){
+        //body isn't valid json, set error
+        if (error){
+            *error = TDStatusToNSError(kTDStatusBadJSON, nil);
+        }
+        
+        return NO;
+    }
+    
     // Check user hasn't provided _fields, which should be provided
     // as metadata in the CDTDocumentRevision object rather than
     // via _fields in the body dictionary.

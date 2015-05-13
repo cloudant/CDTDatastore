@@ -83,6 +83,41 @@
 
 #pragma mark - CREATE tests
 
+
+-(void) testDocumentWithInfinityValue
+{
+    NSError * error;
+    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+    revision.body = @{@"infinity":@(INFINITY)};
+    
+    CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
+                                                                     error:&error];
+    
+    XCTAssertNil(rev,@"revision is not nil");
+    XCTAssertNotNil(error,@"Error should be set");
+    XCTAssertEqual(400,
+                   error.code,
+                   @"Error code should be 400, but was %ld",
+                   (long)error.code);
+}
+
+-(void) testDocumentWithNonSerialisableValue {
+    NSError * error;
+    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+    revision.body = @{@"nonserialisable":[NSDate date]};
+    
+    CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
+                                                                     error:&error];
+    
+    XCTAssertNil(rev,@"revision is not nil");
+    XCTAssertNotNil(error,@"Error should be set");
+    XCTAssertEqual(400,
+                   error.code,
+                   @"Error code should be 400, but was %ld",
+                   (long)error.code);
+}
+
+
 -(void)testDocumentRevisionFactoryValidData
 {
     NSError * error;
