@@ -25,7 +25,7 @@ extern NSString *const FMDatabaseEncryptionKeyErrorDomain;
  */
 typedef NS_ENUM(NSInteger, FMDatabaseEncryptionKeyError) {
     FMDatabaseEncryptionKeyErrorKeyNotSet,
-    FMDatabaseEncryptionKeyErrorNoKeyProvidedForEncryptedDB,
+    FMDatabaseEncryptionKeyErrorDBCorruptedOrNoKeyProvided,
     FMDatabaseEncryptionKeyErrorWrongKeyOrDBNotEncrypted
 };
 
