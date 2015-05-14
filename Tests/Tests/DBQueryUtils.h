@@ -32,5 +32,6 @@
 -(int) rowCountForTable:(NSString *)table;
 -(void) checkTableRowCount:(NSDictionary *)initialRowCount
                modifiedBy:(NSDictionary *)modifiedRowCount;
++(NSSet *) compileOptions:(FMDatabaseQueue *)queue;
 
 @end
