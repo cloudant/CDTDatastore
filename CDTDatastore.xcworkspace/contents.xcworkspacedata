@@ -23,10 +23,25 @@
                location = "group:Classes/common/Attachments/CDTAttachment.m">
             </FileRef>
             <FileRef
-               location = "group:Classes/common/Attachments/CDTBlobData.h">
+               location = "group:Classes/common/Attachments/CDTBlobDataMultipartWriter.h">
             </FileRef>
             <FileRef
-               location = "group:Classes/common/Attachments/CDTBlobData.m">
+               location = "group:Classes/common/Attachments/CDTBlobDataMultipartWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataReader.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataReader.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobMultipartWriter.h">
             </FileRef>
             <FileRef
                location = "group:Classes/common/Attachments/CDTBlobReader.h">

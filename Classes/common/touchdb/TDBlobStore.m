@@ -23,7 +23,9 @@
 
 #import "TDStatus.h"
 
-#import "CDTBlobData.h"
+#import "CDTBlobDataReader.h"
+#import "CDTBlobDataWriter.h"
+#import "CDTBlobDataMultipartWriter.h"
 
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
@@ -104,7 +106,7 @@
 {
     NSString *path = [self pathForKey:key];
     
-    return [CDTBlobData blobWithPath:path];
+    return [CDTBlobDataReader readerWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -124,10 +126,11 @@
     if (success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
     } else {
-        id<CDTBlobWriter> writer = [CDTBlobData blobWithPath:path];
+        id<CDTBlobWriter> writer = [CDTBlobDataWriter writer];
+        [writer useData:blob];
 
         NSError *thisError = nil;
-        success = [writer createBlobWithData:blob error:&thisError];
+        success = [writer writeToFile:path error:&thisError];
         if (!success) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
 
@@ -260,8 +263,8 @@
                                                    attributes:attributes]) {
             return nil;
         }
-        _blobWriter = [CDTBlobData blobWithPath:_tempPath];
-        if (![_blobWriter openBlobToAddData]) {
+        _blobWriter = [CDTBlobDataMultipartWriter multipartWriter];
+        if (![_blobWriter openBlobAtPath:_tempPath]) {
             return nil;
         }
     }
