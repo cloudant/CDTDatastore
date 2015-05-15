@@ -435,6 +435,143 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(sqlNode.sql.placeholderValues).to.equal(@[ @"mike", @"cat" ]);
         });
     });
+    
+    describe(@"when dealing with text searches", ^{
+        
+        __block CDTDatastore *ds;
+        __block CDTQIndexManager *im;
+        
+        beforeEach(^{
+            ds = [factory datastoreNamed:@"test" error:nil];
+            im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
+            
+            [im ensureIndexed:@[ @"name", @"age", @"pet" ] withName:@"basic"];
+            [im ensureIndexed:@[ @"comments" ] withName:@"basic_text" type:@"text"];
+            
+            expect([[im listIndexes] count]).to.equal(2);
+        });
+        
+        it(@"supports using a single text search clause", ^{
+            BOOL indexesCoverQuery;
+            NSDictionary *query = @{ @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:query];
+            CDTQQueryNode *node = [CDTQQuerySqlTranslator translateQuery:actual
+                                                            toUseIndexes:[im listIndexes]
+                                                       indexesCoverQuery:&indexesCoverQuery];
+            expect(node).to.beInstanceOf([CDTQAndQueryNode class]);
+            expect(indexesCoverQuery).to.beTruthy();
+            
+            //        AND
+            //         |
+            //        sql
+            
+            CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
+            expect(and.children.count).to.equal(1);
+            
+            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
+                             "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
+            
+            CDTQSqlQueryNode *sqlNode;
+            
+            sqlNode = and.children[0];
+            expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sql);
+            expect(sqlNode.sql.placeholderValues).to.equal(@[ @"foo bar baz" ]);
+        });
+        
+        it(@"supports a text search clause ANDed with a non-text search clause", ^{
+            BOOL indexesCoverQuery;
+            NSDictionary *query = @{ @"name" : @"mike",
+                                     @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:query];
+            CDTQQueryNode *node = [CDTQQuerySqlTranslator translateQuery:actual
+                                                            toUseIndexes:[im listIndexes]
+                                                       indexesCoverQuery:&indexesCoverQuery];
+            expect(node).to.beInstanceOf([CDTQAndQueryNode class]);
+            expect(indexesCoverQuery).to.beTruthy();
+            
+            //        AND
+            //        / \
+            //     sql   sql
+            
+            CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
+            expect(and.children.count).to.equal(2);
+            
+            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+                                 "WHERE \"name\" = ?;";
+            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
+                                  "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
+            
+            CDTQSqlQueryNode *sqlNode;
+            
+            sqlNode = and.children[0];
+            expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sqlLeft);
+            expect(sqlNode.sql.placeholderValues).to.equal(@[ @"mike" ]);
+            
+            sqlNode = and.children[1];
+            expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sqlRight);
+            expect(sqlNode.sql.placeholderValues).to.equal(@[ @"foo bar baz" ]);
+        });
+        
+        it(@"supports a text search clause ORed with a non-text search clause", ^{
+            BOOL indexesCoverQuery;
+            NSDictionary *query = @{ @"$or" : @[ @{ @"name" : @"mike" },
+                                                 @{ @"$text" : @{ @"$search" : @"foo bar baz" } }
+                                               ]
+                                   };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:query];
+            CDTQQueryNode *node = [CDTQQuerySqlTranslator translateQuery:actual
+                                                            toUseIndexes:[im listIndexes]
+                                                       indexesCoverQuery:&indexesCoverQuery];
+            expect(node).to.beInstanceOf([CDTQOrQueryNode class]);
+            expect(indexesCoverQuery).to.beTruthy();
+            
+            //         _OR_
+            //        /    \
+            //     sql      sql
+            
+            CDTQOrQueryNode *or = (CDTQOrQueryNode *)node;
+            expect(or.children.count).to.equal(2);
+            
+            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+                                 "WHERE \"name\" = ?;";
+            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
+                                  "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
+            
+            CDTQSqlQueryNode *sqlNode;
+            
+            sqlNode = or.children[0];
+            expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sqlLeft);
+            expect(sqlNode.sql.placeholderValues).to.equal(@[ @"mike" ]);
+            
+            sqlNode = or.children[1];
+            expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sqlRight);
+            expect(sqlNode.sql.placeholderValues).to.equal(@[ @"foo bar baz" ]);
+        });
+        
+        it(@"returns nil when text index not found", ^{
+            expect([im deleteIndexNamed:@"basic_text"]).to.beTruthy;
+            BOOL indexesCoverQuery;
+            NSDictionary *query = @{ @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:query];
+            CDTQQueryNode *node = [CDTQQuerySqlTranslator translateQuery:actual
+                                                            toUseIndexes:[im listIndexes]
+                                                       indexesCoverQuery:&indexesCoverQuery];
+            expect(node).to.beNil();
+        });
+        
+        it(@"returns nil when a json index is not found", ^{
+            expect([im deleteIndexNamed:@"basic"]).to.beTruthy;
+            BOOL indexesCoverQuery;
+            NSDictionary *query = @{ @"name" : @"mike",
+                                     @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:query];
+            CDTQQueryNode *node = [CDTQQuerySqlTranslator translateQuery:actual
+                                                            toUseIndexes:[im listIndexes]
+                                                       indexesCoverQuery:&indexesCoverQuery];
+            expect(node).to.beNil();
+        });
+        
+    });
 
     describe(@"when selecting an index to use", ^{
 
@@ -1008,6 +1145,60 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$in" : @"mike" } } ];
             expect(actual).to.beNil;
+        });
+        
+    });
+    
+    describe(@"when normalizing text search queries", ^{
+        
+        it(@"correctly normalizes query containing only a single text clause", ^{
+            NSDictionary *query = @{ @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery: query];
+            NSDictionary *expected = @{ @"$and" : @[ @{ @"$text" : @{ @"$search" : @"foo bar baz" }
+                                                      }
+                                                   ]
+                                      };
+            expect(actual).to.beTheSameQueryAs(expected);
+        });
+        
+        it(@"correctly normalizes multi-field query containing a text clause", ^{
+            NSDictionary *query = @{ @"name" : @"mike",
+                                     @"age" : @12,
+                                     @"$text" : @{ @"$search" : @"foo bar baz" } };
+            NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery: query];
+            NSDictionary *expected = @{ @"$and" : @[ @{ @"name" : @{ @"$eq" : @"mike" } } ,
+                                                     @{ @"age" : @{ @"$eq" : @12 } },
+                                                     @{ @"$text" : @{ @"$search" : @"foo bar baz" }
+                                                      }
+                                                  ]
+                                      };
+            expect(actual).to.beTheSameQueryAs(expected);
+        });
+        
+        it(@"returns nil for invalid text search content", ^{
+            NSDictionary *query = @{ @"$text" : @{ @"$search" : @12 } };
+            expect([CDTQQueryValidator normaliseAndValidateQuery: query]).to.beNil();
+        });
+        
+        it(@"returns nil for multiple text search clauses", ^{
+            NSDictionary *query = @{ @"$or" : @[ @{ @"$text" : @{ @"$search" : @"foo bar" } },
+                                                 @{ @"$text" : @{ @"$search" : @"baz" } } ] };
+            expect([CDTQQueryValidator normaliseAndValidateQuery: query]).to.beNil();
+        });
+        
+        it(@"returns nil for invalid text search operator", ^{
+            NSDictionary *query = @{ @"$text" : @{ @"$eq" : @"foo bar baz" } };
+            expect([CDTQQueryValidator normaliseAndValidateQuery: query]).to.beNil();
+        });
+        
+        it(@"returns nil for missing search operator", ^{
+            NSDictionary *query = @{ @"$text" : @"foo bar baz" };
+            expect([CDTQQueryValidator normaliseAndValidateQuery: query]).to.beNil();
+        });
+        
+        it(@"returns nil for missing text operator", ^{
+            NSDictionary *query = @{ @"$search" : @"foo bar baz" };
+            expect([CDTQQueryValidator normaliseAndValidateQuery: query]).to.beNil();
         });
         
     });

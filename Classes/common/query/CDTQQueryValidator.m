@@ -346,11 +346,8 @@
             // this should have a dict
             // send this for validation
             
-            // TODO Enable text search as part of text search unit tests PR.
-            //valid = [CDTQQueryValidator validateTextClause:clause[key]
-            //                           withTextClauseLimit:textClauseLimitReached];
-            LogInfo(@"Text search is currently not supported.");
-            break;
+            valid = [CDTQQueryValidator validateTextClause:clause[key]
+                                       withTextClauseLimit:textClauseLimitReached];
         } else {
             LogError(@"%@ operator cannot be a top level operator", key);
             break;
