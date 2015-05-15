@@ -244,9 +244,9 @@
         } else {
             // The text clause must be an NSDictionary here otherwise it
             // would not have passed the normalization/validation step.
-            textClause = (NSDictionary *)textClause;
-            CDTQSqlParts *select = [CDTQQuerySqlTranslator selectStatementForTextClause:textClause
-                                                                             usingIndex:textIndex];
+            CDTQSqlParts *select =
+                [CDTQQuerySqlTranslator selectStatementForTextClause:(NSDictionary *)textClause
+                                                          usingIndex:textIndex];
             if (!select) {
                 LogError(@"Error generating SELECT clause for %@", textClause);
                 return nil;
