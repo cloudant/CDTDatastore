@@ -14,46 +14,83 @@
 //  and limitations under the License.
 //
 
+#define COMMON_DIGEST_FOR_OPENSSL
+#import <CommonCrypto/CommonDigest.h>
+
 #import "CDTBlobDataMultipartWriter.h"
 
 #import "CDTLogging.h"
 
-@interface CDTBlobDataMultipartWriter ()
+@interface CDTBlobDataMultipartWriter () {
+    SHA_CTX _shaCtx;
+}
 
 @property (strong, nonatomic) NSFileHandle *outFileHandle;
+@property (strong, nonatomic) NSData *sha1Digest;
+@property (assign, nonatomic) BOOL wasDataAdded;
 
 @end
 
 @implementation CDTBlobDataMultipartWriter
 
+#pragma mark - Init object
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _outFileHandle = nil;
+        _sha1Digest = nil;
+        _wasDataAdded = NO;
+    }
+
+    return self;
+}
+
 #pragma mark - Memory management
-- (void)dealloc { [self closeBlob]; }
+- (void)dealloc { [self releaseBlob]; }
 
 #pragma mark - CDTBlobMultipartWriter methods
 - (BOOL)isBlobOpen { return (self.outFileHandle != nil); }
 
 - (BOOL)openBlobAtPath:(NSString *)path
 {
-    if ([self isBlobOpen]) {
+    BOOL success = ![self isBlobOpen];
+    if (!success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is already open");
+    } else {
+        self.outFileHandle = [NSFileHandle fileHandleForWritingAtPath:path];
 
-        return NO;
+        success = [self isBlobOpen];
+        if (success) {
+            self.sha1Digest = nil;
+            self.wasDataAdded = NO;
+
+            SHA1_Init(&_shaCtx);
+        }
     }
 
-    self.outFileHandle = [NSFileHandle fileHandleForWritingAtPath:path];
-
-    return [self isBlobOpen];
+    return success;
 }
 
 - (BOOL)addData:(NSData *)data
 {
-    if (![self isBlobOpen]) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is already open");
+    if (!data) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Data is mandatory");
 
         return NO;
     }
 
+    if (![self isBlobOpen]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is not open");
+
+        return NO;
+    }
+
+    self.wasDataAdded = YES;
+
     [self.outFileHandle writeData:data];
+
+    SHA1_Update(&_shaCtx, data.bytes, data.length);
 
     return YES;
 }
@@ -61,13 +98,28 @@
 - (void)closeBlob
 {
     if (![self isBlobOpen]) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is already open");
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is not open");
 
         return;
     }
 
-    [self.outFileHandle closeFile];
-    self.outFileHandle = nil;
+    if (self.wasDataAdded) {
+        unsigned char digest[SHA_DIGEST_LENGTH];
+        SHA1_Final(digest, &_shaCtx);
+
+        self.sha1Digest = [NSData dataWithBytes:&digest length:sizeof(digest)];
+    }
+
+    [self releaseBlob];
+}
+
+#pragma mark - Private methods
+- (void)releaseBlob
+{
+    if ([self isBlobOpen]) {
+        [self.outFileHandle closeFile];
+        self.outFileHandle = nil;
+    }
 }
 
 #pragma mark - Public class methods

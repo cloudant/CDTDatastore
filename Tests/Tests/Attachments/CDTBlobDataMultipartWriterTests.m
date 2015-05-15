@@ -18,6 +18,8 @@
 
 #import "CDTBlobDataMultipartWriter.h"
 
+#import "TDMisc.h"
+
 @interface CDTBlobDataMultipartWriterTests : XCTestCase
 
 @property (strong, nonatomic) NSString *path;
@@ -51,7 +53,10 @@
 {
     // Put teardown code here. This method is called after the invocation of each test method in the
     // class.
-    self.multipartWriter = nil;
+    if (self.multipartWriter) {
+        [self.multipartWriter closeBlob];
+        self.multipartWriter = nil;
+    }
 
     self.data = nil;
 
@@ -102,6 +107,11 @@
     XCTAssertFalse([self.multipartWriter addData:self.data], @"Open blob before adding data");
 }
 
+- (void)testAddDataFailsIfDataIsNil
+{
+    XCTAssertFalse([self.multipartWriter addData:nil], @"Param is mandatory");
+}
+
 - (void)testAddDataTwiceGenerateExpectedResult
 {
     [self.multipartWriter openBlobAtPath:self.path];
@@ -134,6 +144,106 @@
     XCTAssertEqualObjects(
         fileData, self.data,
         @"Data is added at the begining of the blob after opening it");
+}
+
+- (void)testSHA1DigestIsNilAfterInitialisation
+{
+    XCTAssertNil(self.multipartWriter.sha1Digest, @"No data after init so it has to be nil");
+}
+
+- (void)testSHA1DigestIsNilAfterOpeningABlob
+{
+    [self.multipartWriter openBlobAtPath:self.path];
+
+    XCTAssertNil(self.multipartWriter.sha1Digest,
+                 @"No data after opening the blob, so it has to be nil");
+}
+
+- (void)testSHA1DigestIsNilBeforeClosingTheBlob
+{
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter addData:self.data];
+
+    XCTAssertNil(self.multipartWriter.sha1Digest,
+                 @"No digest will be generated unti the blob is closed");
+}
+
+- (void)testSHA1DigestIsNilIfNoDataIsAdded
+{
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter closeBlob];
+
+    XCTAssertNil(self.multipartWriter.sha1Digest, @"No data added so it has to be nil");
+}
+
+- (void)testSHA1DigestReturnsExpectedValues
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+
+    NSString *thisPath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *thisData = [NSData dataWithContentsOfFile:thisPath];
+
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter addData:thisData];
+    [self.multipartWriter closeBlob];
+
+    NSString *hexSHA1Digest = TDHexFromBytes(self.multipartWriter.sha1Digest.bytes,
+                                             self.multipartWriter.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"d55f9ac778baf2256fa4de87aac61f590ebe66e0",
+                          @"Unexpected result");
+
+    thisPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
+    thisData = [NSData dataWithContentsOfFile:thisPath];
+
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter addData:thisData];
+    [self.multipartWriter closeBlob];
+
+    hexSHA1Digest = TDHexFromBytes(self.multipartWriter.sha1Digest.bytes,
+                                   self.multipartWriter.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"3ff2989bccf52150bba806bae1db2e0b06ad6f88",
+                          @"Unexpected result");
+}
+
+- (void)testSHA1DigestReturnsExpectedValuesIfDataAddedByPieces
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+
+    NSString *thisPath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *thisData = [NSData dataWithContentsOfFile:thisPath];
+    NSData *subData01 = [thisData subdataWithRange:NSMakeRange(0, thisData.length / 2)];
+    NSData *subData02 = [thisData
+        subdataWithRange:NSMakeRange(subData01.length, thisData.length - subData01.length)];
+
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter addData:subData01];
+    [self.multipartWriter addData:subData02];
+    [self.multipartWriter closeBlob];
+
+    NSString *hexSHA1Digest = TDHexFromBytes(self.multipartWriter.sha1Digest.bytes,
+                                             self.multipartWriter.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"d55f9ac778baf2256fa4de87aac61f590ebe66e0",
+                          @"Unexpected result");
+
+    thisPath = [bundle pathForResource:@"lorem" ofType:@"txt"];
+    thisData = [NSData dataWithContentsOfFile:thisPath];
+    subData01 = [thisData subdataWithRange:NSMakeRange(0, thisData.length / 2)];
+    subData02 = [thisData
+        subdataWithRange:NSMakeRange(subData01.length, thisData.length - subData01.length)];
+
+    [self.multipartWriter openBlobAtPath:self.path];
+    [self.multipartWriter addData:subData01];
+    [self.multipartWriter addData:subData02];
+    [self.multipartWriter closeBlob];
+
+    hexSHA1Digest = TDHexFromBytes(self.multipartWriter.sha1Digest.bytes,
+                                   self.multipartWriter.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"3ff2989bccf52150bba806bae1db2e0b06ad6f88",
+                          @"Unexpected result");
 }
 
 @end

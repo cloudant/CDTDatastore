@@ -22,6 +22,14 @@
 @protocol CDTBlobMultipartWriter
 
 /**
+ SHA1 digest of the data added to the attachment.
+ 
+ It will be set to nil after the blob is open and a value will be assigned only after the blob is
+ closed (and if some data was added before).
+ */
+@property (strong, nonatomic, readonly) NSData *sha1Digest;
+
+/**
  @return YES if the attachment was open before or NO in other case
  */
 - (BOOL)isBlobOpen;

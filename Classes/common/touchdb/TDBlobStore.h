@@ -63,7 +63,6 @@ typedef struct
     NSString* _tempPath;
     id<CDTBlobMultipartWriter> _blobWriter;
     UInt64 _length;
-    SHA_CTX _shaCtx;
     MD5_CTX _md5Ctx;
     TDBlobKey _blobKey;
     TDMD5Key _MD5Digest;

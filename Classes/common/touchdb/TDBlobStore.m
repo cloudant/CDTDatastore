@@ -232,7 +232,7 @@
     self = [super init];
     if (self) {
         _store = store;
-        SHA1_Init(&_shaCtx);
+        
         MD5_Init(&_md5Ctx);
 
         // Open a temporary file in the store's temporary directory:
@@ -263,21 +263,18 @@
     [_blobWriter addData:data];
     NSUInteger dataLen = data.length;
     _length += dataLen;
-    SHA1_Update(&_shaCtx, data.bytes, dataLen);
+    
     MD5_Update(&_md5Ctx, data.bytes, dataLen);
-}
-
-- (void)closeFile
-{
-    [_blobWriter closeBlob];
-    _blobWriter = nil;
 }
 
 - (void)finish
 {
     Assert(_blobWriter, @"Already finished");
-    [self closeFile];
-    SHA1_Final(_blobKey.bytes, &_shaCtx);
+    
+    [_blobWriter closeBlob];
+    [_blobWriter.sha1Digest getBytes:_blobKey.bytes length:sizeof(_blobKey.bytes)];
+    [self releaseBlob];
+    
     MD5_Final(_MD5Digest.bytes, &_md5Ctx);
 }
 
@@ -310,13 +307,22 @@
 
 - (void)cancel
 {
-    [self closeFile];
+    if (_blobWriter) {
+        [_blobWriter closeBlob];
+        
+        [self releaseBlob];
+    }
+    
     if (_tempPath) {
         [[NSFileManager defaultManager] removeItemAtPath:_tempPath error:NULL];
         _tempPath = nil;
     }
 }
 
+#pragma mark - Private methods
+- (void)releaseBlob { _blobWriter = nil; }
+
+#pragma mark - Memory management
 - (void)dealloc
 {
     [self cancel];  // Close file, and delete it if it hasn't been installed yet
