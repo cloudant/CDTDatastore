@@ -14,9 +14,14 @@
 //  and limitations under the License.
 //
 
+#define COMMON_DIGEST_FOR_OPENSSL
+#import <CommonCrypto/CommonDigest.h>
+
 #import "CDTBlobDataWriter.h"
 
 #import "CDTLogging.h"
+
+#import "TDMisc.h"
 
 NSString *const CDTBlobDataWriterErrorDomain = @"CDTBlobDataWriterErrorDomain";
 
@@ -24,12 +29,19 @@ NSString *const CDTBlobDataWriterErrorDomain = @"CDTBlobDataWriterErrorDomain";
 
 @property (strong, nonatomic) NSData *data;
 
+// Overide property defined in CDTBlobWriter
+@property (strong, nonatomic) NSData *sha1Digest;
+
 @end
 
 @implementation CDTBlobDataWriter
 
 #pragma mark - CDTBlobWriter methods
-- (void)useData:(NSData *)data { self.data = data; }
+- (void)useData:(NSData *)data
+{
+    self.data = data;
+    self.sha1Digest = (data ? TDSHA1Digest(data) : nil);
+}
 
 - (BOOL)writeToFile:(NSString *)path error:(NSError **)error
 {

@@ -48,9 +48,6 @@ typedef struct TDBlobKey
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
 
-+ (TDBlobKey)keyForBlob:(NSData*)blob;
-+ (NSData*)keyDataForBlob:(NSData*)blob;
-
 @end
 
 typedef struct

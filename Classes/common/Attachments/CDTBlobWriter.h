@@ -22,6 +22,14 @@
 @protocol CDTBlobWriter
 
 /**
+ SHA1 digest of the data ready to store in the attachment.
+ 
+ It will be nil if there is no data or a buffer with size MD5_DIGEST_LENGTH in case some data
+ was supplied before.
+ */
+@property (strong, nonatomic, readonly) NSData *sha1Digest;
+
+/**
  Use this method to inform/supply the data to store in the attachment.
 
  @param data Data to store in the attachment

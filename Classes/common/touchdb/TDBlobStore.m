@@ -55,23 +55,6 @@
     return self;
 }
 
-+ (TDBlobKey)keyForBlob:(NSData*)blob
-{
-    NSCParameterAssert(blob);
-    TDBlobKey key;
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, blob.bytes, blob.length);
-    SHA1_Final(key.bytes, &ctx);
-    return key;
-}
-
-+ (NSData*)keyDataForBlob:(NSData*)blob
-{
-    TDBlobKey key = [self keyForBlob:blob];
-    return [NSData dataWithBytes:&key length:sizeof(key)];
-}
-
 @synthesize path = _path;
 
 - (NSString*)pathForKey:(TDBlobKey)key
@@ -119,16 +102,20 @@
       creatingKey:(TDBlobKey *)outKey
             error:(NSError *__autoreleasing *)outError
 {
-    TDBlobKey thisKey = [[self class] keyForBlob:blob];
+    NSCParameterAssert(blob);
+    
+    id<CDTBlobWriter> writer = [CDTBlobDataWriter writer];
+    [writer useData:blob];
+    
+    TDBlobKey thisKey;
+    [writer.sha1Digest getBytes:thisKey.bytes length:sizeof(thisKey.bytes)];
+    
     NSString *path = [self pathForKey:thisKey];
 
     BOOL success = [[NSFileManager defaultManager] isReadableFileAtPath:path];
     if (success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
     } else {
-        id<CDTBlobWriter> writer = [CDTBlobDataWriter writer];
-        [writer useData:blob];
-
         NSError *thisError = nil;
         success = [writer writeToFile:path error:&thisError];
         if (!success) {

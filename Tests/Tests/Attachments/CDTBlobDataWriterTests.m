@@ -18,6 +18,8 @@
 
 #import "CDTBlobDataWriter.h"
 
+#import "TDMisc.h"
+
 @interface CDTBlobDataWriterTests : XCTestCase
 
 @property (strong, nonatomic) NSString *path;
@@ -136,6 +138,37 @@
     
     XCTAssertTrue(success && isExpectedData, @"Operation should succeed");
     XCTAssertNil(error, @"There is no error to inform");
+}
+
+- (void)testSHA1DigestIsNilIfThereIsNoData
+{
+    [self.writer useData:nil];
+    
+    XCTAssertNil(self.writer.sha1Digest, @"No data, no digest");
+}
+
+- (void)testSHA1DigestReturnsExpectedValues
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+
+    NSString *path = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
+    NSData *data = [NSData dataWithContentsOfFile:path];
+
+    [self.writer useData:data];
+    NSString *hexSHA1Digest =
+        TDHexFromBytes(self.writer.sha1Digest.bytes, self.writer.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"d55f9ac778baf2256fa4de87aac61f590ebe66e0",
+                          @"Unexpected result");
+
+    path = [bundle pathForResource:@"lorem" ofType:@"txt"];
+    data = [NSData dataWithContentsOfFile:path];
+
+    [self.writer useData:data];
+    hexSHA1Digest = TDHexFromBytes(self.writer.sha1Digest.bytes, self.writer.sha1Digest.length);
+
+    XCTAssertEqualObjects(hexSHA1Digest, @"3ff2989bccf52150bba806bae1db2e0b06ad6f88",
+                          @"Unexpected result");
 }
 
 @end
