@@ -58,7 +58,7 @@
 
 - (void)testInitWithNotValidPathSucceeds
 {
-    XCTAssertNotNil([[CDTBlobDataReader alloc] initWithPath:@"This is not a path"],
+    XCTAssertNotNil([[CDTBlobDataReader alloc] initWithPath:@"///This is not a path"],
                     @"Any string is valid as long as it is not empty");
 }
 

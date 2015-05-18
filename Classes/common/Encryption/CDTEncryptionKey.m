@@ -20,14 +20,9 @@
 
 @interface CDTEncryptionKey ()
 
-@property (strong, nonatomic, readonly) NSData *data;
-
 @end
 
 @implementation CDTEncryptionKey
-
-#pragma mark - Synthesize properties
-- (const void *)bytes { return self.data.bytes; }
 
 #pragma mark - Init object
 - (instancetype)init { return [self initWithData:nil]; }

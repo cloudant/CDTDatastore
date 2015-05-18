@@ -30,9 +30,9 @@
 @interface CDTEncryptionKey : NSObject
 
 /**
- Array of CDTENCRYPTIONKEY_KEYSIZE bytes with the DPK
+ Buffer of size CDTENCRYPTIONKEY_KEYSIZE bytes with the DPK
  */
-@property (assign, nonatomic, readonly) const void *bytes;
+@property (strong, nonatomic, readonly) NSData *data;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 

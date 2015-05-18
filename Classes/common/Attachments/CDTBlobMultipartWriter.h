@@ -59,7 +59,11 @@
 
 /**
  Use this method to signal that there are no more data to add.
+ 
+ If the attachment is not open, it has to fail.
+ 
+ @return YES if all added data is in the attachment.
  */
-- (void)closeBlob;
+- (BOOL)closeBlob;
 
 @end

@@ -95,12 +95,12 @@
     return YES;
 }
 
-- (void)closeBlob
+- (BOOL)closeBlob
 {
     if (![self isBlobOpen]) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob is not open");
 
-        return;
+        return NO;
     }
 
     if (self.wasDataAdded) {
@@ -111,6 +111,8 @@
     }
 
     [self releaseBlob];
+    
+    return YES;
 }
 
 #pragma mark - Private methods

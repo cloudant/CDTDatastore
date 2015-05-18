@@ -141,9 +141,13 @@
 
     NSData *fileData = [NSData dataWithContentsOfFile:self.path];
 
-    XCTAssertEqualObjects(
-        fileData, self.data,
-        @"Data is added at the begining of the blob after opening it");
+    XCTAssertEqualObjects(fileData, self.data,
+                          @"Data is added at the begining of the blob after opening it");
+}
+
+- (void)testCloseBlobFailIfBlobIsNotOpen
+{
+    XCTAssertFalse([self.multipartWriter closeBlob], @"Open blob in order to close it");
 }
 
 - (void)testSHA1DigestIsNilAfterInitialisation

@@ -54,6 +54,34 @@
             location = "group:Encryption"
             name = "Encryption">
             <Group
+               location = "group:Attachments"
+               name = "Attachments">
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataMultipartWriter.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataMultipartWriter.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataReader.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataReader.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataUtils.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataUtils.m">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataWriter.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobEncryptedDataWriter.m">
+               </FileRef>
+            </Group>
+            <Group
                location = "group:Keychain"
                name = "Keychain">
                <FileRef

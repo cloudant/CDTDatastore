@@ -92,7 +92,8 @@ NSString *const FMDatabaseEncryptionKeyErrorDomain = @"FMDatabaseEncryptionKeyEr
 - (BOOL)setEncryptionKey:(CDTEncryptionKey *)encryptionKey
 {
 #ifdef ENCRYPT_DATABASE
-    NSString *hexEncryptionKey = TDHexFromBytes(encryptionKey.bytes, CDTENCRYPTIONKEY_KEYSIZE);
+    NSString *hexEncryptionKey =
+        TDHexFromBytes(encryptionKey.data.bytes, encryptionKey.data.length);
     NSString *pragmaSetKey =
         [NSString stringWithFormat:@"PRAGMA key = \"x'%@'\";", hexEncryptionKey];
 
