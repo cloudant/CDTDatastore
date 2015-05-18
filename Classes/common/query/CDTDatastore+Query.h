@@ -57,6 +57,39 @@
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName;
+/**
+ Create a new index based on an index type over a set of fields.
+ 
+ Index type can be either "json" or "text".  A TEXT index provides
+ the ability to perform text searches.
+ */
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type;
+
+/**
+ Create a new index based on an index type with specific index 
+ settings over a set of fields.
+ 
+ Index settings currenly only apply to a TEXT index.
+ 
+ An example:
+ 
+ Where ds is your datastore and fields is an array of fieldnames...
+ 
+ [ds ensureIndexed: fields 
+          withName: @"text_idx"
+              type: @"text" 
+          settings: @{ @"tokenize": @"porter" }]
+ 
+ This will create a TEXT index named text_idx and override the
+ default tokenizer used to construct the TEXT index with the
+ "porter" algorithm tokenizer.
+ */
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type
+                   settings:(NSDictionary *)indexSettings;
 
 /**
  Delete an index.
@@ -88,8 +121,8 @@
 /**
  Find document matching a query.
  
- See https://github.com/cloudant/CloudantQueryObjc for details of the
- query syntax and option meanings.
+ See https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md 
+ for details of the query syntax and option meanings.
  
  Failures during query (e.g., invalid query) are logged rather than
  error being returned.
