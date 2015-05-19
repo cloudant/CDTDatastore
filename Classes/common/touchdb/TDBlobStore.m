@@ -23,10 +23,6 @@
 
 #import "TDStatus.h"
 
-#import "CDTBlobDataReader.h"
-#import "CDTBlobDataWriter.h"
-#import "CDTBlobDataMultipartWriter.h"
-
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
 #define NSDataWritingAtomic NSAtomicWrite
@@ -34,24 +30,37 @@
 
 #define kFileExtension "blob"
 
+@interface TDBlobStore ()
+
+@property (strong, nonatomic, readonly) CDTBlobHandleFactory *blobHandleFactory;
+
+@end
+
 @implementation TDBlobStore
 
-- (id)initWithPath:(NSString*)dir error:(NSError**)outError
+- (id)initWithPath:(NSString *)dir
+    encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    error:(NSError **)outError
 {
     Assert(dir);
+    Assert(provider, @"Key provider is mandatory. Supply a CDTNilEncryptionKeyProvider instead.");
+
     self = [super init];
     if (self) {
         _path = [dir copy];
+        _blobHandleFactory = [CDTBlobHandleFactory factoryWithEncryptionKeyProvider:provider];
+
         BOOL isDir;
         if (![[NSFileManager defaultManager] fileExistsAtPath:dir isDirectory:&isDir] || !isDir) {
             if (![[NSFileManager defaultManager] createDirectoryAtPath:dir
                                            withIntermediateDirectories:NO
                                                             attributes:nil
                                                                  error:outError]) {
-                return nil;
+                self = nil;
             }
         }
     }
+
     return self;
 }
 
@@ -89,7 +98,7 @@
 {
     NSString *path = [self pathForKey:key];
     
-    return [CDTBlobDataReader readerWithPath:path];
+    return [self.blobHandleFactory readerWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -104,7 +113,7 @@
 {
     NSCParameterAssert(blob);
     
-    id<CDTBlobWriter> writer = [CDTBlobDataWriter writer];
+    id<CDTBlobWriter> writer = [self.blobHandleFactory writer];
     [writer useData:blob];
     
     TDBlobKey thisKey;
@@ -250,7 +259,7 @@
                                                    attributes:attributes]) {
             return nil;
         }
-        _blobWriter = [CDTBlobDataMultipartWriter multipartWriter];
+        _blobWriter = [store.blobHandleFactory multipartWriter];
         if (![_blobWriter openBlobAtPath:_tempPath]) {
             return nil;
         }

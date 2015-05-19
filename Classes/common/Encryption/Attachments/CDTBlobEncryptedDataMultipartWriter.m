@@ -133,7 +133,7 @@
 }
 
 #pragma mark - Public class methods
-+ (instancetype)writerWithEncryptionKey:(CDTEncryptionKey *)encryptionKey
++ (instancetype)multipartWriterWithEncryptionKey:(CDTEncryptionKey *)encryptionKey
 {
     return [[[self class] alloc] initWithEncryptionKey:encryptionKey];
 }

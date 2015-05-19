@@ -17,8 +17,6 @@
 
 @interface CDTHelperFixedKeyProvider ()
 
-@property (strong, nonatomic, readonly) CDTEncryptionKey *fixedKey;
-
 @end
 
 @implementation CDTHelperFixedKeyProvider

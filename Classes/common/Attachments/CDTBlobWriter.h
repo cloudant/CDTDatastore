@@ -19,7 +19,7 @@
 /**
  This protocol defines the methods to create or overwrite an attachment.
  */
-@protocol CDTBlobWriter
+@protocol CDTBlobWriter <NSObject>
 
 /**
  SHA1 digest of the data ready to store in the attachment.

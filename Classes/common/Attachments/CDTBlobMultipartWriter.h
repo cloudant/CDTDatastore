@@ -19,7 +19,7 @@
 /**
  This protocol defines the methods to add/append data to an attachment.
  */
-@protocol CDTBlobMultipartWriter
+@protocol CDTBlobMultipartWriter <NSObject>
 
 /**
  SHA1 digest of the data added to the attachment.

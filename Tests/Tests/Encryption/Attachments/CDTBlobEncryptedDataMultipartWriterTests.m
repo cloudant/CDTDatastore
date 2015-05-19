@@ -66,7 +66,7 @@
     self.encryptionKey = [provider encryptionKey];
 
     self.multipartWriter =
-        [CDTBlobEncryptedDataMultipartWriter writerWithEncryptionKey:self.encryptionKey];
+        [[CDTBlobEncryptedDataMultipartWriter alloc] initWithEncryptionKey:self.encryptionKey];
 }
 
 - (void)tearDown

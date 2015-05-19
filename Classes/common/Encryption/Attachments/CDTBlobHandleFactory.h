@@ -1,8 +1,8 @@
 //
-//  CDTBlobEncryptedDataMultipartWriter.h
+//  CDTBlobHandleFactory.h
 //  CloudantSync
 //
-//  Created by Enrique de la Torre Fernandez on 18/05/2015.
+//  Created by Enrique de la Torre Fernandez on 19/05/2015.
 //  Copyright (c) 2015 IBM Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -16,16 +16,24 @@
 
 #import <Foundation/Foundation.h>
 
+#import "CDTEncryptionKeyProvider.h"
+
+#import "CDTBlobReader.h"
+#import "CDTBlobWriter.h"
 #import "CDTBlobMultipartWriter.h"
 
-#import "CDTEncryptionKey.h"
-
-@interface CDTBlobEncryptedDataMultipartWriter : NSObject <CDTBlobMultipartWriter>
+@interface CDTBlobHandleFactory : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (instancetype)initWithEncryptionKey:(CDTEncryptionKey *)encryptionKey NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+    NS_DESIGNATED_INITIALIZER;
 
-+ (instancetype)multipartWriterWithEncryptionKey:(CDTEncryptionKey *)encryptionKey;
+- (id<CDTBlobReader>)readerWithPath:(NSString *)path;
+
+- (id<CDTBlobWriter>)writer;
+- (id<CDTBlobMultipartWriter>)multipartWriter;
+
++ (instancetype)factoryWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 @end
