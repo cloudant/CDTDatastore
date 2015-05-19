@@ -20,6 +20,11 @@
 
 #import "CDTEncryptionKey.h"
 
+/**
+ Use this class to store data in an encrypted attachment.
+ 
+ @see CDTBlobWriter
+ */
 @interface CDTBlobEncryptedDataWriter : NSObject <CDTBlobWriter>
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;

@@ -19,6 +19,11 @@
 #import "CDTBlobReader.h"
 #import "CDTEncryptionKey.h"
 
+/**
+ Use this class to read data from an encrypted attachment.
+ 
+ @see CDTBlobReader
+ */
 @interface CDTBlobEncryptedDataReader : NSObject <CDTBlobReader>
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;

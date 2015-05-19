@@ -16,4 +16,9 @@
 
 #import <Foundation/Foundation.h>
 
+/**
+ Return a Initialization Vector set to 0's.
+ 
+ @warning This method will be removed once we start to use a different IV for each attachment.
+ */
 NSData* CDTBlobEncryptedDataDefaultIV(void);
