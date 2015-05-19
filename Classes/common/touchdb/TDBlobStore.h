@@ -16,23 +16,30 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
+#import "CDTBlobHandleFactory.h"
+
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
 {
     uint8_t bytes[SHA_DIGEST_LENGTH];
 } TDBlobKey;
 
-/** A persistent content-addressable store for arbitrary-size data blobs.
-    Each blob is stored as a file named by its SHA-1 digest. */
+/**
+ A persistent content-addressable store for arbitrary-size data blobs.
+ 
+ Each blob is stored as a file named by its SHA-1 digest. Notice that if the blob is encrypted,
+ the SHA1-digest is calculated once the data is encrypted.
+ */
 @interface TDBlobStore : NSObject {
     NSString* _path;
     NSString* _tempDir;
 }
 
-- (id)initWithPath:(NSString*)dir error:(NSError**)outError;
+- (id)initWithPath:(NSString *)dir
+    encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    error:(NSError **)outError;
 
-- (NSData*)blobForKey:(TDBlobKey)key;
-- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength;
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;
 - (BOOL)storeBlob:(NSData*)blob
@@ -42,16 +49,16 @@ typedef struct TDBlobKey
 @property (readonly) NSString* path;
 @property (readonly) NSUInteger count;
 @property (readonly) NSArray* allKeys;
+
+/**
+ Total size of files on disk.
+ 
+ Notice that if the files are encrypted, this size might be bigger that the total size of the
+ decrypted files.
+ */
 @property (readonly) UInt64 totalDataSize;
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
-
-+ (TDBlobKey)keyForBlob:(NSData*)blob;
-+ (NSData*)keyDataForBlob:(NSData*)blob;
-
-/** Returns the path of the file storing the attachment with the given key, or nil.
-    DO NOT MODIFY THIS FILE! */
-- (NSString*)pathForKey:(TDBlobKey)key;
 
 @end
 
@@ -66,9 +73,8 @@ typedef struct
    @private
     TDBlobStore* _store;
     NSString* _tempPath;
-    NSFileHandle* _out;
+    id<CDTBlobMultipartWriter> _blobWriter;
     UInt64 _length;
-    SHA_CTX _shaCtx;
     MD5_CTX _md5Ctx;
     TDBlobKey _blobKey;
     TDMD5Key _MD5Digest;
@@ -88,15 +94,30 @@ typedef struct
 /** Installs a finished blob into the store. */
 - (BOOL)install;
 
-/** The number of bytes in the blob. */
+/**
+ The number of bytes added to the blob.
+ 
+ If the attachment is encrypted, the size of the attachment on disk might be bigger than the
+ value in this property.
+ */
 @property (readonly) UInt64 length;
 
-/** After finishing, this is the key for looking up the blob through the TDBlobStore. */
+/**
+ After finishing, this is the key for looking up the blob through the TDBlobStore.
+ 
+ If the attachment is encrypted, this key is generated based on the encrypted data, not in the plain
+ data added.
+ */
 @property (readonly) TDBlobKey blobKey;
 
 /** After finishing, this is the MD5 digest of the blob, in base64 with an "md5-" prefix.
     (This is useful for compatibility with CouchDB, which stores MD5 digests of attachments.) */
 @property (readonly) NSString* MD5DigestString;
+
+/**
+ After finishing, this is the SHA1 digest of the blob, in base64 with a "sha1-" prefix
+ (the SHA1 digest is the value in property 'blobKey').
+ */
 @property (readonly) NSString* SHA1DigestString;
 
 @end
