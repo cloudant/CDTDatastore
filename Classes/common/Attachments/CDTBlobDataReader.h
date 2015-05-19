@@ -1,9 +1,9 @@
 //
-//  CDTEncryptionKeyProvider.h
+//  CDTBlobDataReader.h
+//  CloudantSync
 //
-//
-//  Created by Enrique de la Torre Fernandez on 20/02/2015.
-//
+//  Created by Enrique de la Torre Fernandez on 14/05/2015.
+//  Copyright (c) 2015 IBM Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -16,19 +16,20 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTEncryptionKey.h"
-
-@protocol CDTEncryptionKeyProvider
+#import "CDTBlobReader.h"
 
 /**
- * Return a key that will be used to cipher the data in the datastore. If it returns nil, data will
- * not be encrypted.
- *
- * @return A key or nil
- *
- * @warning *Warning:* Encryption will not work unless subspec 'CDTDatastore/SQLCipher' is used.
- * However, data will not be encrypted if this method returns nil (regardless of the subspec).
- */
-- (CDTEncryptionKey *)encryptionKey;
+ Use this class to read data from an attachment. The data is returned as it is, so make sure that
+ the attachment is not encrypted.
+ 
+ @see CDTBlobReader
+*/
+@interface CDTBlobDataReader : NSObject <CDTBlobReader>
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+- (instancetype)initWithPath:(NSString *)path NS_DESIGNATED_INITIALIZER;
+
++ (instancetype)readerWithPath:(NSString *)path;
 
 @end

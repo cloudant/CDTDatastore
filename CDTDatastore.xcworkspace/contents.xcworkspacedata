@@ -22,6 +22,33 @@
             <FileRef
                location = "group:Classes/common/Attachments/CDTAttachment.m">
             </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataMultipartWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataMultipartWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataReader.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataReader.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobDataWriter.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobMultipartWriter.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobReader.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Attachments/CDTBlobWriter.h">
+            </FileRef>
          </Group>
          <Group
             location = "group:Encryption"
@@ -88,6 +115,12 @@
                location = "group:CDTDatastoreManager+EncryptionKey.h">
             </FileRef>
             <FileRef
+               location = "group:CDTEncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKey.m">
+            </FileRef>
+            <FileRef
                location = "group:CDTEncryptionKeyNilProvider.h">
             </FileRef>
             <FileRef
@@ -95,6 +128,12 @@
             </FileRef>
             <FileRef
                location = "group:CDTEncryptionKeyProvider.h">
+            </FileRef>
+            <FileRef
+               location = "group:FMDatabase+EncryptionKey.h">
+            </FileRef>
+            <FileRef
+               location = "group:FMDatabase+EncryptionKey.m">
             </FileRef>
          </Group>
          <Group
@@ -281,12 +320,6 @@
             </FileRef>
             <FileRef
                location = "group:FMDatabase+LongLong.m">
-            </FileRef>
-            <FileRef
-               location = "group:FMDatabase+SQLCipher.h">
-            </FileRef>
-            <FileRef
-               location = "group:FMDatabase+SQLCipher.m">
             </FileRef>
          </Group>
          <Group

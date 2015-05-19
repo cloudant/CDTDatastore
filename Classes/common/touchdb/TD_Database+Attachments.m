@@ -237,20 +237,20 @@
 }
 
 /**
- Returns the path to an attachment's file in the blob store.
+ Returns the blob for an attachment in the blob store.
 
  The encoding type kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP
  is set as an out parameter
  */
-- (NSString*)getAttachmentPathForSequence:(SequenceNumber)sequence
-                                    named:(NSString*)filename
-                                     type:(NSString**)outType
-                                 encoding:(TDAttachmentEncoding*)outEncoding
-                                   status:(TDStatus*)outStatus
+- (id<CDTBlobReader>)getAttachmentBlobForSequence:(SequenceNumber)sequence
+                                            named:(NSString *)filename
+                                             type:(NSString **)outType
+                                         encoding:(TDAttachmentEncoding *)outEncoding
+                                           status:(TDStatus *)outStatus
 {
     Assert(sequence > 0);
     Assert(filename);
-    __block NSString* filePath = nil;
+    __block id<CDTBlobReader> blob = nil;
 
     [_fmdbQueue inDatabase:^(FMDatabase* db) {
         FMResultSet* r =
@@ -273,7 +273,7 @@
                 *outStatus = kTDStatusCorruptError;
                 return;
             }
-            filePath = [_attachments pathForKey:*(TDBlobKey*)keyData.bytes];
+            blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
             *outStatus = kTDStatusOK;
             if (outType) *outType = [r stringForColumnIndex:1];
 
@@ -282,38 +282,45 @@
         @finally { [r close]; }
     }];
 
-    return filePath;
+    return blob;
 }
 
 /**
  Returns the content and MIME type of an attachment
  */
-- (NSData*)getAttachmentForSequence:(SequenceNumber)sequence
-                              named:(NSString*)filename
-                               type:(NSString**)outType
-                           encoding:(TDAttachmentEncoding*)outEncoding
-                             status:(TDStatus*)outStatus
+- (NSData *)getAttachmentForSequence:(SequenceNumber)sequence
+                               named:(NSString *)filename
+                                type:(NSString **)outType
+                            encoding:(TDAttachmentEncoding *)outEncoding
+                              status:(TDStatus *)outStatus
 {
     TDAttachmentEncoding encoding;
-    NSString* filePath = [self getAttachmentPathForSequence:sequence
-                                                      named:filename
-                                                       type:outType
-                                                   encoding:&encoding
-                                                     status:outStatus];
-    if (!filePath) return nil;
-    NSError* error;
-    NSData* contents =
-        [NSData dataWithContentsOfFile:filePath options:NSDataReadingMappedIfSafe error:&error];
-    if (!contents) {
-        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
-                sequence, filename, error);
-        *outStatus = kTDStatusCorruptError;
+    id<CDTBlobReader> blob = [self getAttachmentBlobForSequence:sequence
+                                                          named:filename
+                                                           type:outType
+                                                       encoding:&encoding
+                                                         status:outStatus];
+    if (!blob) {
         return nil;
     }
-    if (outEncoding)
+
+    NSError *error = nil;
+    NSData *contents = [blob dataWithError:&error];
+    if (!contents) {
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to load attachment %lld.'%@' -- %@", self,
+                   sequence, filename, error);
+
+        *outStatus = kTDStatusCorruptError;
+
+        return nil;
+    }
+
+    if (outEncoding) {
         *outEncoding = encoding;
-    else
+    } else {
         contents = [self decodeAttachment:contents encoding:encoding];
+    }
+
     return contents;
 }
 
@@ -357,7 +364,8 @@
             if ((options & kTDBigAttachmentsFollow) && effectiveLength >= kBigAttachmentLength) {
                 dataSuppressed = YES;
             } else {
-                data = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                id<CDTBlobReader> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                data = (blob ? [blob dataWithError:nil] : nil);
                 if (!data)
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                             @"TD_Database: Failed to get attachment for key %@", keyData);
@@ -390,16 +398,21 @@
 }
 
 /**
- Return the URL for the location of the file in the blob store for an
- attachments dict.
+ Return the blob for the file in the blob store pointed out by attachments dict.
  */
-- (NSURL*)fileForAttachmentDict:(NSDictionary*)attachmentDict
+- (id<CDTBlobReader>)blobForAttachmentDict:(NSDictionary *)attachmentDict
 {
     NSString* digest = attachmentDict[@"digest"];
-    if (![digest hasPrefix:@"sha1-"]) return nil;
+    if (![digest hasPrefix:@"sha1-"]) {
+        return nil;
+    }
+    
     NSData* keyData = [TDBase64 decode:[digest substringFromIndex:5]];
-    if (!keyData) return nil;
-    return [NSURL fileURLWithPath:[_attachments pathForKey:*(TDBlobKey*)keyData.bytes]];
+    if (!keyData) {
+        return nil;
+    }
+    
+    return [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
 }
 
 // Calls the block on every attachment dictionary. The block can return a different dictionary,
@@ -475,24 +488,32 @@
 }
 
 // Replaces the "follows" key with the real attachment data in all attachments to 'doc'.
-- (BOOL)inlineFollowingAttachmentsIn:(TD_Revision*)rev error:(NSError**)outError
+- (BOOL)inlineFollowingAttachmentsIn:(TD_Revision *)rev error:(NSError **)outError
 {
-    __block NSError* error = nil;
+    __block NSError *error = nil;
+    
     [[self class] mutateAttachmentsIn:rev
                             withBlock:^NSDictionary * (NSString * name, NSDictionary * attachment) {
-                                if (!attachment[@"follows"]) return attachment;
-                                NSURL* fileURL = [self fileForAttachmentDict:attachment];
-                                NSData* fileData =
-                                    [NSData dataWithContentsOfURL:fileURL
-                                                          options:NSDataReadingMappedIfSafe
-                                                            error:&error];
-                                if (!fileData) return nil;
-                                NSMutableDictionary* editedAttachment = [attachment mutableCopy];
+                                if (!attachment[@"follows"]) {
+                                    return attachment;
+                                }
+                                
+                                id<CDTBlobReader> blob = [self blobForAttachmentDict:attachment];
+                                NSData *fileData = (blob ? [blob dataWithError:&error] : nil);
+                                if (!fileData){
+                                    return nil;
+                                }
+                                
+                                NSMutableDictionary *editedAttachment = [attachment mutableCopy];
                                 [editedAttachment removeObjectForKey:@"follows"];
                                 editedAttachment[@"data"] = [TDBase64 encode:fileData];
                                 return editedAttachment;
                             }];
-    if (outError) *outError = error;
+    
+    if (outError) {
+        *outError = error;
+    }
+    
     return (error == nil);
 }
 
@@ -642,7 +663,11 @@
             NSString* disposition =
                 $sprintf(@"attachment; filename=%@", TDQuoteString(attachmentName));
             [writer setNextPartsHeaders:$dict({ @"Content-Disposition", disposition })];
-            [writer addFileURL:[self fileForAttachmentDict:attachment]];
+
+            id<CDTBlobReader> blob = [self blobForAttachmentDict:attachment];
+            UInt64 length = 0;
+            NSInputStream* inputStream = [blob inputStreamWithOutputLength:&length];
+            [writer addStream:inputStream length:length];
         }
     }
     return writer;

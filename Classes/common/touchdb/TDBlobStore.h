@@ -16,6 +16,9 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
+#import "CDTBlobReader.h"
+#import "CDTBlobMultipartWriter.h"
+
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
 {
@@ -31,8 +34,7 @@ typedef struct TDBlobKey
 
 - (id)initWithPath:(NSString*)dir error:(NSError**)outError;
 
-- (NSData*)blobForKey:(TDBlobKey)key;
-- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength;
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;
 - (BOOL)storeBlob:(NSData*)blob
@@ -45,13 +47,6 @@ typedef struct TDBlobKey
 @property (readonly) UInt64 totalDataSize;
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
-
-+ (TDBlobKey)keyForBlob:(NSData*)blob;
-+ (NSData*)keyDataForBlob:(NSData*)blob;
-
-/** Returns the path of the file storing the attachment with the given key, or nil.
-    DO NOT MODIFY THIS FILE! */
-- (NSString*)pathForKey:(TDBlobKey)key;
 
 @end
 
@@ -66,9 +61,8 @@ typedef struct
    @private
     TDBlobStore* _store;
     NSString* _tempPath;
-    NSFileHandle* _out;
+    id<CDTBlobMultipartWriter> _blobWriter;
     UInt64 _length;
-    SHA_CTX _shaCtx;
     MD5_CTX _md5Ctx;
     TDBlobKey _blobKey;
     TDMD5Key _MD5Digest;

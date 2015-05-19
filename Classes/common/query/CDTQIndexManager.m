@@ -52,7 +52,7 @@
 #import "TD_Database.h"
 #import "TD_Body.h"
 
-#import "FMDatabase+SQLCipher.h"
+#import "FMDatabase+EncryptionKey.h"
 
 #import <CloudantSync.h>
 #import <FMDB/FMDB.h>
@@ -402,12 +402,6 @@ static const int VERSION = 2;
     BOOL success = YES;
 
     if (success) {
-        success = [CDTQIndexManager validateEncryptionKeyProvider:provider
-                                                forDatabaseAtPath:filename
-                                                            error:&thisError];
-    }
-
-    if (success) {
         database = [[FMDatabaseQueue alloc] initWithPath:filename];
 
         success = (database != nil);
@@ -453,80 +447,29 @@ static const int VERSION = 2;
     return database;
 }
 
-+ (BOOL)validateEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
-                    forDatabaseAtPath:(NSString *)path
-                                error:(NSError **)error
-{
-    BOOL success = YES;
-
-    NSString *key = [provider encryptionKey];
-    if (!key) {
-        LogDebug(@"Provider does not return a key to open index at %@. Checking whether index is "
-                 @"encrypted ...",
-                 path);
-
-        switch ([FMDatabase isDatabaseUnencryptedAtPath:path]) {
-            case kFMDatabaseUnencryptedNotFound: {
-                LogDebug(@"No index found at %@. Carry on and try to open/create a new not "
-                         @"encrypted index.",
-                         path);
-
-                break;
-            }
-            case kFMDatabaseUnencryptedIsUnencrypted: {
-                LogDebug(@"Index at %@ is not encrypted. No key is neccesary, carry on and try to "
-                         @"open it.",
-                         path);
-
-                break;
-            }
-            case kFMDatabaseUnencryptedIsEncrypted:
-            default: {
-                LogError(@"Index at %@ is encrypted and can not be opened without a key.", path);
-
-                success = NO;
-
-                if (error) {
-                    NSDictionary *userInfo = @{
-                        NSLocalizedDescriptionKey :
-                            NSLocalizedString(@"A key is required to decipher the database", nil)
-                    };
-
-                    *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
-                                                 code:CDTQIndexErrorEncryptionKeyError
-                                             userInfo:userInfo];
-                }
-
-                break;
-            }
-        }
-    }
-
-    return success;
-}
-
 + (BOOL)configureDatabase:(FMDatabaseQueue *)database
     withEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
                         error:(NSError **)error
 {
     __block BOOL success = YES;
 
-    NSString *key = [provider encryptionKey];
-    if (key) {
-        [database inDatabase:^(FMDatabase *db) {
-          success = [db setValidKey:key];
-        }];
+    [database inDatabase:^(FMDatabase *db) {
+      NSError *thisError = nil;
+      success = [db setKeyWithProvider:provider error:&thisError];
+      if (!success) {
+          LogError(@"Problem configuring database with encryption key: %@", thisError);
+      }
+    }];
 
-        if (!success && error) {
-            NSDictionary *userInfo = @{
-                NSLocalizedDescriptionKey :
-                    NSLocalizedString(@"Problem configuring database with encryption key", nil)
-            };
+    if (!success && error) {
+        NSDictionary *userInfo = @{
+            NSLocalizedDescriptionKey :
+                NSLocalizedString(@"Problem configuring database with encryption key", nil)
+        };
 
-            *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
-                                         code:CDTQIndexErrorEncryptionKeyError
-                                     userInfo:userInfo];
-        }
+        *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
+                                     code:CDTQIndexErrorEncryptionKeyError
+                                 userInfo:userInfo];
     }
 
     return success;

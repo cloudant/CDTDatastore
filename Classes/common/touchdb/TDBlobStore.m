@@ -23,6 +23,10 @@
 
 #import "TDStatus.h"
 
+#import "CDTBlobDataReader.h"
+#import "CDTBlobDataWriter.h"
+#import "CDTBlobDataMultipartWriter.h"
+
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
 #define NSDataWritingAtomic NSAtomicWrite
@@ -49,23 +53,6 @@
         }
     }
     return self;
-}
-
-+ (TDBlobKey)keyForBlob:(NSData*)blob
-{
-    NSCParameterAssert(blob);
-    TDBlobKey key;
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, blob.bytes, blob.length);
-    SHA1_Final(key.bytes, &ctx);
-    return key;
-}
-
-+ (NSData*)keyDataForBlob:(NSData*)blob
-{
-    TDBlobKey key = [self keyForBlob:blob];
-    return [NSData dataWithBytes:&key length:sizeof(key)];
 }
 
 @synthesize path = _path;
@@ -98,22 +85,11 @@
     return YES;
 }
 
-- (NSData*)blobForKey:(TDBlobKey)key
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key
 {
-    NSString* path = [self pathForKey:key];
-    return [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:NULL];
-}
-
-- (NSInputStream*)blobInputStreamForKey:(TDBlobKey)key length:(UInt64*)outLength
-{
-    NSString* path = [self pathForKey:key];
-    if (outLength) {
-        NSDictionary* info =
-            [[NSFileManager defaultManager] attributesOfItemAtPath:path error:NULL];
-        if (!info) return nil;
-        *outLength = [info fileSize];
-    }
-    return [NSInputStream inputStreamWithFileAtPath:path];
+    NSString *path = [self pathForKey:key];
+    
+    return [CDTBlobDataReader readerWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -122,23 +98,40 @@
     return [self storeBlob:blob creatingKey:outKey error:&error];
 }
 
-- (BOOL)storeBlob:(NSData*)blob
-      creatingKey:(TDBlobKey*)outKey
-            error:(NSError* __autoreleasing*)outError
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+            error:(NSError *__autoreleasing *)outError
 {
-    *outKey = [[self class] keyForBlob:blob];
-    NSString* path = [self pathForKey:*outKey];
-    if ([[NSFileManager defaultManager] isReadableFileAtPath:path]) return YES;
-    if (![blob writeToFile:path
-                   options:NSDataWritingAtomic
-#if TARGET_OS_IPHONE
-                           | NSDataWritingFileProtectionCompleteUnlessOpen
-#endif
-                     error:outError]) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore: Couldn't write to %@: %@", path, *outError);
-        return NO;
+    NSCParameterAssert(blob);
+    
+    id<CDTBlobWriter> writer = [CDTBlobDataWriter writer];
+    [writer useData:blob];
+    
+    TDBlobKey thisKey;
+    [writer.sha1Digest getBytes:thisKey.bytes length:sizeof(thisKey.bytes)];
+    
+    NSString *path = [self pathForKey:thisKey];
+
+    BOOL success = [[NSFileManager defaultManager] isReadableFileAtPath:path];
+    if (success) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
+    } else {
+        NSError *thisError = nil;
+        success = [writer writeToFile:path error:&thisError];
+        if (!success) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
+
+            if (outError) {
+                *outError = thisError;
+            }
+        }
     }
-    return YES;
+
+    if (success && outKey) {
+        *outKey = thisKey;
+    }
+
+    return success;
 }
 
 - (NSArray*)allKeys
@@ -239,7 +232,7 @@
     self = [super init];
     if (self) {
         _store = store;
-        SHA1_Init(&_shaCtx);
+        
         MD5_Init(&_md5Ctx);
 
         // Open a temporary file in the store's temporary directory:
@@ -257,8 +250,8 @@
                                                    attributes:attributes]) {
             return nil;
         }
-        _out = [NSFileHandle fileHandleForWritingAtPath:_tempPath];
-        if (!_out) {
+        _blobWriter = [CDTBlobDataMultipartWriter multipartWriter];
+        if (![_blobWriter openBlobAtPath:_tempPath]) {
             return nil;
         }
     }
@@ -267,24 +260,21 @@
 
 - (void)appendData:(NSData*)data
 {
-    [_out writeData:data];
+    [_blobWriter addData:data];
     NSUInteger dataLen = data.length;
     _length += dataLen;
-    SHA1_Update(&_shaCtx, data.bytes, dataLen);
+    
     MD5_Update(&_md5Ctx, data.bytes, dataLen);
-}
-
-- (void)closeFile
-{
-    [_out closeFile];
-    _out = nil;
 }
 
 - (void)finish
 {
-    Assert(_out, @"Already finished");
-    [self closeFile];
-    SHA1_Final(_blobKey.bytes, &_shaCtx);
+    Assert(_blobWriter, @"Already finished");
+    
+    [_blobWriter closeBlob];
+    [_blobWriter.sha1Digest getBytes:_blobKey.bytes length:sizeof(_blobKey.bytes)];
+    [self releaseBlob];
+    
     MD5_Final(_MD5Digest.bytes, &_md5Ctx);
 }
 
@@ -302,7 +292,7 @@
 - (BOOL)install
 {
     if (!_tempPath) return YES;  // already installed
-    Assert(!_out, @"Not finished");
+    Assert(!_blobWriter, @"Not finished");
     // Move temp file to correct location in blob store:
     NSString* dstPath = [_store pathForKey:_blobKey];
     if ([[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:NULL]) {
@@ -317,13 +307,22 @@
 
 - (void)cancel
 {
-    [self closeFile];
+    if (_blobWriter) {
+        [_blobWriter closeBlob];
+        
+        [self releaseBlob];
+    }
+    
     if (_tempPath) {
         [[NSFileManager defaultManager] removeItemAtPath:_tempPath error:NULL];
         _tempPath = nil;
     }
 }
 
+#pragma mark - Private methods
+- (void)releaseBlob { _blobWriter = nil; }
+
+#pragma mark - Memory management
 - (void)dealloc
 {
     [self cancel];  // Close file, and delete it if it hasn't been installed yet

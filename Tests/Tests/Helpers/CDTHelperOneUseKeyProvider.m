@@ -17,14 +17,14 @@
 
 @interface CDTHelperOneUseKeyProvider ()
 
-@property (strong, nonatomic) NSString *thisKey;
+@property (strong, nonatomic) CDTEncryptionKey *thisKey;
 
 @end
 
 @implementation CDTHelperOneUseKeyProvider
 
 #pragma mark - Init object
-- (id)init
+- (instancetype)init
 {
     self = [super init];
     if (self) {
@@ -35,17 +35,19 @@
 }
 
 #pragma mark - CDTEncryptionKeyProvider methods
-- (NSString *)encryptionKey
+- (CDTEncryptionKey *)encryptionKey
 {
-    NSString *key = self.thisKey;
+    CDTEncryptionKey *key = self.thisKey;
     if (!self.thisKey) {
-        self.thisKey = @"???";
+        char buffer[CDTENCRYPTIONKEY_KEYSIZE];
+        memset(buffer, '*', sizeof(buffer));
+        
+        NSData *data = [NSData dataWithBytes:buffer length:sizeof(buffer)];
+        
+        self.thisKey = [CDTEncryptionKey encryptionKeyWithData:data];
     }
 
     return key;
 }
-
-#pragma mark - NSCopying methods
-- (id)copyWithZone:(NSZone *)zone { return [[[self class] alloc] init]; }
 
 @end
