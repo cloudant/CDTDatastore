@@ -3,6 +3,7 @@
 ## 0.17.0 (Unreleased)
 
 - [REMOVE] The previous indexing/query legacy code has been removed.
+- [NEW] Added query text search support.  See [query documentation](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md) for details.
 
 ## 0.16.0 (2015-04-09)
 
