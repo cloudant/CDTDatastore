@@ -113,6 +113,24 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         [ds createDocumentFromRevision:rev error:nil];
         expect([ds updateAllIndexes]).to.beTruthy();
     });
+    
+    it(@"can create a text index", ^{
+        NSString *indexName = [ds ensureIndexed:@[ @"name" ] withName:@"text_idx" type:@"text"];
+        expect(indexName).to.equal(@"text_idx");
+    });
+    
+    it(@"can create a text index with defined settings", ^{
+        NSString *indexName = [ds ensureIndexed:@[ @"name" ]
+                                       withName:@"text_idx"
+                                           type:@"text"
+                                       settings:@{@"tokenize": @"porter"}];
+        expect(indexName).to.equal(@"text_idx");
+    });
+    
+    it(@"can check if text search is enabled", ^{
+        expect([ds isTextSearchEnabled]).to.equal(@YES);
+    });
+    
 });
 
 SpecEnd

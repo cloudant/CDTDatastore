@@ -34,6 +34,11 @@
     return objc_getAssociatedObject(self, @selector(CDTQManager));
 }
 
+- (BOOL)isTextSearchEnabled
+{
+    return [self.CDTQManager isTextSearchEnabled];
+}
+
 - (NSDictionary *)listIndexes
 {
     return [self.CDTQManager listIndexes];
@@ -42,6 +47,24 @@
 - (NSString *)ensureIndexed:(NSArray *)fieldNames withName:(NSString *)indexName
 {
     return [self.CDTQManager ensureIndexed:fieldNames withName:indexName];
+}
+
+- (NSString *)ensureIndexed:(NSArray *)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type
+{
+    return [self.CDTQManager ensureIndexed:fieldNames withName:indexName type:type];
+}
+
+- (NSString *)ensureIndexed:(NSArray *)fieldNames
+                   withName:(NSString *)indexName
+                       type:(NSString *)type
+                   settings:(NSDictionary *)indexSettings
+{
+    return [self.CDTQManager ensureIndexed:fieldNames
+                                  withName:indexName
+                                      type:type
+                                  settings:indexSettings];
 }
 
 - (CDTQResultSet *)find:(NSDictionary *)query
