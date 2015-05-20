@@ -34,6 +34,11 @@
     return objc_getAssociatedObject(self, @selector(CDTQManager));
 }
 
+- (BOOL)isTextSearchEnabled
+{
+    return [self.CDTQManager isTextSearchEnabled];
+}
+
 - (NSDictionary *)listIndexes
 {
     return [self.CDTQManager listIndexes];

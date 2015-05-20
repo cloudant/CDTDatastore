@@ -26,6 +26,14 @@
 @interface CDTDatastore (Query)
 
 /**
+ Check to see if SQLite is compiled with the necessary compile options
+ to support full text search.
+ 
+ @return whether text search is available
+ */
+@property (nonatomic, readonly, getter = isTextSearchEnabled) BOOL textSearchEnabled;
+
+/**
  Return a list of the indexes defined.
  
  This is returned in a dictionary structure:
