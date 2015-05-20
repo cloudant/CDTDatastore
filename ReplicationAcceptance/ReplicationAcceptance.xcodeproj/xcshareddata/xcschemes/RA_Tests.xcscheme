@@ -20,20 +20,6 @@
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.xctest"
-               BlueprintName = "RA_Tests_OSX"
-               ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -49,16 +35,6 @@
                BlueprintIdentifier = "27A7E68818997412007FAF1C"
                BuildableName = "RA_Tests_iOS.xctest"
                BlueprintName = "RA_Tests_iOS"
-               ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "27A7E69C1899741C007FAF1C"
-               BuildableName = "RA_Tests_OSX.xctest"
-               BlueprintName = "RA_Tests_OSX"
                ReferencedContainer = "container:ReplicationAcceptance.xcodeproj">
             </BuildableReference>
          </TestableReference>
