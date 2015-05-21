@@ -368,7 +368,8 @@
         GTE : @">=",
         LT : @"<",
         LTE : @"<=",
-        IN : @"IN"
+        IN : @"IN",
+        MOD : @"%"
     };
 
     for (NSDictionary *component in clause) {
@@ -421,6 +422,13 @@
                     placeholder =
                         [CDTQQuerySqlTranslator placeholdersForList:inList
                                             updatingParameterValues:sqlParameters];
+                } else if ([operator isEqualToString:MOD]) {
+                    // The predicate dictionary value must be a two element NSArray
+                    // containing numbers here.  This was validated during normalization.
+                    NSArray *modulus = negatedPredicate[operator];
+                    placeholder = [NSString stringWithFormat:@"? %@ ?", operatorMap[EQ]];
+                    [sqlParameters addObject:modulus[0]];
+                    [sqlParameters addObject:modulus[1]];
                 } else {
                     // The predicate dictionary value must be either a
                     // NSString or a NSNumber here.
@@ -454,6 +462,13 @@
                     placeholder =
                         [CDTQQuerySqlTranslator placeholdersForList:inList
                                             updatingParameterValues:sqlParameters];
+                } else if ([operator isEqualToString:MOD]) {
+                    // The predicate dictionary value must be a two element NSArray
+                    // containing numbers here.  This was validated during normalization.
+                    NSArray *modulus = predicate[operator];
+                    placeholder = [NSString stringWithFormat:@"? %@ ?", operatorMap[EQ]];
+                    [sqlParameters addObject:modulus[0]];
+                    [sqlParameters addObject:modulus[1]];
                 } else {
                     NSObject * predicateValue = predicate[operator];
                     placeholder = @"?";
