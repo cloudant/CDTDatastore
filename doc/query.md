@@ -203,7 +203,7 @@ sign. This is due to restrictions imposed by SQLite's virtual table syntax.
 
 Use `-listIndexes` to retrieve a dictionary containing all of the query indexes in a datastore.  The key to the dictionary is the index name.
 
-The format of the dictionary returned by `-listinidexes` is:
+The format of the dictionary returned by `-listindexes` is:
 
 ```objc
 @{ @"jsonIdxName": @{ @"fields": @[ @"field1", @"field2" ],
@@ -263,6 +263,23 @@ To query for documents where `age` is greater than twelve use the `$gt` conditio
 ```
 
 See below for supported operators (Selections -> Conditions).
+
+#### Modulo operation in queries
+
+Using the `$mod` operator in queries allows you to select documents based on the value of a field divided by an integer yielding a specific remainder.
+
+To query for documents where `age` divided by 5 has a remainder of  4, do the following:
+
+```objc
+@{ @"age": @{ @"$mod": [ @5, @4 ] } }
+```
+
+A few things to keep in mind when using `$mod` are:
+
+- The array argument to the `$mod` operator must contain two number elements. The first element is the divisor and the second element is the remainder.
+- Division by zero is not allowed so the divisor cannot be zero.
+- The dividend (field value), divisor, and the remainder can be positive or negative.
+- The dividend, divisor, and the remainder can be represented as whole numbers or by using decimal notation.  However internally, prior to performing the modulo arithmetic operation, all three are truncated to their logical whole number representations.  So, for example, the query `@{ @"age": @{ @"$mod": [ @5.6, @4.2 ] } }` will provide the same result as the query `@{ @"age": @{ @"$mod": [ @5, @4 ] } }`.
 
 #### Text search
 
@@ -599,6 +616,7 @@ Selectors -> Condition -> Objects
 Selectors -> Condition -> Misc
 
 - `$text` in combination with `$search`
+- `$mod`
 
 Selectors -> Condition -> Array
 
@@ -649,7 +667,6 @@ Selectors -> Condition -> Array
 
 Selectors -> Condition -> Misc
 
-- `$mod`
 - `$regex`
 
 
@@ -728,7 +745,7 @@ Here:
     <em>negation-expression</em>
     <strong>{</strong> <em>operator</em> <strong>:</strong> <em>simple-value</em> <strong>}</strong>
     <strong>{</strong> &quot;$regex&quot; <strong>:</strong> <em>NSRegularExpression</em> <strong>}</strong>  // not implemented
-    <strong>{</strong> &quot;$mod&quot; <strong>:</strong> <strong>[</strong> <em>divisor, remainder</em> <strong>] }</strong>  // not implemented
+    <strong>{</strong> &quot;$mod&quot; <strong>:</strong> <strong>[</strong> <em>non-zero-number, number</em> <strong>] }</strong>
     <strong>{</strong> &quot;$elemMatch&quot; <strong>: {</strong> <em>many-expressions</em> <strong>} }</strong>  // not implemented
     <strong>{</strong> &quot;$size&quot; <strong>:</strong> <em>positive-integer</em> <strong>}</strong>  // not implemented
     <strong>{</strong> &quot;$all&quot; <strong>:</strong> <em>array-value</em> <strong>}</strong>  // not implemented
@@ -752,6 +769,10 @@ Here:
 <em>simple-value</em> := <em>NSString</em> | <em>NSNumber</em>
 
 <em>string-value</em> := <em>NSString</em>
+
+<em>number</em> := <em>NSNumber</em>
+
+<em>non-zero-number</em> := <em>NSNumber</em>
 
 <em>positive-integer</em> := <em>NSNumber</em>
 
