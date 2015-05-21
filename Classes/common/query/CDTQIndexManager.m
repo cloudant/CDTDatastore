@@ -379,8 +379,7 @@ static const int VERSION = 2;
     __block BOOL ftsOptionsExist = NO;
     
     [db inDatabase:^(FMDatabase *db) {
-        NSMutableArray *ftsCompileOptions =
-            [NSMutableArray arrayWithArray:@[ @"ENABLE_FTS3", @"ENABLE_FTS3_PARENTHESIS" ] ];
+        NSMutableArray *ftsCompileOptions = [NSMutableArray arrayWithArray:@[ @"ENABLE_FTS3" ] ];
         FMResultSet *rs = [db executeQuery:@"PRAGMA compile_options;"];
         while ([rs next]) {
             NSString *compileOption = [rs stringForColumnIndex:0];
