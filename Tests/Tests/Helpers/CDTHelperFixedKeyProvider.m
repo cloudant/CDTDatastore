@@ -50,7 +50,7 @@
 #pragma mark - Public methods
 - (instancetype)negatedProvider
 {
-    const char *fixedKeyBytes = self.fixedKey.bytes;
+    const char *fixedKeyBytes = self.fixedKey.data.bytes;
 
     char negatedFixedKeyBytes[CDTENCRYPTIONKEY_KEYSIZE];
     for (NSUInteger i = 0; i < CDTENCRYPTIONKEY_KEYSIZE; i++) {

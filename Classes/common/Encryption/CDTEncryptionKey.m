@@ -20,14 +20,16 @@
 
 @interface CDTEncryptionKey ()
 
-@property (strong, nonatomic, readonly) NSData *data;
+@property (strong, nonatomic, readonly) NSData *privateData;
 
 @end
 
 @implementation CDTEncryptionKey
 
 #pragma mark - Synthesize properties
-- (const void *)bytes { return self.data.bytes; }
+- (NSData *)data {
+    return [self.privateData copy];
+}
 
 #pragma mark - Init object
 - (instancetype)init { return [self initWithData:nil]; }
@@ -37,7 +39,7 @@
     self = [super init];
     if (self) {
         if (data && (data.length == CDTENCRYPTIONKEY_KEYSIZE)) {
-            _data = data;
+            _privateData = [data copy];
         } else {
             NSNumber *length = (data ? @(data.length) : nil);
             CDTLogError(CDTDATASTORE_LOG_CONTEXT,
@@ -70,7 +72,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.data hash];
+    return [self.privateData hash];
 }
 
 #pragma mark - Public methods
@@ -80,7 +82,7 @@
         return NO;
     }
 
-    return [self.data isEqualToData:encryptionKey.data];
+    return [self.privateData isEqualToData:encryptionKey.privateData];
 }
 
 #pragma mark - Public class methods
