@@ -810,6 +810,17 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                 expect(parts.placeholderValues).to.equal(@[ @"mike", @"fred" ]);
             });
         });
+        
+        describe(@"when using the $mod operator", ^{
+            it(@"uses correct SQL operators", ^{
+                CDTQSqlParts *parts = [CDTQQuerySqlTranslator
+                                       wherePartsForAndClause:@[@{@"age": @{@"$mod": @[@2, @1]}}]
+                                       usingIndex:@"named"];
+                expect(parts.sqlWithPlaceholders).to.equal(@"\"age\" % ? = ?");
+                expect(parts.placeholderValues).to.equal(@[ @2, @1 ]);
+            });
+        });
+        
     });
 
     describe(@"when generating WHERE with $not", ^{
@@ -927,6 +938,25 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                 expect(parts.placeholderValues).to.equal(@[ @"mike", @"fred" ]);
             });
         });
+        
+        describe(@"when using $mod operator", ^{
+            it(@"uses correct SQL operators", ^{
+                CDTQSqlParts *parts = [CDTQQuerySqlTranslator
+                                         wherePartsForAndClause:@[@{@"age":@{@"$not":@{@"$mod":@[@2,
+                                                                                                 @1]
+                                                                                       }
+                                                                            }
+                                                                   }
+                                                                 ]
+                                                    usingIndex:@"named"];
+                NSString *expected = @"_id NOT IN (SELECT _id "
+                                     @"FROM _t_cloudant_sync_query_index_named "
+                                     @"WHERE \"age\" % ? = ?)";
+                expect(parts.sqlWithPlaceholders).to.equal(expected);
+                expect(parts.placeholderValues).to.equal(@[ @2, @1 ]);
+            });
+        });
+        
     });
 
     describe(@"when multiple conditions on one field", ^{
@@ -1145,6 +1175,76 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$in" : @"mike" } } ];
             expect(actual).to.beNil;
+        });
+        
+        it(@"correctly normalizes query with MOD operator", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{ @"$mod": @[@2, @1] } }];
+            expect(actual).to.equal(@{ @"$and": @[ @{ @"age": @{ @"$mod": @[ @2, @1 ] } } ] });
+        });
+        
+        it(@"correctly normalizes query with MOD operator with non-whole number values", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{ @"$mod": @[@2.6, @1.7] } }];
+            expect(actual).to.equal(@{ @"$and": @[ @{ @"age": @{ @"$mod": @[ @2, @1 ] } } ] });
+        });
+        
+        it(@"correctly normalizes query with MOD operator with negative values", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{ @"$mod": @[@-2.6, @-1.7] }}];
+            expect(actual).to.equal(@{ @"$and": @[ @{ @"age": @{ @"$mod": @[ @-2, @-1 ] } } ] });
+        });
+        
+        it(@"returns nil when MOD argument is not an array", ^{
+            NSDictionary *actual =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"age" : @{ @"$mod": @"blah" } }];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD argument array has too many elements", ^{
+            NSDictionary *actual =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age":@{@"$mod":@[@2, @1, @0]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD argument array has too few elements", ^{
+            NSDictionary *actual =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[ @2 ]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD argument array has invalid value", ^{
+            NSDictionary *actual =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age":@{@"$mod":@[@"blah", @2]}}];
+            expect(actual).to.beNil();
+            
+            actual =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age":@{@"$mod":@[@2, @"blah"]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD divisor argument is 0", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[ @0, @1 ]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD divisor argument is 0.0", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[ @0.0, @1 ]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD divisor argument is between 0 and 1", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[ @0.2, @1 ]}}];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when MOD divisor argument is between 0 and -1", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[ @-0.2, @1 ]}}];
+            expect(actual).to.beNil();
         });
         
     });
