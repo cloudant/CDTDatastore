@@ -83,14 +83,8 @@
 
 - (void)testInitWithNotValidPathSucceeds
 {
-    XCTAssertNotNil([[CDTBlobData alloc] initWithPath:@"This is not a path"],
+    XCTAssertNotNil([[CDTBlobData alloc] initWithPath:@"///This is not a path"],
                     @"Any string is valid as long as it is not empty");
-}
-
-- (void)testBlobIsNotOpenAfterCreation
-{
-    XCTAssertFalse([self.blobForNotEmptyFile isBlobOpenForWriting],
-                   @"After init, blob is not open");
 }
 
 - (void)testOpenBlobToAddDataSucceedsIfFileDoesNotExist
@@ -106,6 +100,24 @@
                   @"If the file exists, we should be able to open it");
 }
 
+- (void)testOpenForWritingFailsIfPathIsNotValid
+{
+    CDTBlobData *blob = [[CDTBlobData alloc] initWithPath:@"///This is not a path"];
+
+    XCTAssertFalse([blob openForWriting], @"It should fail if the path is not valid");
+}
+
+- (void)testOpenForWritingCreatesEmptyFile
+{
+    [self.blobForNotPrexistingFile openForWriting];
+
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:self.pathToNonExistingFile];
+    NSData *fileData = [NSData dataWithContentsOfFile:self.pathToNonExistingFile];
+
+    XCTAssertTrue(fileExists && (fileData.length == 0),
+                  @"An empty file is created after opening the blob");
+}
+
 - (void)testOpenForWritingSucceedsIfAlreadyOpen
 {
     [self.blobForNotEmptyFile openForWriting];
@@ -115,13 +127,27 @@
         @"If the blob is already opened, open it again let the file open, thefore it succeeds");
 }
 
-- (void)testOpenBlobToAddDataClearTheContentOfTheFile
+- (void)testOpenForWritingClearTheContentOfTheFile
 {
     [self.blobForNotEmptyFile openForWriting];
 
     NSData *fileData = [NSData dataWithContentsOfFile:self.pathToNotEmptyFile];
 
-    XCTAssertTrue([fileData length] == 0, @"The file should be empty after opening the blob");
+    XCTAssertEqual(fileData.length, 0, @"The file should be empty after opening the blob");
+}
+
+- (void)testOpenForWritingDoesNotClearTheContentOfTheFileIfItIsAlreadyOpen
+{
+    [self.blobForNotPrexistingFile openForWriting];
+    [self.blobForNotPrexistingFile appendData:self.data];
+
+    [self.blobForNotPrexistingFile openForWriting];
+
+    [self.blobForNotPrexistingFile close];
+
+    NSData *fileData = [NSData dataWithContentsOfFile:self.pathToNotEmptyFile];
+
+    XCTAssertTrue(fileData.length > 0, @"If it is already open, do not clear it");
 }
 
 - (void)testOpenBlobToAddDataSucceedsAfterClosingBlob
@@ -131,6 +157,26 @@
 
     XCTAssertTrue([self.blobForNotEmptyFile openForWriting],
                   @"As long as the file still exists, we should be able to open it again");
+}
+
+- (void)testBlobIsNotOpenAfterCreatingIt
+{
+    XCTAssertFalse([self.blobForNotEmptyFile isBlobOpenForWriting], @"After init, blob is not open");
+}
+
+- (void)testBlobIsOpenAfterOpeningIt
+{
+    [self.blobForNotEmptyFile openForWriting];
+
+    XCTAssertTrue([self.blobForNotEmptyFile isBlobOpenForWriting], @"Obviously, it is open");
+}
+
+- (void)testBlobIsNotOpenAfterClosingIt
+{
+    [self.blobForNotEmptyFile openForWriting];
+    [self.blobForNotEmptyFile close];
+
+    XCTAssertFalse([self.blobForNotEmptyFile isBlobOpenForWriting], @"Obviously, it is closed");
 }
 
 - (void)testAppendDataFailsIfBlobIsNotOpen
@@ -145,6 +191,31 @@
 
     XCTAssertFalse([self.blobForNotEmptyFile appendData:nil],
                    @"It should fail if there is no data to add");
+}
+
+- (void)testAppendDataIncreasesTheSizeOfTheFile
+{
+    [self.blobForNotEmptyFile openForWriting];
+
+    NSData *fileData = [NSData dataWithContentsOfFile:self.pathToNotEmptyFile];
+    NSUInteger previousFileDataLength = fileData.length;
+
+    [self.blobForNotEmptyFile appendData:self.data];
+
+    fileData = [NSData dataWithContentsOfFile:self.pathToNotEmptyFile];
+
+    XCTAssertTrue(fileData.length > previousFileDataLength,
+                  @"'addData:' add the new data to the file straight away");
+}
+
+- (void)testCloseBlobWithoutAddingDataGeneratesAnEmptyFile
+{
+    [self.blobForNotEmptyFile openForWriting];
+    [self.blobForNotEmptyFile close];
+
+    NSData *fileData = [NSData dataWithContentsOfFile:self.pathToNonExistingFile];
+
+    XCTAssertEqual(fileData.length, 0, @"The file should remain empty if no data is added");
 }
 
 - (void)testDataWithErrorFailsIfBlobIsOpen
@@ -176,7 +247,7 @@
 
     UInt64 length = 0;
     XCTAssertNil([self.blobForNotEmptyFile inputStreamWithOutputLength:&length],
-                 @"Close the blob in order to create an input stream bound to the same filea");
+                 @"Close the blob in order to create an input stream bound to the same file");
 }
 
 - (void)testInputStreamWithOutputLengthFailsIfFileDoesNotExist
@@ -229,6 +300,15 @@
                       error.code == CDTBlobDataErrorNoDataProvided,
                   @"In this situation the expected error is: (%@, %li)", CDTBlobDataErrorDomain,
                   (long)CDTBlobDataErrorNoDataProvided);
+}
+
+- (void)testWriteEntireBlobWithDataSucceedsIfDataIsEmpty
+{
+    NSError *error = nil;
+    BOOL success = [self.blobForNotPrexistingFile writeEntireBlobWithData:[NSData data] error:&error];
+
+    XCTAssertTrue(success, @"A new file will be created");
+    XCTAssertNil(error, @"No error to report");
 }
 
 - (void)testWriteEntireBlobWithDataOverwritesThePreviousContent

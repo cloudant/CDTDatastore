@@ -176,7 +176,7 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
 
     self.outFileHandle = [NSFileHandle fileHandleForWritingAtPath:self.path];
 
-    return [self isBlobOpenForWriting];
+    return YES;
 }
 
 - (BOOL)appendData:(NSData *)data
