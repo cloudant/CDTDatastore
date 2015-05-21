@@ -41,3 +41,5 @@ NSString *const IN = @"$in";
 NSString *const NIN = @"$nin";
 
 NSString *const SEARCH = @"$search";
+
+NSString *const MOD = @"$mod";
