@@ -18,6 +18,8 @@
 
 #import "CDTEncryptionKeychainUtils+AES.h"
 
+#import "CDTHelperMisc.h"
+
 #import "TDBase64.h"
 
 @interface CDTEncryptionKeychainUtilsAESTests : XCTestCase
@@ -38,8 +40,8 @@
     NSString *keyStr = @"3271b0b2ae09cf10128893abba0871b64ea933253378d0c65bcbe05befe636c3";
     NSString *ivStr = @"10327cc29f13539f8ce5378318f46137";
 
-    self.key = [CDTEncryptionKeychainUtilsAESTests dataFromHexadecimalString:keyStr];
-    self.iv = [CDTEncryptionKeychainUtilsAESTests dataFromHexadecimalString:ivStr];
+    self.key = dataFromHexadecimalString(keyStr);
+    self.iv = dataFromHexadecimalString(ivStr);
 }
 
 - (void)tearDown
@@ -142,41 +144,6 @@
                                            iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
-}
-
-
-#pragma mark - Private class methods
-+ (NSData *)dataFromHexadecimalString:(NSString *)hexString
-{
-    /*
-     The string represent the hexadecimal values that should be used, so the string "4962"
-     represents byte values 0x49  0x62.
-     Note that the strings are twice the size since every two characters in the string
-     corresponds to a single byte.
-     */
-    if (([hexString length] % 2) != 0) {
-        return nil;
-    }
-    
-    NSUInteger size = ([hexString length] / (NSUInteger)2);
-    unsigned char buff[size];
-    
-    @autoreleasepool
-    {
-        for (NSUInteger i = 0; i < size; i++) {
-            NSString *hexChrStr = [hexString substringWithRange:NSMakeRange(i * 2, 2)];
-            
-            NSScanner *scanner = [[NSScanner alloc] initWithString:hexChrStr];
-            uint currInt;
-            [scanner scanHexInt:&currInt];
-            
-            buff[i] = (char)currInt;
-        }
-    }
-    
-    NSData *data = [NSData dataWithBytes:buff length:size];
-    
-    return data;
 }
 
 @end
