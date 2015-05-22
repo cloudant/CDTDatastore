@@ -116,6 +116,8 @@
 		CDBC573B1AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDBC57391AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m */; };
 		CDD025191B0F5C7C007D185D /* CDTBlobHandleFactoryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD025181B0F5C7C007D185D /* CDTBlobHandleFactoryTests.m */; };
 		CDD0251A1B0F5C7C007D185D /* CDTBlobHandleFactoryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD025181B0F5C7C007D185D /* CDTBlobHandleFactoryTests.m */; };
+		CDD0251C1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD0251B1B0F631C007D185D /* TDBlobStoreEncryptionTests.m */; };
+		CDD0251D1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD0251B1B0F631C007D185D /* TDBlobStoreEncryptionTests.m */; };
 		EC0C833C1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */; };
 		EC0C833D1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */; };
 		EC0C833E1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */; };
@@ -245,6 +247,7 @@
 		CDBC57381AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeychainManager.h; sourceTree = "<group>"; };
 		CDBC57391AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeychainManager.m; sourceTree = "<group>"; };
 		CDD025181B0F5C7C007D185D /* CDTBlobHandleFactoryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTBlobHandleFactoryTests.m; sourceTree = "<group>"; };
+		CDD0251B1B0F631C007D185D /* TDBlobStoreEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDBlobStoreEncryptionTests.m; sourceTree = "<group>"; };
 		EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTDatastoreQueryTests.m; sourceTree = "<group>"; };
 		EC0C83201AB217290051042F /* CDTQFilterFieldsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQFilterFieldsTest.m; sourceTree = "<group>"; };
 		EC0C83211AB217290051042F /* CDTQIndexCreatorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexCreatorTests.m; sourceTree = "<group>"; };
@@ -482,6 +485,7 @@
 				CDADD5BD1AEFD643003CA9EF /* FMDatabase+SQLCipher.h */,
 				CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */,
 				CD2188D51AE5711A0036F59F /* TD_DatabaseEncryptionTests.m */,
+				CDD0251B1B0F631C007D185D /* TDBlobStoreEncryptionTests.m */,
 			);
 			path = Encryption;
 			sourceTree = "<group>";
@@ -796,6 +800,7 @@
 				CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
 				CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD2188DA1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
+				CDD0251C1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */,
 				9F0D24141892E9B800D3D04E /* TDPusherTests.m in Sources */,
 				EC578D8A1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);
@@ -871,6 +876,7 @@
 				CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
 				CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD2188DB1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
+				CDD0251D1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */,
 				9F0D24151892E9B800D3D04E /* TDPusherTests.m in Sources */,
 				EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */,
 			);

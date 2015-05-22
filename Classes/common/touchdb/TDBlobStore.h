@@ -16,6 +16,7 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
+#import "CDTEncryptionKeyProvider.h"
 #import "CDTBlobReader.h"
 #import "CDTBlobWriter.h"
 
@@ -32,7 +33,9 @@ typedef struct TDBlobKey
     NSString* _tempDir;
 }
 
-- (id)initWithPath:(NSString*)dir error:(NSError**)outError;
+- (id)initWithPath:(NSString *)dir
+    encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    error:(NSError **)outError;
 
 - (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
 
