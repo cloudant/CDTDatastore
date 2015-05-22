@@ -17,7 +17,7 @@
 #import <Foundation/Foundation.h>
 
 /**
- Define the methods to store data in an attachment without exposing its path.
+ Define methods to store data in an attachment without exposing its path.
  */
 @protocol CDTBlobWriter <NSObject>
 
@@ -25,8 +25,7 @@
  Overwrite the content of an attachment with the data provided as a parameter. If the file does
  not exist, it will create it.
  
- Notice that this method has to work properly with the other methods defined in this protocol, i.e.
- will it succeed or will it fail if the blob is open?
+ If the blob is open, this method will fail.
  
  @param data Data to store in the attachment
  @param error Output param that will point to an error (if there is any)
@@ -36,12 +35,17 @@
 - (BOOL)writeEntireBlobWithData:(NSData *)data error:(NSError **)error;
 
 /**
+ By default, a blob is closed until it is open.
+ 
  @return YES if the attachment was open before or NO in other case
  */
 - (BOOL)isBlobOpenForWriting;
 
 /**
  Prepare an attachment to write data in it.
+ 
+ If the file does not exist, it will create it now. If the file exists, it will delete the existing
+ content and move the pointer to the begining of the file.
  
  @return YES if the attachment was open (or it was already open) or NO in other case
  */
@@ -50,7 +54,7 @@
 /**
  Add data to the end of the attachment.
  
- Although this protocol does not enforce it, the attachment should be open before adding data.
+ The blob has to be open before calling this method, otherwise it will fail.
  
  @param data Data to append to the attachment
  
@@ -60,6 +64,9 @@
 
 /**
  Use this method to signal that there are no more data to add.
+ 
+ @warning Notice that, even if no data is added to the blob, the file created with
+ 'openBlobToAddData' will not be removed.
  */
 - (void)close;
 

@@ -16,6 +16,9 @@
 
 #import "CDTBlobEncryptedData.h"
 
+/**
+ This category is only for testing purposes.
+ */
 @interface CDTBlobEncryptedData (Internal)
 
 - (NSData *)generateAESIv;

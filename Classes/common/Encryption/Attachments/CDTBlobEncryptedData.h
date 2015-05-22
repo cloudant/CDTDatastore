@@ -29,6 +29,39 @@ typedef NS_ENUM(NSInteger, CDTBlobEncryptedDataError) {
     CDTBlobEncryptedDataErrorNoDataProvided
 };
 
+/**
+ Use this class to read/write an encrypted attachment.
+ 
+ An attachment has the following structure:
+ 
+ --------------------------------------------------------------------------
+ |  Version - 1-byte  |  IV - 16-bytes |          Encrypted blob          |
+ --------------------------------------------------------------------------
+ |                  header             |              body                |
+ --------------------------------------------------------------------------
+ 
+ As its counterpart 'CDTBlobData', this class conforms to protocols 'CDTBlobReader' &
+ 'CDTBlobWriter'. Notice the beaviour of the methods defined in 'CDTBlobReader' in relation to
+ 'CDTBlobWriter':
+ 
+ - 'dataWithError:'.- It will fail if the blob is open.
+ - 'inputStreamWithOutputLength:'.- As the previous method, it will fail if the blob is open.
+ 
+ Also, notice some details about the methods defined in 'CDTBlobWriter':
+ 
+ - 'dataWithError:'.- An encrypted attachment will always have a header but it might not have a
+ body. In that case, this method will return an empty 'NSData' instance and no error will be
+ returned.
+ - 'createBlobWithData:error:'.- If the data passed to this method is an empty 'NSData' instance,
+ it will create an attachment with a header but not a body.
+ - 'openBlobToAddData'.- As decribed in the documentation for this protocol, this method will create
+ a file or it will delete the existing content. This implementation will also add a header to the
+ file.
+ 
+ @see CDTBlobData
+ @see CDTBlobReader
+ @see CDTBlobWriter
+ */
 @interface CDTBlobEncryptedData : NSObject <CDTBlobReader, CDTBlobWriter>
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
