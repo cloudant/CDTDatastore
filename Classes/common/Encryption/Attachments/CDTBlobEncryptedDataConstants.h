@@ -19,13 +19,20 @@
 
 #import <CommonCrypto/CommonCryptor.h>
 
+// Version: where this value starts
 #define CDTBLOBENCRYPTEDDATA_VERSION_LOCATION 0
+
+// Version: data type (use it to get its size on disk)
 #define CDTBLOBENCRYPTEDDATA_VERSION_TYPE UInt8
+
+// Version: current value
 #define CDTBLOBENCRYPTEDDATA_VERSION_VALUE (CDTBLOBENCRYPTEDDATA_VERSION_TYPE)1
 
+// IV: where this value starts
 #define CDTBLOBENCRYPTEDDATA_IV_LOCATION \
     (CDTBLOBENCRYPTEDDATA_VERSION_LOCATION + sizeof(CDTBLOBENCRYPTEDDATA_VERSION_TYPE))
 
+// Data: where this value starts
 #define CDTBLOBENCRYPTEDDATA_ENCRYPTEDDATA_LOCATION \
     (CDTBLOBENCRYPTEDDATA_IV_LOCATION + kCCBlockSizeAES128)
 

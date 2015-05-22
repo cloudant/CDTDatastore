@@ -21,10 +21,30 @@
 #import "CDTBlobReader.h"
 #import "CDTBlobWriter.h"
 
+/**
+ Given an encryption key provider, this class creates instances that conforms to protocols:
+ CDTBlobReader & CDTBlobWriter; and are able to encrypt/decrypt an attachment depending on the key
+ returned by the provider.
+ 
+ If the key provider return nil, the instances of CDTBlobReader & CDTBlobWriter will not cipher the
+ data. In other case, the information will be ciphered before saving to disk and deciphering
+ beforing returning it.
+ 
+ @see CDTEncryptionKeyProvider
+ @see CDTBlobReader
+ @see CDTBlobWriter
+ */
 @interface CDTBlobHandleFactory : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
+/**
+ Initialise a factory
+ 
+ @param provider An encryption key provider
+ 
+ @warning The key provider is mandatory; if it is not supplied, an exception will be raised.
+ */
 - (instancetype)initWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
     NS_DESIGNATED_INITIALIZER;
 
@@ -32,6 +52,13 @@
 
 - (id<CDTBlobWriter>)writerWithPath:(NSString *)path;
 
+/**
+ Return an instance of this class or a subclass that inherits from this one.
+ 
+ @param provider An encryption key provider
+ 
+ @warning The key provider is mandatory; if it is not supplied, an exception will be raised.
+ */
 + (instancetype)factoryWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 @end
