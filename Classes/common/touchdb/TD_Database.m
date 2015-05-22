@@ -496,7 +496,9 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         // Open attachment store:
         NSString* attachmentsPath = strongSelf.attachmentStorePath;
         NSError* error;
-        _attachments = [[TDBlobStore alloc] initWithPath:attachmentsPath error:&error];
+        _attachments = [[TDBlobStore alloc] initWithPath:attachmentsPath
+                                   encryptionKeyProvider:provider
+                                                   error:&error];
         if (!_attachments) {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
                     attachmentsPath);
