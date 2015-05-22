@@ -1,8 +1,8 @@
 //
-//  CDTBlobEncryptedData+Internal.h
+//  CDTBlobHandleFactory.h
 //  CloudantSync
 //
-//  Created by Enrique de la Torre Fernandez on 21/05/2015.
+//  Created by Enrique de la Torre Fernandez on 22/05/2015.
 //  Copyright (c) 2015 IBM Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -14,10 +14,24 @@
 //  and limitations under the License.
 //
 
-#import "CDTBlobEncryptedData.h"
+#import <Foundation/Foundation.h>
 
-@interface CDTBlobEncryptedData (Internal)
+#import "CDTEncryptionKeyProvider.h"
 
-- (NSData *)generateAESIv;
+#import "CDTBlobReader.h"
+#import "CDTBlobWriter.h"
+
+@interface CDTBlobHandleFactory : NSObject
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+- (instancetype)initWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+    NS_DESIGNATED_INITIALIZER;
+
+- (id<CDTBlobReader>)readerWithPath:(NSString *)path;
+
+- (id<CDTBlobWriter>)writerWithPath:(NSString *)path;
+
++ (instancetype)factoryWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 @end

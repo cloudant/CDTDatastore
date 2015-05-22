@@ -53,6 +53,12 @@
                <FileRef
                   location = "group:CDTBlobEncryptedData+Internal.h">
                </FileRef>
+               <FileRef
+                  location = "group:CDTBlobHandleFactory.h">
+               </FileRef>
+               <FileRef
+                  location = "group:CDTBlobHandleFactory.m">
+               </FileRef>
             </Group>
             <Group
                location = "group:Keychain"
