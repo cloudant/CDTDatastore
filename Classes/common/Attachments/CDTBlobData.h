@@ -27,25 +27,13 @@ typedef NS_ENUM(NSInteger, CDTBlobDataError) {
 };
 
 /**
- Use this class to read from/write to an attachment. The data read from an attachment is returned
- as it is, so make sure that the attachment is not encrypted. In the same way, the data provided is
- written to the attachment without further processing.
+ Use this class to read/write an attachment. The data read from an attachment is returned as it is,
+ so make sure that the attachment is not encrypted. In the same way, the data provided is written to
+ disk without further processing.
  
- To accomplish this purpose, this class conforms to 2 related protocols: CDTBlobReader &
- CDTBlobWriter. About CDTBlobWriter:
- 
- - 'openForWriting'.- Call this method before calling 'CDTBlobWriter:appendData:'. The file informed
- during the initialisation is created at this point if it does not exists. If it exists, its content
- is removed.
- - 'isBlobOpenForWriting'.- It will return YES after calling 'CDTBlobWriter:openForWriting' and NO after
- calling 'CDTBlobWriter:close'. By default, a newly initialised blob is closed.
- - 'close'.- Call it after adding all data to the attachment. Notice that this method will not
- delete the file created with 'CDTBlobWriter: openForWriting' if no data is added.
- - 'appendData:'.- It will fail if 'CDTBlobWriter: isBlobOpenForWriting' is false.
- - 'writeEntireBlobWithData:error:'.- This method overwrites the content of the file supplied during the
- initialisation or creates it if it does not exist. However, it will fail if the blob is open.
- 
- And CDTBlobReader:
+ To accomplish this purpose, this class conforms to 2 related protocols: 'CDTBlobReader' &
+ 'CDTBlobWriter'. Notice the beaviour of the methods defined in 'CDTBlobReader' in relation to
+ 'CDTBlobWriter':
  
  - 'dataWithError:'.- It will fail if the blob is open.
  - 'inputStreamWithOutputLength:'.- As the previous method, it will fail if the blob is open.
