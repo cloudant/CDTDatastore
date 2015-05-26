@@ -1,8 +1,6 @@
-# Encrypt databases
+# Encrypt datastores
 
-This is an experimental feature, use with caution.
-
-CDTDatastore is able to create encrypted databases. To do so, first edit your
+CDTDatastore is able to create encrypted datastores. To do so, first edit your
 `Podfile` and replace:
 
 ```
@@ -28,17 +26,24 @@ main purpose of this class is to ensure that the key has the right size
 (256 bits).
 
 Alternatively, you can use the class
-[CDTEncryptionKeychainProvider][CDTEncryptionKeychainProvider]. It already
-implements this protocol which handles generating a strong key from a
-user-provided password and stores it safely in the keychain. However, if you
-decide to code your own class (and use this one as a reference), keep in mind
-that if the method returns nil, the database won't be encrypted regardless of
-the subspec defined in your `Podfile`.
+[CDTEncryptionKeySimpleProvider][CDTEncryptionKeySimpleProvider]. This class
+implements the protocol `CDTEncryptionKeyProvider` and  it is initialised with a
+raw key of the size mentioned before. Its behaviour is quite simple: whenever
+the method `CDTEncryptionKeyProvider:encryptionKey` is called, it returns the
+key. However, in this case you are responsible for creating a strong key and
+storing it safely. If you do not want to worry about this, you can use
+[CDTEncryptionKeychainProvider][CDTEncryptionKeychainProvider]. This class
+handles generating a strong key from a user-provided password and stores it
+safely in the keychain.
+
+It is up to you to code your own class but keep in mind that if the
+`CDTEncryptionKeyProvider:encryptionKey` returns nil, the datastore won't be
+encrypted regardless of the subspec defined in your `Podfile`.
 
 To end, call `CDTDatastoreManager:datastoreNamed:withEncryptionKeyProvider:error:`
-to create `CDTDatastores` with encrypted databases (datastores and indexes are
-encrypted but not attachments and extensions)
+to create encrypted datastores.
 
 [CDTEncryptionKey]: ../Classes/common/Encryption/CDTEncryptionKey.h
 [CDTEncryptionKeyProvider]: ../Classes/common/Encryption/CDTEncryptionKeyProvider.h
 [CDTEncryptionKeychainProvider]: ../Classes/common/Encryption/Keychain/CDTEncryptionKeychainProvider.h
+[CDTEncryptionKeySimpleProvider]: ../Classes/common/Encryption/CDTEncryptionKeySimpleProvider.h
