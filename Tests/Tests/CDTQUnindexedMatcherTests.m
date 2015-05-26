@@ -349,6 +349,129 @@ describe(@"matches", ^{
                 expect([matcher matches:rev]).to.beFalsy();
             });
         });
+        
+        context(@"mod", ^{
+            it(@"matches when using int divisor", ^{
+                NSDictionary *selector =
+                    [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@3, @1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+            });
+            
+            it(@"matches when using a negative divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@-3, @1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+            });
+            
+            it(@"matches by rounding down a double divisor", ^{
+                NSDictionary *selector =
+                    [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@(3.6),
+                                                                                         @(1.0)]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+                
+                selector = nil;
+                matcher = nil;
+                selector =
+                    [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@(3.2),
+                                                                                         @(1.0)]}}];
+                matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+            });
+            
+            it(@"correctly does not match when using an int divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@3, @2]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"correctly does not match when using a negative divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@-3, @2]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"correctly does not match when using a negative remainder", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@-3, @-1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"correctly does not match when using a double divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@(3.6),
+                                                                                     @(2.0)]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+                
+                selector = nil;
+                matcher = nil;
+                selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"age": @{@"$mod": @[@(3.2),
+                                                                                     @(2.0)]}}];
+                matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+        });
+        
+        context(@"mod on negative field", ^{
+            
+            __block CDTDocumentRevision *negRev;
+            
+            beforeAll(^{
+                NSDictionary *body = @{
+                                       @"name" : @"phil",
+                                       @"score" : @-15,
+                                       @"pets" : @[ @"white_cat", @"black_cat" ],
+                                       @"address" : @{@"number" : @"1", @"road" : @"infinite loop"}
+                                       };
+                negRev = [[CDTDocumentRevision alloc] initWithDocId:@"dsfsdfdfs"
+                                                         revisionId:@"qweqeqwewqe"
+                                                               body:body
+                                                        attachments:nil];
+            });
+            
+            it(@"matches when using positive int divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@2, @-1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:negRev]).to.beTruthy();
+            });
+            
+            it(@"matches when using negative int divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@-2, @-1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:negRev]).to.beTruthy();
+            });
+            
+            it(@"correctly does not match when using a positive divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@3, @1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:negRev]).to.beFalsy();
+            });
+            
+            it(@"correctly does not match when using a positive remainder", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@-2, @1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:negRev]).to.beFalsy();
+            });
+            
+            it(@"correctly does not match when using a negative divisor", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@-3, @1]}}];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:negRev]).to.beFalsy();
+            });
+            
+        });
     });
 
     context(@"compound", ^{
