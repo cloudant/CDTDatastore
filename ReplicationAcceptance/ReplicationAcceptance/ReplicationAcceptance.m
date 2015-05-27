@@ -70,7 +70,8 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create local and remote databases, start the replicator
 
     NSError *error;
-    self.datastore = [self.factory datastoreNamed:@"test" error:&error];
+    self.datastore =
+        [self.factory datastoreNamed:@"test" withEncryptionKeyProvider:self.provider error:&error];
     XCTAssertNotNil(self.datastore, @"datastore is nil");
 
     self.primaryRemoteDatabaseName = [NSString stringWithFormat:@"%@-test-database-%@",
@@ -1220,7 +1221,9 @@ static NSUInteger largeRevTreeSize = 1500;
                                                                   target:self.datastore];
     CDTReplicator *firstReplicator =  [self.replicatorFactory oneWay:pull error:nil];
     
-    CDTDatastore *secondDatastore = [self.factory datastoreNamed:@"test2" error:nil];
+    CDTDatastore *secondDatastore = [self.factory datastoreNamed:@"test2"
+                                       withEncryptionKeyProvider:self.provider
+                                                           error:nil];
     CDTPullReplication *secondPull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:secondDatastore];
     CDTReplicator *secondReplicator =  [self.replicatorFactory oneWay:secondPull error:nil];
