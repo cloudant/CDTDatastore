@@ -32,7 +32,8 @@
     // Create local and remote databases, start the replicator
 
     NSError *error;
-    self.datastore = [self.factory datastoreNamed:@"test" error:&error];
+    self.datastore =
+        [self.factory datastoreNamed:@"test" withEncryptionKeyProvider:self.provider error:&error];
     XCTAssertNotNil(self.datastore, @"datastore is nil");
 
     self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];

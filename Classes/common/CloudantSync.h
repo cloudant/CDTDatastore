@@ -20,6 +20,7 @@
 // only if ENCRYPT_DATABASE exists, i.e. unless you want this functionality, the methods and classes
 // will not be available and Xcode will not autocomplete the code with them.
 #ifdef ENCRYPT_DATABASE
+#import "CDTEncryptionKeyNilProvider.h"
 #import "CDTEncryptionKeychainProvider.h"
 #import "CDTEncryptionKeySimpleProvider.h"
 #import "CDTDatastoreManager+EncryptionKey.h"
