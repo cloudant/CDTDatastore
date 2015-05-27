@@ -114,7 +114,41 @@ task :replicationacceptanceios do
       exit(-1)
     end
     $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
-    puts "\033[0;31m! iOS unit tests failed" unless $osx_success
+    puts "\033[0;31m! iOS unit tests failed" unless $ios_success
+    if $ios_success
+        puts "** All tests executed successfully"
+    else
+        exit(-1)
+    end
+end
+
+desc "Run the replication acceptance tests for OS X with encrypted datastores"
+task :encryptionreplicationacceptanceosx do
+    # build using xcpretty as otherwise it's very verbose when running tests
+    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests_OSX' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
+    unless $osx_success
+      puts "** Build failed"
+      exit(-1)
+    end
+    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests_OSX' -destination 'platform=OS X' test")
+    puts "\033[0;31m! OS X unit tests failed" unless $osx_success
+    if $osx_success
+        puts "** All tests executed successfully"
+    else
+        exit(-1)
+    end
+end
+
+desc "Run the replication acceptance tests for iOS with encrypted datastores"
+task :encryptionreplicationacceptanceios do
+    # build using xcpretty as otherwise it's very verbose when running tests
+    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
+    unless $ios_success
+      puts "** Build failed"
+      exit(-1)
+    end
+    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
+    puts "\033[0;31m! iOS unit tests failed" unless $ios_success
     if $ios_success
         puts "** All tests executed successfully"
     else
