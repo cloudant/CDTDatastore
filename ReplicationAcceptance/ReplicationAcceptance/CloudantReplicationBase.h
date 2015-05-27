@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 
 @class CDTDatastoreManager;
+@protocol CDTEncryptionKeyProvider;
 
 @interface CloudantReplicationBase : XCTestCase
 
@@ -16,6 +17,8 @@
 
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
+
+@property (nonatomic, strong) id<CDTEncryptionKeyProvider> provider;
 
 @property (nonatomic, strong) NSURL *remoteRootURL;
 @property (nonatomic, strong) NSString *remoteDbPrefix;

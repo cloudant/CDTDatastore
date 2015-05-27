@@ -8,8 +8,8 @@
 
 #import "CloudantReplicationBase.h"
 
-#import "CDTDatastoreManager.h"
-#import "CDTDatastore.h"
+#import "CloudantSync.h"
+
 #import "ReplicationSettings.h"
 
 #import <UNIRest.h>
@@ -30,11 +30,27 @@
     XCTAssertNotNil(self.factory, @"Factory is nil");
 
     self.remoteRootURL = [NSURL URLWithString:[[ReplicationSettings alloc] init].serverURI];
+    
+#ifdef USE_ENCRYPTION
+    self.remoteDbPrefix = @"replication-acceptance-with-encryption";
+    
+    char buffer[CDTENCRYPTIONKEY_KEYSIZE];
+    memset(buffer, '*', sizeof(buffer));
+    NSData *key = [NSData dataWithBytes:buffer length:sizeof(buffer)];
+    
+    self.provider = [CDTEncryptionKeySimpleProvider providerWithKey:key];
+#else
     self.remoteDbPrefix = @"replication-acceptance";
+    
+    self.provider = [CDTEncryptionKeyNilProvider provider];
+#endif
+    
 }
 
 - (void)tearDown
 {
+    self.provider = nil;
+    
     self.factory = nil;
 
     NSError *error;
@@ -57,8 +73,13 @@
 
 - (NSString*)createTemporaryDirectoryAndReturnPath
 {
+#ifdef USE_ENCRYPTION
+    NSString *tempDirectoryTemplate = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"cloudant_sync_ios_tests_with_encryption.XXXXXX"];
+#else
     NSString *tempDirectoryTemplate =
-    [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
+        [NSTemporaryDirectory() stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
+#endif
     const char *tempDirectoryTemplateCString = [tempDirectoryTemplate fileSystemRepresentation];
     char *tempDirectoryNameCString =  (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
     strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
