@@ -1,7 +1,7 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
 def import_pods
-    pod "CDTDatastore", :path => "../"
+    pod "CDTDatastore/SQLCipher", :path => "../"
     pod "Unirest", :git => 'https://github.com/mikerhodes/unirest-obj-c.git'
     pod 'TRVSMonitor'
     pod 'NSData+Base64'
