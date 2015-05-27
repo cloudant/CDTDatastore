@@ -94,23 +94,29 @@ if params["platform"] == "OSX"
 	FileUtils.mv("build/reports/junit.xml","build/reports/osx_unit.xml")
 
 	system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests OSX' -destination 'platform=OS X' #{replication_options.join(" ")} test | xcpretty -r junit ; exit ${PIPESTATUS[0]}")
-	FileUtils.mv("build/reports/junit.xml","build/reports/osx_dbEncryption.xml")
+	FileUtils.mv("build/reports/junit.xml","build/reports/osx_encryption.xml")
 
 	if(params["ra"] == "true")
 		system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests_OSX' -destination 'platform=OS X' #{replication_options.join(" ")} test | xcpretty -r junit; exit ${PIPESTATUS[0]}")
 		FileUtils.mv("build/reports/junit.xml","build/reports/osx_ra.xml")
+
+		system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests_OSX' -destination 'platform=OS X' #{replication_options.join(" ")} test | xcpretty -r junit; exit ${PIPESTATUS[0]}")
+		FileUtils.mv("build/reports/junit.xml","build/reports/osx_encryption_ra.xml")
 	end
 elsif params["platform"] == "iOS"
 
 	system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' -destination 'platform=iOS Simulator,OS=#{params["platform-version"]},name=#{params["hardware"]}' #{replication_options.join(" ")} test | xcpretty -r junit ; exit ${PIPESTATUS[0]}")
 	FileUtils.mv("build/reports/junit.xml","build/reports/ios_unit.xml")
 
-    system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests' -destination 'platform=iOS Simulator,OS=#{params["platform-version"]},name=#{params["hardware"]}' #{replication_options.join(" ")} test | xcpretty -r junit ; exit ${PIPESTATUS[0]}")
-    FileUtils.mv("build/reports/junit.xml","build/reports/ios_dbEncryption.xml")
+  system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests' -destination 'platform=iOS Simulator,OS=#{params["platform-version"]},name=#{params["hardware"]}' #{replication_options.join(" ")} test | xcpretty -r junit ; exit ${PIPESTATUS[0]}")
+  FileUtils.mv("build/reports/junit.xml","build/reports/ios_encryption.xml")
 
 	if(params["ra"] == "true")	
 		system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=iOS Simulator,OS=#{params["platform-version"]},name=#{params["hardware"]}' #{replication_options.join(" ")}  test | xcpretty -r junit; exit ${PIPESTATUS[0]}")
 		FileUtils.mv("build/reports/junit.xml","build/reports/ios_ra.xml")
+
+		system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests' -destination 'platform=iOS Simulator,OS=#{params["platform-version"]},name=#{params["hardware"]}' #{replication_options.join(" ")}  test | xcpretty -r junit; exit ${PIPESTATUS[0]}")
+		FileUtils.mv("build/reports/junit.xml","build/reports/ios_encryption_ra.xml")
 	end
 end
 
