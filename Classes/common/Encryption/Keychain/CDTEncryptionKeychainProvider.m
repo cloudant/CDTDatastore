@@ -55,10 +55,14 @@
 - (NSString *)encryptionKey
 {
     NSData *data = nil;
-    if ([self.manager keyExists]) {
-        data = [self.manager loadKeyUsingPassword:self.password];
-    } else {
-        data = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
+
+    @synchronized(self)
+    {
+        if ([self.manager keyExists]) {
+            data = [self.manager loadKeyUsingPassword:self.password];
+        } else {
+            data = [self.manager generateAndSaveKeyProtectedByPassword:self.password];
+        }
     }
     
     NSString *hexStr = (data ? TDHexFromBytes(data.bytes, data.length) : nil);
