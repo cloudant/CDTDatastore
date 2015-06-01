@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import <FMDB/FMDB.h>
+
 #ifdef GNUSTEP
 #import <openssl/md5.h>
 #import <openssl/sha.h>
@@ -20,6 +22,12 @@
 #import "CDTBlobReader.h"
 #import "CDTBlobWriter.h"
 
+extern NSString *const CDTBlobStoreErrorDomain;
+
+typedef NS_ENUM(NSInteger, CDTBlobStoreError) {
+    CDTBlobStoreErrorNoFilenameGenerated
+};
+
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
 {
@@ -29,24 +37,31 @@ typedef struct TDBlobKey
 /** A persistent content-addressable store for arbitrary-size data blobs.
     Each blob is stored as a file named by its SHA-1 digest. */
 @interface TDBlobStore : NSObject {
-    NSString* _path;
     NSString* _tempDir;
 }
 
+/**
+ Initialise a blob store.
+ 
+ @param dir Directory where attachments will be stored (it will be created if it does not exist)
+ @param provider It will return the key to cipher the attachments (if it return nil,
+ the attachments will not be encrypted)
+ @param outError It will point to an error if there is any.
+ */
 - (id)initWithPath:(NSString *)dir
     encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
                     error:(NSError **)outError;
 
-- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key withDatabase:(FMDatabase *)db;
 
-- (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;
-- (BOOL)storeBlob:(NSData*)blob
-      creatingKey:(TDBlobKey*)outKey
-            error:(NSError* __autoreleasing*)outError;
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+     withDatabase:(FMDatabase *)db
+            error:(NSError *__autoreleasing *)outError;
 
-@property (readonly) NSUInteger count;
+- (NSUInteger)countWithDatabase:(FMDatabase *)db;
 
-- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
+- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db;
 
 @end
 
@@ -81,7 +96,7 @@ typedef struct
 - (void)cancel;
 
 /** Installs a finished blob into the store. */
-- (BOOL)install;
+- (BOOL)installWithDatabase:(FMDatabase *)db;
 
 /** The number of bytes in the blob. */
 @property (readonly) UInt64 length;

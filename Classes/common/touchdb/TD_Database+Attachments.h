@@ -23,7 +23,9 @@ typedef enum { kTDAttachmentEncodingNone, kTDAttachmentEncodingGZIP } TDAttachme
 - (TDBlobStoreWriter *)attachmentWriter;
 
 /** Creates TD_Attachment objects from the revision's '_attachments' property. */
-- (NSDictionary *)attachmentsFromRevision:(TD_Revision *)rev status:(TDStatus *)outStatus;
+- (NSDictionary *)attachmentsFromRevision:(TD_Revision *)rev
+                               inDatabase:(FMDatabase *)db
+                                   status:(TDStatus *)outStatus;
 
 /** Given a newly-added revision, adds the necessary attachment rows to the database and stores
  * inline attachments into the blob store. */

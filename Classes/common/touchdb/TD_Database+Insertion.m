@@ -401,7 +401,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     //// PART II: In which we prepare for insertion...
 
     // Get the attachments:
-    NSDictionary* attachments = [self attachmentsFromRevision:rev status:&status];
+    NSDictionary* attachments = [self attachmentsFromRevision:rev inDatabase:db status:&status];
     if (!attachments) {
         *outStatus = status;
         return nil;
@@ -641,7 +641,7 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                         // the latest local revision (this is to copy attachments from):
                         TDStatus status;
                         NSDictionary* attachments =
-                            [strongSelf attachmentsFromRevision:rev status:&status];
+                            [strongSelf attachmentsFromRevision:rev inDatabase:db status:&status];
                         if (attachments)
                             status = [strongSelf processAttachments:attachments
                                                         forRevision:rev

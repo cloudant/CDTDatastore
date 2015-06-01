@@ -17,6 +17,8 @@
 
 #import "TDBlobStore.h"
 
+#import "TD_Database.h"
+
 #import "CDTHelperFixedKeyProvider.h"
 #import "CDTEncryptionKeyNilProvider.h"
 
@@ -24,10 +26,12 @@
 
 @interface TDBlobStoreEncryptionTests : XCTestCase
 
+@property (strong, nonatomic) TD_Database *db;
 @property (strong, nonatomic) NSString *blobStorePath;
 @property (strong, nonatomic) TDBlobStore *blobStore;
 @property (strong, nonatomic) TDBlobStoreWriter *blobStoreWriter;
 
+@property (strong, nonatomic) TD_Database *otherDB;
 @property (strong, nonatomic) NSString *encryptedBlobStorePath;
 @property (strong, nonatomic) TDBlobStore *encryptedBlobStore;
 @property (strong, nonatomic) TDBlobStoreWriter *encryptedBlobStoreWriter;
@@ -45,19 +49,27 @@
 
     // Put setup code here. This method is called before the invocation of each test method in the
     // class.
+    id<CDTEncryptionKeyProvider> provider = [[CDTEncryptionKeyNilProvider alloc] init];
+
+    NSString *dbPath =
+        [NSTemporaryDirectory() stringByAppendingPathComponent:@"blobStoreEncryptionTests_db"];
+    self.db = [TD_Database createEmptyDBAtPath:dbPath withEncryptionKeyProvider:provider];
+
     self.blobStorePath = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"blobStoreEncryptionTests_plainData"];
-
-    id<CDTEncryptionKeyProvider> provider = [[CDTEncryptionKeyNilProvider alloc] init];
     self.blobStore = [[TDBlobStore alloc] initWithPath:self.blobStorePath
                                  encryptionKeyProvider:provider
                                                  error:nil];
     self.blobStoreWriter = [[TDBlobStoreWriter alloc] initWithStore:self.blobStore];
 
+    dbPath = [NSTemporaryDirectory()
+              stringByAppendingPathComponent:@"blobStoreEncryptionTests_encryptedDB"];
+    self.otherDB = [TD_Database createEmptyDBAtPath:dbPath withEncryptionKeyProvider:provider];
+    
+    provider = [CDTHelperFixedKeyProvider provider];
+
     self.encryptedBlobStorePath = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"blobStoreEncryptionTests_encryptedData"];
-
-    provider = [CDTHelperFixedKeyProvider provider];
     self.encryptedBlobStore = [[TDBlobStore alloc] initWithPath:self.encryptedBlobStorePath
                                           encryptionKeyProvider:provider
                                                           error:nil];
@@ -82,22 +94,44 @@
 
     [defaultManager removeItemAtPath:self.encryptedBlobStorePath error:nil];
     self.encryptedBlobStorePath = nil;
+    
+    [self.otherDB deleteDatabase:nil];
+    self.otherDB = nil;
 
     self.blobStoreWriter = nil;
     self.blobStore = nil;
 
     [defaultManager removeItemAtPath:self.blobStorePath error:nil];
     self.blobStorePath = nil;
+    
+    [self.db deleteDatabase:nil];
+    self.db = nil;
 
     [super tearDown];
 }
 
+- (void)testStoreBlobSucceedsIfKeyIsAlreadySaved
+{
+#warning TODO
+}
+
+- (void)testStoreBlobDoNotUpdateDBIfDataIsNotSavedToDisk
+{
+#warning TODO
+}
+
 - (void)testStoreBlobReturnsExpectedKey
 {
-    TDBlobKey encryptedBlobKey;
-    [self.encryptedBlobStore storeBlob:self.plainData creatingKey:&encryptedBlobKey];
-    NSString *hexEncryptedBlobKey =
-        TDHexFromBytes(encryptedBlobKey.bytes, sizeof(encryptedBlobKey.bytes));
+    __block NSString *hexEncryptedBlobKey = nil;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      TDBlobKey encryptedBlobKey;
+      [_encryptedBlobStore storeBlob:_plainData
+                         creatingKey:&encryptedBlobKey
+                        withDatabase:db
+                               error:nil];
+      hexEncryptedBlobKey = TDHexFromBytes(encryptedBlobKey.bytes, sizeof(encryptedBlobKey.bytes));
+    }];
 
     XCTAssertEqualObjects(hexEncryptedBlobKey, self.hexExpectedSHA1Digest,
                           @"Both should be the same");
@@ -105,15 +139,20 @@
 
 - (void)testStoreBlobSavesEncryptedData
 {
-    TDBlobKey blobKey;
-    [self.blobStore storeBlob:self.plainData creatingKey:&blobKey];
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      TDBlobKey blobKey;
+      [_blobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+    }];
 
     NSFileManager *defaultManager = [NSFileManager defaultManager];
     NSArray *fileArray = [defaultManager contentsOfDirectoryAtPath:self.blobStorePath error:nil];
     NSData *fileData = [NSData
         dataWithContentsOfFile:[self.blobStorePath stringByAppendingPathComponent:fileArray[0]]];
 
-    [self.encryptedBlobStore storeBlob:self.plainData creatingKey:&blobKey];
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      TDBlobKey blobKey;
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+    }];
 
     fileArray = [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
     NSData *fileEncryptedData =
@@ -124,15 +163,64 @@
                              @"Same plain data but the content of the files should be different");
 }
 
+- (void)testBlobForKeyFailsIfKeyDoesNotExist
+{
+#warning TODO
+}
+
+- (void)testBlobForKeySucceedsIfKeyExists
+{
+#warning TODO
+}
+
+- (void)testBlobForKeySucceedsIfKeyIsAMigratedKey
+{
+#warning TODO
+}
+
 - (void)testBlobForKeyReturnsReaderAbleToReadDataPreviouslySaved
 {
-    TDBlobKey blobKey;
-    [self.encryptedBlobStore storeBlob:self.plainData creatingKey:&blobKey];
+    __block id<CDTBlobReader> reader = nil;
 
-    id<CDTBlobReader> reader = [self.encryptedBlobStore blobForKey:blobKey];
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      TDBlobKey blobKey;
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+
+      reader = [_encryptedBlobStore blobForKey:blobKey withDatabase:db];
+    }];
 
     XCTAssertEqualObjects(self.plainData, [reader dataWithError:nil],
                           @"It has to return the same data previously saved");
+}
+
+- (void)testDeleteBlobsExceptWithKeysRemovesExpectedFiles
+{
+#warning TODO
+}
+
+- (void)testDeleteBlobsExceptWithKeysRemovesExpectedRowsFromDB
+{
+#warning TODO
+}
+
+- (void)testBlobStoreWriterDoesNotUpdateDBIfInstallFails
+{
+#warning TODO
+}
+
+- (void)testBlobStoreWriterSucceedsIfTheBlobAlreadyExists
+{
+#warning TODO
+}
+
+- (void)testBlobStoreWriterDeletesTmpFileIfTheBlobAlreadyExists
+{
+#warning TODO
+}
+
+- (void)testBlobStoreWriterDeletesTmpFileIfInstallFails
+{
+#warning TODO
 }
 
 - (void)testBlobStoreWriterReturnsExpectedKey
@@ -144,7 +232,10 @@
     [self.encryptedBlobStoreWriter appendData:subData01];
     [self.encryptedBlobStoreWriter appendData:subData02];
     [self.encryptedBlobStoreWriter finish];
-    [self.encryptedBlobStoreWriter install];
+    
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+        [_encryptedBlobStoreWriter installWithDatabase:db];
+    }];
 
     NSString *hexEncryptedBlobKey =
         TDHexFromBytes(self.encryptedBlobStoreWriter.blobKey.bytes,
@@ -163,7 +254,10 @@
     [self.encryptedBlobStoreWriter appendData:subData01];
     [self.encryptedBlobStoreWriter appendData:subData02];
     [self.encryptedBlobStoreWriter finish];
-    [self.encryptedBlobStoreWriter install];
+    
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+        [_encryptedBlobStoreWriter installWithDatabase:db];
+    }];
 
     NSFileManager *defaultManager = [NSFileManager defaultManager];
     NSArray *fileArray =
@@ -172,8 +266,10 @@
         [NSData dataWithContentsOfFile:[self.encryptedBlobStorePath
                                            stringByAppendingPathComponent:fileArray[0]]];
 
-    TDBlobKey blobKey;
-    [self.blobStore storeBlob:self.plainData creatingKey:&blobKey];
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      TDBlobKey blobKey;
+      [self.blobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+    }];
 
     fileArray = [defaultManager contentsOfDirectoryAtPath:self.blobStorePath error:nil];
     NSData *fileData = [NSData
@@ -192,9 +288,16 @@
     [self.encryptedBlobStoreWriter appendData:subData01];
     [self.encryptedBlobStoreWriter appendData:subData02];
     [self.encryptedBlobStoreWriter finish];
-    [self.encryptedBlobStoreWriter install];
+    
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+        [_encryptedBlobStoreWriter installWithDatabase:db];
+    }];
 
-    id<CDTBlobReader> reader = [self.encryptedBlobStore blobForKey:self.encryptedBlobStoreWriter.blobKey];
+    __block id<CDTBlobReader> reader = nil;
+    
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+        reader = [_encryptedBlobStore blobForKey:_encryptedBlobStoreWriter.blobKey withDatabase:db];
+    }];
 
     XCTAssertEqualObjects(self.plainData, [reader dataWithError:nil],
                           @"It has to return the same data previously saved");

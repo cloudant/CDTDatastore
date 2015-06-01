@@ -114,11 +114,13 @@
     // Expected result
     NSArray *oneBlob = @[
         TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01,
-        TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01
+        [NSString stringWithFormat:@"%@.%@", TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01,
+                                   TDDatabaseBlobFilenamesFileExtension]
     ];
     NSArray *otherBlob = @[
         TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_02,
-        TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_02
+        [NSString stringWithFormat:@"%@.%@", TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_02,
+                                   TDDatabaseBlobFilenamesFileExtension]
     ];
     NSSet *expectedContent = [NSSet setWithObjects:oneBlob, otherBlob, nil];
 

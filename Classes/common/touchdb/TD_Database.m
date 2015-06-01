@@ -215,19 +215,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     FMDatabaseQueue* queue = nil;
     
     if (result) {
-#ifdef SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN
-        int flags = SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN;
-#else
-        int flags = kNilOptions;
-#endif
-        if (_readOnly) {
-            flags |= SQLITE_OPEN_READONLY;
-        } else {
-            flags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-        }
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Open %@ (flags=%X)", _path, flags);
+        queue = [TD_Database queueForDatabaseAtPath:_path readOnly:_readOnly];
         
-        queue = [FMDatabaseQueue databaseQueueWithPath:_path flags:flags];
         result = (queue != nil);
     }
 
@@ -504,8 +493,8 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             while ([attachmentKeys next]) {
                 NSData *keyData = [attachmentKeys dataNoCopyForColumn:@"key"];
                 
-                [TD_Database insertRowIntoBlobFilenamesTableWithKey:*(TDBlobKey *)keyData.bytes
-                                                         inDatabase:db];
+                [TD_Database generateAndInsertFilenameBasedOnKey:*(TDBlobKey *)keyData.bytes
+                                intoBlobFilenamesTableInDatabase:db];
             }
             
             // dbVersion = 101;
@@ -514,7 +503,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 #if DEBUG
         db.crashOnErrors = YES;
 #endif
-
+        
         // Open attachment store:
         NSString* attachmentsPath = strongSelf.attachmentStorePath;
         NSError* error;
@@ -523,13 +512,13 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                                                    error:&error];
         if (!_attachments) {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"%@: Couldn't open attachment store at %@", self,
-                    attachmentsPath);
+                       self.attachmentStorePath);
             [db close];
             result = NO;
             return;
         }
     }];
-
+    
     if (result) {
         _open = YES;
         return YES;
@@ -556,7 +545,10 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
     [_fmdbQueue close];
     _fmdbQueue = nil;
+    
     _keyProviderToOpenDB = nil;
+    
+    _attachments = nil;
 
     _open = NO;
     _transactionLevel = 0;
@@ -603,7 +595,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-@synthesize path = _path, name = _name, attachmentStore = _attachments, readOnly = _readOnly;
+@synthesize path = _path, name = _name, readOnly = _readOnly;
 
 - (TDStatus)inTransaction:(TDStatus (^)(FMDatabase*))block
 {
@@ -1456,6 +1448,27 @@ const TDChangesOptions kDefaultTDChangesOptions = {UINT_MAX, 0, NO, NO, YES};
 - (NSDictionary*)getAllDocs:(const TDQueryOptions*)options
 {
     return [self getDocsWithIDs:nil options:options];
+}
+
+#pragma mark - QUEUE:
+
++ (FMDatabaseQueue *)queueForDatabaseAtPath:(NSString *)path readOnly:(BOOL)readOnly
+{
+#ifdef SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN
+    int flags = SQLITE_OPEN_FILEPROTECTION_COMPLETEUNLESSOPEN;
+#else
+    int flags = kNilOptions;
+#endif
+    if (readOnly) {
+        flags |= SQLITE_OPEN_READONLY;
+    } else {
+        flags |= SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    }
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Open %@ (flags=%X)", path, flags);
+
+    FMDatabaseQueue *queue = [FMDatabaseQueue databaseQueueWithPath:path flags:flags];
+
+    return queue;
 }
 
 @end
