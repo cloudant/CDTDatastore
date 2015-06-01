@@ -16,10 +16,16 @@
 
 #import "TD_Database.h"
 
+#import "TDBlobStore.h"
+
 extern NSString *const TDDatabaseBlobFilenamesTableName;
+
+extern NSString *const TDDatabaseBlobFilenamesColumnKey;
+extern NSString *const TDDatabaseBlobFilenamesColumnFilename;
 
 @interface TD_Database (BlobFilenames)
 
 + (NSString *)sqlCommandToCreateBlobFilenamesTable;
++ (BOOL)insertRowIntoBlobFilenamesTableWithKey:(TDBlobKey)key inDatabase:(FMDatabase *)db;
 
 @end
