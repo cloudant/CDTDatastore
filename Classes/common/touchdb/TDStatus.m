@@ -69,7 +69,7 @@ NSError* TDStatusToNSErrorWithInfo(TDStatus status, NSURL* url, NSDictionary* ex
     status = TDStatusToHTTPStatus(status, &reason);
     NSMutableDictionary* info =
         $mdict({NSURLErrorKey, url}, {NSLocalizedFailureReasonErrorKey, reason},
-               { NSLocalizedDescriptionKey, $sprintf(@"%i %@", status, reason) });
+               { NSLocalizedDescriptionKey, $sprintf(@"%@ %@", @(status), reason) });
     if (extraInfo) [info addEntriesFromDictionary:extraInfo];
     return [NSError errorWithDomain:TDHTTPErrorDomain code:status userInfo:[info copy]];
 }

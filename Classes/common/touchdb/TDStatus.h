@@ -16,7 +16,7 @@ typedef NS_ENUM(NSInteger, TDInternalErrors) {
 };
 
 /** TouchDB internal status/error codes. Superset of HTTP status codes. */
-typedef enum {
+typedef NS_ENUM(NSInteger, TDStatus) {
     kTDStatusOK = 200,
     kTDStatusCreated = 201,
     kTDStatusAccepted = 206,
@@ -47,7 +47,7 @@ typedef enum {
     kTDStatusException = 594,                 // Exception raised/caught
     kTDStatusAttachmentStreamError = 701,     // Error reading from stream when adding attachment
     kTDStatusAttachmentDiskSpaceError = 702,  // Not enough space on device for attachment
-} TDStatus;
+};
 
 static inline bool TDStatusIsError(TDStatus status) { return status >= 300; }
 

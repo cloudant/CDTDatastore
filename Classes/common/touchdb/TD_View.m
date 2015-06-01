@@ -391,8 +391,8 @@ static id fromJSON(NSData* json)
         {
             [r close];
             if (status >= kTDStatusBadRequest)
-                CDTLogWarn(CDTTD_VIEW_CONTEXT, @"TouchDB: Failed to rebuild view '%@': %d", _name,
-                        status);
+                CDTLogWarn(CDTTD_VIEW_CONTEXT, @"TouchDB: Failed to rebuild view '%@': %@", _name,
+                        @(status));
             *rollback = (status < kTDStatusBadRequest);
         }
     }];
