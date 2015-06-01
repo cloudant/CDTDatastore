@@ -497,6 +497,17 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                 result = NO;
                 return;
             }
+            
+            // Populate table
+            FMResultSet *attachmentKeys = [db executeQuery:@"SELECT DISTINCT key FROM attachments"];
+            
+            while ([attachmentKeys next]) {
+                NSData *keyData = [attachmentKeys dataNoCopyForColumn:@"key"];
+                
+                [TD_Database insertRowIntoBlobFilenamesTableWithKey:*(TDBlobKey *)keyData.bytes
+                                                         inDatabase:db];
+            }
+            
             // dbVersion = 101;
         }
         
