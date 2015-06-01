@@ -20,6 +20,7 @@
 
 #import "TD_Database.h"
 #import "TD_Database+Attachments.h"
+#import "TD_Database+BlobFilenames.h"
 #import "TDInternal.h"
 #import "TD_Revision.h"
 #import "TDCollateJSON.h"
@@ -486,9 +487,19 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                 result = NO;
                 return;
             }
-            // dbVersion = 100;
+            dbVersion = 100;
         }
 
+        if (dbVersion < 101) {
+            // Version 101: Table which maps key to filename
+            NSString* sql = [TD_Database sqlCommandToCreateBlobFilenamesTable];
+            if (![strongSelf migrateWithUpdates:sql queries:nil version:101 inDatabase:db]) {
+                result = NO;
+                return;
+            }
+            // dbVersion = 101;
+        }
+        
 #if DEBUG
         db.crashOnErrors = YES;
 #endif
