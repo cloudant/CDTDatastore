@@ -76,6 +76,10 @@
 		CD00CBBF1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */; };
 		CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
 		CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */; };
+		CD196E671B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */; };
+		CD196E681B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */; };
+		CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */; };
+		CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */; };
 		CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
 		CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
 		CD2188D81AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */; };
@@ -222,6 +226,8 @@
 		C0D0295E40984E2788387EEE /* libPods-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencryptedindex.sqlite; path = Assets/emptyencryptedindex.sqlite; sourceTree = "<group>"; };
 		CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseDeletionTests.m; sourceTree = "<group>"; };
+		CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = schema100_1Bonsai_2Lorem.touchdb; path = Assets/schema100_1Bonsai_2Lorem.touchdb; sourceTree = "<group>"; };
+		CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseBlobFilenamesTests.m; sourceTree = "<group>"; };
 		CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD2188D11AE5711A0036F59F /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
 		CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
@@ -379,6 +385,7 @@
 				27ACD1EC193DDDCC00658EC2 /* Events */,
 				27F43D4618E99C31003E8422 /* osx-aws-toolkit */,
 				27389E16185345FD0027A404 /* Supporting Files */,
+				CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */,
 				CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */,
 				9F0D23FE188DF96600D3D04E /* TD_DatabaseManagerTests.m */,
 				9F0D23F9188DF36800D3D04E /* TD_DatabaseTests.m */,
@@ -450,6 +457,7 @@
 				CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */,
 				CD00CBBD1AC7703800C3F2D5 /* emptyencryptedindex.sqlite */,
 				27D96E4218E1E0D400DEA006 /* lorem.txt */,
+				CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */,
 				8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */,
 			);
 			name = Assets;
@@ -650,6 +658,7 @@
 				27D96E4418E1E0D400DEA006 /* lorem.txt in Resources */,
 				8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */,
 				CD00CBBE1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */,
+				CD196E671B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb in Resources */,
 				27389E1A185345FD0027A404 /* InfoPlist.strings in Resources */,
 				27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */,
 			);
@@ -663,6 +672,7 @@
 				27D96E4518E1E0D400DEA006 /* lorem.txt in Resources */,
 				8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */,
 				CD00CBBF1AC7703800C3F2D5 /* emptyencryptedindex.sqlite in Resources */,
+				CD196E681B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb in Resources */,
 				27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */,
 				27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */,
 			);
@@ -749,6 +759,7 @@
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				EC0C835E1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
+				CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
 				EC0C83421AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				ECA0DC611AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,
@@ -826,6 +837,7 @@
 				EC0C835F1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				EC0C83431AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
+				CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
 				9F0D2400188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
 				9F0D240F188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				ECA0DC621AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,

@@ -403,6 +403,12 @@
                location = "group:TD_Database+Conflicts.m">
             </FileRef>
             <FileRef
+               location = "group:TD_Database+BlobFilenames.h">
+            </FileRef>
+            <FileRef
+               location = "group:TD_Database+BlobFilenames.m">
+            </FileRef>
+            <FileRef
                location = "group:TD_Database.h">
             </FileRef>
             <FileRef
