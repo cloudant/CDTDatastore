@@ -23,6 +23,8 @@
 
 #import "TDStatus.h"
 
+#import "TD_Database+BlobFilenames.h"
+
 #import "CDTBlobHandleFactory.h"
 
 #ifdef GNUSTEP
@@ -30,10 +32,11 @@
 #define NSDataWritingAtomic NSAtomicWrite
 #endif
 
-#define kFileExtension "blob"
+NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
 
 @interface TDBlobStore ()
 
+@property (strong, nonatomic, readonly) NSString *path;
 @property (strong, nonatomic, readonly) CDTBlobHandleFactory *blobHandleFactory;
 
 @end
@@ -42,147 +45,170 @@
 
 - (id)initWithPath:(NSString *)dir
     encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
-                    error:(NSError **)outError
+                    error:(NSError **)outError;
 {
     Assert(dir);
     Assert(provider, @"Key provider is mandatory. Supply a CDTNilEncryptionKeyProvider instead.");
 
     self = [super init];
     if (self) {
-        _path = [dir copy];
-        _blobHandleFactory = [CDTBlobHandleFactory factoryWithEncryptionKeyProvider:provider];
-
+        BOOL success = YES;
+        
         BOOL isDir;
         if (![[NSFileManager defaultManager] fileExistsAtPath:dir isDirectory:&isDir] || !isDir) {
             if (![[NSFileManager defaultManager] createDirectoryAtPath:dir
                                            withIntermediateDirectories:NO
                                                             attributes:nil
                                                                  error:outError]) {
-                self = nil;
+                success = NO;
             }
+        }
+        
+        if (success) {
+            _path = [dir copy];
+            _blobHandleFactory = [CDTBlobHandleFactory factoryWithEncryptionKeyProvider:provider];
+        } else {
+            self = nil;
         }
     }
 
     return self;
 }
 
-+ (TDBlobKey)keyForBlob:(NSData*)blob
++ (TDBlobKey)keyForBlob:(NSData *)blob
 {
     NSCParameterAssert(blob);
+
     TDBlobKey key;
     SHA_CTX ctx;
     SHA1_Init(&ctx);
     SHA1_Update(&ctx, blob.bytes, blob.length);
     SHA1_Final(key.bytes, &ctx);
+
     return key;
 }
 
-- (NSString*)pathForKey:(TDBlobKey)key
++ (NSString *)blobPathWithStorePath:(NSString *)storePath blobFilename:(NSString *)blobFilename
 {
-    char out[2 * sizeof(key.bytes) + 1 + strlen(kFileExtension) + 1];
-    char* dst = &out[0];
-    for (size_t i = 0; i < sizeof(key.bytes); i += 1) dst += sprintf(dst, "%02X", key.bytes[i]);
-    strlcat(out, ".", sizeof(out));
-    strlcat(out, kFileExtension, sizeof(out));
-    NSString* name = [[NSString alloc] initWithCString:out encoding:NSASCIIStringEncoding];
-    NSString* path = [_path stringByAppendingPathComponent:name];
-    return path;
-}
-
-+ (BOOL)getKey:(TDBlobKey*)outKey forFilename:(NSString*)filename
-{
-    if (filename.length != 2 * sizeof(TDBlobKey) + 1 + strlen(kFileExtension)) return NO;
-    if (![filename hasSuffix:@"." kFileExtension]) return NO;
-    if (outKey) {
-        uint8_t* dst = &outKey->bytes[0];
-        for (unsigned i = 0; i < sizeof(TDBlobKey); ++i) {
-            unichar digit1 = [filename characterAtIndex:2 * i];
-            unichar digit2 = [filename characterAtIndex:2 * i + 1];
-            if (!isxdigit(digit1) || !isxdigit(digit2)) return NO;
-            *dst++ = (uint8_t)(16 * digittoint(digit1) + digittoint(digit2));
-        }
-    }
-    return YES;
-}
-
-- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key
-{
-    NSString *path = [self pathForKey:key];
+    NSString *blobPath = nil;
     
-    return [self.blobHandleFactory readerWithPath:path];
+    if (storePath && (storePath.length > 0) && blobFilename && (blobFilename.length > 0)) {
+        blobPath = [storePath stringByAppendingPathComponent:blobFilename];
+    }
+    
+    return blobPath;
 }
 
-- (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key withDatabase:(FMDatabase *)db
 {
-    NSError* error;
-    return [self storeBlob:blob creatingKey:outKey error:&error];
+    NSString *filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    NSString *blobPath = [TDBlobStore blobPathWithStorePath:_path blobFilename:filename];
+
+    id<CDTBlobReader> reader = [_blobHandleFactory readerWithPath:blobPath];
+
+    return reader;
 }
 
 - (BOOL)storeBlob:(NSData *)blob
       creatingKey:(TDBlobKey *)outKey
+     withDatabase:(FMDatabase *)db
             error:(NSError *__autoreleasing *)outError
 {
-    TDBlobKey thisKey = [[self class] keyForBlob:blob];
-    NSString *path = [self pathForKey:thisKey];
+    // Search filename
+    TDBlobKey thisKey = [TDBlobStore keyForBlob:blob];
 
-    BOOL success = [[NSFileManager defaultManager] isReadableFileAtPath:path];
-    if (success) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
-    } else {
-        id<CDTBlobWriter> writer = [self.blobHandleFactory writerWithPath:path];
+    NSString *filename = [TD_Database filenameForKey:thisKey inBlobFilenamesTableInDatabase:db];
+    if (filename) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Key already exists with filename %@", filename);
 
-        NSError *thisError = nil;
-        success = [writer writeEntireBlobWithData:blob error:&thisError];
-        if (!success) {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", path, thisError);
-
-            if (outError) {
-                *outError = thisError;
-            }
+        if (outKey) {
+            *outKey = thisKey;
         }
+
+        return YES;
     }
 
-    if (success && outKey) {
+    // Create new if not exists
+    filename = [TD_Database generateAndInsertFilenameBasedOnKey:thisKey
+                               intoBlobFilenamesTableInDatabase:db];
+    if (!filename) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"No filename generated");
+
+        if (outError) {
+            *outError = [TDBlobStore errorNoFilenameGenerated];
+        }
+
+        return NO;
+    }
+
+    // Get a writer
+    NSString *blobPath = [TDBlobStore blobPathWithStorePath:_path blobFilename:filename];
+    id<CDTBlobWriter> writer = [_blobHandleFactory writerWithPath:blobPath];
+
+    // Save to disk
+    NSError *thisError = nil;
+    if (![writer writeEntireBlobWithData:blob error:&thisError]) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Data not stored in %@: %@", blobPath, thisError);
+
+        [TD_Database deleteRowForKey:thisKey inBlobFilenamesTableInDatabase:db];
+
+        if (outError) {
+            *outError = thisError;
+        }
+
+        return NO;
+    }
+
+    // Return
+    if (outKey) {
         *outKey = thisKey;
     }
 
-    return success;
+    return YES;
 }
 
-- (NSUInteger)count
+- (NSUInteger)countWithDatabase:(FMDatabase *)db
 {
-    NSUInteger n = 0;
-    NSFileManager* fmgr = [NSFileManager defaultManager];
-    for (NSString* filename in [fmgr contentsOfDirectoryAtPath:_path error:NULL]) {
-        if ([[self class] getKey:NULL forFilename:filename]) ++n;
-    }
+    NSUInteger n = [TD_Database countRowsInBlobFilenamesTableInDatabase:db];
+
     return n;
 }
 
-- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep
+- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase*)db
 {
-    NSFileManager* fmgr = [NSFileManager defaultManager];
-    NSArray* blob = [fmgr contentsOfDirectoryAtPath:_path error:NULL];
-    if (!blob) return 0;
-    NSUInteger numDeleted = 0;
     BOOL errors = NO;
-    NSMutableData* curKeyData = [NSMutableData dataWithLength:sizeof(TDBlobKey)];
-    for (NSString* filename in blob) {
-        if ([[self class] getKey:curKeyData.mutableBytes forFilename:filename]) {
-            if (![keysToKeep containsObject:curKeyData]) {
-                NSError* error;
-                if ([fmgr removeItemAtPath:[_path stringByAppendingPathComponent:filename]
-                                     error:&error])
-                    ++numDeleted;
-                else {
-                    errors = YES;
-                    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
-                             filename, error);
-                }
-            }
+    NSUInteger numDeleted = 0;
+
+    NSArray* allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
+
+    for (TD_DatabaseBlobFilenameRow* oneRow in allRows) {
+        // Check if key is an exception
+        NSData* curKeyData =
+            [NSData dataWithBytes:oneRow.key.bytes length:sizeof(oneRow.key.bytes)];
+        if ([keysToKeep containsObject:curKeyData]) {
+            // Do not delete blob. It is an exception.
+            continue;
+        }
+
+        // Remove from disk
+        NSString* blobPath =
+            [TDBlobStore blobPathWithStorePath:_path blobFilename:oneRow.blobFilename];
+
+        NSError* thisError = nil;
+        if ([[NSFileManager defaultManager] removeItemAtPath:blobPath error:&thisError]) {
+            // Remove from db
+            [TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db];
+
+            ++numDeleted;
+        } else {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
+                        oneRow.blobFilename, thisError);
+
+            errors = YES;
         }
     }
-    return errors ? -1 : numDeleted;
+
+    return (errors ? -1 : numDeleted);
 }
 
 - (NSString*)tempDir
@@ -207,6 +233,18 @@
 #endif
     }
     return _tempDir;
+}
+
++ (NSError *)errorNoFilenameGenerated
+{
+    NSDictionary *userInfo = @{
+        NSLocalizedDescriptionKey :
+            NSLocalizedString(@"No filename generated", @"No filename generated")
+    };
+
+    return [NSError errorWithDomain:CDTBlobStoreErrorDomain
+                               code:CDTBlobStoreErrorNoFilenameGenerated
+                           userInfo:userInfo];
 }
 
 @end
@@ -272,19 +310,53 @@
     return [@"sha1-" stringByAppendingString:[TDBase64 encode:&_blobKey length:sizeof(_blobKey)]];
 }
 
-- (BOOL)install
+- (BOOL)installWithDatabase:(FMDatabase *)db
 {
-    if (!_tempPath) return YES;  // already installed
-    Assert(!_blobWriter, @"Not finished");
-    // Move temp file to correct location in blob store:
-    NSString* dstPath = [_store pathForKey:_blobKey];
-    if ([[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:NULL]) {
-        _tempPath = nil;
-    } else {
-        // If the move fails, assume it means a file with the same name already exists; in that
-        // case it must have the identical contents, so we're still OK.
-        [self cancel];
+    if (!_tempPath) {
+        return YES;  // already installed
     }
+
+    Assert(!_blobWriter, @"Not finished");
+
+    // Search filename
+    NSString *filename = [TD_Database filenameForKey:_blobKey inBlobFilenamesTableInDatabase:db];
+    if (filename) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Key already exists with filename %@", filename);
+
+        [self cancel];
+
+        return YES;
+    }
+
+    // Create if not exists
+    filename = [TD_Database generateAndInsertFilenameBasedOnKey:_blobKey
+                               intoBlobFilenamesTableInDatabase:db];
+    if (!filename) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"No filename generated");
+
+        [self cancel];
+
+        return NO;
+    }
+
+    // Move temp file to correct location in blob store:
+    NSString *dstPath = [TDBlobStore blobPathWithStorePath:_store.path blobFilename:filename];
+
+    NSError *error = nil;
+    if (![[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:&error]) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"File not moved to final destination %@: %@",
+                    dstPath, error);
+
+        [TD_Database deleteRowForKey:_blobKey inBlobFilenamesTableInDatabase:db];
+
+        [self cancel];
+
+        return NO;
+    }
+
+    // Return
+    _tempPath = nil;
+
     return YES;
 }
 

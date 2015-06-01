@@ -23,9 +23,34 @@ extern NSString *const TDDatabaseBlobFilenamesTableName;
 extern NSString *const TDDatabaseBlobFilenamesColumnKey;
 extern NSString *const TDDatabaseBlobFilenamesColumnFilename;
 
+extern NSString *const TDDatabaseBlobFilenamesFileExtension;
+
 @interface TD_Database (BlobFilenames)
 
 + (NSString *)sqlCommandToCreateBlobFilenamesTable;
-+ (BOOL)insertRowIntoBlobFilenamesTableWithKey:(TDBlobKey)key inDatabase:(FMDatabase *)db;
+
++ (NSString *)generateAndInsertFilenameBasedOnKey:(TDBlobKey)key
+                 intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
++ (NSUInteger)countRowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;
++ (NSArray *)rowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
++ (NSString *)filenameForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
++ (BOOL)deleteRowForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
+@end
+
+@interface TD_DatabaseBlobFilenameRow : NSObject
+
+@property (assign, nonatomic, readonly) TDBlobKey key;
+@property (strong, nonatomic, readonly) NSString *blobFilename;
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+- (instancetype)initWithKey:(TDBlobKey)key
+               blobFilename:(NSString *)blobFilename NS_DESIGNATED_INITIALIZER;
+
++ (instancetype)rowWithKey:(TDBlobKey)key blobFilename:(NSString *)blobFilename;
 
 @end

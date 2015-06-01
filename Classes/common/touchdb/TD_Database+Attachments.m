@@ -93,7 +93,9 @@
  in the store, in which case we just fill in the attachment's
  data.
  */
-- (TDStatus)installAttachment:(TD_Attachment*)attachment forInfo:(NSDictionary*)attachInfo
+- (TDStatus)installAttachment:(TD_Attachment*)attachment
+                 withDatabase:(FMDatabase *)db
+                      forInfo:(NSDictionary*)attachInfo
 {
     NSString* digest = $castIf(NSString, attachInfo[@"digest"]);
     if (!digest) return kTDStatusBadAttachment;
@@ -101,7 +103,7 @@
 
     if ([writer isKindOfClass:[TDBlobStoreWriter class]]) {
         // Found a blob writer, so install the blob:
-        if (![writer install]) return kTDStatusAttachmentError;
+        if (![writer installWithDatabase:db]) return kTDStatusAttachmentError;
         attachment->blobKey = [writer blobKey];
         attachment->length = [writer length];
         // Remove the writer but leave the blob-key behind for future use:
@@ -121,9 +123,68 @@
     }
 }
 
+- (NSUInteger)blobCount
+{
+    __block NSUInteger n = 0;
+    
+    [self.fmdbQueue inDatabase:^(FMDatabase *db) {
+        n = [_attachments countWithDatabase:db];
+    }];
+    
+    return n;
+}
+
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key
+{
+    __block id<CDTBlobReader> reader = nil;
+    
+    [self.fmdbQueue inDatabase:^(FMDatabase *db) {
+        reader = [_attachments blobForKey:key withDatabase:db];
+    }];
+    
+    return reader;
+}
+
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key withDatabase:(FMDatabase *)db
+{
+    id<CDTBlobReader> reader = [_attachments blobForKey:key withDatabase:db];
+    
+    return reader;
+}
+
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
 {
-    return [_attachments storeBlob:blob creatingKey:outKey];
+    NSError* error;
+    return [self storeBlob:blob creatingKey:outKey error:&error];
+}
+
+- (BOOL)storeBlob:(NSData *)blob creatingKey:(TDBlobKey *)outKey withDatabase:(FMDatabase *)db
+{
+    NSError* error;
+    return [self storeBlob:blob creatingKey:outKey withDatabase:db error:&error];
+}
+
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+            error:(NSError *__autoreleasing *)outError
+{
+    __block BOOL success = YES;
+
+    [self.fmdbQueue inDatabase:^(FMDatabase *db) {
+      success = [_attachments storeBlob:blob creatingKey:outKey withDatabase:db error:outError];
+    }];
+
+    return success;
+}
+
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+     withDatabase:(FMDatabase *)db
+            error:(NSError *__autoreleasing *)outError
+{
+    BOOL success = [_attachments storeBlob:blob creatingKey:outKey withDatabase:db error:outError];
+
+    return success;
 }
 
 /**
@@ -273,7 +334,7 @@
                 *outStatus = kTDStatusCorruptError;
                 return;
             }
-            blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+            blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes withDatabase:db];
             *outStatus = kTDStatusOK;
             if (outType) *outType = [r stringForColumnIndex:1];
 
@@ -364,7 +425,8 @@
             if ((options & kTDBigAttachmentsFollow) && effectiveLength >= kBigAttachmentLength) {
                 dataSuppressed = YES;
             } else {
-                id<CDTBlobReader> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+                id<CDTBlobReader> blob = [_attachments blobForKey:*(TDBlobKey*)keyData.bytes
+                                                     withDatabase:db];
                 data = (blob ? [blob dataWithError:nil] : nil);
                 if (!data)
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
@@ -412,7 +474,7 @@
         return nil;
     }
     
-    return [_attachments blobForKey:*(TDBlobKey*)keyData.bytes];
+    return [self blobForKey:*(TDBlobKey*)keyData.bytes];
 }
 
 // Calls the block on every attachment dictionary. The block can return a different dictionary,
@@ -527,7 +589,9 @@
 
  Returns the list of TD_Attachments derived from the revision.
  */
-- (NSDictionary*)attachmentsFromRevision:(TD_Revision*)rev status:(TDStatus*)outStatus
+- (NSDictionary*)attachmentsFromRevision:(TD_Revision*)rev
+                              inDatabase:(FMDatabase*)db
+                                  status:(TDStatus*)outStatus
 {
     // If there are no attachments in the new rev, there's nothing to do:
     NSDictionary* revAttachments = rev[@"_attachments"];
@@ -556,7 +620,9 @@
                     break;
                 }
                 attachment->length = newContents.length;
-                if (![self storeBlob:newContents creatingKey:&attachment->blobKey]) {
+                if (![self storeBlob:newContents
+                         creatingKey:&attachment->blobKey
+                        withDatabase:db]) {
                     status = kTDStatusAttachmentError;
                     break;
                 }
@@ -565,7 +631,7 @@
             // "follows" means the uploader provided the attachment in a separate MIME part.
             // This means it's already been registered in _pendingAttachmentsByDigest;
             // I just need to look it up by its "digest" property and install it into the store:
-            status = [self installAttachment:attachment forInfo:attachInfo];
+            status = [self installAttachment:attachment withDatabase:db forInfo:attachInfo];
             if (TDStatusIsError(status)) break;
         } else {
             // This item is just a stub; skip it
@@ -752,7 +818,7 @@
         [allKeys addObject:[r dataForColumnIndex:0]];
     }
     [r close];
-    NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys:allKeys];
+    NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys:allKeys withDatabase:db];
     if (numDeleted < 0) {
         return kTDStatusAttachmentError;
     }
