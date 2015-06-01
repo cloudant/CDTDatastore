@@ -131,11 +131,15 @@ static void report( NSException *x ) {
 - (void) _showExceptionAlert: (NSException*)x
 {
     NSString *stack = [x my_callStack] ?:@"";
+
+#pragma clang diagnostic ignored "-Wformat-security"
     NSInteger r = NSRunCriticalAlertPanel( @"Internal Error!",
                             [NSString stringWithFormat: @"Uncaught exception: %@\n%@\n\n%@\n\n"
                              "Please report this bug (you can copy & paste the text).",
                              [x name], [x reason], stack],
                             @"Continue",@"Quit",nil);
+#pragma clang diagnostic pop
+
     if( r == NSAlertAlternateReturn )
         exit(1);
     MYSetExceptionReporter(&report);

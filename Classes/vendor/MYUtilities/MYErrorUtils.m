@@ -139,22 +139,19 @@ NSString* MYErrorName( NSString *domain, NSInteger code ) {
 #if !TARGET_OS_IPHONE || defined(__SEC_TYPES__)
     else if ($equal(domain,NSOSStatusErrorDomain)) {
         // If it's an OSStatus, check whether CarbonCore knows its name:
-        const char *name = NULL;
-#if !TARGET_OS_IPHONE
-        name = GetMacOSStatusErrorString((int)code);
-#endif
-        if (name && *name)
-            result = [NSString stringWithCString: name encoding: NSMacOSRomanStringEncoding];
-        else {
+        NSError *osErr = [NSError errorWithDomain:NSOSStatusErrorDomain code:code userInfo:nil];
+        result = [osErr localizedDescription];
+
 #if MYERRORUTILS_USE_SECURITY_API
+        if (!result) {
             result = (id) SecCopyErrorMessageString((OSStatus)code,NULL);
             if (result) {
                 [NSMakeCollectable(result) autorelease];
                 if ([result hasPrefix: @"OSStatus "])
                     result = nil; // just a generic message
             }
-#endif
         }
+#endif
     }
 #endif
     
