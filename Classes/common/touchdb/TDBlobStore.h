@@ -45,20 +45,8 @@ typedef struct TDBlobKey
             error:(NSError* __autoreleasing*)outError;
 
 @property (readonly) NSUInteger count;
-@property (readonly) NSArray* allKeys;
-
-/**
- Total size of files on disk.
- 
- Notice that if the files are encrypted, this size might be bigger that the total size of the
- decrypted files.
- */
-@property (readonly) UInt64 totalDataSize;
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
-
-+ (TDBlobKey)keyForBlob:(NSData*)blob;
-+ (NSData*)keyDataForBlob:(NSData*)blob;
 
 @end
 

@@ -605,13 +605,6 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 @synthesize path = _path, name = _name, attachmentStore = _attachments, readOnly = _readOnly;
 
-- (UInt64)totalDataSize
-{
-    NSDictionary* attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:_path error:NULL];
-    if (!attrs) return 0;
-    return attrs.fileSize + _attachments.totalDataSize;
-}
-
 - (TDStatus)inTransaction:(TDStatus (^)(FMDatabase*))block
 {
     __block TDStatus status;

@@ -77,12 +77,6 @@
     return key;
 }
 
-+ (NSData*)keyDataForBlob:(NSData*)blob
-{
-    TDBlobKey key = [self keyForBlob:blob];
-    return [NSData dataWithBytes:&key length:sizeof(key)];
-}
-
 - (NSString*)pathForKey:(TDBlobKey)key
 {
     char out[2 * sizeof(key.bytes) + 1 + strlen(kFileExtension) + 1];
@@ -155,19 +149,6 @@
     return success;
 }
 
-- (NSArray*)allKeys
-{
-    NSArray* blob = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:_path error:NULL];
-    if (!blob) return nil;
-    return [blob my_map:^id(id filename) {
-        TDBlobKey key;
-        if ([[self class] getKey:&key forFilename:filename])
-            return [NSData dataWithBytes:&key length:sizeof(key)];
-        else
-            return (id)nil;
-    }];
-}
-
 - (NSUInteger)count
 {
     NSUInteger n = 0;
@@ -176,20 +157,6 @@
         if ([[self class] getKey:NULL forFilename:filename]) ++n;
     }
     return n;
-}
-
-- (UInt64)totalDataSize
-{
-    UInt64 total = 0;
-    NSFileManager* fmgr = [NSFileManager defaultManager];
-    for (NSString* filename in [fmgr contentsOfDirectoryAtPath:_path error:NULL]) {
-        if ([[self class] getKey:NULL forFilename:filename]) {
-            NSString* itemPath = [_path stringByAppendingPathComponent:filename];
-            NSDictionary* attrs = [fmgr attributesOfItemAtPath:itemPath error:NULL];
-            if (attrs) total += attrs.fileSize;
-        }
-    }
-    return total;
 }
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep
