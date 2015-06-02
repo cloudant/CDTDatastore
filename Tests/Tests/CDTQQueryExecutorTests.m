@@ -355,6 +355,143 @@ SharedExamplesBegin(QueryExecution)
                 });
             });
         });
+        
+        describe(@"Executing queries using the $mod operator", ^{
+            // All behaviors tested here have been confirmed to work the same in MongoDB.
+            
+            __block CDTDatastore* ds;
+            __block CDTQIndexManager* im;
+            
+            beforeEach(^{
+                ds = [factory datastoreNamed:@"test" error:nil];
+                expect(ds).toNot.beNil();
+                
+                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                
+                rev.docId = @"mike31";
+                rev.body = @{ @"name" : @"mike", @"score" : @31 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"fred11";
+                rev.body = @{ @"name" : @"fred", @"score" : @11 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john15";
+                rev.body = @{ @"name" : @"john", @"score" : @15 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john-15";
+                rev.body = @{ @"name" : @"john", @"score" : @-15 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john15.2";
+                rev.body = @{ @"name" : @"john", @"score" : @15.2 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john15.6";
+                rev.body = @{ @"name" : @"john", @"score" : @15.6 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john0";
+                rev.body = @{ @"name" : @"john", @"score" : @0 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john0.0";
+                rev.body = @{ @"name" : @"john", @"score" : @0.0 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john0.6";
+                rev.body = @{ @"name" : @"john", @"score" : @0.6 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                rev.docId = @"john-0.6";
+                rev.body = @{ @"name" : @"john", @"score" : @-0.6 };
+                [ds createDocumentFromRevision:rev error:nil];
+                
+                im = [imClass managerUsingDatastore:ds error:nil];
+                expect(im).toNot.beNil();
+                
+                expect([im ensureIndexed:@[ @"name", @"score" ] withName:@"name_score"])
+                .toNot.beNil();
+            });
+            
+            it(@"works using a positive divisor", ^{
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @1 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+            });
+            
+            it(@"works using a negative divisor", ^{
+                // This test should generate the same result as when
+                // using @{ @"score" : @{@"$mod" : @[ @10, @1 ] } }.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @-10, @1 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+            });
+            
+            it(@"works used with other predicates", ^{
+                NSDictionary* query = @{
+                                        @"name" : @{@"$eq" : @"mike"},
+                                        @"score" : @{@"$mod" : @[ @10, @1 ] }
+                                        };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"mike31"]);
+            });
+            
+            it(@"returns empty result set when $mod applied to non-numeric field", ^{
+                NSDictionary* query = @{ @"name" : @{@"$mod" : @[ @10, @1 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds.count).to.equal(0);
+            });
+            
+            it(@"works using 0 remainder", ^{
+                // The score field value will be truncated to the
+                // whole number before modulo arithmetic is applied.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @5, @0 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"john15",
+                                                                    @"john-15",
+                                                                    @"john15.2",
+                                                                    @"john15.6"]);
+            });
+            
+            it(@"works using negative remainder", ^{
+                // A negative remainder can only be achieved if the dividend
+                // is negative, which in this case is the value of the score field.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @-5 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"john-15"]);
+            });
+            
+            it(@"works using negative divisor and negative remainder", ^{
+                // This test should generate the same result as when
+                // using @{ @"score" : @{ @"score" : @{@"$mod" : @[ @10, @-5 ] } }.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @-10, @-5 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"john-15"]);
+            });
+            
+            it(@"works using a remainder that is not a whole number", ^{
+                // The remainder is truncated to the whole number prior to the operation
+                // being performed.  This test should generate the same result as when
+                // using @{ @"score": @{ @"$mod": @[ @10, @1 ] } }.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @1.6 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+            });
+            
+            it(@"works using a divisor that is not a whole number", ^{
+                // The divisor is truncated to the whole number prior
+                // to the operation being performed.
+                NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @5.4, @0 ] } };
+                CDTQResultSet* result = [im find:query];
+                expect(result.documentIds).to.containsAllElements(@[@"john15",
+                                                                    @"john-15",
+                                                                    @"john15.2",
+                                                                    @"john15.6"]);
+            });
+            
+        });
 
         describe(@"when using dotted notation", ^{
 
@@ -971,6 +1108,26 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(5);
+            });
+            
+            describe(@"when using $mod operator", ^{
+                it(@"works used alone", ^{
+                    NSDictionary* query = @{ @"age" : @{ @"$not" : @{@"$mod" : @[ @10, @2 ] } } };
+                    CDTQResultSet* result = [im find:query];
+                    expect(result.documentIds).to.containsAllElements(@[@"fred34",
+                                                                        @"mike34",
+                                                                        @"mike72"]);
+                });
+                
+                it(@"returns all docs when $mod applied to non-number field", ^{
+                    NSDictionary* query = @{ @"name" : @{ @"$not" : @{@"$mod" : @[ @10, @2 ] } } };
+                    CDTQResultSet* result = [im find:query];
+                    expect(result.documentIds).to.containsAllElements(@[@"fred12",
+                                                                        @"mike12",
+                                                                        @"fred34",
+                                                                        @"mike34",
+                                                                        @"mike72"]);
+                });
             });
         });
 

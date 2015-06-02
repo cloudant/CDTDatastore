@@ -180,29 +180,38 @@
 
         NSObject *expected = operatorExpression[operator];
         NSObject *actual = [CDTQValueExtractor extractValueForFieldName:fieldName fromRevision:rev];
-        // Since $in is the same as a series of $eq comparisons -
-        // Treat them the same by:
-        // - Ensuring that both expected and actual are NSArrays.
-        // - Convert the $in operator to the $eq operator.
-        if (![expected isKindOfClass:[NSArray class]]) {
-            expected = @[ expected ];
-        }
-        if (![actual isKindOfClass:[NSArray class]]) {
-            actual = actual ? @[ actual ] : @[ [NSNull null] ];
-        }
-        if ([operator isEqualToString:IN]) {
-            operator = EQ;
-        }
+        
         BOOL passed = NO;
-        for (NSObject *expectedItem in (NSArray *)expected) {
-            for (NSObject *actualItem in (NSArray *)actual) {
-                // OR since any actual item can match any value in the expected NSArray
-                passed = passed || [self actualValue:actualItem
-                                     matchesOperator:operator
-                                    andExpectedValue:expectedItem];
+        if ([operator isEqualToString:MOD]) {
+            // We need to treat a $mod operator as a special case because for
+            // $mod we need to perform modulo arithmetic on the actual value
+            // using the first element in the expected array as the divisor before
+            // comparing the result to the second element in the expected array.
+            passed = [self actualValue:actual matchesOperator:operator andExpectedValue:expected];
+        } else {
+            // Since $in is the same as a series of $eq comparisons -
+            // Treat them the same by:
+            // - Ensuring that both expected and actual are NSArrays.
+            // - Convert the $in operator to the $eq operator.
+            if (![expected isKindOfClass:[NSArray class]]) {
+                expected = @[ expected ];
+            }
+            if (![actual isKindOfClass:[NSArray class]]) {
+                actual = actual ? @[ actual ] : @[ [NSNull null] ];
+            }
+            if ([operator isEqualToString:IN]) {
+                operator = EQ;
+            }
+            
+            for (NSObject *expectedItem in (NSArray *)expected) {
+                for (NSObject *actualItem in (NSArray *)actual) {
+                    // OR since any actual item can match any value in the expected NSArray
+                    passed = passed || [self actualValue:actualItem
+                                         matchesOperator:operator
+                                        andExpectedValue:expectedItem];
+                }
             }
         }
-
         return invertResult ? !passed : passed;
     } else {
         // We constructed the tree, so shouldn't end up here; error if we do.
@@ -232,6 +241,9 @@
     } else if ([operator isEqualToString:GTE]) {
         passed = [self gteL:actual R:expected];
 
+    } else if ([operator isEqualToString:MOD]) {
+        passed = [self modL:actual R:expected];
+        
     } else if ([operator isEqualToString:EXISTS]) {
         BOOL expectedBool = [((NSNumber *)expected)boolValue];
         BOOL exists = (![actual isEqual:[NSNull null]]);
@@ -331,6 +343,26 @@
     }
 
     return ![self ltL:l R:r];
+}
+
+- (BOOL)modL:(NSObject *)l R:(NSObject *)r
+{
+    if (![l isKindOfClass:[NSNumber class]]) {
+        return NO;
+    }
+
+    // r should be an NSArray containing two numbers.  These two numbers are assured
+    // to be integers and the divisor is assured to not be 0.  This would have been
+    // handled during normalization and validation.
+    NSInteger divisor = [((NSArray *)r)[0] integerValue];
+    NSInteger expectedRemainder = [((NSArray *)r)[1] integerValue];
+    
+    // Calculate the actual remainder based on the truncated whole
+    // number value of l which is the actual number from the document.
+    // This is the desired behavior to relicate the SQL engine.
+    NSInteger actualRemainder = [(NSNumber *)l integerValue] % divisor;
+    
+    return actualRemainder == expectedRemainder;
 }
 
 @end

@@ -70,6 +70,15 @@
         // and make
         //     [ { "field1": { "$eq": "mike"} }, ... ]
         predicates = [CDTQQueryValidator compressMultipleNotOperators:predicates];
+        
+        // Here we ensure that all non-whole number arguments included in a $mod
+        // clause are truncated.  This provides for consistent behavior between
+        // the SQL engine and the unindexed matcher.
+        // Take
+        //     [ { "field1": { "$mod" : [ 2.6, 1.7] } }, ... ]
+        // and make
+        //     [ { "field1": { "$mod" : [ 2, 1 ] } }, ... ]
+        predicates = [CDTQQueryValidator truncateModArguments:predicates];
     }
 
     NSDictionary *selector = @{compoundOperator : predicates};
@@ -298,6 +307,57 @@
     return [NSArray arrayWithArray:accumulator];
 }
 
++ (NSArray *)truncateModArguments:(NSArray *)clause
+{
+    NSMutableArray *accumulator = [NSMutableArray array];
+    
+    for (NSDictionary *fieldClause in clause) {
+        NSObject *predicate = nil;
+        NSString *fieldName = nil;
+        if ([fieldClause isKindOfClass:[NSDictionary class]] && [fieldClause count] != 0) {
+            fieldName = fieldClause.allKeys[0];
+            predicate = fieldClause[fieldName];
+        } else {
+            // if this isn't a dictionary, we don't know what to do so add the clause
+            // to the accumulator to be dealt with later as part of the final selector
+            // validation.
+            [accumulator addObject:fieldClause];
+            continue;
+        }
+        
+        // If the clause isn't a special clause (the field name starts with
+        // $, e.g., $and), we need to check whether the clause has a $mod
+        // operator.  If it does then "truncate" all decimal notation
+        // in the arguments array by casting the array elements as NSInteger.
+        if (![fieldName hasPrefix:@"$"]) {
+            if ([predicate isKindOfClass:[NSDictionary class]]) {
+                // If $mod operator is found as a key and the value is an array
+                if ([((NSDictionary *)predicate)[MOD] isKindOfClass:[NSArray class]]) {
+                    // Step through the array and cast all numbers as integers
+                    NSArray *rawArguments = ((NSDictionary *)predicate)[MOD];
+                    NSMutableArray *arguments = [NSMutableArray array];
+                    for (NSObject *rawArgument in rawArguments) {
+                        if ([rawArgument isKindOfClass:[NSNumber class]]) {
+                            NSInteger argument = [(NSNumber *)rawArgument integerValue];
+                            [arguments addObject:[NSNumber numberWithInteger:argument]];
+                        } else {
+                            // If not a number then this will be caught during upcoming validation.
+                            [arguments addObject:rawArgument];
+                        }
+                    }
+                    predicate = @{ MOD: [NSArray arrayWithArray:arguments] };
+                }
+            }
+        } else if ([predicate isKindOfClass:[NSArray class]]) {
+            predicate = [CDTQQueryValidator truncateModArguments:(NSArray *)predicate];
+        }
+        
+        [accumulator addObject:@{fieldName : predicate}];  // can't put nil in this
+    }
+    
+    return [NSArray arrayWithArray:accumulator];
+}
+
 #pragma validation class methods
 
 /**
@@ -367,7 +427,7 @@
     // to { "$not" : { "$eq" : "blah" } } before reaching this validation.  So
     // operators like $ne and $nin will be negated $eq and $in by the time this
     // validation is reached.
-    NSArray *validOperators =  @[ EQ, LT, GT, EXISTS, NOT, GTE, LTE, IN ];
+    NSArray *validOperators =  @[ EQ, LT, GT, EXISTS, NOT, GTE, LTE, IN, MOD ];
 
     if ([clause count] == 1) {
         NSString *operator= [clause allKeys][0];
@@ -451,12 +511,37 @@
 {
     if([operator isEqualToString:EXISTS]){
         return [CDTQQueryValidator validateExistsArgument:predicateValue];
+    } else if ([operator isEqualToString:MOD]) {
+        return [CDTQQueryValidator validateModArgument:predicateValue];
     } else if ([operator isEqualToString:SEARCH]) {
         return [CDTQQueryValidator validateTextSearchArgument:predicateValue];
     } else {
         return (([predicateValue isKindOfClass:[NSString class]] ||
                  [predicateValue isKindOfClass:[NSNumber class]]));
     }
+}
+
++ (BOOL)validateModArgument:(NSObject *)modulus
+{
+    BOOL valid = YES;
+    
+    // The argument must be an array containing two NSNumber elements.  The first element
+    // a.k.a the divisor, is always treated as an integer.  Therefore, its value is always
+    // rounded down, or truncated to a whole number.  This will be handled by the SQL engine
+    // and the unindexed matcher code.  The divisor also cannot be 0, since division by 0 is
+    // not a valid mathematical operation.  That validation is handled here.
+    if(![modulus isKindOfClass:[NSArray class]] ||
+       ((NSArray *) modulus).count != 2 ||
+       ![((NSArray *) modulus)[0] isKindOfClass:[NSNumber class]] ||
+       ![((NSArray *) modulus)[1] isKindOfClass:[NSNumber class]] ||
+       [((NSArray *) modulus)[0] integerValue] == 0) {
+        valid = NO;
+        LogError(@"$mod operator requires a two element NSArray containing NSNumbers "
+                 @"where the first number, the divisor, is not zero.  As in: "
+                 @"{ \"$mod\" : [ 2, 1 ] }.  Where 2 is the divisor and 1 is the remainder.");
+    }
+    
+    return valid;
 }
 
 + (BOOL)validateTextSearchArgument:(NSObject *)textSearch
@@ -486,7 +571,7 @@
 + (BOOL)validateCompoundOperatorOperand:(NSObject *)operand
 {
     if (![operand isKindOfClass:[NSArray class]]) {
-        LogError(@"Arugment to compound operator is not an NSArray: %@", [operand description]);
+        LogError(@"Argument to compound operator is not an NSArray: %@", [operand description]);
         return NO;
     }
     return YES;

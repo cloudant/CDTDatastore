@@ -4,6 +4,7 @@
 
 - [REMOVE] The previous indexing/query legacy code has been removed.
 - [NEW] Added query text search support.  See [query documentation](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md) for details.
+- [NEW] Added query support for the `$mod` operator.
 
 ## 0.16.0 (2015-04-09)
 
