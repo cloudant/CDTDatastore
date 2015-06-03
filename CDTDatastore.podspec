@@ -45,7 +45,7 @@ Pod::Spec.new do |s|
     # duplicated code, the resulting subspec will include at the same time
     # SQLite and SQLCipher.
 
-    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
 
     sp.source_files = 'Classes/**/*.{h,m}'
 
@@ -73,7 +73,7 @@ Pod::Spec.new do |s|
     # duplicated code, the resulting subspec will include at the same time
     # SQLite and SQLCipher.
 
-    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"'
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
 
     sp.source_files = 'Classes/**/*.{h,m}'
 
