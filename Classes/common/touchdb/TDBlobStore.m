@@ -23,7 +23,7 @@
 
 #import "TDStatus.h"
 
-#import "CDTBlobData.h"
+#import "CDTBlobHandleFactory.h"
 
 #ifdef GNUSTEP
 #define NSDataReadingMappedIfSafe NSMappedRead
@@ -32,24 +32,37 @@
 
 #define kFileExtension "blob"
 
+@interface TDBlobStore ()
+
+@property (strong, nonatomic, readonly) CDTBlobHandleFactory *blobHandleFactory;
+
+@end
+
 @implementation TDBlobStore
 
-- (id)initWithPath:(NSString*)dir error:(NSError**)outError
+- (id)initWithPath:(NSString *)dir
+    encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    error:(NSError **)outError
 {
     Assert(dir);
+    Assert(provider, @"Key provider is mandatory. Supply a CDTNilEncryptionKeyProvider instead.");
+
     self = [super init];
     if (self) {
         _path = [dir copy];
+        _blobHandleFactory = [CDTBlobHandleFactory factoryWithEncryptionKeyProvider:provider];
+
         BOOL isDir;
         if (![[NSFileManager defaultManager] fileExistsAtPath:dir isDirectory:&isDir] || !isDir) {
             if (![[NSFileManager defaultManager] createDirectoryAtPath:dir
                                            withIntermediateDirectories:NO
                                                             attributes:nil
                                                                  error:outError]) {
-                return nil;
+                self = nil;
             }
         }
     }
+
     return self;
 }
 
@@ -102,7 +115,7 @@
 {
     NSString *path = [self pathForKey:key];
     
-    return [CDTBlobData blobWithPath:path];
+    return [self.blobHandleFactory readerWithPath:path];
 }
 
 - (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey
@@ -122,7 +135,7 @@
     if (success) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File %@ already exists", path);
     } else {
-        id<CDTBlobWriter> writer = [CDTBlobData blobWithPath:path];
+        id<CDTBlobWriter> writer = [self.blobHandleFactory writerWithPath:path];
 
         NSError *thisError = nil;
         success = [writer writeEntireBlobWithData:blob error:&thisError];
@@ -249,16 +262,8 @@
         if (!_tempPath) {
             return nil;
         }
-        NSDictionary* attributes = nil;
-#if TARGET_OS_IPHONE
-        attributes = @{NSFileProtectionKey : NSFileProtectionCompleteUnlessOpen};
-#endif
-        if (![[NSFileManager defaultManager] createFileAtPath:_tempPath
-                                                     contents:nil
-                                                   attributes:attributes]) {
-            return nil;
-        }
-        _blobWriter = [CDTBlobData blobWithPath:_tempPath];
+        
+        _blobWriter = [store.blobHandleFactory writerWithPath:_tempPath];
         if (![_blobWriter openForWriting]) {
             return nil;
         }

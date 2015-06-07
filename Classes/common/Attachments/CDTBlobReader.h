@@ -17,9 +17,9 @@
 #import <Foundation/Foundation.h>
 
 /**
- Define the methods to access the content of an attachment without exposing its path.
+ Define methods to access the content of an attachment without exposing its path.
  */
-@protocol CDTBlobReader
+@protocol CDTBlobReader <NSObject>
 
 /**
  Load the content of an attachment in a NSData instance.

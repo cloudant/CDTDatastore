@@ -16,6 +16,7 @@
 #import <CommonCrypto/CommonDigest.h>
 #endif
 
+#import "CDTEncryptionKeyProvider.h"
 #import "CDTBlobReader.h"
 #import "CDTBlobWriter.h"
 
@@ -32,7 +33,9 @@ typedef struct TDBlobKey
     NSString* _tempDir;
 }
 
-- (id)initWithPath:(NSString*)dir error:(NSError**)outError;
+- (id)initWithPath:(NSString *)dir
+    encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                    error:(NSError **)outError;
 
 - (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
 
@@ -43,6 +46,13 @@ typedef struct TDBlobKey
 
 @property (readonly) NSUInteger count;
 @property (readonly) NSArray* allKeys;
+
+/**
+ Total size of files on disk.
+ 
+ Notice that if the files are encrypted, this size might be bigger that the total size of the
+ decrypted files.
+ */
 @property (readonly) UInt64 totalDataSize;
 
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep;
