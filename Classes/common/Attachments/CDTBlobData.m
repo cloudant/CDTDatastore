@@ -90,7 +90,9 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
     }
 
     NSFileManager *defaultManager = [NSFileManager defaultManager];
-    if (![defaultManager fileExistsAtPath:self.path isDirectory:NO]) {
+
+    BOOL isDir = YES;
+    if (![defaultManager fileExistsAtPath:self.path isDirectory:&isDir] || isDir) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"No file found in %@", self.path);
         
         return nil;
@@ -120,7 +122,11 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
     BOOL success = NO;
     NSError *thisError = nil;
 
-    if ([self isBlobOpenForWriting]) {
+    if (!data) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"No data to add to %@", self.path);
+
+        thisError = [CDTBlobData errorNoDataProvided];
+    } else if ([self isBlobOpenForWriting]) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT,
                     @"Blob at %@ is open. Close it before saving the data", self.path);
 
@@ -153,6 +159,19 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ already open", self.path);
 
         return YES;
+    }
+
+    NSDictionary *attributes = nil;
+#if TARGET_OS_IPHONE
+    attributes = @{NSFileProtectionKey : NSFileProtectionCompleteUnlessOpen};
+#endif
+
+    if (![[NSFileManager defaultManager] createFileAtPath:self.path
+                                                 contents:nil
+                                               attributes:attributes]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File not created at %@", self.path);
+
+        return NO;
     }
 
     self.outFileHandle = [NSFileHandle fileHandleForWritingAtPath:self.path];
@@ -206,6 +225,16 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
 
     return [NSError errorWithDomain:CDTBlobDataErrorDomain
                                code:CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen
+                           userInfo:userInfo];
+}
+
++ (NSError *)errorNoDataProvided
+{
+    NSDictionary *userInfo =
+        @{ NSLocalizedDescriptionKey : NSLocalizedString(@"Supply data", @"Supply data") };
+
+    return [NSError errorWithDomain:CDTBlobDataErrorDomain
+                               code:CDTBlobDataErrorNoDataProvided
                            userInfo:userInfo];
 }
 
