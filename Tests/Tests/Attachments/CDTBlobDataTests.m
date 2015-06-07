@@ -125,6 +125,13 @@
     XCTAssertFalse([self.blob appendData:self.data], @"Open blob before adding data");
 }
 
+- (void)testAppendDataFailsIfDataIsNil
+{
+    [self.blob openForWriting];
+
+    XCTAssertFalse([self.blob appendData:nil], @"It should fail if there is no data to add");
+}
+
 - (void)testDataWithErrorFailsIfBlobIsOpen
 {
     [self.blob openForWriting];

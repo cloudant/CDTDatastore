@@ -162,6 +162,12 @@ NSString *const CDTBlobDataErrorDomain = @"CDTBlobDataErrorDomain";
 
 - (BOOL)appendData:(NSData *)data
 {
+    if (!data) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Data is nil. No data added to %@", self.path);
+
+        return NO;
+    }
+
     if (![self isBlobOpenForWriting]) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Blob at %@ is not open. No data can be added",
                     self.path);
