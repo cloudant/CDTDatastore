@@ -22,6 +22,7 @@
 extern NSString *const CDTBlobDataErrorDomain;
 
 typedef NS_ENUM(NSInteger, CDTBlobDataError) {
+    CDTBlobDataErrorNoDataProvided,
     CDTBlobDataErrorOperationNotPossibleIfBlobIsOpen
 };
 
@@ -34,13 +35,15 @@ typedef NS_ENUM(NSInteger, CDTBlobDataError) {
  CDTBlobWriter. About CDTBlobWriter:
  
  - 'openForWriting'.- Call this method before calling 'CDTBlobWriter:appendData:'. The file informed
- during the initialisation must exist on advance or it will fail.
- - 'isBlobOpenForWriting'.- It will return YES after calling 'CDTBlobWriter:openForWriting' and
- NO after calling 'CDTBlobWriter:close'. By default, a newly initialised blob is closed.
- - 'close'.- Call it after adding all data to the attachment.
- - 'appendData:'.- It will fail if 'CDTBlobWriter:isBlobOpenForWriting' is false.
- - 'writeEntireBlobWithData:error:'.- This method overwrites the content of the file supplied during
- the initialisation or creates it if it does not exist. However, it will fail if the blob is open.
+ during the initialisation is created at this point if it does not exists. If it exists, its content
+ is removed.
+ - 'isBlobOpenForWriting'.- It will return YES after calling 'CDTBlobWriter:openForWriting' and NO after
+ calling 'CDTBlobWriter:close'. By default, a newly initialised blob is closed.
+ - 'close'.- Call it after adding all data to the attachment. Notice that this method will not
+ delete the file created with 'CDTBlobWriter: openForWriting' if no data is added.
+ - 'appendData:'.- It will fail if 'CDTBlobWriter: isBlobOpenForWriting' is false.
+ - 'writeEntireBlobWithData:error:'.- This method overwrites the content of the file supplied during the
+ initialisation or creates it if it does not exist. However, it will fail if the blob is open.
  
  And CDTBlobReader:
  
