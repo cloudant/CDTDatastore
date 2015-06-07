@@ -249,15 +249,7 @@
         if (!_tempPath) {
             return nil;
         }
-        NSDictionary* attributes = nil;
-#if TARGET_OS_IPHONE
-        attributes = @{NSFileProtectionKey : NSFileProtectionCompleteUnlessOpen};
-#endif
-        if (![[NSFileManager defaultManager] createFileAtPath:_tempPath
-                                                     contents:nil
-                                                   attributes:attributes]) {
-            return nil;
-        }
+        
         _blobWriter = [CDTBlobData blobWithPath:_tempPath];
         if (![_blobWriter openForWriting]) {
             return nil;
