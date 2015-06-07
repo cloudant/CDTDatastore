@@ -129,8 +129,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     }
 
     // Create new if not exists
-    filename = [TD_Database generateAndInsertFilenameBasedOnKey:thisKey
-                               intoBlobFilenamesTableInDatabase:db];
+    filename = [TD_Database generateAndInsertRandomFilenameBasedOnKey:thisKey
+                                     intoBlobFilenamesTableInDatabase:db];
     if (!filename) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"No filename generated");
 
@@ -329,8 +329,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     }
 
     // Create if not exists
-    filename = [TD_Database generateAndInsertFilenameBasedOnKey:_blobKey
-                               intoBlobFilenamesTableInDatabase:db];
+    filename = [TD_Database generateAndInsertRandomFilenameBasedOnKey:_blobKey
+                                     intoBlobFilenamesTableInDatabase:db];
     if (!filename) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"No filename generated");
 
