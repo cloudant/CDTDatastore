@@ -22,7 +22,10 @@
 
 #import "CDTLogging.h"
 
+#define TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME 200
+
 NSString *const TDDatabaseBlobFilenamesTableName = @"attachments_key_filename";
+NSString *const TDDatabaseBlobFilenamesIndexName = @"attachments_key_filename_index";
 
 NSString *const TDDatabaseBlobFilenamesColumnKey = @"key";
 NSString *const TDDatabaseBlobFilenamesColumnFilename = @"filename";
@@ -34,10 +37,12 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 #pragma mark - Public class methods
 + (NSString *)sqlCommandToCreateBlobFilenamesTable
 {
-    NSString *cmd = [NSString stringWithFormat:@"CREATE TABLE %@ (%@ TEXT PRIMARY KEY, %@ TEXT)",
-                                               TDDatabaseBlobFilenamesTableName,
-                                               TDDatabaseBlobFilenamesColumnKey,
-                                               TDDatabaseBlobFilenamesColumnFilename];
+    NSString *cmd =
+        [NSString stringWithFormat:
+                      @"CREATE TABLE %@ (%@ TEXT PRIMARY KEY, %@ TEXT); CREATE INDEX %@ ON %@(%@);",
+                      TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnKey,
+                      TDDatabaseBlobFilenamesColumnFilename, TDDatabaseBlobFilenamesIndexName,
+                      TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnFilename];
 
     return cmd;
 }
@@ -52,6 +57,27 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
         [TD_Database insertFilename:filename withHexKey:hexKey intoBlobFilenamesTableInDatabase:db];
 
     return (success ? filename : nil);
+}
+
++ (NSString *)generateAndInsertRandomFilenameBasedOnKey:(TDBlobKey)key
+                       intoBlobFilenamesTableInDatabase:(FMDatabase *)db
+{
+    NSString *filename =
+        [TD_Database generateAvailableBlobFilenameInBlobFilenamesTableInDatabase:db];
+    if (filename) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Use filename %@", filename);
+        
+        NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
+
+        BOOL success = [TD_Database insertFilename:filename
+                                        withHexKey:hexKey
+                  intoBlobFilenamesTableInDatabase:db];
+        if (!success) {
+            filename = nil;
+        }
+    }
+
+    return filename;
 }
 
 + (NSUInteger)countRowsInBlobFilenamesTableInDatabase:(FMDatabase *)db
@@ -154,6 +180,61 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
     };
 
     return [db executeUpdate:update withParameterDictionary:parameters];
+}
+
++ (BOOL)isThereARowWithFilename:(NSString *)filename inBlobFilenamesTableInDatabase:(FMDatabase *)db
+{
+    BOOL isThereARow = YES;
+
+    NSString *query = [NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ WHERE %@ = :%@",
+                                                 TDDatabaseBlobFilenamesTableName,
+                                                 TDDatabaseBlobFilenamesColumnFilename,
+                                                 TDDatabaseBlobFilenamesColumnFilename];
+
+    NSDictionary *parameters = @{TDDatabaseBlobFilenamesColumnFilename : filename};
+
+    FMResultSet *r = [db executeQuery:query withParameterDictionary:parameters];
+
+    @try {
+        if ([r next]) {
+            int count = [r intForColumnIndex:0];
+
+            isThereARow = (count != 0);
+        }
+    }
+    @finally { [r close]; }
+
+    return isThereARow;
+}
+
++ (NSString *)generateAvailableBlobFilenameInBlobFilenamesTableInDatabase:(FMDatabase *)db
+{
+    NSString *filename = nil;
+
+    for (NSInteger i = 0;
+         !filename && (i < TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME); i++) {
+        filename = [TD_Database generateRandomBlobFilename];
+
+        if ([TD_Database isThereARowWithFilename:filename inBlobFilenamesTableInDatabase:db]) {
+            CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Filename %@ already in use", filename);
+            
+            filename = nil;
+        }
+    }
+
+    return filename;
+}
+
++ (NSString *)generateRandomBlobFilename
+{
+    uint8_t randBytes[SHA_DIGEST_LENGTH];
+    arc4random_buf(randBytes, SHA_DIGEST_LENGTH);
+    
+    NSString *randStr = TDHexFromBytes(randBytes, sizeof(randBytes));
+    
+    NSString *filename = [TD_Database appendExtensionToName:randStr];
+    
+    return filename;
 }
 
 + (NSString *)appendExtensionToName:(NSString *)name

@@ -31,6 +31,8 @@ extern NSString *const TDDatabaseBlobFilenamesFileExtension;
 
 + (NSString *)generateAndInsertFilenameBasedOnKey:(TDBlobKey)key
                  intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
++ (NSString *)generateAndInsertRandomFilenameBasedOnKey:(TDBlobKey)key
+                       intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
 + (NSUInteger)countRowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;
 + (NSArray *)rowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;

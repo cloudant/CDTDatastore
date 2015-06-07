@@ -14,7 +14,6 @@
 //  and limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import <CommonCrypto/CommonDigest.h>
 
 #import <CloudantSync.h>
 #import <MRDatabaseContentChecker.h>
@@ -23,7 +22,9 @@
 #import "DBQueryUtils.h"
 #import "AmazonMD5Util.h"
 
-#import "CDTAttachment.h"
+#import "TD_Database+BlobFilenames.h"
+
+#import "CDTHelperMisc.h"
 
 @interface AttachmentCRUD : CloudantSyncTests
 
@@ -245,8 +246,17 @@
     XCTAssertEqualObjects(savedAttachment.name, attachmentName, @"Attachment wasn't in document");
 
     // Check db and fs
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");
+    __block NSString *filename = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filename], @"Attachment file doesn't exist");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -308,8 +318,17 @@
                          @"Attachment wasn't in document");
     
     // Check db and fs
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");
+    __block NSString *filename = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filename], @"Attachment file doesn't exist");
     
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -359,9 +378,17 @@
                          @"Attachment wasn't in document");
 
     // Check db and fs
-
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");
+    __block NSString *filename = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filename], @"Attachment file doesn't exist");
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -452,11 +479,25 @@
     }
 
     // Check db and fs
-
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");  // image
-    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
-                 @"Attachment file doesn't exist");  // text
+    __block NSString *filenameImage = nil;
+    __block NSString *filenameText = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+        
+        data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
+        
+        [data getBytes:key.bytes];
+        
+        filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filenameImage], @"Attachment file doesn't exist"); // image
+    XCTAssertTrue([self attachmentExists:filenameText], @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -536,11 +577,25 @@
     }
 
     // Check db and fs
-
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");  // image
-    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
-                 @"Attachment file doesn't exist");  // text
+    __block NSString *filenameImage = nil;
+    __block NSString *filenameText = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+        
+        data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
+        
+        [data getBytes:key.bytes];
+        
+        filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filenameImage], @"Attachment file doesn't exist"); // image
+    XCTAssertTrue([self attachmentExists:filenameText], @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -658,10 +713,25 @@
 
     // Both files will remain until a -compact, even though the
     // image was "overwritten"
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");  // image
-    XCTAssertTrue([self attachmentExists:@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88.blob"],
-                 @"Attachment file doesn't exist");  // text
+    __block NSString *filenameImage = nil;
+    __block NSString *filenameText = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+        
+        data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
+        
+        [data getBytes:key.bytes];
+        
+        filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filenameImage], @"Attachment file doesn't exist"); // image
+    XCTAssertTrue([self attachmentExists:filenameText], @"Attachment file doesn't exist");  // text
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -733,8 +803,17 @@
 
     // The file will remain until a -compact, even though the
     // attachment was deleted
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");  // image
+    __block NSString *filename = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filename], @"Attachment file doesn't exist");  // image
 
     [self.dbutil.queue inDatabase:^(FMDatabase *db ) {
         NSArray *expectedRows = @[
@@ -799,8 +878,17 @@
     XCTAssertEqualObjects(retrievedMD5, inputMD5, @"Received MD5s");
 
     // Check file exists, but we've checked DB several times so assume okay
-    XCTAssertTrue([self attachmentExists:@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0.blob"],
-                 @"Attachment file doesn't exist");  // image
+    __block NSString *filename = nil;
+    [self.dbutil.queue inDatabase:^(FMDatabase *db) {
+        NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
+        
+        TDBlobKey key;
+        [data getBytes:key.bytes];
+        
+        filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
+    }];
+    
+    XCTAssertTrue([self attachmentExists:filename], @"Attachment file doesn't exist");  // image
 }
 
 #pragma mark Test some failure modes
