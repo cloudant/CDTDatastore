@@ -46,7 +46,7 @@
            withEncryptionKeyProvider:nilProvider];
 
     // Get datastore
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSError *error = nil;
     CDTDatastore *datastore =
@@ -61,7 +61,7 @@
 - (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderReturnsNilAndDBIsEncrypted
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *dbName = @"testdatastoremanager_encryptdb";
     [TD_Database createEmptyDBAtPath:[self pathForDBName:dbName]
@@ -82,7 +82,7 @@
 - (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToCipherTheDatabase
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *dbName = @"testdatastoremanager_encryptdbwrongkey";
     [TD_Database createEmptyDBAtPath:[self pathForDBName:dbName]
@@ -122,7 +122,7 @@
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:nilProvider error:nil];
 
     // Get datastore
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSError *error = nil;
     CDTDatastore *datastore =
@@ -137,7 +137,7 @@
 - (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderReturnsNilWithAnAlreadyOpenEncryptedDB
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *dbName = @"testdatastoremanager_alreadyopenencryptdb";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
@@ -157,7 +157,7 @@
 - (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToOpenTheDatabase
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *dbName = @"testdatastoremanager_encryptdbwrongkey_again";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];

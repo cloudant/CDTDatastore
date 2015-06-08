@@ -32,7 +32,7 @@
 
 - (void)testEncryptionKeyProviderReturnsTheSameProviderUsedToCreateTheDatastore
 {
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
 
     CDTDatastore *datastore = [self.factory datastoreNamed:@"test_copyprovider"
                                  withEncryptionKeyProvider:provider
@@ -68,7 +68,7 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Init with fixed key provider
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     XCTAssertNil(
         [[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
@@ -80,7 +80,7 @@
 - (void)testInitReturnsNilIfEncryptionKeyProviderReturnsNilAndDBIsEncrypted
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"datastoreEncryptionTests_encryptDB"];
@@ -101,7 +101,7 @@
 - (void)testInitReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToCipherTheDatabase
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"datastoreEncryptionTests_encryptDBWrongKey"];
@@ -145,7 +145,7 @@
     TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:nilProvider];
 
     // Init with fixed key provider
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     XCTAssertNil(
         [[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
@@ -157,7 +157,7 @@
 - (void)testInitReturnsNilIfEncryptionKeyProviderReturnsNilWithAnAlreadyOpenEncryptedDB
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"datastoreEncryptionTests_alreadyOpenEncryptDB"];
@@ -176,7 +176,7 @@
 - (void)testInitReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToOpenTheDatabase
 {
     // Create encrypted db
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSString *path = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"datastoreEncryptionTests_encryptDBWrongKey_again"];

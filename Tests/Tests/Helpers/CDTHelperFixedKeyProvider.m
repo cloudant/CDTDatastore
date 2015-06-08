@@ -17,40 +17,14 @@
 
 @interface CDTHelperFixedKeyProvider ()
 
-@property (strong, nonatomic, readonly) CDTEncryptionKey *fixedKey;
-
 @end
 
 @implementation CDTHelperFixedKeyProvider
 
-#pragma mark - Init object
-- (instancetype)init
-{
-    char buffer[CDTENCRYPTIONKEY_KEYSIZE];
-    memset(buffer, '*', sizeof(buffer));
-    
-    NSData *key = [NSData dataWithBytes:buffer length:sizeof(buffer)];
-    
-    return [self initWithKey:key];
-}
-
-- (instancetype)initWithKey:(NSData *)key
-{
-    self = [super init];
-    if (self) {
-        _fixedKey = [CDTEncryptionKey encryptionKeyWithData:key];
-    }
-
-    return self;
-}
-
-#pragma mark - CDTEncryptionKeyProvider methods
-- (CDTEncryptionKey *)encryptionKey { return self.fixedKey; }
-
 #pragma mark - Public methods
 - (instancetype)negatedProvider
 {
-    const char *fixedKeyBytes = self.fixedKey.data.bytes;
+    const char *fixedKeyBytes = [[[self encryptionKey] data] bytes];
 
     char negatedFixedKeyBytes[CDTENCRYPTIONKEY_KEYSIZE];
     for (NSUInteger i = 0; i < CDTENCRYPTIONKEY_KEYSIZE; i++) {
@@ -61,6 +35,17 @@
         [NSData dataWithBytes:negatedFixedKeyBytes length:sizeof(negatedFixedKeyBytes)];
 
     return [[CDTHelperFixedKeyProvider alloc] initWithKey:negatedFixedKey];
+}
+
+#pragma mark - Public class methods
++ (instancetype)provider
+{
+    char buffer[CDTENCRYPTIONKEY_KEYSIZE];
+    memset(buffer, '*', sizeof(buffer));
+    
+    NSData *key = [NSData dataWithBytes:buffer length:sizeof(buffer)];
+    
+    return [[CDTHelperFixedKeyProvider alloc] initWithKey:key];
 }
 
 @end

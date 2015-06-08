@@ -15,12 +15,12 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CDTEncryptionKeyProvider.h"
+#import "CDTEncryptionKeySimpleProvider.h"
 
-@interface CDTHelperFixedKeyProvider : NSObject <CDTEncryptionKeyProvider>
-
-- (instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
+@interface CDTHelperFixedKeyProvider : CDTEncryptionKeySimpleProvider
 
 - (instancetype)negatedProvider;
+
++ (instancetype)provider;
 
 @end
