@@ -1,6 +1,6 @@
 //
-//  CDTHelperMisc.h
-//  Tests
+//  CDTMisc.h
+//  CloudantSync
 //
 //  Created by Enrique de la Torre Fernandez on 21/05/2015.
 //  Copyright (c) 2015 Cloudant. All rights reserved.

@@ -52,15 +52,57 @@ typedef struct TDBlobKey
     encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
                     error:(NSError **)outError;
 
+/**
+ Return a reader for the attachment represented by the provided key.
+ 
+ @param key Key for an attachment
+ @param db A database
+ 
+ @return A reader or nil if there is not an attachment with the provided key or there is an error
+ 
+ @see CDTBlobReader
+ */
 - (id<CDTBlobReader>)blobForKey:(TDBlobKey)key withDatabase:(FMDatabase *)db;
 
+/**
+ Save to disk the data passed a parameter and also returns the key for the new attachment.
+ 
+ @param blob Data to save to disk
+ @param outKey Out paramteter, it will contain the key for the new attachment
+ @param db A database
+ 
+ @return YES if the attachment is saved to disk or NO if there is an error
+ 
+ @warning You should not rollback this operation. If you do that, the attachment will be deleted
+ from database but not from disk. However, if a new attachment is saved to disk with a filename
+ already in use, the original content of the file will replace with the new data passed as a
+ parameter.
+ */
 - (BOOL)storeBlob:(NSData *)blob
       creatingKey:(TDBlobKey *)outKey
      withDatabase:(FMDatabase *)db
             error:(NSError *__autoreleasing *)outError;
 
+/**
+ Count the number of attachments recorded in the database
+ 
+ @param db A database
+ 
+ @return Number of attachments
+ */
 - (NSUInteger)countWithDatabase:(FMDatabase *)db;
 
+/**
+ Get all the attachments registered in the database and delete them from database and disk, except
+ thoses reported in 'keysToKeep'.
+ 
+ @param keysToKeep Keys for attachments that you do not want to delete
+ @param db A database
+ 
+ @return Number of attachments deleted or -1 if there is an error
+ 
+ @warning DO NOT ROLLBACK this operation, it will not recreate the attachments.
+ */
 - (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db;
 
 @end
@@ -95,7 +137,17 @@ typedef struct
 /** Call this to cancel before finishing the data. */
 - (void)cancel;
 
-/** Installs a finished blob into the store. */
+/**
+ Installs a finished blob into the store.
+ 
+ @param db A database
+ 
+ @return YES if the blob is installed or NO if there is an error
+ 
+ @warning You should not rollback this operation. If you do that, the attachment will be deleted
+ from database but not from disk. However, if a new attachment is saved to disk with a filename
+ already in use, the previous file will be deleted before creating the new one.
+ */
 - (BOOL)installWithDatabase:(FMDatabase *)db;
 
 /** The number of bytes in the blob. */

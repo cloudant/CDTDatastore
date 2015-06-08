@@ -110,8 +110,6 @@
 		CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
 		CD4818781B0E0E1200E2CB64 /* CDTBlobEncryptedDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4818771B0E0E1200E2CB64 /* CDTBlobEncryptedDataTests.m */; };
 		CD4818791B0E0E1200E2CB64 /* CDTBlobEncryptedDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4818771B0E0E1200E2CB64 /* CDTBlobEncryptedDataTests.m */; };
-		CD48187C1B0E3BF100E2CB64 /* CDTHelperMisc.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48187B1B0E3BF100E2CB64 /* CDTHelperMisc.m */; };
-		CD48187D1B0E3BF100E2CB64 /* CDTHelperMisc.m in Sources */ = {isa = PBXBuildFile; fileRef = CD48187B1B0E3BF100E2CB64 /* CDTHelperMisc.m */; };
 		CD94A6FE1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
 		CD94A6FF1AB8A24C006C8343 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */; };
 		CDADD5BF1AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */ = {isa = PBXBuildFile; fileRef = CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */; };
@@ -247,8 +245,6 @@
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperOneUseKeyProvider.m; sourceTree = "<group>"; };
 		CD4818771B0E0E1200E2CB64 /* CDTBlobEncryptedDataTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTBlobEncryptedDataTests.m; sourceTree = "<group>"; };
-		CD48187A1B0E3BF100E2CB64 /* CDTHelperMisc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperMisc.h; sourceTree = "<group>"; };
-		CD48187B1B0E3BF100E2CB64 /* CDTHelperMisc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperMisc.m; sourceTree = "<group>"; };
 		CD94A6FD1AB8A24C006C8343 /* emptyencrypteddb.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = emptyencrypteddb.touchdb; path = Assets/emptyencrypteddb.touchdb; sourceTree = "<group>"; };
 		CDADD5BD1AEFD643003CA9EF /* FMDatabase+SQLCipher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FMDatabase+SQLCipher.h"; sourceTree = "<group>"; };
 		CDADD5BE1AEFD643003CA9EF /* FMDatabase+SQLCipher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "FMDatabase+SQLCipher.m"; sourceTree = "<group>"; };
@@ -531,8 +527,6 @@
 			children = (
 				CD3FBCA21AB05A170032376E /* CDTHelperFixedKeyProvider.h */,
 				CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */,
-				CD48187A1B0E3BF100E2CB64 /* CDTHelperMisc.h */,
-				CD48187B1B0E3BF100E2CB64 /* CDTHelperMisc.m */,
 				CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */,
 				CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */,
 			);
@@ -790,7 +784,6 @@
 				EC0C833E1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */,
 				9F4E646D19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
 				985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
-				CD48187C1B0E3BF100E2CB64 /* CDTHelperMisc.m in Sources */,
 				985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				EC0C83601AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
@@ -868,7 +861,6 @@
 				EC0C833F1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */,
 				9F4E646E19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
 				985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
-				CD48187D1B0E3BF100E2CB64 /* CDTHelperMisc.m in Sources */,
 				9F0D240C188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */,
 				EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,

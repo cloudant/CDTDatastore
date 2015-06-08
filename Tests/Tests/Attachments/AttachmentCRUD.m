@@ -24,7 +24,7 @@
 
 #import "TD_Database+BlobFilenames.h"
 
-#import "CDTHelperMisc.h"
+#import "CDTMisc.h"
 
 @interface AttachmentCRUD : CloudantSyncTests
 
