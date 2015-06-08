@@ -21,6 +21,7 @@
 // will not be available and Xcode will not autocomplete the code with them.
 #ifdef ENCRYPT_DATABASE
 #import "CDTEncryptionKeychainProvider.h"
+#import "CDTEncryptionKeySimpleProvider.h"
 #import "CDTDatastoreManager+EncryptionKey.h"
 #else
 #import "CDTDatastoreManager.h"

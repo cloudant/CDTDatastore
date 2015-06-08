@@ -73,7 +73,7 @@
     ivStr = @"00000cc00f00000f0ce0000000f00000";
     self.otherIVData = dataFromHexadecimalString(ivStr);
 
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] initWithKey:keyData];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider providerWithKey:keyData];
     self.encryptionKey = [provider encryptionKey];
 
     self.plainData = [@"摇;摃:xx👹⌚️👽" dataUsingEncoding:NSUnicodeStringEncoding];

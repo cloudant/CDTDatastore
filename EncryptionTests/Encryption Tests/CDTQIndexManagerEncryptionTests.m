@@ -81,7 +81,7 @@
 
 - (void)testCreateQueryIndexManagerWithFixedKeyProvider
 {
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
     CDTDatastore *datastore = [self.factory datastoreNamed:@"create_query_index_tests_fixedprovider"
                                  withEncryptionKeyProvider:provider
                                                      error:nil];
@@ -96,7 +96,7 @@
 - (void)testCreateQueryIndexManagerWithFixedKeyProviderCiphersIndex
 {
     // Create index
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
     CDTDatastore *datastore =
         [self.factory datastoreNamed:@"create_query_index_textests_fixedprovider_cipher"
             withEncryptionKeyProvider:provider
@@ -146,7 +146,7 @@
 - (void)testCreateQueryIndexManagerWithFixedKeyProviderFailsIfDBExistsAndItIsNotEncrypted
 {
     // Create datastore
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
     CDTDatastore *datastore =
         [self.factory datastoreNamed:
                           @"create_query_index_textests_fixedprovider_fails_with_noncipher_db"
@@ -179,7 +179,7 @@
 - (void)testCreateQueryIndexManagerWithFixedKeyProviderFailsIfDBIsEncryptedButKeyIsWrong
 {
     // Create datastore
-    CDTHelperFixedKeyProvider *provider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
     
     CDTDatastore *datastore = [self.factory
                    datastoreNamed:@"create_query_index_textests_fixedprovider_fails_with_wrong_key"
