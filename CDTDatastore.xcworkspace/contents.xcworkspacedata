@@ -137,6 +137,12 @@
                location = "group:CDTEncryptionKeyProvider.h">
             </FileRef>
             <FileRef
+               location = "group:CDTEncryptionKeySimpleProvider.h">
+            </FileRef>
+            <FileRef
+               location = "group:CDTEncryptionKeySimpleProvider.m">
+            </FileRef>
+            <FileRef
                location = "group:FMDatabase+EncryptionKey.h">
             </FileRef>
             <FileRef
