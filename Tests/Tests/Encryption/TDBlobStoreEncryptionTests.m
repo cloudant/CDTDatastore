@@ -57,7 +57,7 @@
     self.encryptedBlobStorePath = [NSTemporaryDirectory()
         stringByAppendingPathComponent:@"blobStoreEncryptionTests_encryptedData"];
 
-    provider = [[CDTHelperFixedKeyProvider alloc] init];
+    provider = [CDTHelperFixedKeyProvider provider];
     self.encryptedBlobStore = [[TDBlobStore alloc] initWithPath:self.encryptedBlobStorePath
                                           encryptionKeyProvider:provider
                                                           error:nil];

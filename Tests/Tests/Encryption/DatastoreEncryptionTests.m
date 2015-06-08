@@ -68,7 +68,7 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Init with fixed key provider
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     XCTAssertNil(
         [[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
@@ -86,7 +86,7 @@
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
 
     // Init with fixed key provider
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     XCTAssertNil([[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"
                                               database:db
@@ -139,7 +139,7 @@
     TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:nilProvider];
 
     // Init with fixed key provider
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     XCTAssertNil(
         [[CDTDatastore alloc] initWithManager:(CDTDatastoreManager *)@"manager"

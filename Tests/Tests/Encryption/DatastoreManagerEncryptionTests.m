@@ -46,7 +46,7 @@
            withEncryptionKeyProvider:nilProvider];
 
     // Get datastore
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSError *error = nil;
     CDTDatastore *datastore =
@@ -69,7 +69,7 @@
                                                  error:nil];
 
     // Get datastore
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSError *error = nil;
     CDTDatastore *datastore =
@@ -131,7 +131,7 @@
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:nilProvider error:nil];
 
     // Get datastore
-    CDTHelperFixedKeyProvider *fixedProvider = [[CDTHelperFixedKeyProvider alloc] init];
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
     NSError *error = nil;
     CDTDatastore *datastore =

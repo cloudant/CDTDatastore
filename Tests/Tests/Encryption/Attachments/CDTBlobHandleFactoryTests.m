@@ -67,7 +67,7 @@
 - (void)testFactoryWithFixedProviderCreatesBlobHandlesForEncryptedAttachments
 {
     CDTBlobHandleFactory *factory = [[CDTBlobHandleFactory alloc]
-                                     initWithEncryptionKeyProvider:[[CDTHelperFixedKeyProvider alloc] init]];
+                                     initWithEncryptionKeyProvider:[CDTHelperFixedKeyProvider provider]];
     
     id<CDTBlobReader> reader = [factory readerWithPath:@"///This is not a path"];
     id<CDTBlobWriter> writer = [factory writerWithPath:@"///This is not a path"];
