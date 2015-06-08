@@ -98,6 +98,8 @@
 		CD2188F11AE576740036F59F /* CDTMockEncryptionKeychainStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188EF1AE576740036F59F /* CDTMockEncryptionKeychainStorage.m */; };
 		CD25B2841AFA49E2001113BB /* CDTBlobDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */; };
 		CD25B2851AFA49E2001113BB /* CDTBlobDataTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */; };
+		CD2C67CC1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2C67CB1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m */; };
+		CD2C67CD1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2C67CB1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m */; };
 		CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */; };
 		CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */; };
@@ -233,6 +235,7 @@
 		CD2188EE1AE576740036F59F /* CDTMockEncryptionKeychainStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTMockEncryptionKeychainStorage.h; sourceTree = "<group>"; };
 		CD2188EF1AE576740036F59F /* CDTMockEncryptionKeychainStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTMockEncryptionKeychainStorage.m; sourceTree = "<group>"; };
 		CD25B2831AFA49E2001113BB /* CDTBlobDataTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTBlobDataTests.m; path = Attachments/CDTBlobDataTests.m; sourceTree = "<group>"; };
+		CD2C67CB1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTEncryptionKeySimpleProviderTests.m; sourceTree = "<group>"; };
 		CD3FBCA21AB05A170032376E /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
@@ -477,6 +480,7 @@
 			children = (
 				CD4818761B0E0DBF00E2CB64 /* Attachments */,
 				CD2188E01AE571250036F59F /* Keychain */,
+				CD2C67CB1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m */,
 				CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */,
 				CD2188D11AE5711A0036F59F /* CloudantTests+EncryptionTests.h */,
 				CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */,
@@ -783,6 +787,7 @@
 				CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
 				CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EB1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,
+				CD2C67CC1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */,
 				9F0D24171893161000D3D04E /* TDReachabilityTests.m in Sources */,
 				CDBC573A1AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m in Sources */,
 				EC0C834E1AB217290051042F /* CDTQQuerySqlTranslatorTests.m in Sources */,
@@ -859,6 +864,7 @@
 				CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
 				CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EC1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,
+				CD2C67CD1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */,
 				EC0C834F1AB217290051042F /* CDTQQuerySqlTranslatorTests.m in Sources */,
 				CDBC573B1AE6A06C00CF9E6B /* CDTMockEncryptionKeychainManager.m in Sources */,
 				EC0C835B1AB217290051042F /* CDTQMatcherIndexManager.m in Sources */,
