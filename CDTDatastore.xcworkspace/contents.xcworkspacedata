@@ -317,6 +317,12 @@
             location = "group:CDTDocumentRevision.m">
          </FileRef>
          <FileRef
+            location = "group:CDTMisc.h">
+         </FileRef>
+         <FileRef
+            location = "group:CDTMisc.m">
+         </FileRef>
+         <FileRef
             location = "group:CDTMutableDocumentRevision.h">
          </FileRef>
          <FileRef
@@ -455,6 +461,9 @@
             </FileRef>
             <FileRef
                location = "group:TDBlobStore.m">
+            </FileRef>
+            <FileRef
+               location = "group:TDBlobStore+Internal.h">
             </FileRef>
             <FileRef
                location = "group:TDCanonicalJSON.h">

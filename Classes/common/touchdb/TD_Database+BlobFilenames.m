@@ -19,6 +19,7 @@
 #import "TD_Database+BlobFilenames.h"
 
 #import "TDMisc.h"
+#import "CDTMisc.h"
 
 #import "CDTLogging.h"
 
@@ -101,29 +102,30 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 + (NSArray *)rowsInBlobFilenamesTableInDatabase:(FMDatabase *)db
 {
     NSMutableArray *allRows = [NSMutableArray array];
-    
+
     NSString *query = [NSString
         stringWithFormat:@"SELECT %@, %@ FROM %@", TDDatabaseBlobFilenamesColumnKey,
                          TDDatabaseBlobFilenamesColumnFilename, TDDatabaseBlobFilenamesTableName];
     FMResultSet *r = [db executeQuery:query];
 
     @try {
-        NSData *keyData = nil;
-        NSString *blobFilename = nil;
-        TD_DatabaseBlobFilenameRow *oneRow = nil;
-
         while ([r next]) {
-            keyData = [r dataNoCopyForColumn:TDDatabaseBlobFilenamesColumnKey];
-            blobFilename = [r stringForColumn:TDDatabaseBlobFilenamesColumnFilename];
+            NSString *hexKey = [r stringForColumn:TDDatabaseBlobFilenamesColumnKey];
+            NSData *keyData = dataFromHexadecimalString(hexKey);
 
-            oneRow = [TD_DatabaseBlobFilenameRow rowWithKey:*(TDBlobKey *)keyData.bytes
-                                               blobFilename:blobFilename];
-            
+            TDBlobKey key;
+            [keyData getBytes:key.bytes];
+
+            NSString *blobFilename = [r stringForColumn:TDDatabaseBlobFilenamesColumnFilename];
+
+            TD_DatabaseBlobFilenameRow *oneRow =
+                [TD_DatabaseBlobFilenameRow rowWithKey:key blobFilename:blobFilename];
+
             [allRows addObject:oneRow];
         }
     }
     @finally { [r close]; }
-    
+
     return allRows;
 }
 
@@ -151,37 +153,6 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
     return filename;
 }
 
-+ (BOOL)deleteRowForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db
-{
-    NSString *update = [NSString
-        stringWithFormat:@"DELETE FROM %@ WHERE %@ = :%@", TDDatabaseBlobFilenamesTableName,
-                         TDDatabaseBlobFilenamesColumnKey, TDDatabaseBlobFilenamesColumnKey];
-
-    NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
-    NSDictionary *parameters = @{TDDatabaseBlobFilenamesColumnKey : hexKey};
-
-    return [db executeUpdate:update withParameterDictionary:parameters];
-}
-
-#pragma mark - Private class methods
-+ (BOOL)insertFilename:(NSString *)filename
-                          withHexKey:(NSString *)hexKey
-    intoBlobFilenamesTableInDatabase:(FMDatabase *)db
-{
-    NSString *update = [NSString
-        stringWithFormat:@"INSERT INTO %@ (%@, %@) VALUES (:%@, :%@)",
-                         TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnKey,
-                         TDDatabaseBlobFilenamesColumnFilename, TDDatabaseBlobFilenamesColumnKey,
-                         TDDatabaseBlobFilenamesColumnFilename];
-
-    NSDictionary *parameters = @{
-        TDDatabaseBlobFilenamesColumnKey : hexKey,
-        TDDatabaseBlobFilenamesColumnFilename : filename
-    };
-
-    return [db executeUpdate:update withParameterDictionary:parameters];
-}
-
 + (BOOL)isThereARowWithFilename:(NSString *)filename inBlobFilenamesTableInDatabase:(FMDatabase *)db
 {
     BOOL isThereARow = YES;
@@ -205,6 +176,39 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
     @finally { [r close]; }
 
     return isThereARow;
+}
+
++ (BOOL)deleteRowForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db
+{
+    NSString *update = [NSString
+        stringWithFormat:@"DELETE FROM %@ WHERE %@ = :%@", TDDatabaseBlobFilenamesTableName,
+                         TDDatabaseBlobFilenamesColumnKey, TDDatabaseBlobFilenamesColumnKey];
+
+    NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
+    NSDictionary *parameters = @{TDDatabaseBlobFilenamesColumnKey : hexKey};
+
+    BOOL success = [db executeUpdate:update withParameterDictionary:parameters];
+    
+    return success;
+}
+
+#pragma mark - Private class methods
++ (BOOL)insertFilename:(NSString *)filename
+                          withHexKey:(NSString *)hexKey
+    intoBlobFilenamesTableInDatabase:(FMDatabase *)db
+{
+    NSString *update = [NSString
+        stringWithFormat:@"INSERT INTO %@ (%@, %@) VALUES (:%@, :%@)",
+                         TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnKey,
+                         TDDatabaseBlobFilenamesColumnFilename, TDDatabaseBlobFilenamesColumnKey,
+                         TDDatabaseBlobFilenamesColumnFilename];
+
+    NSDictionary *parameters = @{
+        TDDatabaseBlobFilenamesColumnKey : hexKey,
+        TDDatabaseBlobFilenamesColumnFilename : filename
+    };
+
+    return [db executeUpdate:update withParameterDictionary:parameters];
 }
 
 + (NSString *)generateAvailableBlobFilenameInBlobFilenamesTableInDatabase:(FMDatabase *)db
@@ -239,8 +243,7 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 
 + (NSString *)appendExtensionToName:(NSString *)name
 {
-    NSString *str =
-        [NSString stringWithFormat:@"%@.%@", name, TDDatabaseBlobFilenamesFileExtension];
+    NSString *str = [name stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension];
 
     return str;
 }

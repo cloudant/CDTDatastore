@@ -319,7 +319,7 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     Assert(!_blobWriter, @"Not finished");
 
     // Search filename
-    NSString *filename = [TD_Database filenameForKey:_blobKey inBlobFilenamesTableInDatabase:db];
+    NSString *filename = [self filenameInDatabase:db];
     if (filename) {
         CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Key already exists with filename %@", filename);
 
@@ -329,8 +329,7 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     }
 
     // Create if not exists
-    filename = [TD_Database generateAndInsertRandomFilenameBasedOnKey:_blobKey
-                                     intoBlobFilenamesTableInDatabase:db];
+    filename = [self generateAndInsertRandomFilenameInDatabase:db];
     if (!filename) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"No filename generated");
 
@@ -339,15 +338,39 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         return NO;
     }
 
-    // Move temp file to correct location in blob store:
+    // Check there is not a file in the destination path with the same filename
     NSString *dstPath = [TDBlobStore blobPathWithStorePath:_store.path blobFilename:filename];
 
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+
     NSError *error = nil;
-    if (![[NSFileManager defaultManager] moveItemAtPath:_tempPath toPath:dstPath error:&error]) {
+    if ([defaultManager fileExistsAtPath:dstPath]) {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"File exists at path %@. Delete before moving",
+                    dstPath);
+
+        // If this ever happens, we can safely assume that on a previous moment
+        // 'TDBlobStore:storeBlob:creatingKey:withDatabase:error:' (or
+        // 'TDBlobStoreWriter:installWithDatabase:') was executed in a block that was finally
+        // rollback. Therefore, the file in the destination path is not linked to any attachment
+        // and we can remove it.
+        if (![defaultManager removeItemAtPath:dstPath error:&error]) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Not deleted pre-existing file at path %@: %@",
+                        dstPath, error);
+
+            [self deleteFilenameInDatabase:db];
+
+            [self cancel];
+
+            return NO;
+        }
+    }
+
+    // Move temp file to correct location in blob store:
+    if (![defaultManager moveItemAtPath:_tempPath toPath:dstPath error:&error]) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"File not moved to final destination %@: %@",
                     dstPath, error);
 
-        [TD_Database deleteRowForKey:_blobKey inBlobFilenamesTableInDatabase:db];
+        [self deleteFilenameInDatabase:db];
 
         [self cancel];
 
@@ -372,6 +395,25 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
 - (void)dealloc
 {
     [self cancel];  // Close file, and delete it if it hasn't been installed yet
+}
+
+#pragma mark - TDBlobStore+Internal methods
+- (NSString *)tempPath { return _tempPath; }
+
+- (NSString *)filenameInDatabase:(FMDatabase *)db
+{
+    return [TD_Database filenameForKey:_blobKey inBlobFilenamesTableInDatabase:db];
+}
+
+- (NSString *)generateAndInsertRandomFilenameInDatabase:(FMDatabase *)db
+{
+    return [TD_Database generateAndInsertRandomFilenameBasedOnKey:_blobKey
+                                 intoBlobFilenamesTableInDatabase:db];
+}
+
+- (BOOL)deleteFilenameInDatabase:(FMDatabase *)db
+{
+    return [TD_Database deleteRowForKey:_blobKey inBlobFilenamesTableInDatabase:db];
 }
 
 @end

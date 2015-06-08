@@ -14,6 +14,8 @@
 
 #import "CDTEncryptionKeyNilProvider.h"
 
+#import "CDTMisc.h"
+
 #define TDDATABASEBLOBFILENAMESTESTS_DBFILENAME @"schema100_1Bonsai_2Lorem.touchdb"
 #define TDDATABASEBLOBFILENAMESTESTS_NUMBER_OF_ATTACHMENTS 2
 #define TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01 @"3ff2989bccf52150bba806bae1db2e0b06ad6f88"
@@ -141,6 +143,60 @@
     }];
 
     XCTAssertEqual(dbVersion, 101, @"Database version should be 101");
+}
+
+- (void)testGenerateAndInsertFilenameBasedOnKeyFailsIfKeyIsAlreadyInTable
+{
+    __block NSString *filename = nil;
+
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01);
+
+      TDBlobKey key;
+      [data getBytes:key.bytes];
+
+      filename =
+          [TD_Database generateAndInsertFilenameBasedOnKey:key intoBlobFilenamesTableInDatabase:db];
+    }];
+
+    XCTAssertNil(
+        filename,
+        @"No new filename should be generated if there is already a row with the same key");
+}
+
+- (void)testGenerateAndInsertRandomFilenameBasedOnKeyFailsIfKeyIsAlreadyInTable
+{
+    __block NSString *filename = nil;
+
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01);
+
+      TDBlobKey key;
+      [data getBytes:key.bytes];
+
+      filename = [TD_Database generateAndInsertRandomFilenameBasedOnKey:key
+                                       intoBlobFilenamesTableInDatabase:db];
+    }];
+
+    XCTAssertNil(
+        filename,
+        @"No new filename should be generated if there is already a row with the same key");
+}
+
+- (void)testIsThereARowWithFilenameFindAKnownValue
+{
+    __block BOOL isThereARow = NO;
+
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSString *filename =
+          [NSString stringWithFormat:@"%@.%@", TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01,
+                                     TDDatabaseBlobFilenamesFileExtension];
+
+      isThereARow =
+          [TD_Database isThereARowWithFilename:filename inBlobFilenamesTableInDatabase:db];
+    }];
+
+    XCTAssertTrue(isThereARow, @"Index is not working properly");
 }
 
 @end

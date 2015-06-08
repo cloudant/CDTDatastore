@@ -18,31 +18,118 @@
 
 #import "TDBlobStore.h"
 
+/** Name of the table that relates keys and filenames */
 extern NSString *const TDDatabaseBlobFilenamesTableName;
 
+/** First column / Primary key: key */
 extern NSString *const TDDatabaseBlobFilenamesColumnKey;
+
+/** Second column: filename */
 extern NSString *const TDDatabaseBlobFilenamesColumnFilename;
 
+/** File extension for attachments saved to disk */
 extern NSString *const TDDatabaseBlobFilenamesFileExtension;
 
+/**
+ This is an utility class that defines all the required methods to create and interact with a table
+ for relating keys and filenames.
+ */
 @interface TD_Database (BlobFilenames)
 
+/**
+ Execute the SQL command returned by this method to:
+ - Create table TDDatabaseBlobFilenamesTableName
+ - Generate an index for this table
+ 
+ @return A SQL command
+ */
 + (NSString *)sqlCommandToCreateBlobFilenamesTable;
 
+/**
+ This method:
+ - Generate a filename as the hexadecimal representation of the provided key plus extension
+ TDDatabaseBlobFilenamesFileExtension
+ - Insert the filename with the key passed a parameter into TDDatabaseBlobFilenamesTableName
+ 
+ @param key Key for the filename
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return A new filename or nil if there is an error
+ */
 + (NSString *)generateAndInsertFilenameBasedOnKey:(TDBlobKey)key
                  intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
+/**
+ This method:
+ - Generate a filename as a random string and check that is not in use yet. The filename includes
+ extension TDDatabaseBlobFilenamesFileExtension
+ - Insert the filename with the key passed a parameter into TDDatabaseBlobFilenamesTableName
+ 
+ @param key Key for the filename
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return A new filename or nil if there is an error
+ */
 + (NSString *)generateAndInsertRandomFilenameBasedOnKey:(TDBlobKey)key
                        intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
+/**
+ Count the number of rows/entries in the table TDDatabaseBlobFilenamesTableName
+ 
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return Number of rows in TDDatabaseBlobFilenamesTableName
+ */
 + (NSUInteger)countRowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
+/**
+ Return an array with all the rows in table TDDatabaseBlobFilenamesTableName. Each row is
+ represented with an instance of TD_DatabaseBlobFilenameRow.
+ 
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return Array with rows in TDDatabaseBlobFilenamesTableName
+ 
+ @see TD_DatabaseBlobFilenameRow
+ */
 + (NSArray *)rowsInBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
+/**
+ Look for the filename related to the key passed as a parameter
+ 
+ @param key Key for the filename we are lookin for
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return A filename or nil if the key is not found
+ */
 + (NSString *)filenameForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
+/**
+ Check if the filename passed as a parameter is already in use
+ 
+ @param filename Filename we want to check
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return NO if the filename is not in the table or YES in other case
+ */
++ (BOOL)isThereARowWithFilename:(NSString *)filename
+    inBlobFilenamesTableInDatabase:(FMDatabase *)db;
+
+/**
+ Look for a row with a key equal to the key passed as a parameter and delete it.
+ 
+ @param key Key for the row to delete
+ @param db Database with table TDDatabaseBlobFilenamesTableName
+ 
+ @return YES if a row is deleted or NO in other case
+ */
 + (BOOL)deleteRowForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
 @end
 
+/**
+ This is an auxiliary class only used by: 'TD_Database:rowsInBlobFilenamesTableInDatabase:'
+ */
 @interface TD_DatabaseBlobFilenameRow : NSObject
 
 @property (assign, nonatomic, readonly) TDBlobKey key;

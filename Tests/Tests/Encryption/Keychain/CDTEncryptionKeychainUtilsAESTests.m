@@ -18,7 +18,7 @@
 
 #import "CDTEncryptionKeychainUtils+AES.h"
 
-#import "CDTHelperMisc.h"
+#import "CDTMisc.h"
 
 #import "TDBase64.h"
 

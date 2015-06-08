@@ -19,9 +19,9 @@
 #import "CDTBlobEncryptedData+Internal.h"
 #import "CDTBlobEncryptedDataConstants.h"
 
-#import "CDTHelperMisc.h"
 #import "CDTHelperFixedKeyProvider.h"
 
+#import "CDTMisc.h"
 #import "TDBase64.h"
 
 @interface CDTBlobCustomEncryptedData : CDTBlobEncryptedData
