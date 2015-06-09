@@ -23,22 +23,16 @@ match(^BOOL {
 
     BOOL matches = YES;
     
+    if([actual count] != [expected count]){
+        return NO;
+    }
+    
     for(id element in expected){
         if([actual containsObject:element]){
             continue;
         }
         matches = NO;
         break;
-    }
-    
-    if (matches) {
-        for(id element in actual){
-            if([expected containsObject:element]){
-                continue;
-            }
-            matches = NO;
-            break;
-        }
     }
     
     return matches;
