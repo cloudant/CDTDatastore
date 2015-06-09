@@ -100,6 +100,118 @@
 }
 
 #pragma mark Tests
+-(void)testSavedHttpAttachmentWithRemote
+{
+    //
+    // Set up remote database
+    //
+    
+    NSString *remoteDbName = [NSString stringWithFormat:@"%@-test-database-%@",
+                              self.remoteDbPrefix,
+                              [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+    
+    [self createRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+    //
+    // Add attachments to a document in the local store
+    //
+    
+    // Contains {attachmentName: attachmentContent} for later checking
+    NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
+    
+    NSError *error;
+    
+    NSString *docId = @"document1";
+    CDTMutableDocumentRevision *mrev = [CDTMutableDocumentRevision revision];
+    mrev.docId = docId;
+    mrev.body =@{@"hello": @12};
+    
+    NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
+    NSString *content = @"blahblah";
+    NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *name = @"attachment";
+    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
+                                                                          name:name
+                                                                          type:@"text/plain"];
+    [attachments setObject:attachment forKey:name];
+    
+    [originalAttachments setObject:data forKey:name];
+
+    
+    mrev.attachments = attachments;
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
+    
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:1],
+                  @"Incorrect number of attachments");
+    
+    [self pushTo:remoteDbURL from:self.datastore];
+    
+    CDTMutableDocumentRevision *mRev = [rev mutableCopy];
+    mRev.attachments = [@{} mutableCopy];
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:mRev error:&error];
+    
+    XCTAssertNotNil(rev2, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev2 equalTo:0],
+                  @"Incorrect number of attachments");
+    
+    
+    //
+    // Push to remote
+    //
+    
+    [self pushTo:remoteDbURL from:self.datastore];
+
+    
+    //check we can use the remote attachment class to get the attachments
+    
+    NSURL *docURL = [remoteDbURL URLByAppendingPathComponent:docId];
+    NSURLComponents *docURLComponents = [NSURLComponents componentsWithURL:docURL resolvingAgainstBaseURL:NO];
+    docURLComponents.query = [NSString stringWithFormat:@"rev=%@",rev.revId];
+    docURL = [docURLComponents URL];
+    UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
+        [request setUrl:[docURL absoluteString]];
+        [request setHeaders:@{@"accept": @"application/json"}];
+    }] asJson];
+    
+    
+
+    
+    //
+    // Checks
+    //
+    
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                  @"Local and remote database comparison failed");
+    
+    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore
+                                                 withDatabase:remoteDbURL],
+                  @"Local and remote database attachment comparison failed");
+    
+    NSDictionary *responseDict = response.body.JSONObject;
+    
+    CDTDocumentRevision *remoteRevision = [CDTDocumentRevision createRevisionFromJson:responseDict forDocument:docURL error:&error];
+    
+    XCTAssertNotNil(remoteRevision,@"Remote Revision was nil");
+    XCTAssertEqual(remoteRevision.attachments.count, 1,@"Remote attachments were not equal to 1");
+
+    CDTAttachment *remoteAttachment = remoteRevision.attachments.allValues[0];
+    
+    XCTAssertEqualObjects([@"blahblah" dataUsingEncoding:NSUTF8StringEncoding], [remoteAttachment dataFromAttachmentContent],@"Attachment content was not equal");
+    
+    
+    
+    //
+    // Clean up
+    //
+    
+    [self deleteRemoteDatabase:remoteDbName
+                   instanceURL:self.remoteRootURL];
+    
+}
+
 
 - (void)testReplicateSeveralRemoteDocumentsWithAttachments
 {

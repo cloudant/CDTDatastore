@@ -79,11 +79,17 @@
 
     // build the attachment objects
     for (NSString *key in [attachmentData allKeys]) {
-        NSURL *url = [NSURL URLWithString:key relativeToURL:documentURL];
+        
+        NSURLComponents *documentUrlComponents = [NSURLComponents componentsWithString:[documentURL absoluteString]];
+        NSString *documentPathString = documentUrlComponents.path;
+        NSString *attachmentPath = [NSString stringWithFormat:@"%@/%@", documentPathString,key];
+        documentUrlComponents.path = attachmentPath;
+        
+        
         CDTSavedHTTPAttachment *attachment =
             [CDTSavedHTTPAttachment createAttachmentWithName:key
                                                     JSONData:[attachmentData objectForKey:key]
-                                               attachmentURL:url
+                                               attachmentURL:[documentUrlComponents URL]
                                                        error:error];
         if (*error) {
             return nil;
