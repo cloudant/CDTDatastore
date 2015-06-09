@@ -452,7 +452,11 @@ SharedExamplesBegin(QueryExecution)
                 expect(result.documentIds).to.containsAllElements(@[@"john15",
                                                                     @"john-15",
                                                                     @"john15.2",
-                                                                    @"john15.6"]);
+                                                                    @"john15.6",
+                                                                    @"john0",
+                                                                    @"john0.0",
+                                                                    @"john0.6",
+                                                                    @"john-0.6"]);
             });
             
             it(@"works using negative remainder", ^{
@@ -488,7 +492,11 @@ SharedExamplesBegin(QueryExecution)
                 expect(result.documentIds).to.containsAllElements(@[@"john15",
                                                                     @"john-15",
                                                                     @"john15.2",
-                                                                    @"john15.6"]);
+                                                                    @"john15.6",
+                                                                    @"john0",
+                                                                    @"john0.0",
+                                                                    @"john0.6",
+                                                                    @"john-0.6"]);
             });
             
         });
