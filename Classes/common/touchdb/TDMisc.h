@@ -63,11 +63,13 @@ NSURL* TDURLWithoutQuery(NSURL* url);
 /** Appends path components to a URL. These will NOT be URL-escaped, so you can include queries. */
 NSURL* TDAppendToURL(NSURL* baseURL, NSString* toAppend);
 
+#pragma clang diagnostic ignored "-Wcomment"
 /** Cleans username and password from a NSURL and returns a string. Use this function when needed
  to send an NSURL address to a log or console but do not want to expose credentials.
  
  If the NSURL does not have a password it returns NSURL -absoluteString. Otherwise, the string will 
  be of the form 'https://*****\@host:port/path?query#fragment' */
+#pragma clang diagnostic pop
 NSString* TDCleanURLtoString(NSURL* url);
 
 /** Filter block, used in replication. */

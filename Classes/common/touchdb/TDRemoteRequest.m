@@ -337,7 +337,7 @@
 {
     if (!(_dontLog404 && error.code == kTDStatusNotFound &&
           $equal(error.domain, TDHTTPErrorDomain)))
-        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got error. domain %@, code %@", self, error.domain, error.code);
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got error. domain %@, code %@", self, error.domain, @(error.code));
 
     // If the error is likely transient, retry:
     if (TDMayBeTransientError(error) && [self retry]) return;

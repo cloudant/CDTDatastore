@@ -71,7 +71,7 @@
     SequenceNumber lastSequence = [self.mStartSequenceValue longLongValue];
 
     do {
-        if (self.cancelled) {
+        if ([self isCancelled]) {
             return;  // Bail early, don't call completion block
         }
 
@@ -86,7 +86,7 @@
         // Try our best to avoid calling the completion block if cancelled is set:
         //  - after the check in the loop above 
         //  - where there are no remaining changes, so we fall through to here
-        if (!self.cancelled) {
+        if (![self isCancelled]) {
             self.mFetchRecordChangesCompletionBlock(
                 [[NSNumber numberWithLongLong:lastSequence] stringValue], self.mStartSequenceValue,
                 nil);
@@ -109,7 +109,7 @@
 - (SequenceNumber)notifyChanges:(TD_RevisionList *)changes
                startingSequence:(SequenceNumber)startingSequence
 {
-    if (self.cancelled) {
+    if ([self isCancelled]) {
         return startingSequence;  // processed no changes
     }
 
@@ -127,7 +127,7 @@
     }
     
     for (TD_Revision *change in changes) {
-        if (self.cancelled) {
+        if ([self isCancelled]) {
             return lastSequence;  // We processed changes up to this sequence
         }
 

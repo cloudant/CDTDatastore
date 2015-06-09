@@ -188,8 +188,6 @@
 {
     BOOL stub = [jsonData[@"stub"] boolValue];
     NSNumber *length = jsonData[@"length"];
-    NSString *digest = jsonData[@"digest"];
-    NSNumber *revpos = jsonData[@"revpos"];
     NSString *contentType = jsonData[@"content_type"];
     NSString *data = jsonData[@"data"];
     NSData *decodedData = nil;
