@@ -17,7 +17,7 @@
 #import <CloudantSync.h>
 #import <Specta.h>
 #import <Expecta.h>
-#import "Matchers/CDTQContainsAllElementsMatcher.h"
+#import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
 
@@ -120,7 +120,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"lives in Bristol"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"mike34", @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"fred12" ]);
         });
         
         it(@"can perform a phrase search", ^{
@@ -130,7 +130,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"lives in Bristol\""} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
         
         it(@"can perform a search containing an apostrophe", ^{
@@ -140,7 +140,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"he's retired"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike72" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
         
         it(@"can perform a search consisting of a single text clause with a sort", ^{
@@ -151,7 +151,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"best friend"} };
             NSArray *order = @[ @{ @"name" : @"asc" } ];
             CDTQResultSet* result = [im find:query skip:0 limit:0 fields:nil sort: order];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
             expect(result.documentIds[0]).to.equal(@"fred12");
             expect(result.documentIds[1]).to.equal(@"mike12");
         });
@@ -165,7 +165,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             NSDictionary* query = @{ @"name" : @"mike",
                                      @"$text" : @{@"$search" : @"best friend"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12" ]);
         });
         
         it(@"can perform a compound OR query search containing a text clause", ^{
@@ -177,7 +177,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             NSDictionary* query = @{ @"$or" : @[ @{ @"name" : @"mike" },
                                                  @{ @"$text" : @{@"$search" : @"best friend"} } ] };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12",
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
                                                                 @"mike34",
                                                                 @"mike72",
                                                                 @"fred12" ]);
@@ -213,7 +213,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"صديق له هو\""} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"john34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"john34" ]);
         });
         
         it(@"returns empty result set for unmatched phrase search", ^{
@@ -235,7 +235,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // The search predicate "Remus Romulus" normalizes to "Remus AND Romulus" in SQLite
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"remus romulus"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"fred34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
         
         it(@"can perform text search using enhanced query syntax OR operator", ^{
@@ -247,7 +247,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // be treated as a search token
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus OR Romulus"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"fred34", @"mike72" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34", @"mike72" ]);
         });
         
         it(@"can perform text search using enhanced query syntax NOT operator", ^{
@@ -260,7 +260,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // - NOT operator only works between tokens as in (token1 NOT token2)
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus NOT Romulus"} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike72" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
         
         it(@"can perform text search using enhanced query syntax with parentheses", ^{
@@ -273,7 +273,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"(Remus OR Romulus) "
                                                                @"AND \"lives next door\""} };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"fred34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
         
         it(@"can perform text search using NEAR operator", ^{
@@ -286,7 +286,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             //   If left out it defaults to 10
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"he lives\" NEAR/2 Bristol" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
         
         it(@"is case insensitive when using the default tokenizer", ^{
@@ -297,7 +297,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // Search is generally case-insensitive unless a custom tokenizer is provided
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"rEmUs RoMuLuS" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"fred34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
         
         it(@"treats non-string field as a string when performing a text search", ^{
@@ -307,7 +307,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"12" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
         
         it(@"returns nil when text search criteria is not a string", ^{
@@ -328,7 +328,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // in mike12's comment
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"Fred" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"fred12", @"fred34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12", @"fred34" ]);
         });
         
         it(@"can perform a text search targeting specific fields", ^{
@@ -341,7 +341,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"name:fred "
                                                                @"comment:lives in Bristol" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"fred12" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred12" ]);
         });
         
         it(@"can perform a text search using prefix searches", ^{
@@ -351,7 +351,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"liv* riv*" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike34" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike34" ]);
         });
         
         it(@"retuns empty result set when missing wildcards in prefix searches", ^{
@@ -372,7 +372,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"_id:mike*" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike12", @"mike34", @"mike72" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"mike72" ]);
         });
         
         it(@"can perform a text search using the Porter tokenizer stemmer", ^{
@@ -383,7 +383,7 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             
             NSDictionary* query = @{ @"$text" : @{@"$search" : @"retire memory" } };
             CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containAllElements(@[ @"mike72" ]);
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
         
         it(@"returns empty result set when using default tokenizer stemmer", ^{

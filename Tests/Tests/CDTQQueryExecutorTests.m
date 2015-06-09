@@ -15,7 +15,7 @@
 #import <CDTQIndexCreator.h>
 #import <CDTQResultSet.h>
 #import <CDTQQueryExecutor.h>
-#import "Matchers/CDTQContainsAllElementsMatcher.h"
+#import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 #import "Matchers/CDTQEitherMatcher.h"
 
 SharedExamplesBegin(QueryExecution)
@@ -418,7 +418,7 @@ SharedExamplesBegin(QueryExecution)
             it(@"works using a positive divisor", ^{
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @1 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"mike31", @"fred11"]);
             });
             
             it(@"works using a negative divisor", ^{
@@ -426,7 +426,7 @@ SharedExamplesBegin(QueryExecution)
                 // using @{ @"score" : @{@"$mod" : @[ @10, @1 ] } }.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @-10, @1 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"mike31", @"fred11"]);
             });
             
             it(@"works used with other predicates", ^{
@@ -435,7 +435,7 @@ SharedExamplesBegin(QueryExecution)
                                         @"score" : @{@"$mod" : @[ @10, @1 ] }
                                         };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"mike31"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"mike31"]);
             });
             
             it(@"returns empty result set when $mod applied to non-numeric field", ^{
@@ -449,14 +449,14 @@ SharedExamplesBegin(QueryExecution)
                 // whole number before modulo arithmetic is applied.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @5, @0 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"john15",
-                                                                    @"john-15",
-                                                                    @"john15.2",
-                                                                    @"john15.6",
-                                                                    @"john0",
-                                                                    @"john0.0",
-                                                                    @"john0.6",
-                                                                    @"john-0.6"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"john15",
+                                                                   @"john-15",
+                                                                   @"john15.2",
+                                                                   @"john15.6",
+                                                                   @"john0",
+                                                                   @"john0.0",
+                                                                   @"john0.6",
+                                                                   @"john-0.6"]);
             });
             
             it(@"works using negative remainder", ^{
@@ -464,7 +464,7 @@ SharedExamplesBegin(QueryExecution)
                 // is negative, which in this case is the value of the score field.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @-5 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"john-15"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"john-15"]);
             });
             
             it(@"works using negative divisor and negative remainder", ^{
@@ -472,7 +472,7 @@ SharedExamplesBegin(QueryExecution)
                 // using @{ @"score" : @{ @"score" : @{@"$mod" : @[ @10, @-5 ] } }.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @-10, @-5 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"john-15"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"john-15"]);
             });
             
             it(@"works using a remainder that is not a whole number", ^{
@@ -481,7 +481,7 @@ SharedExamplesBegin(QueryExecution)
                 // using @{ @"score": @{ @"$mod": @[ @10, @1 ] } }.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @10, @1.6 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"mike31", @"fred11"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"mike31", @"fred11"]);
             });
             
             it(@"works using a divisor that is not a whole number", ^{
@@ -489,14 +489,14 @@ SharedExamplesBegin(QueryExecution)
                 // to the operation being performed.
                 NSDictionary* query = @{ @"score" : @{@"$mod" : @[ @5.4, @0 ] } };
                 CDTQResultSet* result = [im find:query];
-                expect(result.documentIds).to.containsAllElements(@[@"john15",
-                                                                    @"john-15",
-                                                                    @"john15.2",
-                                                                    @"john15.6",
-                                                                    @"john0",
-                                                                    @"john0.0",
-                                                                    @"john0.6",
-                                                                    @"john-0.6"]);
+                expect(result.documentIds).to.containsInAnyOrder(@[@"john15",
+                                                                   @"john-15",
+                                                                   @"john15.2",
+                                                                   @"john15.6",
+                                                                   @"john0",
+                                                                   @"john0.0",
+                                                                   @"john0.6",
+                                                                   @"john-0.6"]);
             });
             
         });
@@ -1122,19 +1122,19 @@ SharedExamplesBegin(QueryExecution)
                 it(@"works used alone", ^{
                     NSDictionary* query = @{ @"age" : @{ @"$not" : @{@"$mod" : @[ @10, @2 ] } } };
                     CDTQResultSet* result = [im find:query];
-                    expect(result.documentIds).to.containsAllElements(@[@"fred34",
-                                                                        @"mike34",
-                                                                        @"mike72"]);
+                    expect(result.documentIds).to.containsInAnyOrder(@[@"fred34",
+                                                                       @"mike34",
+                                                                       @"mike72"]);
                 });
                 
                 it(@"returns all docs when $mod applied to non-number field", ^{
                     NSDictionary* query = @{ @"name" : @{ @"$not" : @{@"$mod" : @[ @10, @2 ] } } };
                     CDTQResultSet* result = [im find:query];
-                    expect(result.documentIds).to.containsAllElements(@[@"fred12",
-                                                                        @"mike12",
-                                                                        @"fred34",
-                                                                        @"mike34",
-                                                                        @"mike72"]);
+                    expect(result.documentIds).to.containsInAnyOrder(@[@"fred12",
+                                                                       @"mike12",
+                                                                       @"fred34",
+                                                                       @"mike34",
+                                                                       @"mike72"]);
                 });
             });
         });
@@ -1188,7 +1188,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(2);
-                expect(result.documentIds).to.containAllElements(@[ @"mike12", @"mike34" ]);
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34" ]);
             });
 
             it(@"finds document without array", ^{
@@ -1196,7 +1196,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(1);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34" ]);
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
             });
             
             // Queries like { "pet" : "$eq" : "cat" } }
@@ -1208,7 +1208,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"mike12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
                                                                     @"mike34",
                                                                     @"john22" ]);
             });
@@ -1218,7 +1218,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"mike12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
                                                                     @"mike34",
                                                                     @"john22" ]);
             });
@@ -1232,7 +1232,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(4);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34",
                                                                     @"john44",
                                                                     @"john22",
                                                                     @"fred12" ]);
@@ -1243,7 +1243,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(4);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34",
                                                                     @"john44",
                                                                     @"john22",
                                                                     @"fred12" ]);
@@ -1261,7 +1261,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34",
                                                                     @"john44",
                                                                     @"mike34" ]);
             });
@@ -1271,7 +1271,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"mike12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
                                                                     @"john22",
                                                                     @"mike34" ]);
             });
@@ -1281,7 +1281,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"fred12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred12",
                                                                     @"john22",
                                                                     @"mike12" ]);
             });
@@ -1295,7 +1295,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34",
                                                                     @"fred12",
                                                                     @"john44" ]);
             });
@@ -1426,7 +1426,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(2);
-                expect(result.documentIds).to.containAllElements(@[ @"mike34", @"john44" ]);
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike34", @"john44" ]);
             });
             
             it(@"can find documents without arrays using $in", ^{
@@ -1434,7 +1434,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(1);
-                expect(result.documentIds).to.containAllElements(@[ @"fred34" ]);
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
             });
             
             it(@"can find documents with and without arrays using $in", ^{
@@ -1442,7 +1442,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"mike12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
                                                                     @"mike34",
                                                                     @"john22" ]);
             });
@@ -1459,7 +1459,7 @@ SharedExamplesBegin(QueryExecution)
                 CDTQResultSet* result = [im find:query];
                 expect(result).toNot.beNil();
                 expect(result.documentIds.count).to.equal(3);
-                expect(result.documentIds).to.containAllElements(@[ @"fred12",
+                expect(result.documentIds).to.containsInAnyOrder(@[ @"fred12",
                                                                     @"fred34",
                                                                     @"john44" ]);
             });
@@ -1593,7 +1593,7 @@ SharedExamplesBegin(QueryExecution)
                         ]];
                     expect([results.documentIds count]).to.equal(20);
                     expect(results.documentIds)
-                        .to.containAllElements(@[
+                        .to.containsInAnyOrder(@[
                             @"d90",
                             @"d91",
                             @"d92",
