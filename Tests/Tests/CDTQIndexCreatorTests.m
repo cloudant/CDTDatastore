@@ -12,7 +12,7 @@
 #import <CDTQIndexCreator.h>
 #import <CDTQResultSet.h>
 #import <CDTQQueryExecutor.h>
-#import "Matchers/CDTQContainsAllElementsMatcher.h"
+#import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQIndexCreator)
 
@@ -261,8 +261,8 @@ SpecBegin(CDTQIndexCreator)
                                 withName:@"jsonIndex"
                                     type:@"json"];
                 expect(name).to.equal(@"jsonIndex");
-                expect(im.listIndexes.allKeys).to.containsAllElements(@[ @"textIndex",
-                                                                         @"jsonIndex" ]);
+                expect(im.listIndexes.allKeys).to.containsInAnyOrder(@[ @"textIndex",
+                                                                        @"jsonIndex" ]);
                 
             });
             

@@ -15,7 +15,7 @@
 
 #import <CloudantSync.h>
 #import <CDTQIndex.h>
-#import "Matchers/CDTQContainsAllElementsMatcher.h"
+#import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQIndex)
 
@@ -33,7 +33,7 @@ describe(@"When creating an instance of index", ^{
         CDTQIndex *index = [CDTQIndex index:indexName withFields:fieldNames];
         
         expect(index.indexName).to.equal(@"basic");
-        expect(index.fieldNames).to.containsAllElements(@[ @"name", @"age" ]);
+        expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
         expect(index.indexType).to.equal(@"json");
         expect(index.indexSettings).to.beNil();
     });
@@ -42,7 +42,7 @@ describe(@"When creating an instance of index", ^{
         CDTQIndex *index = [CDTQIndex index:indexName withFields:fieldNames ofType:@"text"];
 
         expect(index.indexName).to.equal(@"basic");
-        expect(index.fieldNames).to.containsAllElements(@[ @"name", @"age" ]);
+        expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
         expect(index.indexType).to.equal(@"text");
         expect(index.indexSettings.count).to.equal(1);
         expect(index.indexSettings[ @"tokenize" ]).to.equal(@"simple");
@@ -85,7 +85,7 @@ describe(@"When creating an instance of index", ^{
                                withSettings:@{ @"tokenize": @"porter" }];
 
         expect(index.indexName).to.equal(@"basic");
-        expect(index.fieldNames).to.containsAllElements(@[ @"name", @"age" ]);
+        expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
         expect(index.indexType).to.equal(@"json");
         expect(index.indexSettings).to.beNil();
     });
@@ -98,7 +98,7 @@ describe(@"When creating an instance of index", ^{
                                withSettings:@{ @"tokenize": @"porter" }];
 
         expect(index.indexName).to.equal(@"basic");
-        expect(index.fieldNames).to.containsAllElements(@[ @"name", @"age" ]);
+        expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
         expect(index.indexType).to.equal(@"text");
         expect(index.indexSettings[ @"tokenize" ]).to.equal(@"porter");
     });

@@ -16,7 +16,7 @@
 #import <CDTQQueryValidator.h>
 #import <Specta.h>
 #import <Expecta.h>
-#import "Matchers/CDTQContainsAllElementsMatcher.h"
+#import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 #import "Matchers/CDTQQueryMatcher.h"
 #import "Matchers/CDTQEitherMatcher.h"
 
@@ -109,7 +109,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             NSString *otherSql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
             "WHERE \"name\" = ? AND \"pet\" = ?;";
             expect(sqlNode.sql.sqlWithPlaceholders).to.isEqualToEither(sql,otherSql);
-            expect(sqlNode.sql.placeholderValues).to.containsAllElements(@[ @"cat", @"mike" ]);
+            expect(sqlNode.sql.placeholderValues).to.containsInAnyOrder(@[ @"cat", @"mike" ]);
         });
 
         it(@"can cope with longhand single level ANDed query", ^{
@@ -1324,7 +1324,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                                                             @{ @"pet" : @"cat" },
                                                                             @{ @"age" : @12 }
                                                                          ]];
-            expect(fields).to.containAllElements(@[ @"name", @"pet", @"age" ]);
+            expect(fields).to.containsInAnyOrder(@[ @"name", @"pet", @"age" ]);
         });
     });
 });

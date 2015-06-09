@@ -96,8 +96,6 @@
 		EC0C83511AB217290051042F /* CDTQUnindexedMatcherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C83291AB217290051042F /* CDTQUnindexedMatcherTests.m */; };
 		EC0C83521AB217290051042F /* CDTQValueExtractorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832A1AB217290051042F /* CDTQValueExtractorTests.m */; };
 		EC0C83531AB217290051042F /* CDTQValueExtractorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832A1AB217290051042F /* CDTQValueExtractorTests.m */; };
-		EC0C83541AB217290051042F /* CDTQContainsAllElementsMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832D1AB217290051042F /* CDTQContainsAllElementsMatcher.m */; };
-		EC0C83551AB217290051042F /* CDTQContainsAllElementsMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832D1AB217290051042F /* CDTQContainsAllElementsMatcher.m */; };
 		EC0C83561AB217290051042F /* CDTQEitherMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832F1AB217290051042F /* CDTQEitherMatcher.m */; };
 		EC0C83571AB217290051042F /* CDTQEitherMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C832F1AB217290051042F /* CDTQEitherMatcher.m */; };
 		EC0C83581AB217290051042F /* CDTQQueryMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C83311AB217290051042F /* CDTQQueryMatcher.m */; };
@@ -112,6 +110,8 @@
 		EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833A1AB217290051042F /* CDTQSQLOnlyQueryExecutor.m */; };
 		EC0C83621AB217290051042F /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833B1AB217290051042F /* Tests.m */; };
 		EC0C83631AB217290051042F /* Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC0C833B1AB217290051042F /* Tests.m */; };
+		EC1D10871B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC1D10861B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m */; };
+		EC1D10881B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = EC1D10861B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m */; };
 		EC578D8A1AE67D60003D6006 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC578D891AE67D60003D6006 /* CDTQIndexTests.m */; };
 		EC578D8B1AE67D60003D6006 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = EC578D891AE67D60003D6006 /* CDTQIndexTests.m */; };
 		ECA0DC611AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */; };
@@ -184,8 +184,6 @@
 		EC0C83281AB217290051042F /* CDTQQuerySqlTranslatorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQQuerySqlTranslatorTests.m; sourceTree = "<group>"; };
 		EC0C83291AB217290051042F /* CDTQUnindexedMatcherTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQUnindexedMatcherTests.m; sourceTree = "<group>"; };
 		EC0C832A1AB217290051042F /* CDTQValueExtractorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQValueExtractorTests.m; sourceTree = "<group>"; };
-		EC0C832C1AB217290051042F /* CDTQContainsAllElementsMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQContainsAllElementsMatcher.h; sourceTree = "<group>"; };
-		EC0C832D1AB217290051042F /* CDTQContainsAllElementsMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQContainsAllElementsMatcher.m; sourceTree = "<group>"; };
 		EC0C832E1AB217290051042F /* CDTQEitherMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQEitherMatcher.h; sourceTree = "<group>"; };
 		EC0C832F1AB217290051042F /* CDTQEitherMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQEitherMatcher.m; sourceTree = "<group>"; };
 		EC0C83301AB217290051042F /* CDTQQueryMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQQueryMatcher.h; sourceTree = "<group>"; };
@@ -199,6 +197,8 @@
 		EC0C83391AB217290051042F /* CDTQSQLOnlyQueryExecutor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQSQLOnlyQueryExecutor.h; sourceTree = "<group>"; };
 		EC0C833A1AB217290051042F /* CDTQSQLOnlyQueryExecutor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQSQLOnlyQueryExecutor.m; sourceTree = "<group>"; };
 		EC0C833B1AB217290051042F /* Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tests.m; sourceTree = "<group>"; };
+		EC1D10851B27514300B98462 /* CDTQContainsInAnyOrderMatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTQContainsInAnyOrderMatcher.h; sourceTree = "<group>"; };
+		EC1D10861B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQContainsInAnyOrderMatcher.m; sourceTree = "<group>"; };
 		EC578D891AE67D60003D6006 /* CDTQIndexTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexTests.m; sourceTree = "<group>"; };
 		ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQTextSearchTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -393,8 +393,8 @@
 		EC0C832B1AB217290051042F /* Matchers */ = {
 			isa = PBXGroup;
 			children = (
-				EC0C832C1AB217290051042F /* CDTQContainsAllElementsMatcher.h */,
-				EC0C832D1AB217290051042F /* CDTQContainsAllElementsMatcher.m */,
+				EC1D10851B27514300B98462 /* CDTQContainsInAnyOrderMatcher.h */,
+				EC1D10861B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m */,
 				EC0C832E1AB217290051042F /* CDTQEitherMatcher.h */,
 				EC0C832F1AB217290051042F /* CDTQEitherMatcher.m */,
 				EC0C83301AB217290051042F /* CDTQQueryMatcher.h */,
@@ -600,6 +600,7 @@
 				9F0D24111890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */,
 				EC0C83501AB217290051042F /* CDTQUnindexedMatcherTests.m in Sources */,
+				EC1D10871B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m in Sources */,
 				EC0C83481AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835C1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
@@ -616,7 +617,6 @@
 				9F0D2402188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				EC0C833E1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */,
 				9F4E646D19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
-				EC0C83541AB217290051042F /* CDTQContainsAllElementsMatcher.m in Sources */,
 				985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
 				985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
@@ -655,6 +655,7 @@
 				9F0D24121890AD0C00D3D04E /* TDMultipartDownloaderTests.m in Sources */,
 				27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */,
 				EC0C83511AB217290051042F /* CDTQUnindexedMatcherTests.m in Sources */,
+				EC1D10881B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m in Sources */,
 				EC0C83491AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835D1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
@@ -671,7 +672,6 @@
 				985A188B19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
 				EC0C833F1AB217290051042F /* CDTQFilterFieldsTest.m in Sources */,
 				9F4E646E19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
-				EC0C83551AB217290051042F /* CDTQContainsAllElementsMatcher.m in Sources */,
 				985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
 				9F0D240C188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				9F0D24181893161000D3D04E /* TDReachabilityTests.m in Sources */,
