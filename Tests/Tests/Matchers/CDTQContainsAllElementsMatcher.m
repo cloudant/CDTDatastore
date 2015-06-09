@@ -31,6 +31,16 @@ match(^BOOL {
         break;
     }
     
+    if (matches) {
+        for(id element in actual){
+            if([expected containsObject:element]){
+                continue;
+            }
+            matches = NO;
+            break;
+        }
+    }
+    
     return matches;
     
 });
