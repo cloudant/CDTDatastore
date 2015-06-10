@@ -36,13 +36,27 @@ storing it safely. If you do not want to worry about this, you can use
 handles generating a strong key from a user-provided password and stores it
 safely in the keychain.
 
-It is up to you to code your own class but keep in mind that if the
+If you finally decide to implement your own class, keep in mind that if
 `CDTEncryptionKeyProvider:encryptionKey` returns nil, the datastore won't be
 encrypted regardless of the subspec defined in your `Podfile`.
 
 To end, call `CDTDatastoreManager:datastoreNamed:withEncryptionKeyProvider:error:`
 to create encrypted datastores.
 
+## License
+
+We use [Common Crypto][Common Crypto] library to encrypt the attachments before
+saving to disk. Databases are automatically encrypted with
+[SQLCipher][SQLCipher], this library requires to include its
+[BSD-style license][BSD-style license] and copyright in your application and
+documentation.
+
+Thefore, if you use the subspec `CDTDatastore/SQLCipher`, please follow the
+instructions mentioned [here](https://www.zetetic.net/sqlcipher/open-source/).
+
+[SQLCipher]: https://www.zetetic.net/sqlcipher/
+[Common Crypto]:https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/Common%20Crypto.3cc.html
+[BSD-style license]:https://www.zetetic.net/sqlcipher/license/
 [CDTEncryptionKey]: ../Classes/common/Encryption/CDTEncryptionKey.h
 [CDTEncryptionKeyProvider]: ../Classes/common/Encryption/CDTEncryptionKeyProvider.h
 [CDTEncryptionKeychainProvider]: ../Classes/common/Encryption/Keychain/CDTEncryptionKeychainProvider.h
