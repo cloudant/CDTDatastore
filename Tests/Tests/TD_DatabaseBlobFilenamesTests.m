@@ -25,6 +25,7 @@
 
 @property (strong, nonatomic) NSString *path;
 @property (strong, nonatomic) TD_Database *db;
+@property (strong, nonatomic) id<CDTEncryptionKeyProvider> provider;
 
 @end
 
@@ -49,10 +50,10 @@
     [defaultManager copyItemAtPath:assetPath toPath:self.path error:nil];
 
     // Open db
+    self.provider = [CDTEncryptionKeyNilProvider provider];
+    
     self.db = [[TD_Database alloc] initWithPath:self.path];
-
-    CDTEncryptionKeyNilProvider *provider = [CDTEncryptionKeyNilProvider provider];
-    [self.db openWithEncryptionKeyProvider:provider];
+    [self.db openWithEncryptionKeyProvider:self.provider];
 }
 
 - (void)tearDown
@@ -65,6 +66,7 @@
     [TD_Database deleteClosedDatabaseAtPath:self.path error:nil];
 
     self.db = nil;
+    self.provider = nil;
     self.path = nil;
 
     [super tearDown];
@@ -142,7 +144,14 @@
       dbVersion = [db intForQuery:@"PRAGMA user_version"];
     }];
 
-    XCTAssertEqual(dbVersion, 101, @"Database version should be 101");
+    XCTAssertEqual(dbVersion, 200, @"Database version should be 101");
+}
+
+- (void)testReopenSucceedsAfterUpdatingDBVersion
+{
+    [self.db close];
+
+    XCTAssertTrue([self.db openWithEncryptionKeyProvider:self.provider], @"Re-open should work");
 }
 
 - (void)testGenerateAndInsertFilenameBasedOnKeyFailsIfKeyIsAlreadyInTable

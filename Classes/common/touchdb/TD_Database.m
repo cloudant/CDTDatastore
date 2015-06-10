@@ -327,7 +327,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
         int dbVersion = [db intForQuery:@"PRAGMA user_version"];
 
         // Incompatible version changes increment the hundreds' place:
-        if (dbVersion >= 200) {
+        if (dbVersion >= 300) {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
                     @"TD_Database: Database version (%d) is newer than I know how to work with",
                     dbVersion);
@@ -479,10 +479,10 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             dbVersion = 100;
         }
 
-        if (dbVersion < 101) {
-            // Version 101: Table which maps key to filename
+        if (dbVersion < 200) {
+            // Version 200: Table which maps key to filename
             NSString* sql = [TD_Database sqlCommandToCreateBlobFilenamesTable];
-            if (![strongSelf migrateWithUpdates:sql queries:nil version:101 inDatabase:db]) {
+            if (![strongSelf migrateWithUpdates:sql queries:nil version:200 inDatabase:db]) {
                 result = NO;
                 return;
             }
@@ -497,7 +497,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
                                 intoBlobFilenamesTableInDatabase:db];
             }
             
-            // dbVersion = 101;
+            // dbVersion = 200;
         }
         
 #if DEBUG
