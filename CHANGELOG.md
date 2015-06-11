@@ -1,10 +1,21 @@
 # CDTDatastore CHANGELOG
 
-## 0.17.0 (Unreleased)
+## 0.17.0 (2015-06-11)
 
-- [REMOVE] The previous indexing/query legacy code has been removed.
-- [NEW] Added query text search support.  See [query documentation](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md) for details.
-- [NEW] Added query support for the `$mod` operator.
+- [NEW] Encryption of all data is now supported using 256-bit AES:
+  JSON documents, Query indexes and attachments. See
+  [encryption documentation][17-1]
+  for details.
+- [NEW] Added query text search support.  See
+  [query documentation][17-2]
+  for details.
+- [NEW] Query now supports the `$mod` operator.
+- [REMOVED] Legacy indexing code removed, replaced with Query. See doc/query-migration.md.
+- [IMPROVED] Allow cancelling CDTFetchChanges operations.
+- [FIXED] Some issues with creating remote URLs for attachments.
+
+[17-1]: https://github.com/cloudant/CDTDatastore/blob/master/doc/encryption.md
+[17-2]: https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md
 
 ## 0.16.0 (2015-04-09)
 

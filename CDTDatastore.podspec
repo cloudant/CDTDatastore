@@ -14,7 +14,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "CDTDatastore"
-  s.version      = "0.16.0"
+  s.version      = "0.17.0"
   s.summary      = "CDTDatastore is a document datastore which syncs."
   s.description  = <<-DESC
                     CDTDatastore is a JSON document datastore which speaks the
@@ -82,7 +82,7 @@ Pod::Spec.new do |s|
     sp.osx.exclude_files = 'Classes/ios'
 
     sp.dependency 'CDTDatastore/common-dependencies'
-    
+
     # DUPLICATED CODE - Check subspec 'standard' - END
 
     sp.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
