@@ -26,7 +26,6 @@
 #define TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME 200
 
 NSString *const TDDatabaseBlobFilenamesTableName = @"attachments_key_filename";
-NSString *const TDDatabaseBlobFilenamesIndexName = @"attachments_key_filename_index";
 
 NSString *const TDDatabaseBlobFilenamesColumnKey = @"key";
 NSString *const TDDatabaseBlobFilenamesColumnFilename = @"filename";
@@ -38,12 +37,10 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 #pragma mark - Public class methods
 + (NSString *)sqlCommandToCreateBlobFilenamesTable
 {
-    NSString *cmd =
-        [NSString stringWithFormat:
-                      @"CREATE TABLE %@ (%@ TEXT PRIMARY KEY, %@ TEXT); CREATE INDEX %@ ON %@(%@);",
-                      TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnKey,
-                      TDDatabaseBlobFilenamesColumnFilename, TDDatabaseBlobFilenamesIndexName,
-                      TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnFilename];
+    NSString *cmd = [NSString
+        stringWithFormat:@"CREATE TABLE %@ (%@ TEXT UNIQUE NOT NULL, %@ TEXT UNIQUE NOT NULL)",
+                         TDDatabaseBlobFilenamesTableName, TDDatabaseBlobFilenamesColumnKey,
+                         TDDatabaseBlobFilenamesColumnFilename];
 
     return cmd;
 }
@@ -63,17 +60,23 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 + (NSString *)generateAndInsertRandomFilenameBasedOnKey:(TDBlobKey)key
                        intoBlobFilenamesTableInDatabase:(FMDatabase *)db
 {
-    NSString *filename =
-        [TD_Database generateAvailableBlobFilenameInBlobFilenamesTableInDatabase:db];
-    if (filename) {
-        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Use filename %@", filename);
-        
-        NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
+    NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
+
+    NSString *filename = nil;
+
+    for (NSInteger i = 0;
+         !filename && (i < TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME); i++) {
+        filename = [TD_Database generateRandomBlobFilename];
 
         BOOL success = [TD_Database insertFilename:filename
                                         withHexKey:hexKey
                   intoBlobFilenamesTableInDatabase:db];
-        if (!success) {
+        if (success) {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Use filename %@", filename);
+        } else {
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Filename %@ already in use (iter %li)",
+                        filename, (long)i);
+
             filename = nil;
         }
     }
@@ -153,29 +156,16 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
     return filename;
 }
 
-+ (BOOL)isThereARowWithFilename:(NSString *)filename inBlobFilenamesTableInDatabase:(FMDatabase *)db
++ (BOOL)insertFilename:(NSString *)filename
+                             withKey:(TDBlobKey)key
+    intoBlobFilenamesTableInDatabase:(FMDatabase *)db
 {
-    BOOL isThereARow = YES;
+    NSString *hexKey = TDHexFromBytes(key.bytes, sizeof(key.bytes));
 
-    NSString *query = [NSString stringWithFormat:@"SELECT COUNT(*) FROM %@ WHERE %@ = :%@",
-                                                 TDDatabaseBlobFilenamesTableName,
-                                                 TDDatabaseBlobFilenamesColumnFilename,
-                                                 TDDatabaseBlobFilenamesColumnFilename];
+    BOOL success =
+        [TD_Database insertFilename:filename withHexKey:hexKey intoBlobFilenamesTableInDatabase:db];
 
-    NSDictionary *parameters = @{TDDatabaseBlobFilenamesColumnFilename : filename};
-
-    FMResultSet *r = [db executeQuery:query withParameterDictionary:parameters];
-
-    @try {
-        if ([r next]) {
-            int count = [r intForColumnIndex:0];
-
-            isThereARow = (count != 0);
-        }
-    }
-    @finally { [r close]; }
-
-    return isThereARow;
+    return success;
 }
 
 + (BOOL)deleteRowForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db
@@ -209,24 +199,6 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
     };
 
     return [db executeUpdate:update withParameterDictionary:parameters];
-}
-
-+ (NSString *)generateAvailableBlobFilenameInBlobFilenamesTableInDatabase:(FMDatabase *)db
-{
-    NSString *filename = nil;
-
-    for (NSInteger i = 0;
-         !filename && (i < TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME); i++) {
-        filename = [TD_Database generateRandomBlobFilename];
-
-        if ([TD_Database isThereARowWithFilename:filename inBlobFilenamesTableInDatabase:db]) {
-            CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Filename %@ already in use", filename);
-            
-            filename = nil;
-        }
-    }
-
-    return filename;
 }
 
 + (NSString *)generateRandomBlobFilename

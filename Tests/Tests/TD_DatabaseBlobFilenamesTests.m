@@ -20,6 +20,8 @@
 #define TDDATABASEBLOBFILENAMESTESTS_NUMBER_OF_ATTACHMENTS 2
 #define TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01 @"3ff2989bccf52150bba806bae1db2e0b06ad6f88"
 #define TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_02 @"d55f9ac778baf2256fa4de87aac61f590ebe66e0"
+#define TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_03 @"3ff2989bccf52150bba8de87aac61f590ebe66e0"
+#define TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_04 @"d55f9ac778baf2256fa406bae1db2e0b06ad6f88"
 
 @interface TD_DatabaseBlobFilenamesTests : XCTestCase
 
@@ -192,20 +194,35 @@
         @"No new filename should be generated if there is already a row with the same key");
 }
 
-- (void)testIsThereARowWithFilenameFindAKnownValue
+- (void)testInsertFailsIfFilenameIsAlreadyInTheTable
 {
-    __block BOOL isThereARow = NO;
+    NSString *filename =
+        [@"oneFilename" stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension];
 
+    __block BOOL resultFirstInsert = NO;
     [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
-      NSString *filename =
-          [NSString stringWithFormat:@"%@.%@", TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01,
-                                     TDDatabaseBlobFilenamesFileExtension];
+      NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_03);
 
-      isThereARow =
-          [TD_Database isThereARowWithFilename:filename inBlobFilenamesTableInDatabase:db];
+      TDBlobKey key;
+      [data getBytes:key.bytes];
+
+      resultFirstInsert =
+          [TD_Database insertFilename:filename withKey:key intoBlobFilenamesTableInDatabase:db];
     }];
 
-    XCTAssertTrue(isThereARow, @"Index is not working properly");
+    __block BOOL resultSecondInsert = YES;
+    [self.db.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_04);
+
+      TDBlobKey key;
+      [data getBytes:key.bytes];
+
+      resultSecondInsert =
+          [TD_Database insertFilename:filename withKey:key intoBlobFilenamesTableInDatabase:db];
+    }];
+
+    XCTAssertTrue(resultFirstInsert, @"First insert should succeed");
+    XCTAssertFalse(resultSecondInsert, @"The same filename can not be inserted twice");
 }
 
 @end

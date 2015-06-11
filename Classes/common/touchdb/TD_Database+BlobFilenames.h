@@ -105,15 +105,17 @@ extern NSString *const TDDatabaseBlobFilenamesFileExtension;
 + (NSString *)filenameForKey:(TDBlobKey)key inBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
 /**
- Check if the filename passed as a parameter is already in use
+ Insert a row in TDDatabaseBlobFilenamesTableName with the filename and key provided
  
- @param filename Filename we want to check
+ @param filename Filename to insert in database
+ @param key Key to insert in database
  @param db Database with table TDDatabaseBlobFilenamesTableName
  
- @return NO if the filename is not in the table or YES in other case
+ @return YES if the a new row in inserted or NO if there is an error
  */
-+ (BOOL)isThereARowWithFilename:(NSString *)filename
-    inBlobFilenamesTableInDatabase:(FMDatabase *)db;
++ (BOOL)insertFilename:(NSString *)filename
+                             withKey:(TDBlobKey)key
+    intoBlobFilenamesTableInDatabase:(FMDatabase *)db;
 
 /**
  Look for a row with a key equal to the key passed as a parameter and delete it.
