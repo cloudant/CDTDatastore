@@ -52,7 +52,7 @@
     return [self initWithEncryptedDPK:encryptedDPK
                                  salt:salt
                                    iv:iv
-                           iterations:[iterations integerValue]
+                           iterations:(iterations ? [iterations integerValue] : -1)
                               version:version];
 }
 
@@ -90,7 +90,8 @@
     [aCoder encodeObject:self.encryptedDPK forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_DPK];
     [aCoder encodeObject:self.salt forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_SALT];
     [aCoder encodeObject:self.iv forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_IV];
-    [aCoder encodeInteger:self.iterations forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS];
+    [aCoder encodeObject:[NSNumber numberWithInteger:self.iterations]
+                  forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_ITERATIONS];
     [aCoder encodeObject:self.version forKey:CDTENCRYPTION_KEYCHAINDATA_KEY_VERSION];
 }
 

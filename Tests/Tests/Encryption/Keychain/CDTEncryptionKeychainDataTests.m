@@ -39,7 +39,7 @@
     self.defaultEncryptedDPK = [@"encryptedDPK" dataUsingEncoding:NSUnicodeStringEncoding];
     self.defaultSalt = [@"salt" dataUsingEncoding:NSUnicodeStringEncoding];
     self.defaultIv = [@"iv" dataUsingEncoding:NSUnicodeStringEncoding];
-    self.defaultIterations = 0;
+    self.defaultIterations = 1000;
     self.defaultVersion = @"x.x";
 }
 
