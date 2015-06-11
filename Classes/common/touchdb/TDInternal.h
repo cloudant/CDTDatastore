@@ -19,8 +19,9 @@
 @class TD_Attachment;
 
 @interface TD_Database ()
+
 @property (readwrite, copy) NSString* name;  // make it settable
-@property (readonly) TDBlobStore* attachmentStore;
+
 - (BOOL)openFMDBWithEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
 
 /** Must be called from within a queue -inDatabase: or -inTransaction: **/
@@ -73,7 +74,20 @@
 #if DEBUG
 - (id)attachmentWriterForAttachment:(NSDictionary*)attachment;
 #endif
-- (BOOL)storeBlob:(NSData*)blob creatingKey:(TDBlobKey*)outKey;
+
+- (NSUInteger)blobCount;
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key;
+- (id<CDTBlobReader>)blobForKey:(TDBlobKey)key withDatabase:(FMDatabase *)db;
+- (BOOL)storeBlob:(NSData *)blob creatingKey:(TDBlobKey *)outKey;
+- (BOOL)storeBlob:(NSData *)blob creatingKey:(TDBlobKey *)outKey withDatabase:(FMDatabase *)db;
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+            error:(NSError *__autoreleasing *)outError;
+- (BOOL)storeBlob:(NSData *)blob
+      creatingKey:(TDBlobKey *)outKey
+     withDatabase:(FMDatabase *)db
+            error:(NSError *__autoreleasing *)outError;
+
 - (TDStatus)insertAttachment:(TD_Attachment*)attachment
                  forSequence:(SequenceNumber)sequence
                   inDatabase:(FMDatabase*)db;

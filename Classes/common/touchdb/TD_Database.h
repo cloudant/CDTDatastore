@@ -144,7 +144,6 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 @property (readonly) NSString* path;
 @property (readonly, copy) NSString* name;
 @property (readonly) BOOL exists;
-@property (readonly) UInt64 totalDataSize;
 
 @property (readonly) NSUInteger documentCount;
 @property (readonly) SequenceNumber lastSequence;

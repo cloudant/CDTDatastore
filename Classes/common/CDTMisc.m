@@ -1,6 +1,6 @@
 //
-//  CDTHelperMisc.m
-//  Tests
+//  CDTMisc.m
+//  CloudantSync
 //
 //  Created by Enrique de la Torre Fernandez on 21/05/2015.
 //  Copyright (c) 2015 Cloudant. All rights reserved.
@@ -13,7 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import "CDTHelperMisc.h"
+#import "CDTMisc.h"
 
 NSData *dataFromHexadecimalString(NSString *hexString)
 {

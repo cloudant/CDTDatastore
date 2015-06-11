@@ -58,19 +58,25 @@
 //          NSLog(@"Got document: %@", request.document);
           NSDictionary* attachments = (request.document)[@"_attachments"];
           XCTAssertTrue(attachments.count >= 1, @"attachments.count >= 1 fails in %s", __PRETTY_FUNCTION__);
-          XCTAssertEqual(db.attachmentStore.count, 0u, @"db.attachmentStore.count is not 0u in %s", __PRETTY_FUNCTION__);
+          XCTAssertEqual([db blobCount], 0u, @"db.attachmentStore.count is not 0u in %s", __PRETTY_FUNCTION__);
           for (NSDictionary* attachment in attachments.allValues) {
               TDBlobStoreWriter* writer = [db attachmentWriterForAttachment: attachment];
               XCTAssertNotNil(writer, @"TDBlobStoreWriter is nil in %s", __PRETTY_FUNCTION__);
-              XCTAssertTrue([writer install], @"TDBlobStoreWriter install returned NO in %s", __PRETTY_FUNCTION__);
-              id<CDTBlobReader> blob = [db.attachmentStore blobForKey:writer.blobKey];
+              
+              __block BOOL wasBlobInstalled = NO;
+              [db.fmdbQueue inDatabase:^(FMDatabase *db) {
+                  wasBlobInstalled = [writer installWithDatabase:db];
+              }];
+              XCTAssertTrue(wasBlobInstalled, @"TDBlobStoreWriter install returned NO in %s", __PRETTY_FUNCTION__);
+              
+              id<CDTBlobReader> blob = [db blobForKey:writer.blobKey];
               NSData *data = [blob dataWithError:nil];
 //              NSLog(@"Found %u bytes of data for attachment %@", (unsigned)blob.length, attachment);
               NSNumber* lengthObj = attachment[@"encoded_length"] ?: attachment[@"length"];
               XCTAssertEqual(data.length, [lengthObj unsignedLongLongValue], @"blob length and object length are not equal in %s", __PRETTY_FUNCTION__);
               XCTAssertEqual(writer.length, data.length, @"writer length and blog length are not equal in %s", __PRETTY_FUNCTION__);
           }
-          XCTAssertEqual(db.attachmentStore.count, attachments.count, @"db.attachmentStore.count and attachments.count are not equal in %s", __PRETTY_FUNCTION__);
+          XCTAssertEqual([db blobCount], attachments.count, @"db.attachmentStore.count and attachments.count are not equal in %s", __PRETTY_FUNCTION__);
           done = YES;
       }] start];
     
