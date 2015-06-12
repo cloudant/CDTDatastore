@@ -331,47 +331,45 @@
         return nil;
     }
 
-    if (n_arrays == 0) {
-        // The are no arrays in the values we are indexing. We just need to index the fields
-        // in the index. _id and _rev are special fields in that they don't appear in the
-        // body, so they need special-casing to get the values.
-
-        CDTQSqlParts *parts = [CDTQIndexUpdater createPartsForFieldNames:fieldNames
-                                                   initialIncludedFields:@[ @"_id", @"_rev" ]
-                                                     initialPlaceholders:@[ @"?", @"?" ]
-                                                             initialArgs:@[ rev.docId, rev.revId ]
-                                                               indexName:indexName
-                                                                revision:rev];
-        return @[ parts ];
-
-    } else {
-        // We know the value is an array, we found this out in the check above
-        NSArray *arrayFieldValues = (NSArray *)
-            [CDTQValueExtractor extractValueForFieldName:arrayFieldName fromDictionary:rev.body];
-
+    NSMutableArray *insertStatements = [NSMutableArray array];
+    NSArray *arrayFieldValues = nil;
+    if (n_arrays == 1) {
+        arrayFieldValues = (NSArray *) [CDTQValueExtractor extractValueForFieldName:arrayFieldName
+                                                                     fromDictionary:rev.body];
+    }
+    if (arrayFieldValues.count > 0) {
         // Create an insert statement for each value in the array
-        NSMutableArray *insertStatements = [NSMutableArray array];
-
         for (NSObject *value in arrayFieldValues) {
             // For each value in the array we create a row. We put this value at the start
             // of the INSERT statement along with _id and _rev, followed by the other fields.
-
+            // id and _rev are special fields in that they don't appear in the body, so they
+            // need special-casing to get the values.
             NSArray *placeholders = @[ @"?", @"?", @"?" ];
             NSArray *includedFieldNames = @[ @"_id", @"_rev", arrayFieldName ];
             NSArray *args = @[ rev.docId, rev.revId, value ];
-
             CDTQSqlParts *parts = [CDTQIndexUpdater createPartsForFieldNames:fieldNames
                                                        initialIncludedFields:includedFieldNames
                                                          initialPlaceholders:placeholders
                                                                  initialArgs:args
                                                                    indexName:indexName
                                                                     revision:rev];
-
             [insertStatements addObject:parts];
         }
-
-        return insertStatements;
+    } else {
+        // We know that there is no populated array in the values that we are indexing.
+        // We just need to index the fields in the index now. _id and _rev are special
+        // fields because they don't appear in the document body, so they need
+        // special-casing to get the values.
+        CDTQSqlParts *parts = [CDTQIndexUpdater createPartsForFieldNames:fieldNames
+                                                   initialIncludedFields:@[ @"_id", @"_rev" ]
+                                                     initialPlaceholders:@[ @"?", @"?" ]
+                                                             initialArgs:@[ rev.docId, rev.revId ]
+                                                               indexName:indexName
+                                                                revision:rev];
+        [insertStatements addObject:parts];
     }
+    
+    return insertStatements.copy;
 }
 
 + (CDTQSqlParts *)createPartsForFieldNames:(NSArray *)fieldNames
@@ -393,16 +391,13 @@
             continue;
         }
 
-        NSObject *value =
-            [CDTQValueExtractor extractValueForFieldName:fieldName fromDictionary:rev.body];
-
-        if (value) {
+        NSObject *value = [CDTQValueExtractor extractValueForFieldName:fieldName
+                                                        fromDictionary:rev.body];
+        if (value && !([value isKindOfClass:[NSArray class]] && ((NSArray *)value).count == 0)) {
+            // Only include a field with a value or a field with a populated array
             [includedFieldNames addObject:fieldName];
             [args addObject:value];
             [placeholders addObject:@"?"];
-
-            // TODO validate here whether the derived value is suitable for indexing
-            //      in addition to its presence.
         }
     }
 

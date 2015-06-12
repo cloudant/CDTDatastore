@@ -252,7 +252,47 @@ SpecBegin(CDTQIndexUpdater)
                                                 withFieldNames:@[ @"name", @"pet", @"pet2" ]];
                     expect(statements).to.beNil();
                 });
-
+                
+                it(@"returns correctly for empty array field", ^{
+                    // Treat an empty array field the same as a missing field.
+                    // Only the "name" field should be included as a result of this test.
+                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+                    rev.docId = @"id123";
+                    rev.body = @{ @"name" : @"mike", @"pet" : @[] };
+                    CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
+                    NSArray *statements = [CDTQIndexUpdater partsToIndexRevision:saved
+                                                                         inIndex:@"anIndex"
+                                                                  withFieldNames:@[ @"age",
+                                                                                    @"name",
+                                                                                    @"pet" ] ];
+                    expect(statements.count).to.equal(1);
+                    CDTQSqlParts *parts = statements[0];
+                    
+                    NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                                     "( \"_id\", \"_rev\", \"name\" ) VALUES ( ?, ?, ? );";
+                    expect(parts.sqlWithPlaceholders).to.equal(sql);
+                    expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
+                });
+                
+                it(@"returns correctly for empty array in a subdoc", ^{
+                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+                    rev.docId = @"id123";
+                    rev.body = @{ @"name" : @"mike", @"pet" : @{@"species" : @[] } };
+                    CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
+                    NSArray *statements = [CDTQIndexUpdater partsToIndexRevision:saved
+                                                                         inIndex:@"anIndex"
+                                                                  withFieldNames:@[@"age",
+                                                                                   @"name",
+                                                                                   @"pet.species"]];
+                    expect(statements.count).to.equal(1);
+                    CDTQSqlParts *parts = statements[0];
+                    
+                    NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                                     "( \"_id\", \"_rev\", \"name\" ) VALUES ( ?, ?, ? );";
+                    expect(parts.sqlWithPlaceholders).to.equal(sql);
+                    expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
+                });
+                
             });
 
         });
