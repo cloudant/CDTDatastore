@@ -1757,6 +1757,152 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             expect(result.documentIds).to.beSupersetOf(@[ @"mike72", @"fred12" ]);
         });
     });
+    
+    describe(@"when executing queries containing $size operator", ^{
+        
+        __block CDTDatastore* ds;
+        __block CDTQIndexManager* im;
+        
+        beforeEach(^{
+            ds = [factory datastoreNamed:@"test" error:nil];
+            expect(ds).toNot.beNil();
+            
+            CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+            
+            rev.docId = @"mike24";
+            rev.body = @{ @"name" : @"mike", @"age" : @24, @"pet" : @[ @"cat" ] };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"mike12";
+            rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"fred34";
+            rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @[ @"cat", @"dog" ] };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"john44";
+            rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @"cat" };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"fred72";
+            rev.body = @{ @"name" : @"fred", @"age" : @72, @"pet" : @[ @"dog" ] };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"john12";
+            rev.body = @{ @"name" : @"john", @"age" : @12 };
+            [ds createDocumentFromRevision:rev error:nil];
+
+            rev.docId = @"bill34";
+            rev.body = @{ @"name" : @"bill", @"age" : @34, @"pet" : @[ @"cat", @"parrot" ] };
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            rev.docId = @"fred11";
+            rev.body = @{ @"name" : @"fred", @"age" : @11, @"pet" : @[]};
+            [ds createDocumentFromRevision:rev error:nil];
+            
+            im = [imClass managerUsingDatastore:ds error:nil];
+            expect(im).toNot.beNil();
+            
+            expect([im ensureIndexed:@[ @"name", @"pet", @"age" ] withName:@"basic"]).toNot.beNil();
+        });
+        
+        it(@"works when array count matches", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @2 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred34", @"bill34" ]);
+        });
+        
+        it(@"correctly returns empty result set when array count does not match", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @3 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(0);
+        });
+        
+        it(@"correctly matches on both array existence and array count equal 1", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @1 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24", @"fred72" ]);
+        });
+        
+        it(@"correctly matches on both array existence and array count equal 0", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @0 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred11" ]);
+        });
+        
+        it(@"correctly returns empty result set when argument is negative", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @-1 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(0);
+        });
+        
+        it(@"correctly returns empty result set when argument is not a whole number", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @1.6 } };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(0);
+        });
+        
+        it(@"correctly returns empty result set when argument is a string", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @"dog" } };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(0);
+        });
+        
+        it(@"correctly returns nil when argument is invalid", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$size": @[ @1 ] } };
+            CDTQResultSet* result = [im find:query];
+            expect(result).to.beNil();
+        });
+        
+        it(@"correctly performs compound AND query with single $size clause", ^{
+            NSDictionary* query = @{ @"$and": @[ @{ @"pet": @{ @"$size": @2 } },
+                                                 @{ @"name": @"mike" } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12" ]);
+        });
+        
+        it(@"correctly performs compound AND query on same field with single $size clause", ^{
+            NSDictionary* query = @{ @"$and": @[ @{ @"pet": @{ @"$size": @2 } },
+                                                 @{ @"pet": @"dog" } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred34" ]);
+        });
+        
+        it(@"correctly performs compound OR query with single $size clause", ^{
+            NSDictionary* query = @{ @"$or": @[ @{ @"pet": @{ @"$size": @1 } },
+                                               @{ @"name": @"john" } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24",
+                                                                @"fred72",
+                                                                @"john12",
+                                                                @"john44" ]);
+        });
+        
+        it(@"correctly performs compound OR query with multiple $size clauses on same field", ^{
+            NSDictionary* query = @{ @"$or": @[ @{ @"pet": @{ @"$size": @1 } },
+                                                @{ @"pet": @{ @"$size": @2 } } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24",
+                                                                @"mike12",
+                                                                @"fred34",
+                                                                @"fred72",
+                                                                @"bill34" ]);
+        });
+        
+        it(@"returns empty result set for compound AND, multiple $size clauses, same field", ^{
+            NSDictionary* query = @{ @"$and": @[ @{ @"pet": @{ @"$size": @1 } },
+                                                 @{ @"pet": @{ @"$size": @2 } } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds.count).to.equal(0);
+        });
+        
+    });
+    
 });
 
 SharedExamplesEnd
