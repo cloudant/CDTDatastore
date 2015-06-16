@@ -43,3 +43,5 @@ NSString *const NIN = @"$nin";
 NSString *const SEARCH = @"$search";
 
 NSString *const MOD = @"$mod";
+
+NSString *const SIZE = @"$size";

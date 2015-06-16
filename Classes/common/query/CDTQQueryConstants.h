@@ -41,3 +41,5 @@ extern NSString *const NIN;
 extern NSString *const SEARCH;
 
 extern NSString *const MOD;
+
+extern NSString *const SIZE;
