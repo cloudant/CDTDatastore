@@ -607,6 +607,27 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                                     fromIndexes:indexes];
             expect(idx).to.equal(@"named");
         });
+        
+        it(@"does not select an index for $size queries", ^{
+            NSDictionary *indexes = @{ @"named": @{ @"name": @"named",
+                                                    @"type": @"json",
+                                                    @"fields": @[ @"name", @"pet", @"age" ] } };
+            NSString *idx =
+               [CDTQQuerySqlTranslator chooseIndexForAndClause:@[ @{ @"pet": @{ @"$size": @2 } } ]
+                                                   fromIndexes:indexes];
+            expect(idx).to.beNil();
+        });
+        
+        it(@"does not select an index for multi-field queries containing $size", ^{
+            NSDictionary *indexes = @{ @"named": @{ @"name": @"named",
+                                                    @"type": @"json",
+                                                    @"fields": @[ @"name", @"pet", @"age" ] } };
+            NSString *idx =
+            [CDTQQuerySqlTranslator chooseIndexForAndClause:@[ @{ @"name": @{ @"$eq": @"mike" } },
+                                                               @{ @"pet": @{ @"$size": @2 } } ]
+                                                fromIndexes:indexes];
+            expect(idx).to.beNil();
+        });
 
         it(@"selects an index for multi-field queries", ^{
             NSDictionary *indexes = @{
@@ -1247,6 +1268,18 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(actual).to.beNil();
         });
         
+        it(@"correctly normalizes query with SIZE operator", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"pet": @{ @"$size": @2 } } ];
+            expect(actual).to.equal(@{ @"$and": @[ @{ @"pet": @{ @"$size": @2 } } ] });
+        });
+        
+        it(@"returns nil when SIZE argument is invalid", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"pet": @{ @"$size": @[ @2 ] } } ];
+            expect(actual).to.beNil();
+        });
+        
     });
     
     describe(@"when normalizing text search queries", ^{
@@ -1327,6 +1360,27 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(fields).to.containsInAnyOrder(@[ @"name", @"pet", @"age" ]);
         });
     });
+    
+    describe(@"when checking for a specific operator in a clause", ^{
+        
+        it(@"finds the operator when in clause", ^{
+            BOOL found = [CDTQQuerySqlTranslator isOperator:@"$size"
+                                                   inClause:@[ @{ @"name": @{ @"$eq": @"mike" } },
+                                                               @{ @"pet": @{ @"$size": @2 } },
+                                                               @{ @"age": @{ @"$gte": @23 } } ] ];
+            expect(found).to.equal(YES);
+        });
+        
+        it(@"does not find operator when not in clause", ^{
+            BOOL found = [CDTQQuerySqlTranslator isOperator:@"$size"
+                                                   inClause:@[ @{ @"name": @{ @"$eq": @"mike" } },
+                                                               @{ @"pet": @{ @"$eq": @"cat" } },
+                                                               @{ @"age": @{ @"$gte": @23 } } ] ];
+            expect(found).to.equal(NO);
+        });
+        
+    });
+    
 });
 
 SpecEnd
