@@ -35,6 +35,7 @@ describe(@"matches", ^{
             @"name" : @"mike",
             @"age" : @31,
             @"pets" : @[ @"white_cat", @"black_cat" ],
+            @"hobbies" : @[],
             @"address" : @{@"number" : @"1", @"road" : @"infinite loop"}
         };
         rev = [[CDTDocumentRevision alloc] initWithDocId:@"dsfsdfdfs"
@@ -469,6 +470,65 @@ describe(@"matches", ^{
                 [CDTQQueryValidator normaliseAndValidateQuery:@{@"score": @{@"$mod": @[@-3, @1]}}];
                 CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
                 expect([matcher matches:negRev]).to.beFalsy();
+            });
+            
+        });
+        
+        context(@"size", ^{
+            it(@"matches when using a positive integer", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"pets": @{ @"$size": @2 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+            });
+            
+            it(@"does not match when using a positive integer", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"pets": @{ @"$size": @3 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"does not match when field is not an array", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"name": @{ @"$size": @1 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"does not match when using a negative integer", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"pets": @{ @"$size": @-2 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"matches when using 0", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"hobbies": @{ @"$size": @0 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beTruthy();
+            });
+            
+            it(@"does not match when using 0 but field is missing", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"books": @{ @"$size": @0 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"does not match when using a string", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"pets": @{ @"$size": @"2" } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
+            });
+            
+            it(@"does not match when not using an integer", ^{
+                NSDictionary *selector =
+                [CDTQQueryValidator normaliseAndValidateQuery:@{ @"pets": @{ @"$size": @2.2 } } ];
+                CDTQUnindexedMatcher *matcher = [CDTQUnindexedMatcher matcherWithSelector:selector];
+                expect([matcher matches:rev]).to.beFalsy();
             });
             
         });

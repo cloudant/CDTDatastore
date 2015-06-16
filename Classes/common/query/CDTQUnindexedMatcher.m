@@ -182,11 +182,17 @@
         NSObject *actual = [CDTQValueExtractor extractValueForFieldName:fieldName fromRevision:rev];
         
         BOOL passed = NO;
-        if ([operator isEqualToString:MOD]) {
-            // We need to treat a $mod operator as a special case because for
-            // $mod we need to perform modulo arithmetic on the actual value
-            // using the first element in the expected array as the divisor before
-            // comparing the result to the second element in the expected array.
+        NSArray *specialCaseOperators = @[ MOD, SIZE ];
+        if ([specialCaseOperators containsObject:operator]) {
+            // If an operator like $mod or $size is found we need to treat the
+            // comparison as a special case.
+            //
+            // $mod: perform modulo arithmetic on the actual value using the first
+            //       element in the expected array as the divisor before comparing
+            //       the result to the second element in the expected array.
+            //
+            // $size: check whether the actual value is an array, then compare the
+            //        actual array size with the expected value.
             passed = [self actualValue:actual matchesOperator:operator andExpectedValue:expected];
         } else {
             // Since $in is the same as a series of $eq comparisons -
@@ -243,6 +249,9 @@
 
     } else if ([operator isEqualToString:MOD]) {
         passed = [self modL:actual R:expected];
+        
+    } else if ([operator isEqualToString:SIZE]) {
+        passed = [self sizeL:actual R:expected];
         
     } else if ([operator isEqualToString:EXISTS]) {
         BOOL expectedBool = [((NSNumber *)expected)boolValue];
@@ -363,6 +372,20 @@
     NSInteger actualRemainder = [(NSNumber *)l integerValue] % divisor;
     
     return actualRemainder == expectedRemainder;
+}
+
+- (BOOL)sizeL:(NSObject *)l R:(NSObject *)r
+{
+    // The actual value must be an array and the expected value must be a number in
+    // order to perform a size comparison.
+    if (![l isKindOfClass:[NSArray class]] || ![r isKindOfClass:[NSNumber class]]) {
+        return NO;
+    }
+    
+    NSNumber *actualSize = [NSNumber numberWithInteger:((NSArray *) l).count];
+    NSNumber *expectedSize = (NSNumber *)r;
+    
+    return [actualSize isEqualToNumber:expectedSize];
 }
 
 @end
