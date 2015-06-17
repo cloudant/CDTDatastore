@@ -629,6 +629,7 @@ Selectors -> Condition -> Array
 
 - `$in`
 - `$nin`
+- `$size`
 
 Implicit operators
 
@@ -667,10 +668,6 @@ Selectors -> combination
 Selectors -> Condition -> Objects
 
 - `$type`
-
-Selectors -> Condition -> Array
-
-- `$size`
 
 Selectors -> Condition -> Misc
 
@@ -754,7 +751,7 @@ Here:
     <strong>{</strong> &quot;$regex&quot; <strong>:</strong> <em>NSRegularExpression</em> <strong>}</strong>  // not implemented
     <strong>{</strong> &quot;$mod&quot; <strong>:</strong> <strong>[</strong> <em>non-zero-number, number</em> <strong>] }</strong>
     <strong>{</strong> &quot;$elemMatch&quot; <strong>: {</strong> <em>many-expressions</em> <strong>} }</strong>  // not implemented
-    <strong>{</strong> &quot;$size&quot; <strong>:</strong> <em>positive-integer</em> <strong>}</strong>  // not implemented
+    <strong>{</strong> &quot;$size&quot; <strong>:</strong> <em>positive-integer</em> <strong>}</strong>
     <strong>{</strong> &quot;$all&quot; <strong>:</strong> <em>array-value</em> <strong>}</strong>  // not implemented
     <strong>{</strong> &quot;$in&quot; <strong>:</strong> <em>array-value</em> <strong>}</strong>
     <strong>{</strong> &quot;$nin&quot; <strong>:</strong> <em>array-value</em> <strong>}</strong>
