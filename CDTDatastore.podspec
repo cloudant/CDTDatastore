@@ -89,11 +89,14 @@ Pod::Spec.new do |s|
 
     sp.library = 'z'
 
-    # Some CDTDatastore classes use SQLite functions, we have to include
-    # 'SQLCipher' although 'FMDB/SQLCipher' also depends on 'SQLCipher' or they
-    # will not compile (linker will not find some symbols)
-    sp.dependency 'SQLCipher'
     sp.dependency 'FMDB/SQLCipher', '= 2.3'
+
+    # Some CDTDatastore classes use SQLite functions, therefore we have
+    # to include 'SQLCipher' although 'FMDB/SQLCipher' also depends on it
+    # or they will not compile (linker will not find some symbols).
+    # Also, we have to force cocoapods to configure SQLCipher with support
+    # for FTS.
+    sp.dependency 'SQLCipher/fts'
   end
 
   s.subspec 'common-dependencies' do |sp|

@@ -28,6 +28,8 @@
 		CDADD5C41AEFD715003CA9EF /* FMDatabase+SQLCipher.m in Sources */ = {isa = PBXBuildFile; fileRef = CDADD5C21AEFD715003CA9EF /* FMDatabase+SQLCipher.m */; };
 		CDCB7A331AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */; };
 		CDCB7A341AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */; };
+		CDDDE66D1B31BFC10098F13E /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CDDDE66C1B31BFC10098F13E /* DBQueryUtils.m */; };
+		CDDDE66E1B31BFC10098F13E /* DBQueryUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = CDDDE66C1B31BFC10098F13E /* DBQueryUtils.m */; };
 		CDEE6ECD1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEE6ECC1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m */; };
 		CDEE6ECE1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEE6ECC1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m */; };
 		F90D36E7E415768CD9A11DF8 /* libPods-osx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C7BC81EA72FBC2080CDD22E /* libPods-osx.a */; };
@@ -58,6 +60,8 @@
 		CDADD5C11AEFD715003CA9EF /* FMDatabase+SQLCipher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "FMDatabase+SQLCipher.h"; path = "../../Tests/Tests/Encryption/FMDatabase+SQLCipher.h"; sourceTree = "<group>"; };
 		CDADD5C21AEFD715003CA9EF /* FMDatabase+SQLCipher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "FMDatabase+SQLCipher.m"; path = "../../Tests/Tests/Encryption/FMDatabase+SQLCipher.m"; sourceTree = "<group>"; };
 		CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreManagerEncryptionTests.m; sourceTree = "<group>"; };
+		CDDDE66B1B31BFC10098F13E /* DBQueryUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DBQueryUtils.h; path = ../../Tests/Tests/DBQueryUtils.h; sourceTree = "<group>"; };
+		CDDDE66C1B31BFC10098F13E /* DBQueryUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DBQueryUtils.m; path = ../../Tests/Tests/DBQueryUtils.m; sourceTree = "<group>"; };
 		CDEE6ECB1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "CloudantTests+EncryptionTests.h"; path = "../../Tests/Tests/Encryption/CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
 		CDEE6ECC1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "CloudantTests+EncryptionTests.m"; path = "../../Tests/Tests/Encryption/CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -134,6 +138,8 @@
 				CD48786B1A9BA6C80070EB63 /* CloudantSyncTests.m */,
 				CD5D68301AB347D700F0BF8A /* DatastoreEncryptionTests.m */,
 				CDCB7A321AB3AB51000D8FFC /* DatastoreManagerEncryptionTests.m */,
+				CDDDE66B1B31BFC10098F13E /* DBQueryUtils.h */,
+				CDDDE66C1B31BFC10098F13E /* DBQueryUtils.m */,
 				CDADD5C11AEFD715003CA9EF /* FMDatabase+SQLCipher.h */,
 				CDADD5C21AEFD715003CA9EF /* FMDatabase+SQLCipher.m */,
 				CD4878671A9BA5F90070EB63 /* TD_DatabaseEncryptionTests.m */,
@@ -351,6 +357,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDDDE66D1B31BFC10098F13E /* DBQueryUtils.m in Sources */,
 				CD55A19B1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CDEE6ECD1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				CD3FBCAD1AB05CAB0032376E /* CDTHelperFixedKeyProvider.m in Sources */,
@@ -367,6 +374,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDDDE66E1B31BFC10098F13E /* DBQueryUtils.m in Sources */,
 				CD55A19C1AD56F2300A52281 /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CDEE6ECE1AAF3BD0002C96C0 /* CloudantTests+EncryptionTests.m in Sources */,
 				CD3FBCAE1AB05CAB0032376E /* CDTHelperFixedKeyProvider.m in Sources */,
