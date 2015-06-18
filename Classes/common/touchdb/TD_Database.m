@@ -854,12 +854,20 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 /** Do not call from fmdbqueue */
 - (TDStatus)loadRevisionBody:(TD_Revision*)rev options:(TDContentOptions)options
 {
-    __block TDStatus result;
-    __weak TD_Database* weakSelf = self;
-    [_fmdbQueue inDatabase:^(FMDatabase* db) {
-        TD_Database* strongSelf = weakSelf;
-        result = [strongSelf loadRevisionBody:rev options:options database:db];
-    }];
+    __block TDStatus result = kTDStatusDBError;
+
+    if ([self isOpen]) {
+        __weak TD_Database* weakSelf = self;
+        [_fmdbQueue inDatabase:^(FMDatabase* db) {
+          __strong TD_Database* strongSelf = weakSelf;
+          if (strongSelf) {
+              result = [strongSelf loadRevisionBody:rev options:options database:db];
+          }
+        }];
+    } else {
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Database is not open");
+    }
+
     return result;
 }
 
