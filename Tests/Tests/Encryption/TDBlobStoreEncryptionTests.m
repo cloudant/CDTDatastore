@@ -362,6 +362,87 @@
                   @"There should be a file at this path");
 }
 
+- (void)testDeleteBlobsExceptWithKeysSucceedIfFileDoesNotExistOnDisk
+{
+    // Insert
+    __block TDBlobKey blobKey;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+    }];
+
+    // Delete file
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+    NSArray *fileArray =
+        [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
+    [defaultManager
+        removeItemAtPath:[self.encryptedBlobStorePath stringByAppendingPathComponent:fileArray[0]]
+                   error:nil];
+
+    // Delete
+    __block BOOL success = NO;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      success = [_encryptedBlobStore deleteBlobsExceptWithKeys:[NSSet set] withDatabase:db];
+    }];
+
+    // Assert
+    XCTAssertTrue(
+        success, @"If the file does not exist, simply delete the row in the database and carry on");
+}
+
+- (void)testDeleteBlobsExceptWithKeysRemovesFilesNotRelatedToAnAttachment
+{
+    // Insert
+    __block TDBlobKey blobKey;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+
+      for (NSUInteger i = 0; i < 20; i++) {
+          NSString *otherStr = [NSString stringWithFormat:@"摇;摃:%lu", (unsigned long)i];
+
+          TDBlobKey otherBlobKey;
+          [_encryptedBlobStore storeBlob:[otherStr dataUsingEncoding:NSUTF8StringEncoding]
+                             creatingKey:&otherBlobKey
+                            withDatabase:db
+                                   error:nil];
+      }
+    }];
+
+    // Insert garbage
+    for (NSInteger i = 0; i < 20; i++) {
+        NSString *filename = [[NSString stringWithFormat:@"file%lu", (unsigned long)i]
+            stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension];
+        NSString *filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
+        [self.plainData writeToFile:filePath atomically:YES];
+    }
+
+    // Delete
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSSet *set =
+          [NSSet setWithObject:[NSData dataWithBytes:blobKey.bytes length:sizeof(blobKey.bytes)]];
+      [_encryptedBlobStore deleteBlobsExceptWithKeys:set withDatabase:db];
+    }];
+
+    // Get remaining filename
+    __block NSString *filename = nil;
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      filename = [TD_Database filenameForKey:blobKey inBlobFilenamesTableInDatabase:db];
+    }];
+
+    // Assert
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+
+    NSArray *allFilenames =
+        [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
+    XCTAssertEqual(allFilenames.count, 1, @"Only 1 file should remain");
+
+    NSString *filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
+    XCTAssertTrue([defaultManager fileExistsAtPath:filePath],
+                  @"There should be a file at this path");
+}
+
 - (void)testBlobStoreWriterDoesNotUpdateDBIfInstallFails
 {
     // Blobs before

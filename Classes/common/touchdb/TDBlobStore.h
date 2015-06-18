@@ -99,11 +99,11 @@ typedef struct TDBlobKey
  @param keysToKeep Keys for attachments that you do not want to delete
  @param db A database
  
- @return Number of attachments deleted or -1 if there is an error
+ @return YES if it succeeds or NO if there is an error
  
  @warning DO NOT ROLLBACK this operation, it will not recreate the attachments.
  */
-- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db;
+- (BOOL)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db;
 
 @end
 

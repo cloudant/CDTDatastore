@@ -174,41 +174,76 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     return n;
 }
 
-- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase*)db
+- (BOOL)deleteBlobsExceptWithKeys:(NSSet *)keysToKeep withDatabase:(FMDatabase *)db
 {
-    BOOL errors = NO;
-    NSUInteger numDeleted = 0;
+    BOOL success = YES;
 
-    NSArray* allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
+    NSMutableSet *filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
 
-    for (TD_DatabaseBlobFilenameRow* oneRow in allRows) {
+    // Delete attachments from database
+    NSArray *allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
+
+    for (TD_DatabaseBlobFilenameRow *oneRow in allRows) {
         // Check if key is an exception
-        NSData* curKeyData =
+        NSData *curKeyData =
             [NSData dataWithBytes:oneRow.key.bytes length:sizeof(oneRow.key.bytes)];
         if ([keysToKeep containsObject:curKeyData]) {
             // Do not delete blob. It is an exception.
+            [filesToKeep addObject:oneRow.blobFilename];
+
             continue;
         }
 
-        // Remove from disk
-        NSString* blobPath =
-            [TDBlobStore blobPathWithStorePath:_path blobFilename:oneRow.blobFilename];
+        // Remove from db
+        if (![TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db]) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@' from db", self,
+                        oneRow.blobFilename);
 
-        NSError* thisError = nil;
-        if ([[NSFileManager defaultManager] removeItemAtPath:blobPath error:&thisError]) {
-            // Remove from db
-            [TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db];
+            success = NO;
 
-            ++numDeleted;
-        } else {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
-                        oneRow.blobFilename, thisError);
-
-            errors = YES;
+            // Do not try to delete it later, it will not be deleted from db
+            [filesToKeep addObject:oneRow.blobFilename];
         }
     }
 
-    return (errors ? -1 : numDeleted);
+    // Delete attachments from disk. In fact, this method will delete all the files in the folder
+    // but the exception
+    // NOTICE: If for some reason one of the files is not deleted and later we generate the same
+    // filename for another attachment, the content of this file will be overwritten with the new
+    // data
+    [TDBlobStore deleteFilesNotInSet:filesToKeep fromPath:_path];
+
+    // Return
+    return success;
+}
+
++ (void)deleteFilesNotInSet:(NSSet*)filesToKeep fromPath:(NSString *)path
+{
+    NSFileManager* defaultManager = [NSFileManager defaultManager];
+
+    // Read directory
+    NSError* thisError = nil;
+    NSArray* currentFiles = [defaultManager contentsOfDirectoryAtPath:path error:&thisError];
+    if (!currentFiles) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Can not read dir %@: %@", path, thisError);
+        return;
+    }
+
+    // Delete all files but exceptions
+    for (NSString* filename in currentFiles) {
+        if ([filesToKeep containsObject:filename]) {
+            // Do not delete file. It is an exception.
+            continue;
+        }
+
+        NSString* filePath = [TDBlobStore blobPathWithStorePath:path blobFilename:filename];
+
+        if (![defaultManager removeItemAtPath:filePath error:&thisError]) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT,
+                        @"%@: Failed to delete '%@' not related to an attachment: %@", self,
+                        filename, thisError);
+        }
+    }
 }
 
 - (NSString*)tempDir
