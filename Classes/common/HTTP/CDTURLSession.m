@@ -15,12 +15,16 @@
 @property NSMutableArray * requestFilters;
 @property BOOL requestProcessing;
 @property int remaingRetires;
+@property NSURLSession *session;
 
 
 @end
 
 
-@implementation CDTURLSession
+@implementation CDTURLSession{
+    dispatch_queue_t queue;
+}
+
 
 - (instancetype)init
 {
@@ -31,6 +35,8 @@
         _numberOfRetries = 10;
         _remaingRetires = _numberOfRetries;
         _requestProcessing = NO;
+        queue = dispatch_queue_create("com.cloudant.sync.http.callback.queue",NULL);
+        _session = [NSURLSession sessionWithConfiguration:nil];
     }
     return self;
 }
@@ -76,8 +82,8 @@
         context = [filter filterRequestWithContext:context];
     }
     
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:nil];
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:context.request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
+
+    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:context.request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
 
         CDTURLSessionFilterContext *currentContext = context;
         context.response = _response;
@@ -91,14 +97,16 @@
             NSURLSessionDataTask *replayTask = [strongSelf dataTaskWithContext:currentContext completionHandler:completionHandler];
             [replayTask resume];
         } else {
-            // if we're not replaying then we can call the completion handler
-            completionHandler(_data, _response, _error);
+            // if we're not replaying then we can call the completion handler on a callback queue
+            //dispatch_async(queue, ^{
+                completionHandler(_data, _response, _error);
+           // });
+            
         }
     } ];
 
     return task;
 }
-
 
 
 @end

@@ -537,10 +537,12 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 - (void)asyncTaskStarted
 {
     if (_asyncTaskCount++ == 0) [self updateActive];
+    NSLog(@"%@",[NSThread callStackSymbols]);
 }
 
 - (void)asyncTasksFinished:(NSUInteger)numTasks
 {
+    NSLog(@"%@",[NSThread callStackSymbols]);
     _asyncTaskCount -= numTasks;
     Assert(_asyncTaskCount >= 0);
     if (_asyncTaskCount == 0) {

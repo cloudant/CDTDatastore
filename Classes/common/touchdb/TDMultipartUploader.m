@@ -58,7 +58,7 @@
     return [_multipartWriter openForInputStream];
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+-(void)requestDidError:(NSError *)error
 {
     if ($equal(error.domain, NSURLErrorDomain) &&
         error.code == NSURLErrorRequestBodyStreamExhausted) {
@@ -67,7 +67,7 @@
         NSError *writerError = _multipartWriter.error;
         if (writerError) error = writerError;
     }
-    [super connection:connection didFailWithError:error];
+    //[super connection:connection didFailWithError:error];
 }
 
 @end

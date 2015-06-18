@@ -37,17 +37,12 @@
                     onCompletion:onCompletion];
     if (self) {
         _db = database;
+        [_request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
     }
     return self;
 }
 
 - (NSString *)description { return $sprintf(@"%@[%@]", [self class], _request.URL.path); }
-
-- (void)setupRequest:(NSMutableURLRequest *)request withBody:(id)body
-{
-    [request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
-    request.HTTPBody = body;
-}
 
 - (NSDictionary *)document { return _reader.document; }
 
@@ -71,17 +66,14 @@
         }
     }
 
-    [super connection:connection didReceiveResponse:response];
+    //[super connection:connection didReceiveResponse:response];
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+- (void)receivedData:(NSData *)data
 {
-    [super connection:connection didReceiveData:data];
+   // [super connection:connection didReceiveData:data];
     if (![_reader appendData:data]) [self cancelWithStatus:_reader.status];
-}
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
                (unsigned)_reader.attachmentCount);
     if (![_reader finish]) {
