@@ -9,6 +9,7 @@
 #import "CloudantReplicationBase.h"
 
 #import "CloudantSync.h"
+#import "CloudantSyncEncryption.h"
 
 #import "ReplicationSettings.h"
 

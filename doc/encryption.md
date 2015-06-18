@@ -68,6 +68,7 @@ podspec.
 #import "AppDelegate.h"
 
 #import <CloudantSync.h>
+#import <CloudantSyncEncryption.h>
 
 @implementation AppDelegate
 
@@ -125,6 +126,12 @@ podspec.
 @end
 ```
 
+Notice that below `#import <CloudantSync.h>` there is a extra import:
+`#import <CloudantSyncEncryption.h>`.
+[CloudantSyncEncryption.h][CloudantSyncEncryption.h] imports all the classes
+and methods that you need to encrypt a datastore. These methods will not be
+visible until you import this file.
+
 ## Encryption details
 
 Data in Cloudant Sync is stored in two formats:
@@ -158,3 +165,4 @@ instructions mentioned [here](https://www.zetetic.net/sqlcipher/open-source/).
 [CDTEncryptionKeychainProvider]: ../Classes/common/Encryption/Keychain/CDTEncryptionKeychainProvider.h
 [CDTEncryptionKeySimpleProvider]: ../Classes/common/Encryption/CDTEncryptionKeySimpleProvider.h
 [sqlcipher]: https://www.zetetic.net/sqlcipher/
+[CloudantSyncEncryption.h]: ../Classes/common/Encryption/CloudantSyncEncryption.h

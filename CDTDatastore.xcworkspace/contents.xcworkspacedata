@@ -143,6 +143,9 @@
                location = "group:CDTEncryptionKeySimpleProvider.m">
             </FileRef>
             <FileRef
+               location = "group:CloudantSyncEncryption.h">
+            </FileRef>
+            <FileRef
                location = "group:FMDatabase+EncryptionKey.h">
             </FileRef>
             <FileRef

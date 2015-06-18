@@ -12,6 +12,7 @@
 #import <UNIRest.h>
 #import <XCTest/XCTest.h>
 #import <CloudantSync.h>
+#import <CloudantSyncEncryption.h>
 #import <FMDatabase.h>
 #import "FMDatabaseQueue.h"
 

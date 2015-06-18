@@ -15,25 +15,20 @@
 
 #import <Foundation/Foundation.h>
 
-// Use subspec 'SQLCipher' to create encrypted databases. 'SQLCipher' also defines ENCRYPT_DATABASE.
-// The methods and classes to create encrypted databses are automatically imported in the project
-// only if ENCRYPT_DATABASE exists, i.e. unless you want this functionality, the methods and classes
-// will not be available and Xcode will not autocomplete the code with them.
-#ifdef ENCRYPT_DATABASE
-#import "CDTEncryptionKeyNilProvider.h"
-#import "CDTEncryptionKeychainProvider.h"
-#import "CDTEncryptionKeySimpleProvider.h"
-#import "CDTDatastoreManager+EncryptionKey.h"
-#else
 #import "CDTDatastoreManager.h"
-#endif
 
 #import "CDTDatastore.h"
 #import "CDTDatastore+Attachments.h"
+
+#import "CDTDatastore+Query.h"
+#import "CDTQResultSet.h"
+
 #import "CDTDocumentRevision.h"
 #import "CDTMutableDocumentRevision.h"
 #import "CDTDocumentBody.h"
+
 #import "CDTAttachment.h"
+
 #import "CDTFetchChanges.h"
 
 #import "CDTReplicator.h"
@@ -41,6 +36,3 @@
 #import "CDTPullReplication.h"
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicatorDelegate.h"
-
-#import "CDTDatastore+Query.h"
-#import "CDTQResultSet.h"
