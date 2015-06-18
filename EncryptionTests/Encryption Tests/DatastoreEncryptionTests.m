@@ -23,6 +23,7 @@
 
 #import "CDTDatastoreManager+EncryptionKey.h"
 #import "CDTDatastore+EncryptionKey.h"
+#import "CDTDatastore+Query.h"
 
 @interface DatastoreEncryptionTests : CloudantSyncTests
 

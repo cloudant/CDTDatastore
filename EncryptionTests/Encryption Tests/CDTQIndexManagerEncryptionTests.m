@@ -23,6 +23,7 @@
 #import "FMDatabase+SQLCipher.h"
 
 #import "CDTQIndexManager.h"
+#import "DBQueryUtils.h"
 
 @interface CDTQIndexManagerEncryptionTests : CloudantSyncTests
 
@@ -207,6 +208,23 @@
 
     XCTAssertNil(im, @"indexManager is nil");
     XCTAssertNotNil(err, @"There is an error");
+}
+
+- (void)testTextSearchIsAvailable
+{
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"is_fts_activated"
+                                 withEncryptionKeyProvider:provider
+                                                     error:nil];
+    
+    CDTQIndexManager *im = [[CDTQIndexManager alloc] initUsingDatastore:datastore error:nil];
+
+    NSSet *compileOptions = [DBQueryUtils compileOptions:im.database];
+    NSSet *ftsCompileOptions = [NSSet setWithArray:@[ @"ENABLE_FTS3" ]];
+
+    XCTAssertTrue([ftsCompileOptions isSubsetOfSet:compileOptions]);
+
+    XCTAssertTrue([im isTextSearchEnabled], @"It should be activated");
 }
 
 @end
