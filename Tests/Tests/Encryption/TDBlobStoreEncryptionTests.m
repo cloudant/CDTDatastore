@@ -362,6 +362,55 @@
                   @"There should be a file at this path");
 }
 
+- (void)testDeleteBlobsExceptWithKeysRemovesFilesNotRelatedToAnAttachment
+{
+    // Insert
+    __block TDBlobKey blobKey;
+    __block TDBlobKey otherBlobKey;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+      [_encryptedBlobStore storeBlob:_otherPlainData
+                         creatingKey:&otherBlobKey
+                        withDatabase:db
+                               error:nil];
+    }];
+
+    // Insert garbage
+    NSString *filePath = [self.encryptedBlobStorePath
+        stringByAppendingPathComponent:
+            [@"file01" stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension]];
+    [self.plainData writeToFile:filePath atomically:YES];
+    filePath = [self.encryptedBlobStorePath
+        stringByAppendingPathComponent:
+            [@"file02" stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension]];
+    [self.plainData writeToFile:filePath atomically:YES];
+
+    // Delete
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      NSSet *set =
+          [NSSet setWithObject:[NSData dataWithBytes:blobKey.bytes length:sizeof(blobKey.bytes)]];
+      [_encryptedBlobStore deleteBlobsExceptWithKeys:set withDatabase:db];
+    }];
+
+    // Get remaining filename
+    __block NSString *filename = nil;
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      filename = [TD_Database filenameForKey:blobKey inBlobFilenamesTableInDatabase:db];
+    }];
+
+    // Assert
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+
+    NSArray *allFilenames =
+        [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
+    XCTAssertEqual(allFilenames.count, 1, @"Only 1 file should remain");
+
+    filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
+    XCTAssertTrue([defaultManager fileExistsAtPath:filePath],
+                  @"There should be a file at this path");
+}
+
 - (void)testBlobStoreWriterDoesNotUpdateDBIfInstallFails
 {
     // Blobs before

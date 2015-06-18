@@ -179,6 +179,9 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     BOOL errors = NO;
     NSUInteger numDeleted = 0;
 
+    NSMutableSet* filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
+
+    // Delete attachments from database and disk
     NSArray* allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
 
     for (TD_DatabaseBlobFilenameRow* oneRow in allRows) {
@@ -187,6 +190,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
             [NSData dataWithBytes:oneRow.key.bytes length:sizeof(oneRow.key.bytes)];
         if ([keysToKeep containsObject:curKeyData]) {
             // Do not delete blob. It is an exception.
+            [filesToKeep addObject:oneRow.blobFilename];
+
             continue;
         }
 
@@ -208,7 +213,42 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         }
     }
 
+    // Delete files not related to an attachments
+    [self deleteFilesExceptWithFilenames:filesToKeep];
+
+    // Return
     return (errors ? -1 : numDeleted);
+}
+
+- (void)deleteFilesExceptWithFilenames:(NSSet*)filesToKeep
+{
+    NSFileManager* defaultManager = [NSFileManager defaultManager];
+
+    // Read directory
+    NSError* thisError = nil;
+    NSArray* remainingFiles = [defaultManager contentsOfDirectoryAtPath:_path error:&thisError];
+    if (!remainingFiles) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Can not read dir %@: %@", _path, thisError);
+
+        return;
+    }
+
+    // Delete all files but exceptions
+    for (NSString* oneFilename in remainingFiles) {
+        if ([filesToKeep containsObject:oneFilename]) {
+            // Do not delete file. It is an exception.
+
+            continue;
+        }
+
+        NSString* filePath = [TDBlobStore blobPathWithStorePath:_path blobFilename:oneFilename];
+
+        if (![defaultManager removeItemAtPath:filePath error:&thisError]) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT,
+                        @"%@: Failed to delete '%@' not related to an attachment: %@", self,
+                        oneFilename, thisError);
+        }
+    }
 }
 
 - (NSString*)tempDir
