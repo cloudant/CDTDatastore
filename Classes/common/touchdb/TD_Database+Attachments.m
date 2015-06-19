@@ -818,11 +818,11 @@
         [allKeys addObject:[r dataForColumnIndex:0]];
     }
     [r close];
-    NSInteger numDeleted = [_attachments deleteBlobsExceptWithKeys:allKeys withDatabase:db];
-    if (numDeleted < 0) {
+    BOOL blobDeleted = [_attachments deleteBlobsExceptWithKeys:allKeys withDatabase:db];
+    if (!blobDeleted) {
         return kTDStatusAttachmentError;
     }
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Deleted %d attachments", (int)numDeleted);
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Attachments deleted");
     return kTDStatusOK;
 }
 

@@ -174,10 +174,9 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     return n;
 }
 
-- (NSInteger)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase*)db
+- (BOOL)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db
 {
-    BOOL errors = NO;
-    NSUInteger numDeleted = 0;
+    BOOL success = YES;
 
     NSMutableSet* filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
 
@@ -203,13 +202,14 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         if ([[NSFileManager defaultManager] removeItemAtPath:blobPath error:&thisError]) {
             // Remove from db
             [TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db];
-
-            ++numDeleted;
         } else {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
                         oneRow.blobFilename, thisError);
 
-            errors = YES;
+            success = NO;
+            
+            // Do not try to delete it later, it will not be deleted from db
+            [filesToKeep addObject:oneRow.blobFilename];
         }
     }
 
@@ -217,7 +217,7 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     [self deleteFilesExceptWithFilenames:filesToKeep];
 
     // Return
-    return (errors ? -1 : numDeleted);
+    return success;
 }
 
 - (void)deleteFilesExceptWithFilenames:(NSSet*)filesToKeep
