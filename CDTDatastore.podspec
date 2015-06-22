@@ -96,7 +96,7 @@ Pod::Spec.new do |s|
     # or they will not compile (linker will not find some symbols).
     # Also, we have to force cocoapods to configure SQLCipher with support
     # for FTS.
-    sp.dependency 'SQLCipher/fts'
+    sp.dependency 'SQLCipher/fts', '~> 3.1.0'
   end
 
   s.subspec 'common-dependencies' do |sp|
