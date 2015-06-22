@@ -229,7 +229,6 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     NSArray* remainingFiles = [defaultManager contentsOfDirectoryAtPath:_path error:&thisError];
     if (!remainingFiles) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Can not read dir %@: %@", _path, thisError);
-
         return;
     }
 
