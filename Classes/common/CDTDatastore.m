@@ -602,7 +602,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 {
     if (!revision.body) {
         TDStatus status = kTDStatusBadRequest;
-        *error = TDStatusToNSError(status, nil);
+        if (error){
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
