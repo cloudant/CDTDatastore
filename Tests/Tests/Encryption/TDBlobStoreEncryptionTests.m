@@ -362,6 +362,35 @@
                   @"There should be a file at this path");
 }
 
+- (void)testDeleteBlobsExceptWithKeysSucceedIfFileDoesNotExistOnDisk
+{
+    // Insert
+    __block TDBlobKey blobKey;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
+    }];
+
+    // Delete file
+    NSFileManager *defaultManager = [NSFileManager defaultManager];
+    NSArray *fileArray =
+        [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
+    [defaultManager
+        removeItemAtPath:[self.encryptedBlobStorePath stringByAppendingPathComponent:fileArray[0]]
+                   error:nil];
+
+    // Delete
+    __block BOOL success = NO;
+
+    [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
+      success = [_encryptedBlobStore deleteBlobsExceptWithKeys:[NSSet set] withDatabase:db];
+    }];
+
+    // Assert
+    XCTAssertTrue(
+        success, @"If the file does not exist, simply delete the row in the database and carry on");
+}
+
 - (void)testDeleteBlobsExceptWithKeysRemovesFilesNotRelatedToAnAttachment
 {
     // Insert

@@ -174,18 +174,18 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     return n;
 }
 
-- (BOOL)deleteBlobsExceptWithKeys:(NSSet*)keysToKeep withDatabase:(FMDatabase *)db
+- (BOOL)deleteBlobsExceptWithKeys:(NSSet *)keysToKeep withDatabase:(FMDatabase *)db
 {
     BOOL success = YES;
 
-    NSMutableSet* filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
+    NSMutableSet *filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
 
     // Delete attachments from database and disk
-    NSArray* allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
+    NSArray *allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
 
-    for (TD_DatabaseBlobFilenameRow* oneRow in allRows) {
+    for (TD_DatabaseBlobFilenameRow *oneRow in allRows) {
         // Check if key is an exception
-        NSData* curKeyData =
+        NSData *curKeyData =
             [NSData dataWithBytes:oneRow.key.bytes length:sizeof(oneRow.key.bytes)];
         if ([keysToKeep containsObject:curKeyData]) {
             // Do not delete blob. It is an exception.
@@ -195,11 +195,13 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         }
 
         // Remove from disk
-        NSString* blobPath =
+        NSString *blobPath =
             [TDBlobStore blobPathWithStorePath:_path blobFilename:oneRow.blobFilename];
 
-        NSError* thisError = nil;
-        if ([[NSFileManager defaultManager] removeItemAtPath:blobPath error:&thisError]) {
+        NSFileManager *defaultManager = [NSFileManager defaultManager];
+        NSError *thisError = nil;
+        if (![defaultManager fileExistsAtPath:blobPath] ||
+            [defaultManager removeItemAtPath:blobPath error:&thisError]) {
             // Remove from db
             [TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db];
         } else {
@@ -207,7 +209,7 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
                         oneRow.blobFilename, thisError);
 
             success = NO;
-            
+
             // Do not try to delete it later, it will not be deleted from db
             [filesToKeep addObject:oneRow.blobFilename];
         }
