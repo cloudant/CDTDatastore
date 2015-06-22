@@ -214,37 +214,37 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     }
 
     // Delete files not related to an attachments
-    [self deleteFilesExceptWithFilenames:filesToKeep];
+    [TDBlobStore deleteFilesNotInSet:filesToKeep fromPath:_path];
 
     // Return
     return success;
 }
 
-- (void)deleteFilesExceptWithFilenames:(NSSet*)filesToKeep
++ (void)deleteFilesNotInSet:(NSSet*)filesToKeep fromPath:(NSString *)path
 {
     NSFileManager* defaultManager = [NSFileManager defaultManager];
 
     // Read directory
     NSError* thisError = nil;
-    NSArray* remainingFiles = [defaultManager contentsOfDirectoryAtPath:_path error:&thisError];
-    if (!remainingFiles) {
-        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Can not read dir %@: %@", _path, thisError);
+    NSArray* currentFiles = [defaultManager contentsOfDirectoryAtPath:path error:&thisError];
+    if (!currentFiles) {
+        CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Can not read dir %@: %@", path, thisError);
         return;
     }
 
     // Delete all files but exceptions
-    for (NSString* oneFilename in remainingFiles) {
-        if ([filesToKeep containsObject:oneFilename]) {
+    for (NSString* filename in currentFiles) {
+        if ([filesToKeep containsObject:filename]) {
             // Do not delete file. It is an exception.
             continue;
         }
 
-        NSString* filePath = [TDBlobStore blobPathWithStorePath:_path blobFilename:oneFilename];
+        NSString* filePath = [TDBlobStore blobPathWithStorePath:path blobFilename:filename];
 
         if (![defaultManager removeItemAtPath:filePath error:&thisError]) {
             CDTLogError(CDTDATASTORE_LOG_CONTEXT,
                         @"%@: Failed to delete '%@' not related to an attachment: %@", self,
-                        oneFilename, thisError);
+                        filename, thisError);
         }
     }
 }
