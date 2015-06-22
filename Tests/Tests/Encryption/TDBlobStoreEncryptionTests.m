@@ -366,25 +366,28 @@
 {
     // Insert
     __block TDBlobKey blobKey;
-    __block TDBlobKey otherBlobKey;
 
     [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
       [_encryptedBlobStore storeBlob:_plainData creatingKey:&blobKey withDatabase:db error:nil];
-      [_encryptedBlobStore storeBlob:_otherPlainData
-                         creatingKey:&otherBlobKey
-                        withDatabase:db
-                               error:nil];
+
+      for (NSUInteger i = 0; i < 20; i++) {
+          NSString *otherStr = [NSString stringWithFormat:@"摇;摃:%lu", (unsigned long)i];
+
+          TDBlobKey otherBlobKey;
+          [_encryptedBlobStore storeBlob:[otherStr dataUsingEncoding:NSUTF8StringEncoding]
+                             creatingKey:&otherBlobKey
+                            withDatabase:db
+                                   error:nil];
+      }
     }];
 
     // Insert garbage
-    NSString *filePath = [self.encryptedBlobStorePath
-        stringByAppendingPathComponent:
-            [@"file01" stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension]];
-    [self.plainData writeToFile:filePath atomically:YES];
-    filePath = [self.encryptedBlobStorePath
-        stringByAppendingPathComponent:
-            [@"file02" stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension]];
-    [self.plainData writeToFile:filePath atomically:YES];
+    for (NSInteger i = 0; i < 20; i++) {
+        NSString *filename = [[NSString stringWithFormat:@"file%lu", (unsigned long)i]
+            stringByAppendingPathExtension:TDDatabaseBlobFilenamesFileExtension];
+        NSString *filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
+        [self.plainData writeToFile:filePath atomically:YES];
+    }
 
     // Delete
     [self.otherDB.fmdbQueue inDatabase:^(FMDatabase *db) {
@@ -406,7 +409,7 @@
         [defaultManager contentsOfDirectoryAtPath:self.encryptedBlobStorePath error:nil];
     XCTAssertEqual(allFilenames.count, 1, @"Only 1 file should remain");
 
-    filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
+    NSString *filePath = [self.encryptedBlobStorePath stringByAppendingPathComponent:filename];
     XCTAssertTrue([defaultManager fileExistsAtPath:filePath],
                   @"There should be a file at this path");
 }
