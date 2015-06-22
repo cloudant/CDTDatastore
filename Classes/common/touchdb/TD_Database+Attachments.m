@@ -822,7 +822,7 @@
     if (!blobDeleted) {
         return kTDStatusAttachmentError;
     }
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Attachments deleted");
+    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Unneeded attachment blobs deleted");
     return kTDStatusOK;
 }
 
