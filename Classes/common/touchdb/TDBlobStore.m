@@ -180,7 +180,7 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
 
     NSMutableSet *filesToKeep = [NSMutableSet setWithCapacity:keysToKeep.count];
 
-    // Delete attachments from database and disk
+    // Delete attachments from database
     NSArray *allRows = [TD_Database rowsInBlobFilenamesTableInDatabase:db];
 
     for (TD_DatabaseBlobFilenameRow *oneRow in allRows) {
@@ -194,19 +194,10 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
             continue;
         }
 
-        // Remove from disk
-        NSString *blobPath =
-            [TDBlobStore blobPathWithStorePath:_path blobFilename:oneRow.blobFilename];
-
-        NSFileManager *defaultManager = [NSFileManager defaultManager];
-        NSError *thisError = nil;
-        if (![defaultManager fileExistsAtPath:blobPath] ||
-            [defaultManager removeItemAtPath:blobPath error:&thisError]) {
-            // Remove from db
-            [TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db];
-        } else {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@': %@", self,
-                        oneRow.blobFilename, thisError);
+        // Remove from db
+        if (![TD_Database deleteRowForKey:oneRow.key inBlobFilenamesTableInDatabase:db]) {
+            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"%@: Failed to delete '%@' from db", self,
+                        oneRow.blobFilename);
 
             success = NO;
 
@@ -215,7 +206,11 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         }
     }
 
-    // Delete files not related to an attachments
+    // Delete attachments from disk. In fact, this method will delete all the files in the folder
+    // but the exception
+    // NOTICE: If for some reason one of the files is not deleted and later we generate the same
+    // filename for another attachment, the content of this file will be overwritten with the new
+    // data
     [TDBlobStore deleteFilesNotInSet:filesToKeep fromPath:_path];
 
     // Return
