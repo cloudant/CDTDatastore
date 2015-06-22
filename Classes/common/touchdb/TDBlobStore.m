@@ -237,7 +237,6 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     for (NSString* oneFilename in remainingFiles) {
         if ([filesToKeep containsObject:oneFilename]) {
             // Do not delete file. It is an exception.
-
             continue;
         }
 
