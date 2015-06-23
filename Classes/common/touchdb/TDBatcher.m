@@ -75,12 +75,12 @@
     if (!_inbox) _inbox = [[NSMutableArray alloc] init];
     [_inbox addObjectsFromArray:objects];
 
-    if (_inbox.count < _capacity)
-        [self scheduleWithDelay:_delay];
-    else {
-        [self unschedule];
+//    if (_inbox.count < _capacity)
+//        [self scheduleWithDelay:_delay];
+//    else {
+//        [self unschedule];
         [self processNow];
-    }
+//    }
 }
 
 - (void)queueObject:(id)object { [self queueObjects:@[ object ]]; }

@@ -112,6 +112,7 @@
         } else if (TDStatusIsError(((NSHTTPURLResponse*)response).statusCode)) {
                         [strongSelf receivedResponse:response];
         }  else {
+            [strongSelf receivedResponse:response];
             [strongSelf receivedData:data];
         }
     }];

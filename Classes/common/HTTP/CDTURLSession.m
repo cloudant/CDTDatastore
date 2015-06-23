@@ -13,8 +13,6 @@
 
 @property NSMutableArray * responseFilters;
 @property NSMutableArray * requestFilters;
-@property BOOL requestProcessing;
-@property int remaingRetires;
 @property NSURLSession *session;
 
 
@@ -33,10 +31,13 @@
         _responseFilters = [NSMutableArray array];
         _requestFilters = [NSMutableArray array];
         _numberOfRetries = 10;
-        _remaingRetires = _numberOfRetries;
-        _requestProcessing = NO;
         queue = dispatch_queue_create("com.cloudant.sync.http.callback.queue",NULL);
-        _session = [NSURLSession sessionWithConfiguration:nil];
+        
+        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        config.HTTPMaximumConnectionsPerHost = 1;
+        
+        
+        _session = [NSURLSession sessionWithConfiguration:config];
     }
     return self;
 }
@@ -62,15 +63,6 @@
 - (NSURLSessionDataTask *)dataTaskWithContext:(CDTURLSessionFilterContext*)context
                             completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler
 {
-    
-    if(self.requestProcessing){
-        //need to decrement the retry count.
-        self.remaingRetires--;
-    } else {
-        self.requestProcessing = YES;
-        self.remaingRetires = self.numberOfRetries;
-    }
-    
     // do request
     // run response filter before completion handler
     // retries?
@@ -84,7 +76,8 @@
     
 
     NSURLSessionDataTask *task = [self.session dataTaskWithRequest:context.request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
-
+        
+        _data = [NSData dataWithData:_data];
         CDTURLSessionFilterContext *currentContext = context;
         context.response = _response;
         context.replayRequest = FALSE;
@@ -92,7 +85,7 @@
             currentContext = [filter filterResponseWithContext:currentContext];
         }
 
-        if (currentContext.replayRequest && self.remaingRetires > 0) {
+        if (currentContext.replayRequest) {
             CDTURLSession *strongSelf = weakSelf;
             NSURLSessionDataTask *replayTask = [strongSelf dataTaskWithContext:currentContext completionHandler:completionHandler];
             [replayTask resume];
@@ -100,7 +93,7 @@
             // if we're not replaying then we can call the completion handler on a callback queue
             //dispatch_async(queue, ^{
                 completionHandler(_data, _response, _error);
-           // });
+            //});
             
         }
     } ];

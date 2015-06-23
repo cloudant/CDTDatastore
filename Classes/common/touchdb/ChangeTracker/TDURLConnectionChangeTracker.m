@@ -27,6 +27,7 @@
 #import "TDJSON.h"
 #import "CDTLogging.h"
 #import "TDMisc.h"
+#import "CDTURLSession.h"
 
 #define kMaxRetries 6
 #define kInitialRetryDelay 0.2
@@ -37,13 +38,27 @@
 @property (strong, nonatomic) NSMutableURLRequest *request;
 @property (strong, nonatomic) NSDate* startTime;
 @property (nonatomic, readwrite) NSUInteger totalRetries;
+@property (nonatomic, strong) CDTURLSession * session;
+@property (nonatomic, strong) NSURLSessionDataTask * task;
 @end
 
 @implementation TDURLConnectionChangeTracker
 
+
+-(instancetype) initWithDatabaseURL:(NSURL *)databaseURL mode:(TDChangeTrackerMode)mode conflicts:(BOOL)includeConflicts lastSequence:(id)lastSequenceID client:(id<TDChangeTrackerClient>)client
+{
+    self = [super initWithDatabaseURL:databaseURL mode:mode conflicts:includeConflicts lastSequence:lastSequenceID client:client];
+    
+    if(self){
+        _session = [[CDTURLSession alloc]init];
+    }
+    return self;
+}
+
+
 - (BOOL)start
 {
-    if (self.connection) return NO;
+    if (self.task) return NO;
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting...", [self class]);
     [super start];
@@ -58,17 +73,7 @@
         [self.request setValue:self.requestHeaders[key] forHTTPHeaderField:key];
     }
     
-    // Add cookie headers from the NSHTTPCookieStorage:
-    NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:url];
-    NSDictionary* cookieHeaders = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
     NSArray *requestHeadersKeys = [self.requestHeaders allKeys];
-    for (NSString* headerName in cookieHeaders) {
-        if ([requestHeadersKeys containsObject:headerName]) {
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Overwriting '%@' header with value %@",
-                       self, headerName, cookieHeaders[headerName]);
-        }
-        [self.request setValue:cookieHeaders[headerName] forHTTPHeaderField:headerName];
-    }
 
     if (self.authorizer) {
         NSString* authHeader = [self.authorizer authorizeURLRequest:self.request forRealm:nil];
@@ -81,17 +86,18 @@
         }
     }
     
-    self.connection = [[NSURLConnection alloc] initWithRequest:self.request
-                                                      delegate:self
-                                              startImmediately:NO];
+    self.task = [self.session dataTaskWithRequest:self.request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if(error){
+            [self connection:nil didFailWithError:error];
+            return;
+        } else {
+            [self connection:nil didReceiveResponse:response];
+            [self connection:nil didReceiveData:data];
+            [self connectionDidFinishLoading:nil];
+        }
+    }];
 
-    if (!self.connection) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@ failed to create NSURLConnection",
-                   self, TDCleanURLtoString(url));
-        return NO;
-    }
-    [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    [self.connection start];
+    [self.task resume];
     
     self.inputBuffer = [NSMutableData dataWithCapacity:0];
         
@@ -103,8 +109,7 @@
 
 - (void)clearConnection
 {
-    [self.connection cancel];
-    [self.connection unscheduleFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [self.task cancel];
     self.connection = nil;
     self.inputBuffer = nil;
 }
@@ -114,7 +119,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self
                                              selector:@selector(start)
                                                object:nil];  // cancel pending retries
-    if (self.connection) {
+    if (self.task) {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: stop", [self class]);
         [self clearConnection];
     }

@@ -37,6 +37,7 @@
                     onCompletion:onCompletion];
     if (self) {
         _db = database;
+        _reader = [[TDMultipartDocumentReader alloc] initWithDatabase:_db];
         [_request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
     }
     return self;
@@ -48,9 +49,8 @@
 
 #pragma mark - URL CONNECTION CALLBACKS:
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+- (void)receivedResponse:(NSURLResponse *)response
 {
-    _reader = [[TDMultipartDocumentReader alloc] initWithDatabase:_db];
     TDStatus status = (TDStatus)((NSHTTPURLResponse *)response).statusCode;
     if (status < 300) {
         // Check the content type to see whether it's a multipart response:
@@ -65,8 +65,8 @@
             return;
         }
     }
-
-    //[super connection:connection didReceiveResponse:response];
+    
+    [super receivedResponse:response];
 }
 
 - (void)receivedData:(NSData *)data
