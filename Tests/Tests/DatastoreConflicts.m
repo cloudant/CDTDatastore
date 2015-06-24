@@ -886,6 +886,59 @@
     
 }
 
+- (void)testGetAllDocumentsReturnsOneDocumentIfThereIsOnlyOneConflictingDocument
+{
+    [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
 
+    NSArray *allDocs = [self.datastore getAllDocuments];
+
+    XCTAssertEqual(allDocs.count, 1, @"Return only 1 document, even if there are conflicts");
+}
+
+- (void)
+    testGetAllDocumentsReturnsTwoDocumentsIfThereIsOneConflictedDocumentAndOneNonConflictingDocument
+{
+    [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
+    [self addNonConflictingDocumentWithBody:@{ @"key" : @"value" } toDatastore:self.datastore];
+
+    NSArray *allDocs = [self.datastore getAllDocuments];
+
+    XCTAssertEqual(allDocs.count, 2, @"Return only 2 documents, even if there are conflicts");
+}
+
+- (void)
+    testGetAllDocumentsReturnsAnOddNumberOfDocumentsIfThereIsOnlyAnOddNumberOfConflictingDocuments
+{
+    NSUInteger oddNumberOfConflictingDocuments = 21;
+
+    for (NSUInteger i = 0; i < oddNumberOfConflictingDocuments; i++) {
+        [self addConflictingDocumentWithId:[NSString stringWithFormat:@"doc%lu", (unsigned long)i]
+                               toDatastore:self.datastore];
+    }
+
+    NSArray *allDocs = [self.datastore getAllDocuments];
+
+    XCTAssertEqual(allDocs.count, oddNumberOfConflictingDocuments,
+                   @"Return only %lu documents, even if there are conflicts",
+                   (unsigned long)oddNumberOfConflictingDocuments);
+}
+
+- (void)
+    testGetAllDocumentsReturnsAEvenNumberOfDocumentsIfThereIsAnOddNumberOfConflictingDocumentsAndOneNonConflictingDocument
+{
+    NSUInteger oddNumberOfConflictingDocuments = 21;
+
+    for (NSUInteger i = 0; i < oddNumberOfConflictingDocuments; i++) {
+        [self addConflictingDocumentWithId:[NSString stringWithFormat:@"doc%lu", (unsigned long)i]
+                               toDatastore:self.datastore];
+    }
+    [self addNonConflictingDocumentWithBody:@{ @"key" : @"value" } toDatastore:self.datastore];
+
+    NSArray *allDocs = [self.datastore getAllDocuments];
+
+    XCTAssertEqual(allDocs.count, oddNumberOfConflictingDocuments + 1,
+                   @"Return only %lu documents, even if there are conflicts",
+                   (unsigned long)(oddNumberOfConflictingDocuments + 1));
+}
 
 @end
