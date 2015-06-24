@@ -1,5 +1,17 @@
 # CDTDatastore CHANGELOG
 
+## 0.17.1 (2015-06-24)
+
+- [FIX] Allow using encrypted datastores and FTS together.
+- [CHANGE] Include `CloudantSyncEncryption.h` to access encryption features,
+  in addition to `CloudantSync.h`.
+  We found the previous preprocessor approach didn't work in Swift.
+- [FIX] Pin SQLCipher version to one we've tested with.
+- [FIX] Under some circumstances unneeded attachment blobs were not
+  cleaned up.
+- [FIX] Empty array fields we not indexed, which would cause some queries to
+  unexpectedly fail.
+
 ## 0.17.0 (2015-06-11)
 
 - [NEW] Encryption of all data is now supported using 256-bit AES:
