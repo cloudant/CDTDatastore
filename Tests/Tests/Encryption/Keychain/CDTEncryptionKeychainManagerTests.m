@@ -28,54 +28,9 @@
 // 'CDTEncryptionKeychainUtilsAESTests.m' and 'CDTEncryptionKeychainUtilsPBKDF2Tests.m')
 #define CDTENCRYPTIONKEYCHAINMANAGERTESTS_PASSWORD_DEFAULT @"password"
 
-// Constant for 'CDTEncryptionKeychainManager:validateEncryptionKeyData:'
-NSString *const kCDTEncryptionKeychainManagerTestsValidateEncryptionKeyData =
-    @"kCDTEncryptionKeychainManagerTestsValidateEncryptionKeyData";
-// Constant for 'CDTEncryptionKeychainManager:keyExists'
-NSString *const kCDTEncryptionKeychainManagerTestsKeyExists =
-    @"kCDTEncryptionKeychainManagerTestsKeyExists";
-// Constant for 'CDTEncryptionKeychainManager:generateDpk'
-NSString *const kCDTEncryptionKeychainManagerTestsGenerateDpk =
-    @"kCDTEncryptionKeychainManagerTestsGenerateDpk";
-// Constant for 'CDTEncryptionKeychainManager:keychainDataToStoreDpk:encryptedWithPassword:'
-NSString *const kCDTEncryptionKeychainManagerTestsKeychainDataToStoreDpk =
-    @"kCDTEncryptionKeychainManagerTestsKeychainDataToStoreDpk";
-// Constant for 'CDTEncryptionKeychainManager:generatePBKDF2Salt'
-NSString *const kCDTEncryptionKeychainManagerTestsGeneratePBKDF2Salt =
-    @"kCDTEncryptionKeychainManagerTestsGeneratePBKDF2Salt";
-// Constant for 'CDTEncryptionKeychainManager:pbkdf2DerivedKeyForPassword:salt:iterations:length:'
-NSString *const kCDTEncryptionKeychainManagerTestsPBKDF2DerivedKey =
-    @"kCDTEncryptionKeychainManagerTestsPBKDF2DerivedKey";
-// Constant for 'CDTEncryptionKeychainManager:generateAESIv'
-NSString *const kCDTEncryptionKeychainManagerTestsGenerateAESIv =
-    @"kCDTEncryptionKeychainManagerTestsGenerateAESIv";
-// Constant for 'CDTEncryptionKeychainManager:encryptDpk:usingAESWithKey:iv:'
-NSString *const kCDTEncryptionKeychainManagerTestsEncryptDpk =
-    @"kCDTEncryptionKeychainManagerTestsEncryptDpk";
-// Constant for 'CDTEncryptionKeychainManager:decryptDpk:usingAESWithKey:iv:'
-NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
-    @"kCDTEncryptionKeychainManagerTestsDecryptDpk";
-
-/**
- CDTEncryptionCustomKeychainManager is a mock class for CDTEncryptionKeychainManager.
- 
- It does not add or modify the functionality of its parent class, instead it overrides the methods
- declared in CDTEncryptionKeychainManager+Internal this way:
- - Add to 'lastSteps' the constant related to the current method (check above).
- - Use 'super' to execute the implementation of the method in the parent class.
- 
- This allows us to track the behaviour of the parent class when we execute its methods under
- different circunstances.
- */
-@interface CDTEncryptionCustomKeychainManager : CDTEncryptionKeychainManager
-
-@property (strong, nonatomic) NSMutableArray *lastSteps;
-
-@end
-
 @interface CDTEncryptionKeychainManagerTests : XCTestCase
 
-@property (strong, nonatomic) CDTEncryptionCustomKeychainManager *manager;
+@property (strong, nonatomic) CDTEncryptionKeychainManager *manager;
 
 @property (strong, nonatomic) NSString *password;
 @property (strong, nonatomic) CDTEncryptionKeychainData *keychainData;
@@ -100,9 +55,14 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
     self.keychainData =
         [oneManager keychainDataToStoreDpk:oneDpk encryptedWithPassword:self.password];
 
-    self.mockStorage = OCMClassMock([CDTEncryptionKeychainStorage class]);
+    // Create mockStorage as a strict mock. A strick mock will raise an exception if one of its
+    // methods is called and it was not set as expected with 'OCMExpect'. Therefore, for each test
+    // we have to specify which methods we expect to be executed (we call this our expectations)
+    self.mockStorage = OCMStrictClassMock([CDTEncryptionKeychainStorage class]);
+    // Also, tests will pass only if the calls are made in the expected order
+    [self.mockStorage setExpectationOrderMatters:YES];
 
-    self.manager = [[CDTEncryptionCustomKeychainManager alloc]
+    self.manager = [[CDTEncryptionKeychainManager alloc]
         initWithStorage:(CDTEncryptionKeychainStorage *)self.mockStorage];
 }
 
@@ -126,25 +86,36 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testClearKeyDelegatesToStorage
 {
+    // Set expectation
+    OCMExpect([self.mockStorage clearEncryptionKeyData]);
+
     [self.manager clearKey];
 
-    OCMVerify([self.mockStorage clearEncryptionKeyData]);
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testKeyExistsDelegatesToStorage
 {
+    // Set expectation
+    OCMExpect([self.mockStorage encryptionKeyDataExists]);
+
     [self.manager keyExists];
 
-    OCMVerify([self.mockStorage encryptionKeyDataExists]);
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testLoadKeyUsingPasswordFailsIfThereIsNotData
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyData]).andReturn(nil);
 
     XCTAssertNil([self.manager loadKeyUsingPassword:self.password],
                  @"No key to return if there is no data in the keychain");
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testLoadKeyUsingPasswordDoesNotFailIfNumberOfIterationsIsNotAsExpected
@@ -170,12 +141,15 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                                              iterations:1
                                                 version:self.keychainData.version];
 
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(otherData);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyData]).andReturn(otherData);
 
     XCTAssertNotNil([self.manager loadKeyUsingPassword:self.password],
                     @"Iterations does not have to be equal to %li",
                     (long)CDTENCRYPTION_KEYCHAIN_PBKDF2_ITERATIONS);
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testLoadKeyUsingPasswordFailsIfIVDoesNotHaveTheRightSize
@@ -188,188 +162,154 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                   iterations:self.keychainData.iterations
                      version:self.keychainData.version];
 
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(otherData);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyData]).andReturn(otherData);
 
     XCTAssertNil([self.manager loadKeyUsingPassword:self.password], @"IV size must be equalt to %i",
                  kCCBlockSizeAES128);
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testLoadKeyUsingPasswordRaisesExceptionIfNoPassIsProvided
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
 
     XCTAssertThrows([self.manager loadKeyUsingPassword:nil],
                     @"A password is neccesary to decipher the key");
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testLoadKeyUsingPasswordPerformsTheExpectedSteps
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
+    // Create a partial mock based on self.manager. A partial mock is build with an instance,
+    // instead of being build with a class definition; this allows me to set expectations on the
+    // partial mock (the methods I expect will be executed) and then forward the message to the
+    // original instance
+    id partialMockManager = OCMPartialMock(self.manager);
+    // Also, test will pass only if the calls are made in the expected order
+    [partialMockManager setExpectationOrderMatters:YES];
 
-    [self.manager loadKeyUsingPassword:self.password];
+    // Set the expectations in the right order.
+    // Notice that the call will be forwarded to the real object, we want to track the workflow
+    // of this class, not to interrupt it.
+    OCMExpect([partialMockManager validateEncryptionKeyData:OCMOCK_ANY]).andForwardToRealObject();
+    OCMExpect([[partialMockManager ignoringNonObjectArgs] pbkdf2DerivedKeyForPassword:OCMOCK_ANY
+                                                                                 salt:OCMOCK_ANY
+                                                                           iterations:0
+                                                                               length:0])
+        .andForwardToRealObject();
+    OCMExpect([partialMockManager decryptDpk:OCMOCK_ANY usingAESWithKey:OCMOCK_ANY iv:OCMOCK_ANY])
+        .andForwardToRealObject();
 
-    NSArray *expectedSteps = @[
-        kCDTEncryptionKeychainManagerTestsValidateEncryptionKeyData,
-        kCDTEncryptionKeychainManagerTestsPBKDF2DerivedKey,
-        kCDTEncryptionKeychainManagerTestsDecryptDpk
-    ];
+    OCMExpect([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
 
-    XCTAssertEqualObjects(expectedSteps, self.manager.lastSteps,
-                          @"Method did not behave as expected");
+    [partialMockManager loadKeyUsingPassword:self.password];
+
+    // Verify that the expected methods are executed in the right order for both objects
+    OCMVerifyAll(self.mockStorage);
+    OCMVerifyAll(partialMockManager);
 }
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordRaisesExceptionIfNoPassIsProvided
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(YES);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
 
     XCTAssertThrows([self.manager generateAndSaveKeyProtectedByPassword:nil],
                     @"A password is neccesary to cipher the key");
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordFailsIfEncryptionDataWasAlreadyGenerated
 {
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
+    // Set expectation. Also set the return value to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     XCTAssertNil([self.manager generateAndSaveKeyProtectedByPassword:self.password],
                  @"No key should be generated if there is one already");
+
+    // Verify that the expected method was executed, also it was the only method executed
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordFailsIfKeyIsNotSaved
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(NO);
+    // Set expectations. Also set the return values to test the next Assert
+    OCMExpect([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    OCMExpect([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(NO);
 
     XCTAssertNil([self.manager generateAndSaveKeyProtectedByPassword:self.password],
                  @"No key must be returned if it is not saved to the keychain");
+
+    // Verify that only the expected methods were executed and they were run in the right order
+    OCMVerifyAll(self.mockStorage);
 }
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordPerformsExpectedHighlevelSteps
 {
-    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
-    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(YES);
+    // Create a partial mock based on self.manager. A partial mock is build with an instance,
+    // instead of being build with a class definition; this allows me to set expectations on the
+    // partial mock (the methods I expect will be executed) and then forward the message to the
+    // original instance
+    id partialMockManager = OCMPartialMock(self.manager);
+    // Also, test will pass only if the calls are made in the expected order
+    [partialMockManager setExpectationOrderMatters:YES];
 
-    [self.manager generateAndSaveKeyProtectedByPassword:self.password];
+    // Set the expectations in the right order.
+    // Notice that the call will be forwarded to the real object, we want to track the workflow
+    // of this class, not to interrupt it.
+    OCMExpect([partialMockManager keyExists]).andForwardToRealObject();
+    OCMExpect([partialMockManager generateDpk]).andForwardToRealObject();
+    OCMExpect(
+        [partialMockManager keychainDataToStoreDpk:OCMOCK_ANY encryptedWithPassword:OCMOCK_ANY])
+        .andForwardToRealObject();
 
-    NSArray *expectedSteps = @[
-        kCDTEncryptionKeychainManagerTestsKeyExists,
-        kCDTEncryptionKeychainManagerTestsGenerateDpk,
-        kCDTEncryptionKeychainManagerTestsKeychainDataToStoreDpk
-    ];
-    NSArray *highlevelSteps =
-        [self.manager.lastSteps subarrayWithRange:NSMakeRange(0, [expectedSteps count])];
-    BOOL asExpected = [expectedSteps isEqualToArray:highlevelSteps];
+    OCMExpect([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    OCMExpect([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(YES);
 
-    OCMVerify([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]);
-    XCTAssertTrue(asExpected, @"Method did not behave as expected. Expected: %@. Performed: %@",
-                  expectedSteps, highlevelSteps);
+    [partialMockManager generateAndSaveKeyProtectedByPassword:self.password];
+
+    // Verify that the expected methods are executed in the right order for both objects
+    OCMVerifyAll(self.mockStorage);
+    OCMVerifyAll(partialMockManager);
 }
 
 - (void)testKeychainDataToStoreDpkPerformsExpectedHighlevelSteps
 {
+    // Create a partial mock based on self.manager. A partial mock is build with an instance,
+    // instead of being build with a class definition; this allows me to set expectations on the
+    // partial mock (the methods I expect will be executed) and then forward the message to the
+    // original instance
+    // In this case, we do not enforce a order: it is perfectly fine to generate the IV before
+    // all the rest, etc.
+    id partialMockManager = OCMPartialMock(self.manager);
+
+    // Set the expectations in the right order.
+    // Notice that the call will be forwarded to the real object, we want to track the workflow
+    // of this class, not to interrupt it.
+    OCMExpect([partialMockManager generatePBKDF2Salt]).andForwardToRealObject();
+    OCMExpect([[partialMockManager ignoringNonObjectArgs] pbkdf2DerivedKeyForPassword:OCMOCK_ANY
+                                                                                 salt:OCMOCK_ANY
+                                                                           iterations:0
+                                                                               length:0])
+        .andForwardToRealObject();
+    OCMExpect([partialMockManager generateAESIv]).andForwardToRealObject();
+    OCMExpect([partialMockManager encryptDpk:OCMOCK_ANY usingAESWithKey:OCMOCK_ANY iv:OCMOCK_ANY])
+        .andForwardToRealObject();
+
     NSData *dpk =
         [CDTEncryptionKeychainUtils generateSecureRandomBytesWithLength:CDTENCRYPTIONKEY_KEYSIZE];
-    [self.manager keychainDataToStoreDpk:dpk encryptedWithPassword:self.password];
+    [partialMockManager keychainDataToStoreDpk:dpk encryptedWithPassword:self.password];
 
-    NSSet *expectedSteps =
-        [NSSet setWithObjects:kCDTEncryptionKeychainManagerTestsKeychainDataToStoreDpk,
-                              kCDTEncryptionKeychainManagerTestsGeneratePBKDF2Salt,
-                              kCDTEncryptionKeychainManagerTestsPBKDF2DerivedKey,
-                              kCDTEncryptionKeychainManagerTestsGenerateAESIv,
-                              kCDTEncryptionKeychainManagerTestsEncryptDpk, nil];
-    NSSet *highlevelSteps = [NSSet setWithArray:self.manager.lastSteps];
-
-    XCTAssertEqualObjects(expectedSteps, highlevelSteps, @"Method did not behave as expected");
-}
-
-@end
-
-@implementation CDTEncryptionCustomKeychainManager
-
-#pragma mark - Init object
-- (instancetype)initWithStorage:(CDTEncryptionKeychainStorage *)storage
-{
-    self = [super initWithStorage:storage];
-    if (self) {
-        _lastSteps = [NSMutableArray array];
-    }
-
-    return self;
-}
-
-#pragma mark - CDTEncryptionKeychainManager methods
-- (BOOL)keyExists
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsKeyExists];
-
-    return [super keyExists];
-}
-
-#pragma mark - CDTEncryptionKeychainManager+Internal methods
-- (BOOL)validateEncryptionKeyData:(CDTEncryptionKeychainData *)data
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsValidateEncryptionKeyData];
-
-    return [super validateEncryptionKeyData:data];
-}
-
-- (NSData *)generateDpk
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsGenerateDpk];
-
-    return [super generateDpk];
-}
-
-- (CDTEncryptionKeychainData *)keychainDataToStoreDpk:(NSData *)dpk
-                                encryptedWithPassword:(NSString *)password
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsKeychainDataToStoreDpk];
-
-    return [super keychainDataToStoreDpk:dpk encryptedWithPassword:password];
-}
-
-- (NSData *)generatePBKDF2Salt
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsGeneratePBKDF2Salt];
-
-    return [super generatePBKDF2Salt];
-}
-
-- (NSData *)pbkdf2DerivedKeyForPassword:(NSString *)pass
-                                   salt:(NSData *)salt
-                             iterations:(NSInteger)iterations
-                                 length:(NSUInteger)length
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsPBKDF2DerivedKey];
-
-    return [super pbkdf2DerivedKeyForPassword:pass salt:salt iterations:iterations length:length];
-}
-
-- (NSData *)generateAESIv
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsGenerateAESIv];
-
-    return [super generateAESIv];
-}
-
-- (NSData *)encryptDpk:(NSData *)dpk usingAESWithKey:(NSData *)key iv:(NSData *)iv
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsEncryptDpk];
-
-    return [super encryptDpk:dpk usingAESWithKey:key iv:iv];
-}
-
-- (NSData *)decryptDpk:(NSData *)cipheredDpk usingAESWithKey:(NSData *)key iv:(NSData *)iv
-{
-    [self.lastSteps addObject:kCDTEncryptionKeychainManagerTestsDecryptDpk];
-
-    return [super decryptDpk:cipheredDpk usingAESWithKey:key iv:iv];
+    // Verify that the expected methods are executed in the right order
+    OCMVerifyAll(partialMockManager);
 }
 
 @end
