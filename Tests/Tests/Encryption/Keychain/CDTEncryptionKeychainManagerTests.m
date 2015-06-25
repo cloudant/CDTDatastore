@@ -14,14 +14,14 @@
 //  and limitations under the License.
 //
 
+#import <OCMock/OCMock.h>
+
 #import <XCTest/XCTest.h>
 
 #import "CDTEncryptionKeychainManager+Internal.h"
 
 #import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainConstants.h"
-
-#import "CDTMockEncryptionKeychainStorage.h"
 
 // NOTE: There is no need for a stronger password given that the following tests check the
 // behaviour of CDTEncryptionKeychainManager, not its encryption capabilities (which is tested in
@@ -57,7 +57,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
     @"kCDTEncryptionKeychainManagerTestsDecryptDpk";
 
 /**
- CDTEncryptionCustomKeychainManager is a mock class for CDTEncryptionKeychainManager. 
+ CDTEncryptionCustomKeychainManager is a mock class for CDTEncryptionKeychainManager.
  
  It does not add or modify the functionality of its parent class, instead it overrides the methods
  declared in CDTEncryptionKeychainManager+Internal this way:
@@ -79,7 +79,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 @property (strong, nonatomic) NSString *password;
 @property (strong, nonatomic) CDTEncryptionKeychainData *keychainData;
-@property (strong, nonatomic) CDTMockEncryptionKeychainStorage *mockStorage;
+@property (strong, nonatomic) id mockStorage;
 
 @end
 
@@ -91,7 +91,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
     // Put setup code here. This method is called before the invocation of each test method in the
     // class.
-    CDTMockEncryptionKeychainStorage *oneStorage = [[CDTMockEncryptionKeychainStorage alloc] init];
+    id oneStorage = OCMClassMock([CDTEncryptionKeychainStorage class]);
     CDTEncryptionKeychainManager *oneManager = [[CDTEncryptionKeychainManager alloc]
         initWithStorage:(CDTEncryptionKeychainStorage *)oneStorage];
     NSData *oneDpk = [oneManager generateDpk];
@@ -100,7 +100,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
     self.keychainData =
         [oneManager keychainDataToStoreDpk:oneDpk encryptedWithPassword:self.password];
 
-    self.mockStorage = [[CDTMockEncryptionKeychainStorage alloc] init];
+    self.mockStorage = OCMClassMock([CDTEncryptionKeychainStorage class]);
+
     self.manager = [[CDTEncryptionCustomKeychainManager alloc]
         initWithStorage:(CDTEncryptionKeychainStorage *)self.mockStorage];
 }
@@ -127,30 +128,29 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 {
     [self.manager clearKey];
 
-    XCTAssertTrue(self.mockStorage.clearEncryptionKeyDataExecuted,
-                  @"Data is read or written with the storage instance, therefore it is its "
-                  @"responsability clearing the info");
+    OCMVerify([self.mockStorage clearEncryptionKeyData]);
 }
 
 - (void)testKeyExistsDelegatesToStorage
 {
     [self.manager keyExists];
 
-    XCTAssertTrue(self.mockStorage.encryptionKeyDataExistsExecuted,
-                  @"Data is read or written with the storage instance, therefore it is its "
-                  @"responsability veritying if there is a key");
+    OCMVerify([self.mockStorage encryptionKeyDataExists]);
 }
 
 - (void)testLoadKeyUsingPasswordFailsIfThereIsNotData
 {
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+
     XCTAssertNil([self.manager loadKeyUsingPassword:self.password],
                  @"No key to return if there is no data in the keychain");
 }
 
 - (void)testLoadKeyUsingPasswordDoesNotFailIfNumberOfIterationsIsNotAsExpected
 {
-    CDTMockEncryptionKeychainStorage *otherStorage =
-        [[CDTMockEncryptionKeychainStorage alloc] init];
+    id otherStorage = OCMClassMock([CDTEncryptionKeychainStorage class]);
+
     CDTEncryptionKeychainManager *otherManager = [[CDTEncryptionKeychainManager alloc]
         initWithStorage:(CDTEncryptionKeychainStorage *)otherStorage];
     NSData *otherDpk = [otherManager generateDpk];
@@ -170,8 +170,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                                              iterations:1
                                                 version:self.keychainData.version];
 
-    self.mockStorage.encryptionKeyDataResult = otherData;
-    self.mockStorage.encryptionKeyDataExistsResult = YES;
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(otherData);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     XCTAssertNotNil([self.manager loadKeyUsingPassword:self.password],
                     @"Iterations does not have to be equal to %li",
@@ -188,8 +188,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
                   iterations:self.keychainData.iterations
                      version:self.keychainData.version];
 
-    self.mockStorage.encryptionKeyDataResult = otherData;
-    self.mockStorage.encryptionKeyDataExistsResult = YES;
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(otherData);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     XCTAssertNil([self.manager loadKeyUsingPassword:self.password], @"IV size must be equalt to %i",
                  kCCBlockSizeAES128);
@@ -197,8 +197,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testLoadKeyUsingPasswordRaisesExceptionIfNoPassIsProvided
 {
-    self.mockStorage.encryptionKeyDataResult = self.keychainData;
-    self.mockStorage.encryptionKeyDataExistsResult = YES;
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     XCTAssertThrows([self.manager loadKeyUsingPassword:nil],
                     @"A password is neccesary to decipher the key");
@@ -206,8 +206,8 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testLoadKeyUsingPasswordPerformsTheExpectedSteps
 {
-    self.mockStorage.encryptionKeyDataResult = self.keychainData;
-    self.mockStorage.encryptionKeyDataExistsResult = YES;
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(self.keychainData);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     [self.manager loadKeyUsingPassword:self.password];
 
@@ -223,14 +223,17 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordRaisesExceptionIfNoPassIsProvided
 {
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(YES);
+
     XCTAssertThrows([self.manager generateAndSaveKeyProtectedByPassword:nil],
                     @"A password is neccesary to cipher the key");
 }
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordFailsIfEncryptionDataWasAlreadyGenerated
 {
-    self.mockStorage.encryptionKeyDataResult = self.keychainData;
-    self.mockStorage.encryptionKeyDataExistsResult = YES;
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(YES);
 
     XCTAssertNil([self.manager generateAndSaveKeyProtectedByPassword:self.password],
                  @"No key should be generated if there is one already");
@@ -238,7 +241,9 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordFailsIfKeyIsNotSaved
 {
-    self.mockStorage.saveEncryptionKeyDataResult = NO;
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(NO);
 
     XCTAssertNil([self.manager generateAndSaveKeyProtectedByPassword:self.password],
                  @"No key must be returned if it is not saved to the keychain");
@@ -246,6 +251,10 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 
 - (void)testGenerateAndSaveKeyProtectedByPasswordPerformsExpectedHighlevelSteps
 {
+    OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
+    OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
+    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(YES);
+
     [self.manager generateAndSaveKeyProtectedByPassword:self.password];
 
     NSArray *expectedSteps = @[
@@ -257,9 +266,9 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
         [self.manager.lastSteps subarrayWithRange:NSMakeRange(0, [expectedSteps count])];
     BOOL asExpected = [expectedSteps isEqualToArray:highlevelSteps];
 
-    XCTAssertTrue(asExpected && self.mockStorage.saveEncryptionKeyDataExecuted,
-                  @"Method did not behave as expected. Expected: %@. Performed: %@ (didSave: %i)",
-                  expectedSteps, highlevelSteps, self.mockStorage.saveEncryptionKeyDataExecuted);
+    OCMVerify([self.mockStorage saveEncryptionKeyData:[OCMArg any]]);
+    XCTAssertTrue(asExpected, @"Method did not behave as expected. Expected: %@. Performed: %@",
+                  expectedSteps, highlevelSteps);
 }
 
 - (void)testKeychainDataToStoreDpkPerformsExpectedHighlevelSteps
