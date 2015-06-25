@@ -14,9 +14,9 @@
 //  and limitations under the License.
 //
 
-#import <OCMock/OCMock.h>
-
 #import <XCTest/XCTest.h>
+
+#import <OCMock/OCMock.h>
 
 #import "CDTEncryptionKeychainManager+Internal.h"
 
@@ -225,7 +225,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 {
     OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
     OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(YES);
+    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(YES);
 
     XCTAssertThrows([self.manager generateAndSaveKeyProtectedByPassword:nil],
                     @"A password is neccesary to cipher the key");
@@ -243,7 +243,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 {
     OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
     OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(NO);
+    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(NO);
 
     XCTAssertNil([self.manager generateAndSaveKeyProtectedByPassword:self.password],
                  @"No key must be returned if it is not saved to the keychain");
@@ -253,7 +253,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
 {
     OCMStub([self.mockStorage encryptionKeyData]).andReturn(nil);
     OCMStub([self.mockStorage encryptionKeyDataExists]).andReturn(NO);
-    OCMStub([self.mockStorage saveEncryptionKeyData:[OCMArg any]]).andReturn(YES);
+    OCMStub([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]).andReturn(YES);
 
     [self.manager generateAndSaveKeyProtectedByPassword:self.password];
 
@@ -266,7 +266,7 @@ NSString *const kCDTEncryptionKeychainManagerTestsDecryptDpk =
         [self.manager.lastSteps subarrayWithRange:NSMakeRange(0, [expectedSteps count])];
     BOOL asExpected = [expectedSteps isEqualToArray:highlevelSteps];
 
-    OCMVerify([self.mockStorage saveEncryptionKeyData:[OCMArg any]]);
+    OCMVerify([self.mockStorage saveEncryptionKeyData:OCMOCK_ANY]);
     XCTAssertTrue(asExpected, @"Method did not behave as expected. Expected: %@. Performed: %@",
                   expectedSteps, highlevelSteps);
 }

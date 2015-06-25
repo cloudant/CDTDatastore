@@ -16,9 +16,9 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CDTEncryptionKeychainProvider+Internal.h"
+#import <OCMock/OCMock.h>
 
-#import "CDTMockEncryptionKeychainManager.h"
+#import "CDTEncryptionKeychainProvider+Internal.h"
 
 @interface CDTEncryptionKeychainProviderTests : XCTestCase
 
@@ -26,7 +26,7 @@
 
 @property (strong, nonatomic) NSString *password;
 @property (strong, nonatomic) NSData *encryptionKeyData;
-@property (strong, nonatomic) CDTMockEncryptionKeychainManager *mockManager;
+@property (strong, nonatomic) id mockManager;
 
 @end
 
@@ -40,7 +40,7 @@
     // class.
     self.password = @"password";
     self.encryptionKeyData = [@"encryptionKeyData" dataUsingEncoding:NSUnicodeStringEncoding];
-    self.mockManager = [[CDTMockEncryptionKeychainManager alloc] init];
+    self.mockManager = OCMClassMock([CDTEncryptionKeychainManager class]);
 
     self.provider = [[CDTEncryptionKeychainProvider alloc]
         initWithPassword:self.password
@@ -75,19 +75,18 @@
 
 - (void)testEncryptionKeyGenerateEncryptionKeyDataIfDataWasNotGeneratedBefore
 {
-    self.mockManager.keyExistsResult = NO;
+    OCMStub([self.mockManager keyExists]).andReturn(NO);
 
     [self.provider encryptionKey];
 
-    XCTAssertTrue(self.mockManager.keyExistsExecuted &&
-                      self.mockManager.generateAndSaveKeyProtectedByPasswordExecuted,
-                  @"Generate the key if it was not created before");
+    OCMVerify([self.mockManager keyExists]);
+    OCMVerify([self.mockManager generateAndSaveKeyProtectedByPassword:OCMOCK_ANY]);
 }
 
 - (void)testEncryptionKeyReturnNilIfGenerateEncryptionKeyDataReturnsNil
 {
-    self.mockManager.keyExistsResult = NO;
-    self.mockManager.generateAndSaveKeyProtectedByPasswordResult = nil;
+    OCMStub([self.mockManager keyExists]).andReturn(NO);
+    OCMStub([self.mockManager generateAndSaveKeyProtectedByPassword:OCMOCK_ANY]).andReturn(nil);
 
     XCTAssertNil([self.provider encryptionKey],
                  @"If no data is generated, there is not key to return");
@@ -95,18 +94,18 @@
 
 - (void)testEncryptionKeyRetrieveEncryptionKeyDataIfDataWasGeneratedBefore
 {
-    self.mockManager.keyExistsResult = YES;
+    OCMStub([self.mockManager keyExists]).andReturn(YES);
 
     [self.provider encryptionKey];
 
-    XCTAssertTrue(self.mockManager.keyExistsExecuted && self.mockManager.loadKeyUsingPasswordExecuted,
-                  @"Get the key from keychain if it was generated before");
+    OCMVerify([self.mockManager keyExists]);
+    OCMVerify([self.mockManager loadKeyUsingPassword:OCMOCK_ANY]);
 }
 
 - (void)testEncryptionKeyReturnsNilIfRetrieveEncryptionKeyDataReturnsNil
 {
-    self.mockManager.keyExistsResult = YES;
-    self.mockManager.loadKeyUsingPasswordResult = nil;
+    OCMStub([self.mockManager keyExists]).andReturn(YES);
+    OCMStub([self.mockManager loadKeyUsingPassword:OCMOCK_ANY]).andReturn(nil);
 
     XCTAssertNil([self.provider encryptionKey],
                  @"If no data is retrieved, there is not key to return");
