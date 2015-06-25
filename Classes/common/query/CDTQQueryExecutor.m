@@ -254,20 +254,23 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
 
     } else if ([node isKindOfClass:[CDTQSqlQueryNode class]]) {
         CDTQSqlQueryNode *sqlNode = (CDTQSqlQueryNode *)node;
-        CDTQSqlParts *sqlParts = sqlNode.sql;
-
-        NSMutableArray *docIds = [NSMutableArray array];
-
-        FMResultSet *rs = [db executeQuery:sqlParts.sqlWithPlaceholders
-                      withArgumentsInArray:sqlParts.placeholderValues];
-        while ([rs next]) {
-            [docIds addObject:[rs stringForColumn:@"_id"]];
+        NSMutableArray *docIds;
+        if (sqlNode.sql) {
+            CDTQSqlParts *sqlParts = sqlNode.sql;
+            FMResultSet *rs = [db executeQuery:sqlParts.sqlWithPlaceholders
+                          withArgumentsInArray:sqlParts.placeholderValues];
+            docIds = [NSMutableArray array];
+            while ([rs next]) {
+                [docIds addObject:[rs stringForColumn:@"_id"]];
+            }
+            [rs close];
+        } else {
+            // No SQL exists so we are now forced to go directly to the
+            // document datastore to retrieve the list of document ids.
+            docIds = [NSMutableArray arrayWithArray:[self.datastore getAllDocumentIds]];
         }
 
-        [rs close];
-
         return [NSSet setWithArray:docIds];
-
     } else {
         return nil;
     }
