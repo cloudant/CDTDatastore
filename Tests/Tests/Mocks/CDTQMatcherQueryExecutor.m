@@ -10,10 +10,24 @@
 
 #import <CDTQQuerySqlTranslator.h>
 #import <CDTQIndexManager.h>
+#import "CDTDatastore.h"
 
 #import <FMDB.h>
 
+@interface CDTQMatcherQueryExecutor ()
+
+@property (nonatomic, strong) NSSet *docIds;
+
+@end
+
 @implementation CDTQMatcherQueryExecutor
+
+- (instancetype)initWithDatabase:(FMDatabaseQueue *)database datastore:(CDTDatastore *)datastore
+{
+    self = [super initWithDatabase:database datastore:datastore];
+    _docIds = [NSSet setWithArray:[datastore getAllDocumentIds]];
+    return self;
+}
 
 // MOD: indexesCoverQuery always false; return just a blank node (we don't execute it anyway).
 - (CDTQChildrenQueryNode *)translateQuery:(NSDictionary *)query 
@@ -27,24 +41,7 @@
 // MOD: just return all doc IDs rather than executing the query nodes
 - (NSSet*)executeQueryTree:(CDTQQueryNode*)node inDatabase:(FMDatabase*)db
 {
-    NSDictionary *indexes = [CDTQIndexManager listIndexesInDatabase:db];
-    
-    NSMutableSet *docIdSet = [NSMutableSet set];
-    NSSet *neededFields = [NSSet setWithObject:@"_id"];
-    NSString *allDocsIndex = [CDTQQuerySqlTranslator chooseIndexForFields:neededFields
-                                                              fromIndexes:indexes];
-    
-    NSString *tableName = [CDTQIndexManager tableNameForIndex:allDocsIndex];
-    NSString *sql = @"SELECT _id FROM %@;";
-    sql = [NSString stringWithFormat:sql, tableName];
-    FMResultSet *rs = [db executeQuery:sql];
-    while ([rs next]) {
-        [docIdSet addObject:[rs stringForColumn:@"_id"]];
-    }
-    [rs close];
-    
-    return docIdSet;
+    return _docIds;
 }
-
 
 @end

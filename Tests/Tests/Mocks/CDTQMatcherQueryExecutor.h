@@ -10,4 +10,6 @@
 
 @interface CDTQMatcherQueryExecutor : CDTQQueryExecutor
 
+- (instancetype)initWithDatabase:(FMDatabaseQueue *)database datastore:(CDTDatastore *)datastore;
+
 @end
