@@ -305,8 +305,29 @@
     return [NSArray arrayWithArray:fieldNames];
 }
 
++ (BOOL)isOperator:(NSString *)operator inClause:(NSArray *)clause
+{
+    BOOL found = NO;
+    for (NSDictionary *term in clause) {
+        if (term.count == 1 && [term.allValues[0] isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *predicate = (NSDictionary *) term.allValues[0];
+            if (predicate[operator]) {
+                found = YES;
+                break;
+            }
+        }
+    }
+    
+    return found;
+}
+
 + (NSString *)chooseIndexForAndClause:(NSArray *)clause fromIndexes:(NSDictionary *)indexes
 {
+    if ([CDTQQuerySqlTranslator isOperator:SIZE inClause:clause]) {
+        LogInfo(@"$size operator found in clause %@.  Indexes are not used with $size operations.",
+                clause);
+        return nil;
+    }
     NSSet *neededFields = [NSSet setWithArray:[self fieldsForAndClause:clause]];
 
     if (neededFields.count == 0) {

@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+
+- [NEW] Added query support for the `$size` operator.
+
 ## 0.17.1 (2015-06-24)
 
 - [FIX] Allow using encrypted datastores and FTS together.

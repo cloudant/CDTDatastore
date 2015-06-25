@@ -427,7 +427,7 @@
     // to { "$not" : { "$eq" : "blah" } } before reaching this validation.  So
     // operators like $ne and $nin will be negated $eq and $in by the time this
     // validation is reached.
-    NSArray *validOperators =  @[ EQ, LT, GT, EXISTS, NOT, GTE, LTE, IN, MOD ];
+    NSArray *validOperators =  @[ EQ, LT, GT, EXISTS, NOT, GTE, LTE, IN, MOD, SIZE ];
 
     if ([clause count] == 1) {
         NSString *operator= [clause allKeys][0];

@@ -131,6 +131,11 @@
 + (NSArray *)fieldsForAndClause:(NSArray *)clause;
 
 /**
+ Checks for the existence of an operator in a query clause array
+*/
++ (BOOL)isOperator:(NSString *)operator inClause:(NSArray *)clause;
+
+/**
  Selects an index to use for a given query from the set provided.
 
  Here we're looking for the index which supports all the fields used in the query.
