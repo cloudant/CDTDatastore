@@ -764,6 +764,40 @@
     //[self getAllDocuments_testCountAndOffset:objectCount expectedDbObjects:reversedObjects descending:YES];
 }
 
+-(void)testGetAllDocumentIds
+{
+    XCTAssertEqual([self.datastore getAllDocumentIds].count, 0, @"No documents should exist.");
+    
+    NSError *error;
+    int objectCount = 1000;
+    NSArray *bodies = [self generateDocuments:objectCount];
+    NSMutableArray *dbObjects = [NSMutableArray arrayWithCapacity:objectCount];
+    for (int i = 0; i < objectCount; i++) {
+        // Results will be ordered by docId, so give an orderable ID.
+        error = nil;
+        NSString *docId = [NSString stringWithFormat:@"hello-%04d", i];
+        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        rev.docId = docId;
+        rev.body = bodies[i];
+        CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
+        XCTAssertNil(error, @"Error creating document");
+        [dbObjects addObject:ob];
+    }
+    
+    XCTAssertEqual([self.datastore getAllDocumentIds].count,
+                   objectCount,
+                   @"There should be %d document ids.", objectCount);
+    
+    NSArray *docIds = [self.datastore getAllDocumentIds];
+    for (int i = 0; i < objectCount; i++) {
+        NSString *found = docIds[i];
+        NSString *expected = [NSString stringWithFormat:@"hello-%04d", i];
+        XCTAssertTrue([found isEqualToString:expected],
+                      @"Expecting %@ but found %@", expected, found);
+    }
+    
+}
+
 -(void)assertIdAndRevisionAndShallowContentExpected:(CDTDocumentRevision *)expected actual:(CDTDocumentRevision *)actual
 {
     XCTAssertEqualObjects([actual docId], [expected docId], @"docIDs don't match");

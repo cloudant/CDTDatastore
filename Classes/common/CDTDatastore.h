@@ -136,6 +136,14 @@ extern NSString *const CDTDatastoreChangeNotification;
 - (NSArray *)getAllDocuments;
 
 /**
+ * Enumerates the current winning revision for all documents in the
+ * datastore and return a list of their document identifiers.
+ *
+ * @return NSArray of NSStrings
+ */
+- (NSArray *)getAllDocumentIds;
+
+/**
  * Enumerate the current winning revisions for all documents in the
  * datastore.
  *
