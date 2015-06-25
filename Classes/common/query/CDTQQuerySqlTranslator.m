@@ -85,26 +85,19 @@
         return nil;
     } else if (!state.textIndexRequired &&
                   (!state.atLeastOneIndexUsed || state.atLeastOneORIndexMissing)) {
-        // If we haven't used a single index, we need to return a query
-        // which returns every document, so the posthoc matcher can
+        // If we haven't used a single index or an OR clause is missing an index,
+        // we need to return every document id, so that the post-hoc matcher can
         // run over every document to manually carry out the query.
-        NSSet *neededFields = [NSSet setWithObject:@"_id"];
-        NSString *allDocsIndex =
-            [CDTQQuerySqlTranslator chooseIndexForFields:neededFields fromIndexes:indexes];
-
-        if (!allDocsIndex) {
-            LogError(@"No indexes defined, cannot execute query for all documents");
-            return nil;
-        }
-
-        NSString *tableName = [CDTQIndexManager tableNameForIndex:allDocsIndex];
-
-        NSString *sql = @"SELECT _id FROM %@;";
-        sql = [NSString stringWithFormat:sql, tableName];
-        CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:@[]];
-
         CDTQSqlQueryNode *sqlNode = [[CDTQSqlQueryNode alloc] init];
-        sqlNode.sql = parts;
+        NSSet *neededFields = [NSSet setWithObject:@"_id"];
+        NSString *allDocsIndex = [CDTQQuerySqlTranslator chooseIndexForFields:neededFields
+                                                                  fromIndexes:indexes];
+
+        if (allDocsIndex.length > 0) {
+            NSString *tableName = [CDTQIndexManager tableNameForIndex:allDocsIndex];
+            NSString *sql = [NSString stringWithFormat:@"SELECT _id FROM %@;", tableName];
+            sqlNode.sql = [CDTQSqlParts partsForSql:sql parameters:@[]];
+        }
 
         CDTQAndQueryNode *root = [[CDTQAndQueryNode alloc] init];
         [root.children addObject:sqlNode];
