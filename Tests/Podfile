@@ -8,6 +8,7 @@ def import_pods
     pod "MRDatabaseContentChecker"
     pod 'Specta'
     pod 'Expecta'
+    pod 'OCMock'
 end
 
 target :ios do
