@@ -16,9 +16,9 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CDTEncryptionKeychainProvider+Internal.h"
+#import <OCMock/OCMock.h>
 
-#import "CDTMockEncryptionKeychainManager.h"
+#import "CDTEncryptionKeychainProvider+Internal.h"
 
 @interface CDTEncryptionKeychainProviderTests : XCTestCase
 
@@ -26,7 +26,7 @@
 
 @property (strong, nonatomic) NSString *password;
 @property (strong, nonatomic) NSData *encryptionKeyData;
-@property (strong, nonatomic) CDTMockEncryptionKeychainManager *mockManager;
+@property (strong, nonatomic) id mockManager;
 
 @end
 
@@ -39,8 +39,15 @@
     // Put setup code here. This method is called before the invocation of each test method in the
     // class.
     self.password = @"password";
+
     self.encryptionKeyData = [@"encryptionKeyData" dataUsingEncoding:NSUnicodeStringEncoding];
-    self.mockManager = [[CDTMockEncryptionKeychainManager alloc] init];
+
+    // Create mockManager as a strict mock. A strick mock will raise an exception if one of its
+    // methods is called and it was not set as expected with 'OCMExpect'. Therefore, for each test
+    // we have to specify which methods we expect to be executed (we call this our expectations)
+    self.mockManager = OCMStrictClassMock([CDTEncryptionKeychainManager class]);
+    // Also, tests will pass only if the calls are made in the expected order
+    [self.mockManager setExpectationOrderMatters:YES];
 
     self.provider = [[CDTEncryptionKeychainProvider alloc]
         initWithPassword:self.password
@@ -75,41 +82,54 @@
 
 - (void)testEncryptionKeyGenerateEncryptionKeyDataIfDataWasNotGeneratedBefore
 {
-    self.mockManager.keyExistsResult = NO;
+    // Set expectations. Also set the return values to continue the execution
+    OCMExpect([self.mockManager keyExists]).andReturn(NO);
+    OCMExpect([self.mockManager generateAndSaveKeyProtectedByPassword:OCMOCK_ANY]);
 
     [self.provider encryptionKey];
 
-    XCTAssertTrue(self.mockManager.keyExistsExecuted &&
-                      self.mockManager.generateAndSaveKeyProtectedByPasswordExecuted,
-                  @"Generate the key if it was not created before");
+    // Verify that only the expected methods were executed and in the right order
+    OCMVerifyAll(self.mockManager);
 }
 
 - (void)testEncryptionKeyReturnNilIfGenerateEncryptionKeyDataReturnsNil
 {
-    self.mockManager.keyExistsResult = NO;
-    self.mockManager.generateAndSaveKeyProtectedByPasswordResult = nil;
+    // Set expectations. Also set the return values to continue the execution and
+    // test the next Assert
+    OCMExpect([self.mockManager keyExists]).andReturn(NO);
+    OCMExpect([self.mockManager generateAndSaveKeyProtectedByPassword:OCMOCK_ANY]).andReturn(nil);
 
     XCTAssertNil([self.provider encryptionKey],
                  @"If no data is generated, there is not key to return");
+
+    // Verify that only the expected methods were executed and in the right order
+    OCMVerifyAll(self.mockManager);
 }
 
 - (void)testEncryptionKeyRetrieveEncryptionKeyDataIfDataWasGeneratedBefore
 {
-    self.mockManager.keyExistsResult = YES;
+    // Set expectations. Also set the return values to continue the execution
+    OCMExpect([self.mockManager keyExists]).andReturn(YES);
+    OCMExpect([self.mockManager loadKeyUsingPassword:OCMOCK_ANY]);
 
     [self.provider encryptionKey];
 
-    XCTAssertTrue(self.mockManager.keyExistsExecuted && self.mockManager.loadKeyUsingPasswordExecuted,
-                  @"Get the key from keychain if it was generated before");
+    // Verify that only the expected methods were executed and in the right order
+    OCMVerifyAll(self.mockManager);
 }
 
 - (void)testEncryptionKeyReturnsNilIfRetrieveEncryptionKeyDataReturnsNil
 {
-    self.mockManager.keyExistsResult = YES;
-    self.mockManager.loadKeyUsingPasswordResult = nil;
+    // Set expectations. Also set the return values to continue the execution and
+    // test the next Assert
+    OCMExpect([self.mockManager keyExists]).andReturn(YES);
+    OCMExpect([self.mockManager loadKeyUsingPassword:OCMOCK_ANY]).andReturn(nil);
 
     XCTAssertNil([self.provider encryptionKey],
                  @"If no data is retrieved, there is not key to return");
+
+    // Verify that only the expected methods were executed and in the right order
+    OCMVerifyAll(self.mockManager);
 }
 
 #pragma mark - Private class methods
