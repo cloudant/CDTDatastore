@@ -231,7 +231,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     NSArray *result = [NSArray array];
     TDContentOptions contentOptions = kTDIncludeLocalSeq;
-    struct TDQueryOptions query = {.limit = (unsigned int)self.database.documentCount,
+    struct TDQueryOptions query = {.limit = UINT_MAX,
                                    .inclusiveEnd = YES,
                                    .skip = 0,
                                    .descending = NO,
