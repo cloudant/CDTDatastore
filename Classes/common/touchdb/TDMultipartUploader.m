@@ -67,7 +67,7 @@
         NSError *writerError = _multipartWriter.error;
         if (writerError) error = writerError;
     }
-    //[super connection:connection didFailWithError:error];
+    [super requestDidError:error];
 }
 
 @end
