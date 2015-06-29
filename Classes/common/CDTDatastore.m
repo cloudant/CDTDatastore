@@ -727,11 +727,21 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
 
+    // A mutable document revision stores the revId in other property
+    NSString *prevRevisionID = nil;
+    if ([revision isKindOfClass:[CDTMutableDocumentRevision class]]) {
+        prevRevisionID = ((CDTMutableDocumentRevision *)revision).sourceRevId;
+    } else {
+        prevRevisionID = revision.revId;
+    }
+
     TD_Revision *td_revision =
         [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:YES];
     TDStatus status;
-    TD_Revision *new = [self.database putRevision : td_revision prevRevisionID
-                        : revision.revId allowConflict : NO status : &status];
+    TD_Revision *new = [self.database putRevision:td_revision
+                                   prevRevisionID:prevRevisionID
+                                    allowConflict:NO
+                                           status:&status];
     if (TDStatusIsError(status)) {
         if (error) {
             *error = TDStatusToNSError(status, nil);
