@@ -71,7 +71,7 @@
 
 - (void)receivedData:(NSData *)data
 {
-   // [super connection:connection didReceiveData:data];
+    [super receivedData:data];
     if (![_reader appendData:data]) [self cancelWithStatus:_reader.status];
 
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
