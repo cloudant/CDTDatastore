@@ -322,13 +322,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSDictionary *dictResults = [self.database getDocsWithIDs:docIds options:queryOptions];
 
     for (NSDictionary *row in dictResults[@"rows"]) {
-        //            NSLog(@"%@", row);
         NSString *docId = row[@"id"];
-        
-        if(!docId){
-            NSLog(@"Document not found info: %@",row);
-            continue;
-        }
         
         NSString *revId = row[@"value"][@"rev"];
 
