@@ -1797,6 +1797,26 @@
     
 }
 
+- (void)testDeleteMutableDocumentRevision
+{
+    NSString *docId = @"testDeleteWithMutableDocumentRevision";
+
+    CDTMutableDocumentRevision *mutableRev = [CDTMutableDocumentRevision revision];
+    mutableRev.docId = docId;
+    mutableRev.body = @{ @"hello" : @"world" };
+    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:nil];
+
+    mutableRev = [rev mutableCopy];
+
+    NSError *error = nil;
+    rev = [self.datastore deleteDocumentFromRevision:mutableRev error:&error];
+    XCTAssertNotNil(rev, @"Delete opeation should not fail: %@", error);
+
+    CDTDocumentRevision *deletedRev =
+        [self.datastore getDocumentWithId:docId rev:rev.revId error:&error];
+    XCTAssertNotNil(deletedRev, @"A deleted document is still in the datastore: %@", error);
+    XCTAssertTrue(deletedRev.deleted, @"This document should be set as deleted");
+}
 
 #pragma mark - Other Tests
 
