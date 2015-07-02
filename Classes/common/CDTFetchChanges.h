@@ -67,6 +67,28 @@
  */
 @property (nonatomic, copy) NSString *startSequenceValue;
 
+/**
+ Use this property to limit the total number of results you want to get.
+ 
+ By default, its value 0 which means that it will returns as many as possible.
+ 
+ Set it before executing the operation or submitting it to a queue.
+ */
+@property(nonatomic, assign) NSUInteger resultsLimit;
+
+/**
+ It will be YES only if there are more results available.
+ 
+ A CDTFetchChanges instance will deliver all results available unless a limit is set with
+ resultsLimit.
+ 
+ This property will set to YES before calling fetchRecordChangesCompletionBlock.
+ 
+ @see resultsLimit
+ @see fetchRecordChangesCompletionBlock
+ */
+@property(nonatomic, readonly) BOOL moreComing;
+
 #pragma mark Callbacks
 
 /**

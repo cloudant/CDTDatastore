@@ -20,6 +20,8 @@
 
 #import "TD_Database.h"
 
+#define CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT 500
+
 @interface CDTFetchChanges ()
 
 @property (nonatomic, copy) void (^mDocumentChangedBlock)(CDTDocumentRevision *revision);
@@ -46,6 +48,8 @@
     if (self) {
         _datastore = datastore;
         _startSequenceValue = [startSequenceValue copy];
+        _resultsLimit = 0;
+        _moreComing = NO;
     }
     return self;
 }
@@ -61,30 +65,63 @@
     self.mDatastore = self.datastore;
     self.mStartSequenceValue = self.startSequenceValue;
 
-    TDChangesOptions options = {.limit = 500,
-        .contentOptions = 0,                                
+    NSUInteger mResultsLimit = self.resultsLimit;
+    BOOL thereIsALimit = (mResultsLimit > 0);
+
+    unsigned optionsLimit = CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT;
+    if (thereIsALimit && (mResultsLimit < CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT)) {
+        optionsLimit = (unsigned)mResultsLimit;
+    }
+
+    TDChangesOptions options = {
+        .limit = optionsLimit,
+        .contentOptions = 0,
         .includeDocs = NO,  // we only need the docIDs and sequences, body is retrieved separately
         .includeConflicts = FALSE,
         .sortBySequence = TRUE};
-    
+
+    BOOL doLoop = YES;
     TD_RevisionList *changes;
     SequenceNumber lastSequence = [self.mStartSequenceValue longLongValue];
 
-    do {
-        if ([self isCancelled]) {
-            return;  // Bail early, don't call completion block
-        }
-
+    while (doLoop && ![self isCancelled]) {
         changes = [[self.mDatastore database] changesSinceSequence:lastSequence
                                                            options:&options
                                                             filter:nil
                                                             params:nil];
-        lastSequence = [self notifyChanges:changes startingSequence:lastSequence];
-    } while (changes.count > 0);
+        if (!thereIsALimit || (mResultsLimit > 0)) {
+            lastSequence = [self notifyChanges:changes startingSequence:lastSequence];
+
+            if (changes.count == 0) {
+                // There are not more data coming and we can stop looping.
+                doLoop = NO;
+            } else if (thereIsALimit) {  // (mResultsLimit > 0)
+                // Subtract the results so far
+                mResultsLimit -= [changes count];
+
+                if (mResultsLimit == 0) {
+                    // We reached the limit but we need to know if there are more data coming.
+                    // Loop again
+                    options.limit = 1;
+                } else {
+                    // Limit not reached yet. Loop again.
+                    options.limit = (mResultsLimit < CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT
+                                         ? (unsigned)mResultsLimit
+                                         : CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT);
+                }
+            }
+        } else {  // (mResultsLimit == 0)
+            // Limit was reached in the previous loop. We only need to know if there are more data
+            // lastSequence
+            _moreComing = (changes.count > 0);
+
+            doLoop = NO;
+        }
+    }
 
     if (self.mFetchRecordChangesCompletionBlock) {
         // Try our best to avoid calling the completion block if cancelled is set:
-        //  - after the check in the loop above 
+        //  - after the check in the loop above
         //  - where there are no remaining changes, so we fall through to here
         if (![self isCancelled]) {
             self.mFetchRecordChangesCompletionBlock(

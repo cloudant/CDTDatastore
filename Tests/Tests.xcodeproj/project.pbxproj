@@ -80,6 +80,8 @@
 		CD196E681B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */; };
 		CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */; };
 		CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */; };
+		CD1C82511B42D7AA00DB7044 /* CDTFetchChangesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */; };
+		CD1C82521B42D7AA00DB7044 /* CDTFetchChangesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */; };
 		CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
 		CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */; };
 		CD2188D81AE5711A0036F59F /* CloudantTests+EncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */; };
@@ -222,6 +224,7 @@
 		CD0D10EB1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseDeletionTests.m; sourceTree = "<group>"; };
 		CD196E661B18C6320039133F /* schema100_1Bonsai_2Lorem.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = schema100_1Bonsai_2Lorem.touchdb; path = Assets/schema100_1Bonsai_2Lorem.touchdb; sourceTree = "<group>"; };
 		CD196E6C1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TD_DatabaseBlobFilenamesTests.m; sourceTree = "<group>"; };
+		CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTFetchChangesTests.m; sourceTree = "<group>"; };
 		CD2188D01AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexManagerEncryptionTests.m; sourceTree = "<group>"; };
 		CD2188D11AE5711A0036F59F /* CloudantTests+EncryptionTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CloudantTests+EncryptionTests.h"; sourceTree = "<group>"; };
 		CD2188D21AE5711A0036F59F /* CloudantTests+EncryptionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CloudantTests+EncryptionTests.m"; sourceTree = "<group>"; };
@@ -338,6 +341,7 @@
 			children = (
 				CD2188CF1AE570480036F59F /* Encryption */,
 				CD3FBCA11AB05A170032376E /* Helpers */,
+				CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */,
 				ECA0DC601AFD568D00E174BC /* CDTQTextSearchTests.m */,
 				EC578D891AE67D60003D6006 /* CDTQIndexTests.m */,
 				EC0C831F1AB217290051042F /* CDTDatastoreQueryTests.m */,
@@ -768,6 +772,7 @@
 				EC0C83601AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
 				CDADD5BF1AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */,
 				CD3FBCA81AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
+				CD1C82511B42D7AA00DB7044 /* CDTFetchChangesTests.m in Sources */,
 				CD2188D61AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EB1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,
 				CD2C67CC1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */,
@@ -843,6 +848,7 @@
 				EC0C83611AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
 				CDADD5C01AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */,
 				CD3FBCA91AB05A170032376E /* CDTHelperOneUseKeyProvider.m in Sources */,
+				CD1C82521B42D7AA00DB7044 /* CDTFetchChangesTests.m in Sources */,
 				CD2188D71AE5711A0036F59F /* CDTQIndexManagerEncryptionTests.m in Sources */,
 				CD2188EC1AE5764B0036F59F /* CDTEncryptionKeychainManagerTests.m in Sources */,
 				CD2C67CD1B14897000B95B9C /* CDTEncryptionKeySimpleProviderTests.m in Sources */,
