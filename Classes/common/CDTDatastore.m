@@ -324,6 +324,12 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     for (NSDictionary *row in dictResults[@"rows"]) {
         //            NSLog(@"%@", row);
         NSString *docId = row[@"id"];
+        
+        if(!docId){
+            NSLog(@"Document not found info: %@",row);
+            continue;
+        }
+        
         NSString *revId = row[@"value"][@"rev"];
 
         // deleted field only present in deleted documents, but to be safe we use

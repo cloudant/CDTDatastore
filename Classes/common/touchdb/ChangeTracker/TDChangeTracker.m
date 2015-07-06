@@ -162,6 +162,7 @@
 
 - (void)stopped
 {
+    NSLog(@"Change tracker stopped");
     _retryCount = 0;
     // Clear client ref so its -changeTrackerStopped: won't be called again during -dealloc
     id<TDChangeTrackerClient> client = _client;

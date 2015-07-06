@@ -8,98 +8,69 @@
 
 #import "CDTURLSession.h"
 #import "CDTURLSessionFilterContext.h"
+#import "MYBlockUtils.h"
 
 @interface CDTURLSession ()
 
-@property NSMutableArray * responseFilters;
-@property NSMutableArray * requestFilters;
 @property NSURLSession *session;
+@property NSThread * thread;
 
 
 @end
 
 
 @implementation CDTURLSession{
-    dispatch_queue_t queue;
+   // dispatch_queue_t queue;
 }
 
 
 - (instancetype)init
 {
+    return [self initWithDelegate:nil];
+}
+
+-(instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate{
     self = [super init];
     if (self) {
-        _responseFilters = [NSMutableArray array];
-        _requestFilters = [NSMutableArray array];
         _numberOfRetries = 10;
-        queue = dispatch_queue_create("com.cloudant.sync.http.callback.queue",NULL);
+        //queue = dispatch_queue_create("com.cloudant.sync.http.callback.queue",NULL);
+        _thread = [NSThread currentThread];
         
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        config.HTTPMaximumConnectionsPerHost = 1;
         
-        
-        _session = [NSURLSession sessionWithConfiguration:config];
+        _session = [NSURLSession sessionWithConfiguration:config delegate:delegate delegateQueue:[NSOperationQueue currentQueue]];
     }
     return self;
 }
 
-- (void)addResponseFilter:(NSObject<CDTURLSessionResponseFilter>*)filter
-{
-    [self.responseFilters addObject:filter];
-}
-
-- (void)addRequestFilter:(NSObject<CDTURLSessionRequestFilter>*)filter{
-    [self.requestFilters addObject:filter];
-}
-
-
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
                             completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler
 {
-    CDTURLSessionFilterContext *context = [[CDTURLSessionFilterContext alloc] initWithRequest:request];
-    return [self dataTaskWithContext:context completionHandler:completionHandler];
-    
-}
-
-- (NSURLSessionDataTask *)dataTaskWithContext:(CDTURLSessionFilterContext*)context
-                            completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler
-{
-    // do request
-    // run response filter before completion handler
-    // retries?
-    
     __weak CDTURLSession *weakSelf = self;
-
-    
-    for (NSObject<CDTURLSessionRequestFilter>* filter in self.responseFilters) {
-        context = [filter filterRequestWithContext:context];
-    }
-    
-
-    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:context.request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
+    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
         
+        __strong CDTURLSession *strongSelf = weakSelf;
         _data = [NSData dataWithData:_data];
-        CDTURLSessionFilterContext *currentContext = context;
-        context.response = _response;
-        context.replayRequest = FALSE;
-        for (NSObject<CDTURLSessionResponseFilter> *filter in _responseFilters) {
-            currentContext = [filter filterResponseWithContext:currentContext];
-        }
-
-        if (currentContext.replayRequest) {
-            CDTURLSession *strongSelf = weakSelf;
-            NSURLSessionDataTask *replayTask = [strongSelf dataTaskWithContext:currentContext completionHandler:completionHandler];
-            [replayTask resume];
-        } else {
-            // if we're not replaying then we can call the completion handler on a callback queue
-            //dispatch_async(queue, ^{
-                completionHandler(_data, _response, _error);
-            //});
-            
-        }
+        // if we're not replaying then we can call the completion handler on a callback queue
+        //dispatch_async(queue, ^{
+        
+        MYOnThread(strongSelf.thread, ^{
+            completionHandler(_data,_response,_error);
+        });
+        
+        
+        //});
+        
+        
     } ];
-
+    
     return task;
+    
 }
 
+-(void)dealloc
+{
+    [self.session finishTasksAndInvalidate];
+}
 
 @end

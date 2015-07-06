@@ -50,7 +50,7 @@
     self = [super initWithDatabaseURL:databaseURL mode:mode conflicts:includeConflicts lastSequence:lastSequenceID client:client];
     
     if(self){
-        _session = [[CDTURLSession alloc]init];
+        _session = [[CDTURLSession alloc]initWithDelegate:self];
     }
     return self;
 }
@@ -109,7 +109,10 @@
 
 - (void)clearConnection
 {
-    [self.task cancel];
+    if(self.task.state != NSURLSessionTaskStateCompleted){
+        [self.task cancel];
+    }
+    self.task = nil;
     self.connection = nil;
     self.inputBuffer = nil;
 }
@@ -202,6 +205,68 @@
     
 }
 
+-(void)  URLSession:(NSURLSession *)session
+               task:(NSURLSessionTask *)task
+didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+  completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler{
+    NSURLProtectionSpace *space = challenge.protectionSpace;
+    NSString *authMethod = space.authenticationMethod;
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
+                  [self class], authMethod, challenge.proposedCredential, challenge.error);
+    
+    if ($equal(authMethod, NSURLAuthenticationMethodHTTPBasic)) {
+        // On basic auth challenge, use proposed credential on first attempt. On second attempt,
+        // or if there's no proposed credential, look one up. After that, continue without
+        // credential and see what happens (probably a 401)
+        
+        if (challenge.previousFailureCount <= 1) {
+            
+            NSURLCredential *cred = challenge.proposedCredential;
+            if (cred == nil || challenge.previousFailureCount > 0) {
+                cred = [self.request.URL my_credentialForRealm:space.realm
+                                          authenticationMethod:authMethod];
+            }
+            if (cred) {
+                CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: useCredential: %@",
+                              [self class], cred);
+                completionHandler(NSURLSessionAuthChallengeUseCredential,cred);
+                // Update my authorizer so my owner (the replicator) can pick it up when I'm done
+                _authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
+                return;
+            }
+        }
+        
+        CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: continueWithoutCredential",
+                      [self class]);
+        completionHandler(NSURLSessionAuthChallengeUseCredential,nil);
+//        [sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+    }
+    else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
+        
+        SecTrustRef trust = space.serverTrust;
+        if ([TDRemoteRequest checkTrust:trust forHost:space.host]) {
+            
+            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ useCredential for trust: %@",
+                          self, trust);
+            NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
+            completionHandler(NSURLSessionAuthChallengeUseCredential, cred);
+//            [sender useCredential:cred forAuthenticationChallenge:challenge];
+            
+        }
+        else {
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ challenge: cancel", self);
+//            [sender cancelAuthenticationChallenge:challenge];
+            completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge,nil);
+        }
+    }
+    else {
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: performDefaultHandling", self);
+//        [sender performDefaultHandlingForAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
+    }
+    
+}
+
 -(void) connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSHTTPURLResponse *httpresponse = (NSHTTPURLResponse *)response;
@@ -245,12 +310,15 @@
     //parse the input buffer into JSON (or NSArray of changes?)
     CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: didFinishLoading, %u bytes", self,
                (unsigned)self.inputBuffer.length);
+    NSLog (@"%@: didFinishLoading, %u bytes", self,
+    (unsigned)self.inputBuffer.length);
     
     BOOL restart = NO;
     NSString* errorMessage = nil;
     NSInteger numChanges = [self receivedPollResponse:self.inputBuffer errorMessage:&errorMessage];
     
     if (numChanges < 0) {
+        NSLog(@"Unparseable response");
         // unparseable response. See if it gets special handling:
         if ([self receivedDataBeginsCorrectly]) {
             
@@ -278,10 +346,14 @@
     
     [self clearConnection];
     
-    if (restart)
+    if (restart){
+        NSLog(@"Polling _changes again");
         [self start];  // Next poll...
-    else
+    }
+    else {
+        NSLog(@"Stopping chnage tracker");
         [self stopped];
+    }
     
 }
 

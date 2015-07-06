@@ -21,11 +21,8 @@
 @property (nonatomic) int numberOfRetries;
 
 - (instancetype) init;
-- (void) addResponseFilter:(NSObject<CDTURLSessionResponseFilter>*)filter;
-- (void) addRequestFilter:(NSObject<CDTURLSessionRequestFilter>*)filter;
+-(instancetype) initWithDelegate:(id<NSURLSessionDelegate>)delegate;
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
-                            completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler;
-- (NSURLSessionDataTask *)dataTaskWithContext:(CDTURLSessionFilterContext*)context
                             completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler;
 
 @end
