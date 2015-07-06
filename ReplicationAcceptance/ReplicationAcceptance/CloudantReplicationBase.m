@@ -12,10 +12,14 @@
 #import "CloudantSyncEncryption.h"
 
 #import "ReplicationSettings.h"
+#import "CDTLogging.h"
 
 #import <UNIRest.h>
 
+
+
 @implementation CloudantReplicationBase
+
 
 - (void)setUp
 {
