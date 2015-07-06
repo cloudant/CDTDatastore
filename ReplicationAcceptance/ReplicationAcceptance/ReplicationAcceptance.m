@@ -161,7 +161,9 @@ static NSUInteger largeRevTreeSize = 1500;
     }
    
     while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
+        
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
     }
 
@@ -1439,7 +1441,8 @@ static NSUInteger largeRevTreeSize = 1500;
     });
     
     while (!changeTrackerStopped) {
-        [NSThread sleepForTimeInterval:5.0f];
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
     XCTAssertTrue(changeTrackerGotChanges);
@@ -1520,7 +1523,8 @@ static NSUInteger largeRevTreeSize = 1500;
     });
     
     while (!changeTrackerStopped) {
-        [NSThread sleepForTimeInterval:5.0f];
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
     XCTAssertTrue(changeTrackerGotChanges);
@@ -1581,7 +1585,8 @@ static NSUInteger largeRevTreeSize = 1500;
     });
     
     while (!changeTrackerStopped) {
-        [NSThread sleepForTimeInterval:5.0f];
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate distantFuture]];
     }
     
     XCTAssertTrue(changeTrackerGotChanges);
@@ -1626,68 +1631,14 @@ static NSUInteger largeRevTreeSize = 1500;
     });
     
     while (!changeTrackerStopped) {
-        [NSThread sleepForTimeInterval:5.0f];
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
     
     XCTAssertFalse(changeTrackerGotChanges);
     XCTAssertNotNil(changeTracker.authorizer, @"Authorizer object should be not nil. "
                     @"The change tracker should build one when attempting to complete an "
                     @"authentication challenge.");
-}
-
-
--(void) testURLConnectionChangeTrackerForRetry
-{
-    
-    __block BOOL changeTrackerStopped = NO;
-    __block BOOL changeTrackerGotChanges = NO;
-    unsigned int limitSize = 100;
-    
-    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
-    
-    delegate.changesBlock = ^(NSArray *changes){
-        changeTrackerGotChanges = YES;
-    };
-    
-    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
-        changeTrackerStopped = YES;
-    };
-    
-    delegate.changeBlock = ^(NSDictionary *change) {
-        XCTFail(@"Should not be called");
-    };
-    
-    NSURL *url = [self badCredentialsDemoURL];
-    
-    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
-                                                                             mode:kOneShot
-                                                                        conflicts:YES
-                                                                     lastSequence:nil
-                                                                           client:delegate];
-    changeTracker.limit = limitSize;
-    
-    [ChangeTrackerNSURLProtocolTimedOut setURL:changeTracker.changesFeedURL];
-    
-    [NSURLProtocol registerClass:[ChangeTrackerNSURLProtocolTimedOut class]];
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        [changeTracker start];
-        while(!changeTrackerStopped) {
-            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                     beforeDate:[NSDate distantFuture]];
-        }
-    });
-    
-    while (!changeTrackerStopped) {
-        [NSThread sleepForTimeInterval:5.0f];
-    }
-    
-    [NSURLProtocol unregisterClass:[ChangeTrackerNSURLProtocolTimedOut class]];
-    
-    XCTAssertFalse(changeTrackerGotChanges);
-    NSUInteger retryCount = [(TDURLConnectionChangeTracker *)changeTracker totalRetries];
-    XCTAssertTrue(retryCount == 6, @"Expected kMaxRetries(6) retries, found %ld",
-                  (unsigned long)retryCount);
 }
 
 @end

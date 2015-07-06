@@ -362,34 +362,35 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // results in compiler error (could be undefined variable)
     __weak TDPuller* weakSelf = self;
     TDMultipartDownloader* dl;
-    dl = [[TDMultipartDownloader alloc] initWithURL:TDAppendToURL(_remote, path)
-                                           database:_db
-                                     requestHeaders:self.requestHeaders
-                                       onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
-                                           __strong TDPuller* strongSelf = weakSelf;
-                                           // OK, now we've got the response revision:
-                                           if (error) {
-                                               strongSelf.error = error;
-                                               [strongSelf revisionFailed];
-                                               strongSelf.changesProcessed++;
-                                           } else {
-                                               TD_Revision* gotRev =
+    dl = [[TDMultipartDownloader alloc] initWithSession:self.session
+                                                    URL:TDAppendToURL(_remote, path)
+                                               database:_db
+                                         requestHeaders:self.requestHeaders
+                                           onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
+                                               __strong TDPuller* strongSelf = weakSelf;
+                                               // OK, now we've got the response revision:
+                                               if (error) {
+                                                   strongSelf.error = error;
+                                                   [strongSelf revisionFailed];
+                                                   strongSelf.changesProcessed++;
+                                               } else {
+                                                   TD_Revision* gotRev =
                                                    [TD_Revision revisionWithProperties:dl.document];
-                                               gotRev.sequence = rev.sequence;
-                                               // Add to batcher ... eventually it will be fed to
-                                               // -insertRevisions:.
-                                               [_downloadsToInsert queueObject:gotRev];
-                                               [strongSelf asyncTaskStarted];
-                                           }
-
-                                           // Note that we've finished this task:
-                                           [strongSelf removeRemoteRequest:dl];
-                                           [strongSelf asyncTasksFinished:1];
-                                           --_httpConnectionCount;
-                                           // Start another task if there are still revisions
-                                           // waiting to be pulled:
-                                           [strongSelf pullRemoteRevisions];
-                                       }];
+                                                   gotRev.sequence = rev.sequence;
+                                                   // Add to batcher ... eventually it will be fed to
+                                                   // -insertRevisions:.
+                                                   [_downloadsToInsert queueObject:gotRev];
+                                                   [strongSelf asyncTaskStarted];
+                                               }
+                                               
+                                               // Note that we've finished this task:
+                                               [strongSelf removeRemoteRequest:dl];
+                                               [strongSelf asyncTasksFinished:1];
+                                               --_httpConnectionCount;
+                                               // Start another task if there are still revisions
+                                               // waiting to be pulled:
+                                               [strongSelf pullRemoteRevisions];
+                                           }];
     [self addRemoteRequest:dl];
     dl.authorizer = _authorizer;
     [dl start];
