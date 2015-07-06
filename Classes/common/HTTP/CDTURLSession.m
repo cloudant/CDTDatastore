@@ -13,7 +13,6 @@
 //  and limitations under the License.
 
 #import "CDTURLSession.h"
-#import "CDTURLSessionFilterContext.h"
 #import "MYBlockUtils.h"
 
 @interface CDTURLSession ()
