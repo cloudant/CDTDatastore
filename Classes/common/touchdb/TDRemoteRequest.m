@@ -31,10 +31,19 @@
 
 #import "CDTDatastore.h"
 #import "CDTLogging.h"
+#import "CDTURLSession.h"
 
 // Max number of retry attempts for a transient failure, and the backoff time formula
 #define kMaxRetries 2
 #define RetryDelay(COUNT) (4 << (COUNT))  // COUNT starts at 0
+
+@interface TDRemoteRequest()
+
+@property CDTURLSession *session;
+@property (nonatomic, strong) NSURLSessionDataTask *task;
+
+@end
+
 
 @implementation TDRemoteRequest
 
@@ -48,7 +57,10 @@
 #elif TARGET_OS_MAC
     platform = @"Mac OS X";
 #endif
-    return $sprintf(@"CloudantSync/%@ (%@ %@)", [CDTDatastore versionString], platform, version);
+    return [NSString stringWithFormat:@"CloudantSync/%@ (%@ %@)",
+            [CDTDatastore versionString],
+            platform,
+            version ];
 }
 
 - (id)initWithMethod:(NSString *)method
@@ -69,8 +81,7 @@
         [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
             [_request setValue:value forHTTPHeaderField:key];
         }];
-
-        [self setupRequest:_request withBody:body];
+        _session = [[CDTURLSession alloc] initWithDelegate:self];
     }
     return self;
 }
@@ -86,74 +97,74 @@
     }
 }
 
-- (void)setupRequest:(NSMutableURLRequest *)request withBody:(id)body
-{
-    // subclasses can override this.
-}
-
 - (void)dontLog404 { _dontLog404 = true; }
 
 - (void)start
 {
     if (!_request) return;  // -clearConnection already called
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
-    Assert(!_connection);
-    _connection = [NSURLConnection connectionWithRequest:_request delegate:self];
 
-// Retaining myself shouldn't be necessary, because NSURLConnection is documented as retaining
-// its delegate while it's running. But GNUstep doesn't (currently) do this, so for
-// compatibility I retain myself until the connection completes (see -clearConnection.)
-// TODO: Remove this and the [self autorelease] below when I get the fix from GNUstep.
-#ifdef GNUSTEP
-    [self retain];
-#endif
+    __weak TDRemoteRequest *weakSelf = self;
+    self.task = [self.session dataTaskWithRequest:_request
+                                completionHandler:^(NSData *data,
+                                                    NSURLResponse *response,
+                                                    NSError *error) {
+        TDRemoteRequest * strongSelf = weakSelf;
+        if(error) {
+            [strongSelf requestDidError:error];
+        } else if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
+            [strongSelf receivedResponse:response];
+        }  else {
+            [strongSelf receivedResponse:response];
+            [strongSelf receivedData:data];
+        }
+    }];
+    [self.task resume];
+
 }
 
-- (void)clearConnection
+- (void)clearSession
 {
     _request = nil;
-    if (_connection) {
-        _connection = nil;
-
-#ifdef GNUSTEP
-        [self release];
-#endif
-    }
+    [self.task cancel];
+    self.task = nil;
 }
 
-- (void)dealloc { [self clearConnection]; }
+- (void)dealloc { [self clearSession]; }
 
 - (NSString *)description
 {
-    return $sprintf(@"%@[%@ %@]", [self class], _request.HTTPMethod, TDCleanURLtoString(_request.URL));
+    return [NSString stringWithFormat:@"%@[%@ %@]", [self class], _request.HTTPMethod, TDCleanURLtoString(_request.URL) ];
 }
 
 - (NSMutableDictionary *)statusInfo
 {
-    return $mdict({ @"URL", _request.URL.absoluteString }, { @"method", _request.HTTPMethod });
+    return [@{ @"URL": _request.URL.absoluteString , @"method": _request.HTTPMethod } mutableCopy];
 }
 
 - (void)respondWithResult:(id)result error:(NSError *)error
 {
     Assert(result || error);
-    _onCompletion(result, error);
+    if(_onCompletion){
+        _onCompletion(result, error);
+    }
     _onCompletion = nil;  // break cycles
 }
 
 - (void)startAfterDelay:(NSTimeInterval)delay
 {
-    // assumes _connection already failed or canceled.
-    _connection = nil;
+    // assumes task already failed or canceled.
+    self.task = nil;
     [self performSelector:@selector(start) withObject:nil afterDelay:delay];
 }
 
 - (void)stop
 {
-    if (_connection) {
+    if (self.task) {
         CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Stopped", self);
-        [_connection cancel];
+        [self.task cancel];
     }
-    [self clearConnection];
+    [self clearSession];
     if (_onCompletion) {
         NSError *error =
             [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
@@ -161,11 +172,11 @@
         _onCompletion = nil;  // break cycles
     }
 }
-
+	
 - (void)cancelWithStatus:(int)status
 {
-    [_connection cancel];
-    [self connection:_connection didFailWithError:TDStatusToNSError(status, _request.URL)];
+    [self.task cancel];
+    [self requestDidError:TDStatusToNSError(status, _request.URL)];
 }
 
 - (BOOL)retry
@@ -184,68 +195,7 @@
 
 - (bool)retryWithCredential
 {
-    if (_authorizer || _challenged) return false;
-    _challenged = YES;
-    NSURLCredential *cred = [_request.URL my_credentialForRealm:nil
-                                           authenticationMethod:NSURLAuthenticationMethodHTTPBasic];
-    if (!cred) {
-        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT,
-                   @"Got 401 but no stored credential found (with nil realm)");
-        return false;
-    }
-
-    [_connection cancel];
-    self.authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
-    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ retrying with %@", self, _authorizer);
-    [self startAfterDelay:0.0];
-    return true;
-}
-
-#pragma mark - NSURLCONNECTION DELEGATE:
-
-- (void)connection:(NSURLConnection *)connection
-    willSendRequestForAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge
-{
-    id<NSURLAuthenticationChallengeSender> sender = challenge.sender;
-    NSURLProtectionSpace *space = challenge.protectionSpace;
-    NSString *authMethod = space.authenticationMethod;
-    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
-               self, authMethod, challenge.proposedCredential, challenge.error);
-    if ($equal(authMethod, NSURLAuthenticationMethodHTTPBasic)) {
-        _challenged = true;
-        _authorizer = nil;
-        if (challenge.previousFailureCount <= 1) {
-            // On basic auth challenge, use proposed credential on first attempt. On second attempt
-            // or if there's no proposed credential, look one up. After that, give up.
-            NSURLCredential *cred = challenge.proposedCredential;
-            if (cred == nil || challenge.previousFailureCount > 0) {
-                cred = [_request.URL my_credentialForRealm:space.realm
-                                      authenticationMethod:authMethod];
-            }
-            if (cred) {
-                CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: useCredential: %@", cred);
-                [sender useCredential:cred forAuthenticationChallenge:challenge];
-                // Update my authorizer so my owner (the replicator) can pick it up when I'm done
-                _authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
-                return;
-            }
-        }
-        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: continueWithoutCredential");
-        [sender continueWithoutCredentialForAuthenticationChallenge:challenge];
-    } else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
-        SecTrustRef trust = space.serverTrust;
-        if ([[self class] checkTrust:trust forHost:space.host]) {
-            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    useCredential for trust: %@", trust);
-            [sender useCredential:[NSURLCredential credentialForTrust:trust]
-                forAuthenticationChallenge:challenge];
-        } else {
-            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: cancel");
-            [sender cancelAuthenticationChallenge:challenge];
-        }
-    } else {
-        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: performDefaultHandling");
-        [sender performDefaultHandlingForAuthenticationChallenge:challenge];
-    }
+    return false;
 }
 
 + (BOOL)checkTrust:(SecTrustRef)trust forHost:(NSString *)host
@@ -282,58 +232,21 @@
         return NO;
     }
 }
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+- (void) receivedResponse:(NSURLResponse *)response
 {
+    //if we hit an error we shouldn't retry, the Http interceptors should deal with retires.
     _status = (int)((NSHTTPURLResponse *)response).statusCode;
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got response, status %d", self, _status);
-    if (_status == 401) {
-        // CouchDB says we're unauthorized but it didn't present a 'WWW-Authenticate' header
-        // (it actually does this on purpose...) Let's see if we have a credential we can try:
-        if ([self retryWithCredential]) return;
-    }
-
-#if DEBUG
-    if (!TDStatusIsError(_status)) {
-        // By setting the user default "TDFakeFailureRate" to a number between 0.0 and 1.0,
-        // you can artificially cause failures of that fraction of requests, for testing.
-        // The status will be 567, or the value of "TDFakeFailureStatus" if it's set.
-        NSUserDefaults *dflts = [NSUserDefaults standardUserDefaults];
-        float fakeFailureRate = [dflts floatForKey:@"TDFakeFailureRate"];
-        if (fakeFailureRate > 0.0 && random() < fakeFailureRate * 0x7FFFFFFF) {
-            CDTLogError(CDTTD_REMOTE_REQUEST_CONTEXT, @"***FAKE FAILURE: %@", self);
-            _status = (int)[dflts integerForKey:@"TDFakeFailureStatus"] ?: 567;
-        }
-    }
-#endif
 
     if (TDStatusIsError(_status)) [self cancelWithStatus:_status];
 }
 
-- (NSURLRequest *)connection:(NSURLConnection *)connection
-             willSendRequest:(NSURLRequest *)request
-            redirectResponse:(NSURLResponse *)response
-{
-    // The redirected request needs to be authorized again:
-    if (![request valueForHTTPHeaderField:@"Authorization"]) {
-        NSMutableURLRequest *nuRequest = [request mutableCopy];
-        NSString *auth;
-        if (_authorizer)
-            auth = [_authorizer authorizeURLRequest:nuRequest forRealm:nil];
-        else
-            auth = [_request valueForHTTPHeaderField:@"Authorization"];
-        [nuRequest setValue:auth forHTTPHeaderField:@"Authorization"];
-        request = nuRequest;
-    }
-    return request;
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+-(void) receivedData:(NSData *)data
 {
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got %lu bytes", self, (unsigned long)data.length);
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+- (void)requestDidError:(NSError *)error
 {
     if (!(_dontLog404 && error.code == kTDStatusNotFound &&
           $equal(error.domain, TDHTTPErrorDomain)))
@@ -342,53 +255,51 @@
     // If the error is likely transient, retry:
     if (TDMayBeTransientError(error) && [self retry]) return;
 
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:nil error:error];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:self error:nil];
-}
-
-- (NSCachedURLResponse *)connection:(NSURLConnection *)connection
-                  willCacheResponse:(NSCachedURLResponse *)cachedResponse
-{
-    return nil;
 }
 
 @end
 
 @implementation TDRemoteJSONRequest
 
-- (void)setupRequest:(NSMutableURLRequest *)request withBody:(id)body
+-(instancetype) initWithMethod:(NSString *)method URL:(NSURL *)url body:(id)body requestHeaders:(NSDictionary *)requestHeaders onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
-    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    if (body) {
-        request.HTTPBody = [TDJSON dataWithJSONObject:body options:0 error:NULL];
-        [request addValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    self = [super initWithMethod:method URL:url body:body requestHeaders:requestHeaders onCompletion:onCompletion];
+    if(self){
+        
+        [_request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        if (body) {
+            _request.HTTPBody = [TDJSON dataWithJSONObject:body options:0 error:NULL];
+            [_request addValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        }
+        
     }
+    
+    return self;
 }
 
-- (void)clearConnection
+
+- (void)clearSession
 {
     _jsonBuffer = nil;
-    [super clearConnection];
+    [super clearSession];
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+- (void)receivedData:(NSData *)data
 {
-    [super connection:connection didReceiveData:data];
+    [super receivedData:data];
     if (!_jsonBuffer)
         _jsonBuffer = [[NSMutableData alloc] initWithCapacity:MAX(data.length, 8192u)];
     [_jsonBuffer appendData:data];
-}
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
-    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
     id result = nil;
     NSError *error = nil;
     if (_jsonBuffer.length > 0) {
@@ -399,9 +310,9 @@
             error = TDStatusToNSError(kTDStatusUpstreamError, _request.URL);
         }
     } else {
-        result = $dict();
+        result = @{};
     }
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:result error:error];
 }
 
