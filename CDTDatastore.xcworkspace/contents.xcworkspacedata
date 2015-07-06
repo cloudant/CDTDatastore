@@ -9,6 +9,16 @@
          name = "common">
          <Group
             location = "container:"
+            name = "HTTP">
+            <FileRef
+               location = "group:Classes/common/HTTP/CDTURLSession.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/HTTP/CDTURLSession.m">
+            </FileRef>
+         </Group>
+         <Group
+            location = "container:"
             name = "Attachments">
             <FileRef
                location = "group:Classes/common/Attachments/CDTDatastore+Attachments.h">
