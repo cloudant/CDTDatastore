@@ -147,7 +147,7 @@
 {
     Assert(result || error);
     if(_onCompletion){
-    _onCompletion(result, error);
+        _onCompletion(result, error);
     }
     _onCompletion = nil;  // break cycles
 }
