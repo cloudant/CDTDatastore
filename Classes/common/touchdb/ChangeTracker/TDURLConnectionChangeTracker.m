@@ -85,14 +85,16 @@
         }
     }
     
+    __weak TDURLConnectionChangeTracker *weakSelf = self;
     self.task = [self.session dataTaskWithRequest:self.request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        TDURLConnectionChangeTracker *strongSelf = weakSelf;
         if(error){
-            [self failedWithError:error];
+            [strongSelf failedWithError:error];
             return;
         } else {
-            [self receivedResponse:response];
-            [self receivedData:data];
-            [self finishedLoading];
+            [strongSelf receivedResponse:response];
+            [strongSelf receivedData:data];
+            [strongSelf finishedLoading];
         }
     }];
 
