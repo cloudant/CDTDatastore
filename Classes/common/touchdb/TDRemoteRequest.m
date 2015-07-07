@@ -109,9 +109,6 @@
                                 completionHandler:^(NSData *data,
                                                     NSURLResponse *response,
                                                     NSError *error) {
-        //we need to fire all the delegate methods kinda of....
-        //we actually need to replace the delegate methods with resonable things to do since
-        // the response has actually completed.
         TDRemoteRequest * strongSelf = weakSelf;
         if(error) {
             [strongSelf requestDidError:error];
