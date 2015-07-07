@@ -120,7 +120,7 @@
 
 }
 
-- (void)clearConnection
+- (void)clearSession
 {
     _request = nil;
     [self.task cancel];
@@ -128,7 +128,7 @@
     //doesn't really do anything.
 }
 
-- (void)dealloc { [self clearConnection]; }
+- (void)dealloc { [self clearSession]; }
 
 - (NSString *)description
 {
@@ -162,7 +162,7 @@
         CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Stopped", self);
         [self.task cancel];
     }
-    [self clearConnection];
+    [self clearSession];
     if (_onCompletion) {
         NSError *error =
             [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
@@ -258,14 +258,14 @@
     // If the error is likely transient, retry:
     if (TDMayBeTransientError(error) && [self retry]) return;
 
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:nil error:error];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:self error:nil];
 }
 
@@ -290,10 +290,10 @@
 }
 
 
-- (void)clearConnection
+- (void)clearSession
 {
     _jsonBuffer = nil;
-    [super clearConnection];
+    [super clearSession];
 }
 
 - (void)receivedData:(NSData *)data
@@ -315,7 +315,7 @@
     } else {
         result = @{};
     }
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:result error:error];
 }
 

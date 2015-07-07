@@ -81,7 +81,7 @@
         return;
     }
 
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:self error:nil];
 }
 

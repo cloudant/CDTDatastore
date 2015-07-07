@@ -52,7 +52,7 @@ typedef void (^TDRemoteRequestCompletionBlock)(id result, NSError* error);
 @property (readonly) NSMutableDictionary* statusInfo;
 
 // protected:
-- (void)clearConnection;
+- (void)clearSession;
 - (void)cancelWithStatus:(int)status;
 - (void)respondWithResult:(id)result error:(NSError*)error;
 - (void)receivedData:(NSData *)data;
