@@ -77,7 +77,7 @@
         _request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
 
         // Add headers.
-        [_request setValue:[TDRemoteRequest userAgentHeader] forHTTPHeaderField:@"User-Agent"];
+        [_request setValue:[[self class] userAgentHeader] forHTTPHeaderField:@"User-Agent"];
         [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
             [_request setValue:value forHTTPHeaderField:key];
         }];
