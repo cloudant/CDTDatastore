@@ -81,7 +81,7 @@
         [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
             [_request setValue:value forHTTPHeaderField:key];
         }];
-        _session = [[CDTURLSession alloc]init];
+        _session = [[CDTURLSession alloc] init];
     }
     return self;
 }
