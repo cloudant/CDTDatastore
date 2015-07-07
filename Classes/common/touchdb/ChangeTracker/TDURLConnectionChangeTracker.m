@@ -281,7 +281,6 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     [self clearConnection];
     
     if (restart){
-        NSLog(@"Polling _changes again");
         [self start];  // Next poll...
     }
     else {
