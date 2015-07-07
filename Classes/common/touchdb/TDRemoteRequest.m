@@ -154,7 +154,7 @@
 
 - (void)startAfterDelay:(NSTimeInterval)delay
 {
-    // assumes _connection already failed or canceled.
+    // assumes task already failed or canceled.
     self.task = nil;
     [self performSelector:@selector(start) withObject:nil afterDelay:delay];
 }
