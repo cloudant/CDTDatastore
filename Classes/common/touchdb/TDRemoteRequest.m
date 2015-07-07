@@ -81,7 +81,7 @@
         [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
             [_request setValue:value forHTTPHeaderField:key];
         }];
-        _session = [[CDTURLSession alloc] init];
+        _session = [[CDTURLSession alloc] initWithDelegate:self];
     }
     return self;
 }
@@ -201,6 +201,54 @@
 }
 
 #pragma mark - NSURLCONNECTION DELEGATE:
+
+- (void) URLSession:(NSURLSession *)session
+didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+  completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler
+{
+    NSURLProtectionSpace *space = challenge.protectionSpace;
+    NSString *authMethod = space.authenticationMethod;
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
+                  self, authMethod, challenge.proposedCredential, challenge.error);
+    if ($equal(authMethod, NSURLAuthenticationMethodHTTPBasic)) {
+        _challenged = true;
+        _authorizer = nil;
+        if (challenge.previousFailureCount <= 1) {
+            // On basic auth challenge, use proposed credential on first attempt. On second attempt
+            // or if there's no proposed credential, look one up. After that, give up.
+            NSURLCredential *cred = challenge.proposedCredential;
+            if (cred == nil || challenge.previousFailureCount > 0) {
+                cred = [_request.URL my_credentialForRealm:space.realm
+                                      authenticationMethod:authMethod];
+            }
+            if (cred) {
+                CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: useCredential: %@", cred);
+                completionHandler(NSURLSessionAuthChallengeUseCredential, cred);
+                // Update my authorizer so my owner (the replicator) can pick it up when I'm done
+                _authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
+                return;
+            }
+        }
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: continueWithoutCredential");
+        completionHandler(NSURLSessionAuthChallengeUseCredential,nil);
+    } else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
+        SecTrustRef trust = space.serverTrust;
+        if ([[self class] checkTrust:trust forHost:space.host]) {
+            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    useCredential for trust: %@", trust);
+             completionHandler(NSURLSessionAuthChallengeUseCredential,
+                               [NSURLCredential credentialForTrust:trust]);
+        } else {
+            CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: cancel");
+            completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge,nil);
+        }
+    } else {
+        CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"    challenge: performDefaultHandling");
+        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling,nil);
+    }
+}
+
+
+
 
 + (BOOL)checkTrust:(SecTrustRef)trust forHost:(NSString *)host
 {
