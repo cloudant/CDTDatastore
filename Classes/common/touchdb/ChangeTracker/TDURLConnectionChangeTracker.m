@@ -34,7 +34,6 @@
 
 @interface TDURLConnectionChangeTracker()
 @property (strong, nonatomic) NSMutableData* inputBuffer;
-@property (strong, nonatomic) NSURLConnection *connection;
 @property (strong, nonatomic) NSMutableURLRequest *request;
 @property (strong, nonatomic) NSDate* startTime;
 @property (nonatomic, readwrite) NSUInteger totalRetries;
@@ -113,7 +112,6 @@
         [self.task cancel];
     }
     self.task = nil;
-    self.connection = nil;
     self.inputBuffer = nil;
 }
 
