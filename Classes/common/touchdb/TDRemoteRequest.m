@@ -104,8 +104,11 @@
     if (!_request) return;  // -clearConnection already called
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
 
-    __weak TDRemoteRequest * weakSelf = self;
-    self.task = [self.session dataTaskWithRequest:_request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    __weak TDRemoteRequest *weakSelf = self;
+    self.task = [self.session dataTaskWithRequest:_request
+                                completionHandler:^(NSData *data,
+                                                    NSURLResponse *response,
+                                                    NSError *error) {
         //we need to fire all the delegate methods kinda of....
         //we actually need to replace the delegate methods with resonable things to do since
         // the response has actually completed.
