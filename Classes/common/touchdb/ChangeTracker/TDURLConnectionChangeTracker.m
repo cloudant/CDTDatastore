@@ -177,7 +177,6 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
         CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: continueWithoutCredential",
                       [self class]);
         completionHandler(NSURLSessionAuthChallengeUseCredential,nil);
-//        [sender continueWithoutCredentialForAuthenticationChallenge:challenge];
     }
     else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
         
@@ -188,18 +187,15 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
                           self, trust);
             NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
             completionHandler(NSURLSessionAuthChallengeUseCredential, cred);
-//            [sender useCredential:cred forAuthenticationChallenge:challenge];
             
         }
         else {
             CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ challenge: cancel", self);
-//            [sender cancelAuthenticationChallenge:challenge];
             completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge,nil);
         }
     }
     else {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: performDefaultHandling", self);
-//        [sender performDefaultHandlingForAuthenticationChallenge:challenge];
         completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
     }
     
