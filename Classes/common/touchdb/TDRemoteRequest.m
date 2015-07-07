@@ -39,8 +39,8 @@
 
 @interface TDRemoteRequest()
 
-@property CDTURLSession * session;
-@property (nonatomic, strong) NSURLSessionDataTask * task;
+@property CDTURLSession *session;
+@property (nonatomic, strong) NSURLSessionDataTask *task;
 
 @end
 
