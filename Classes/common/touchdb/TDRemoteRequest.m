@@ -57,7 +57,10 @@
 #elif TARGET_OS_MAC
     platform = @"Mac OS X";
 #endif
-    return [NSString stringWithFormat:@"CloudantSync/%@ (%@ %@)", [CDTDatastore versionString], platform, version ];
+    return [NSString stringWithFormat:@"CloudantSync/%@ (%@ %@)",
+            [CDTDatastore versionString],
+            platform,
+            version ];
 }
 
 - (id)initWithMethod:(NSString *)method
