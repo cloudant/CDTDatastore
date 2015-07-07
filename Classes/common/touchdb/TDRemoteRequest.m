@@ -113,10 +113,10 @@
         //we actually need to replace the delegate methods with resonable things to do since
         // the response has actually completed.
         TDRemoteRequest * strongSelf = weakSelf;
-        if(error){
+        if(error) {
             [strongSelf requestDidError:error];
-        } else if (TDStatusIsError(((NSHTTPURLResponse*)response).statusCode)) {
-                        [strongSelf receivedResponse:response];
+        } else if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
+            [strongSelf receivedResponse:response];
         }  else {
             [strongSelf receivedResponse:response];
             [strongSelf receivedData:data];
