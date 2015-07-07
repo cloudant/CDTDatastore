@@ -27,7 +27,6 @@
 #import "TDMisc.h"
 
 #import "CDTDocumentRevision.h"
-#import "CDTDocumentBody.h"
 #import "CDTAttachment.h"
 #import "CDTLogging.h"
 

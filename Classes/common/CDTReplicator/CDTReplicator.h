@@ -18,7 +18,6 @@
 #import "CDTReplicatorDelegate.h"
 
 @class CDTDatastore;
-@class CDTDocumentBody;
 @class TDReplicatorManager;
 @class CDTAbstractReplication;
 

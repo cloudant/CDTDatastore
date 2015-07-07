@@ -308,12 +308,6 @@
             location = "group:CDTDatastoreManager.m">
          </FileRef>
          <FileRef
-            location = "group:CDTDocumentBody.h">
-         </FileRef>
-         <FileRef
-            location = "group:CDTDocumentBody.m">
-         </FileRef>
-         <FileRef
             location = "group:CDTDocumentRevision.h">
          </FileRef>
          <FileRef

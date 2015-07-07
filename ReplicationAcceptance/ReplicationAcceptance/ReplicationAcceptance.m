@@ -25,7 +25,6 @@
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
-#import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"

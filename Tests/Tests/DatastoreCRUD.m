@@ -21,7 +21,6 @@
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
-#import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
 #import "CDTMutableDocumentRevision.h"
 #import "TD_Revision.h"
@@ -1030,9 +1029,9 @@
     rev = [ob mutableCopy];
     rev.body = nil;
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
-    XCTAssertNotNil(error, @"No Error updating document with nil CDTDocumentBody");
+    XCTAssertNotNil(error, @"No Error updating document with nil document body");
     XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
-    XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil CDTDocumentBody");
+    XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil document body");
     
     NSDictionary *modifiedCount = nil;
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:modifiedCount];

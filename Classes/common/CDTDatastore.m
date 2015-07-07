@@ -16,7 +16,6 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDatastoreManager.h"
-#import "CDTDocumentBody.h"
 #import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 #import "CDTDatastore+Attachments.h"
@@ -389,15 +388,6 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     return result;
 }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-- (BOOL)validateBody:(CDTDocumentBody *)body error:(NSError *__autoreleasing *)error
-{
-    NSDictionary *bodyDict = body.td_body.asObject;
-    return [self validateBodyDictionary:bodyDict error:error];
-}
-
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error
 {
     

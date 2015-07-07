@@ -23,7 +23,6 @@
 #import "CDTDatastore+Conflicts.h"
 #import "CDTDatastore+Attachments.h"
 #import "CDTDatastore+Internal.h"
-#import "CDTDocumentBody.h"
 #import "CDTDocumentRevision.h"
 #import "CDTConflictResolver.h"
 #import "CDTMutableDocumentRevision.h"

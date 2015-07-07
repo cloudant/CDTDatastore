@@ -25,7 +25,6 @@
 
 #import "CDTDocumentRevision.h"
 #import "CDTMutableDocumentRevision.h"
-#import "CDTDocumentBody.h"
 
 #import "CDTAttachment.h"
 
