@@ -285,7 +285,6 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
         [self start];  // Next poll...
     }
     else {
-        NSLog(@"Stopping chnage tracker");
         [self stopped];
     }
     
