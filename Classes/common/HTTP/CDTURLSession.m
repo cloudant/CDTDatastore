@@ -33,7 +33,8 @@
     return [self initWithDelegate:nil callbackThread:[NSThread currentThread]];
 }
 
--(instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread *)thread{
+- (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread *)thread
+{
     self = [super init];
     if (self) {
         _thread = thread;
@@ -59,11 +60,14 @@
                                                                            NSError *error) {
         
         __strong CDTURLSession *strongSelf = weakSelf;
-        data = [NSData dataWithData:data];
+                                                     
+        if (strongSelf) {
+            data = [NSData dataWithData:data];
         
-        MYOnThread(strongSelf.thread, ^{
-            completionHandler(data, response, error);
-        });
+            MYOnThread(strongSelf.thread, ^{
+                completionHandler(data, response, error);
+            });
+        }
         
     } ];
     
