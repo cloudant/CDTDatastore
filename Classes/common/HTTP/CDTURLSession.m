@@ -35,6 +35,7 @@
 
 - (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread *)thread
 {
+    NSParameterAssert(thread);
     self = [super init];
     if (self) {
         _thread = thread;
