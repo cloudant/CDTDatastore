@@ -25,12 +25,13 @@
 
 @implementation TDMultipartDownloader
 
-- (id)initWithURL:(NSURL *)url
-          database:(TD_Database *)database
-    requestHeaders:(NSDictionary *)requestHeaders
-      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
+- (instancetype)initWithSession:(CDTURLSession*) session
+                  URL:(NSURL *)url
+             database:(TD_Database *)database
+       requestHeaders:(NSDictionary *)requestHeaders
+         onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
-    self = [super initWithMethod:@"GET"
+    self = [super initWithSession:session method:@"GET"
                              URL:url
                             body:nil
                   requestHeaders:requestHeaders

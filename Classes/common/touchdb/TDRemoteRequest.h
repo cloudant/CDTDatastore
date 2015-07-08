@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CDTURLSession.h"
 @protocol TDAuthorizer;
 
 /** The signature of the completion block called by a TDRemoteRequest.
@@ -30,11 +31,13 @@ typedef void (^TDRemoteRequestCompletionBlock)(id result, NSError* error);
 }
 
 /** Creates a request; call -start to send it on its way. */
-- (id)initWithMethod:(NSString*)method
+- (instancetype)initWithSession:(CDTURLSession*)session
+                         method:(NSString*)method
                  URL:(NSURL*)url
                 body:(id)body
       requestHeaders:(NSDictionary*)requestHeaders
         onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
+
 
 @property (strong, nonatomic) id<TDAuthorizer> authorizer;
 

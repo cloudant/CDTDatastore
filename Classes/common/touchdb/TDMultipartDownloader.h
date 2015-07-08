@@ -17,10 +17,11 @@
     TDMultipartDocumentReader* _reader;
 }
 
-- (id)initWithURL:(NSURL*)url
-          database:(TD_Database*)database
-    requestHeaders:(NSDictionary*)requestHeaders
-      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
+- (instancetype)initWithSession:(CDTURLSession*) session
+                            URL:(NSURL *)url
+                       database:(TD_Database *)database
+                 requestHeaders:(NSDictionary *)requestHeaders
+                   onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
 
 @property (readonly) NSDictionary* document;
 

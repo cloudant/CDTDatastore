@@ -362,7 +362,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // results in compiler error (could be undefined variable)
     __weak TDPuller* weakSelf = self;
     TDMultipartDownloader* dl;
-    dl = [[TDMultipartDownloader alloc] initWithURL:TDAppendToURL(_remote, path)
+    dl = [[TDMultipartDownloader alloc] initWithSession:self.session URL:TDAppendToURL(_remote, path)
                                            database:_db
                                      requestHeaders:self.requestHeaders
                                        onCompletion:^(TDMultipartDownloader* dl, NSError* error) {

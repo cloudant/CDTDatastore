@@ -30,6 +30,7 @@
 #import "TDReachability.h"
 #import "MYURLUtils.h"
 #import "CDTLogging.h"
+#import "CDTURLSession.h"
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
@@ -54,6 +55,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 @property (nonatomic, strong) NSThread *replicatorThread;
 @property (nonatomic) BOOL replicatorStopped;
+@property (nonatomic, strong,readwrite) CDTURLSession *session;
 
 - (void) updateActive;
 - (void) fetchRemoteCheckpointDoc;
@@ -258,6 +260,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
  * Taken from TDServer.m.
  */
 - (void) runReplicatorThread {
+    self.session = [[CDTURLSession alloc] init];
     @autoreleasepool {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread starting...");
         
@@ -654,7 +657,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     // could have undefined value).
     __weak TDReplicator* weakSelf = self;
     __block TDRemoteJSONRequest* req = nil;
-    req = [[TDRemoteJSONRequest alloc] initWithMethod:method
+    req = [[TDRemoteJSONRequest alloc] initWithSession:self.session method:method
                                                   URL:url
                                                  body:body
                                        requestHeaders:self.requestHeaders
