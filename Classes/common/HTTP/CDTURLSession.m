@@ -49,13 +49,13 @@
                             completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler
 {
     __weak CDTURLSession *weakSelf = self;
-    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request completionHandler: ^void (NSData *_data, NSURLResponse *_response, NSError *_error) {
+    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request completionHandler: ^void (NSData *data, NSURLResponse *response, NSError *error) {
         
         __strong CDTURLSession *strongSelf = weakSelf;
-        _data = [NSData dataWithData:_data];
+        data = [NSData dataWithData:data];
         
         MYOnThread(strongSelf.thread, ^{
-            completionHandler(_data,_response,_error);
+            completionHandler(data, response, error);
         });
         
     } ];
