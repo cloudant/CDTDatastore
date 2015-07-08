@@ -30,13 +30,13 @@
 
 - (instancetype)init
 {
-    return [self initWithDelegate:nil];
+    return [self initWithDelegate:nil callbackThread:[NSThread currentThread]];
 }
 
--(instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate{
+-(instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread *)thread{
     self = [super init];
     if (self) {
-        _thread = [NSThread currentThread];
+        _thread = thread;
         
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         

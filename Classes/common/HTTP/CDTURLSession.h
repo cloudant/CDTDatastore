@@ -25,7 +25,7 @@
 
 
 - (instancetype) init;
--(instancetype) initWithDelegate:(id<NSURLSessionDelegate>)delegate;
+-(instancetype) initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread*)thread;
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
                             completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler;
 
