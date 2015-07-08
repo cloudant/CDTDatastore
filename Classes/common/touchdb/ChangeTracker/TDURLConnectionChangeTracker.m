@@ -246,15 +246,12 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     //parse the input buffer into JSON (or NSArray of changes?)
     CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: didFinishLoading, %u bytes", self,
                (unsigned)self.inputBuffer.length);
-    NSLog (@"%@: didFinishLoading, %u bytes", self,
-    (unsigned)self.inputBuffer.length);
     
     BOOL restart = NO;
     NSString* errorMessage = nil;
     NSInteger numChanges = [self receivedPollResponse:self.inputBuffer errorMessage:&errorMessage];
     
     if (numChanges < 0) {
-        NSLog(@"Unparseable response");
         // unparseable response. See if it gets special handling:
         if ([self receivedDataBeginsCorrectly]) {
             
