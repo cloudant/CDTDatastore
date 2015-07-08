@@ -23,7 +23,6 @@
 #import "TD_Database+Conflicts.h"
 #import "TD_Database+Insertion.h"
 #import "CDTConflictResolver.h"
-#import "CDTDocumentBody.h"
 #import "TDStatus.h"
 #import "CDTMutableDocumentRevision.h"
 #import "TDInternal.h"

@@ -22,7 +22,6 @@
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
 #import "CDTDocumentRevision.h"
-#import "CDTDocumentBody.h"
 #import "CDTLogging.h"
 
 #import "TDReplicatorManager.h"

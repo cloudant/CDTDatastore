@@ -17,7 +17,6 @@
 #import "CDTDatastoreManager.h"
 
 @class CDTDocumentRevision;
-@class CDTDocumentBody;
 @class FMDatabase;
 @class CDTMutableDocumentRevision;
 
