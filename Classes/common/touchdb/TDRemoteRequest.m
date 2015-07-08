@@ -63,11 +63,12 @@
             version ];
 }
 
-- (id)initWithMethod:(NSString *)method
-                 URL:(NSURL *)url
-                body:(id)body
-      requestHeaders:(NSDictionary *)requestHeaders
-        onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
+- (instancetype)initWithSession:(CDTURLSession*)session
+                         method:(NSString*)method
+                            URL:(NSURL*)url
+                           body:(id)body
+                 requestHeaders:(NSDictionary*)requestHeaders
+                   onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
     self = [super init];
     if (self) {
@@ -75,13 +76,13 @@
         _request = [[NSMutableURLRequest alloc] initWithURL:url];
         _request.HTTPMethod = method;
         _request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-
+        
         // Add headers.
         [_request setValue:[[self class] userAgentHeader] forHTTPHeaderField:@"User-Agent"];
         [requestHeaders enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
             [_request setValue:value forHTTPHeaderField:key];
         }];
-        _session = [[CDTURLSession alloc] initWithDelegate:self];
+        _session = session;
     }
     return self;
 }
@@ -270,9 +271,9 @@
 
 @implementation TDRemoteJSONRequest
 
--(instancetype) initWithMethod:(NSString *)method URL:(NSURL *)url body:(id)body requestHeaders:(NSDictionary *)requestHeaders onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
+-(instancetype) initWithSession:(CDTURLSession*)session method:(NSString *)method URL:(NSURL *)url body:(id)body requestHeaders:(NSDictionary *)requestHeaders onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
-    self = [super initWithMethod:method URL:url body:body requestHeaders:requestHeaders onCompletion:onCompletion];
+    self = [super initWithSession:session method:method URL:url body:body requestHeaders:requestHeaders onCompletion:onCompletion];
     if(self){
         
         [_request setValue:@"application/json" forHTTPHeaderField:@"Accept"];

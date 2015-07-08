@@ -9,6 +9,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CDTURLSession.h"
 
 @class TD_Database, TD_RevisionList, TDBatcher, TDReachability;
 @protocol TDAuthorizer;
@@ -65,6 +66,7 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSDictionary* filterParameters;
 @property (copy) NSArray* docIDs;
 @property (copy) NSDictionary* options;
+@property (nonatomic, strong,readonly) CDTURLSession *session;
 
 /** Access to the replicator's NSThread execution state.*/
 /** NSThread.executing*/

@@ -362,19 +362,18 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // results in compiler error (could be undefined variable)
     __weak TDPuller* weakSelf = self;
     TDMultipartDownloader* dl;
-    dl = [[TDMultipartDownloader alloc] initWithSession:self.session
-                                                    URL:TDAppendToURL(_remote, path)
-                                               database:_db
-                                         requestHeaders:self.requestHeaders
-                                           onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
-                                               __strong TDPuller* strongSelf = weakSelf;
-                                               // OK, now we've got the response revision:
-                                               if (error) {
-                                                   strongSelf.error = error;
-                                                   [strongSelf revisionFailed];
-                                                   strongSelf.changesProcessed++;
-                                               } else {
-                                                   TD_Revision* gotRev =
+    dl = [[TDMultipartDownloader alloc] initWithSession:self.session URL:TDAppendToURL(_remote, path)
+                                           database:_db
+                                     requestHeaders:self.requestHeaders
+                                       onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
+                                           __strong TDPuller* strongSelf = weakSelf;
+                                           // OK, now we've got the response revision:
+                                           if (error) {
+                                               strongSelf.error = error;
+                                               [strongSelf revisionFailed];
+                                               strongSelf.changesProcessed++;
+                                           } else {
+                                               TD_Revision* gotRev =
                                                    [TD_Revision revisionWithProperties:dl.document];
                                                    gotRev.sequence = rev.sequence;
                                                    // Add to batcher ... eventually it will be fed to
