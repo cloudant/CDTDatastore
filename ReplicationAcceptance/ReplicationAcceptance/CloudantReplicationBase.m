@@ -27,12 +27,6 @@
     // Put setup code here; it will be run once, before the first test case.
     CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, DDLogLevelAll);
 
- 
-    static dispatch_once_t token;
-    dispatch_once(&token, ^{
-            [DDLog addLogger:[DDTTYLogger sharedInstance]];
-    });
-
     self.factoryPath = [self createTemporaryDirectoryAndReturnPath];
 
     NSError *error;
