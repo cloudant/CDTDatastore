@@ -48,7 +48,7 @@
     urlStr = [urlStr stringByAppendingString: @"?revs=true&attachments=true"];
     NSURL* url = [NSURL URLWithString: urlStr];
     __block BOOL done = NO;
-    [[[TDMultipartDownloader alloc] initWithURL: url
+    [[[TDMultipartDownloader alloc] initWithSession:[[CDTURLSession alloc]init] URL: url
                                        database: db
                                  requestHeaders: nil
                                    onCompletion: ^(id result, NSError * error)

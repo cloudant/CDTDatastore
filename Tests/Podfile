@@ -18,7 +18,7 @@ target :ios do
 end
 
 target :osx do
-  platform :osx, '10.8'
+  platform :osx, '10.9'
   link_with 'Tests OSX'
   import_pods
 end

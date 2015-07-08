@@ -321,8 +321,8 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSDictionary *dictResults = [self.database getDocsWithIDs:docIds options:queryOptions];
 
     for (NSDictionary *row in dictResults[@"rows"]) {
-        //            NSLog(@"%@", row);
         NSString *docId = row[@"id"];
+        
         NSString *revId = row[@"value"][@"rev"];
 
         // deleted field only present in deleted documents, but to be safe we use
@@ -575,7 +575,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 {
     if (!revision.body) {
         TDStatus status = kTDStatusBadRequest;
-        *error = TDStatusToNSError(status, nil);
+        if (error){
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 

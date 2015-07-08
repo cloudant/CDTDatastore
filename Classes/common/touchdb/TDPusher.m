@@ -456,7 +456,7 @@ static TDStatus statusFromBulkDocsResponseItem(NSDictionary* item)
 
     NSString* path = $sprintf(@"%@?new_edits=false", TDEscapeID(rev.docID));
     TDMultipartUploader* uploader =
-        [[TDMultipartUploader alloc] initWithURL:TDAppendToURL(_remote, path)
+    [[TDMultipartUploader alloc] initWithSession:self.session URL:TDAppendToURL(_remote, path)
                                         streamer:bodyStream
                                   requestHeaders:self.requestHeaders
                                     onCompletion:^(TDMultipartUploader* uploader, NSError* error) {
