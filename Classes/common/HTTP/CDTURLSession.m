@@ -40,16 +40,23 @@
         
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         
-        _session = [NSURLSession sessionWithConfiguration:config delegate:delegate delegateQueue:[NSOperationQueue currentQueue]];
+        _session = [NSURLSession sessionWithConfiguration:config
+                                                 delegate:delegate
+                                            delegateQueue:nil];
     }
     return self;
 }
 
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
-                            completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler
+                            completionHandler:(void (^)(NSData *data,
+                                                        NSURLResponse *response,
+                                                        NSError *error))completionHandler
 {
     __weak CDTURLSession *weakSelf = self;
-    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request completionHandler: ^void (NSData *data, NSURLResponse *response, NSError *error) {
+    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request
+                                                 completionHandler: ^void (NSData *data,
+                                                                           NSURLResponse *response,
+                                                                           NSError *error) {
         
         __strong CDTURLSession *strongSelf = weakSelf;
         data = [NSData dataWithData:data];
