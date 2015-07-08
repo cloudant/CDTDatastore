@@ -14,9 +14,9 @@
     TDMultipartWriter *_multipartWriter;
 }
 
-- (id)initWithURL:(NSURL *)url
-          streamer:(TDMultipartWriter *)streamer
-    requestHeaders:(NSDictionary *)requestHeaders
-      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
+- (instancetype)initWithSession:(CDTURLSession*) session URL:(NSURL *)url
+                       streamer:(TDMultipartWriter *)writer
+                 requestHeaders:(NSDictionary *)requestHeaders
+                   onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
 
 @end

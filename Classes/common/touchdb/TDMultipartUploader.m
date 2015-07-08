@@ -20,13 +20,13 @@
 
 @implementation TDMultipartUploader
 
-- (id)initWithURL:(NSURL *)url
+- (instancetype)initWithSession:(CDTURLSession*) session URL:(NSURL *)url
           streamer:(TDMultipartWriter *)writer
     requestHeaders:(NSDictionary *)requestHeaders
       onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
     Assert(writer);
-    self = [super initWithMethod:@"PUT"
+    self = [super initWithSession:session method:@"PUT"
                              URL:url
                             body:writer
                   requestHeaders:requestHeaders
