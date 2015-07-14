@@ -288,6 +288,33 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return result;
 }
 
+- (NSArray *)getAllDocumentIds
+{
+    if (![self ensureDatabaseOpen]) {
+        return nil;
+    }
+    
+    NSMutableArray *result = [NSMutableArray array];
+    struct TDQueryOptions query = {.limit = UINT_MAX,
+                                   .inclusiveEnd = YES,
+                                   .skip = 0,
+                                   .descending = NO,
+                                   .includeDocs = NO};
+    
+    NSDictionary *dictResults;
+    do {
+        dictResults = [self.database getDocsWithIDs:nil options:&query];
+        for (NSDictionary *row in dictResults[@"rows"]) {
+            [result addObject:row[@"id"]];
+        }
+        
+        query.skip = query.skip + query.limit;
+    } while (((NSArray *)dictResults[@"rows"]).count > 0);
+    
+    return [NSArray arrayWithArray:result];
+    
+}
+
 - (NSArray *)getAllDocumentsOffset:(NSUInteger)offset
                              limit:(NSUInteger)limit
                         descending:(BOOL)descending

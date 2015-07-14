@@ -3,6 +3,7 @@
 ## Unreleased
 
 - [NEW] Added query support for the `$size` operator.
+- [FIX] Fixed issue where at least one index had to be created before a query would execute.  You can now query for documents without the existence of any indexes.
 
 ## 0.17.1 (2015-06-24)
 

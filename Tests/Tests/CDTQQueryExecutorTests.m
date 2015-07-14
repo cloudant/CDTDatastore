@@ -1756,6 +1756,18 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             expect(result.documentIds.count).to.equal(2);
             expect(result.documentIds).to.beSupersetOf(@[ @"mike72", @"fred12" ]);
         });
+        
+        it(@"query without any user defined indexes", ^{
+            // No user defined indexes found.  Retrieves document ids directly from the datastore.
+            expect([im deleteIndexNamed:@"basic"]).to.beTruthy();
+            expect([im deleteIndexNamed:@"pet"]).to.beTruthy();
+            expect([im listIndexes].count).to.equal(0);
+            
+            NSDictionary* query = @{ @"town" : @"bristol" };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72", @"fred12" ]);
+        });
+        
     });
     
     describe(@"when executing queries containing $size operator", ^{
