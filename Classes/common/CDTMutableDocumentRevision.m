@@ -24,27 +24,37 @@
 
 + (CDTMutableDocumentRevision *)revision { return [[CDTMutableDocumentRevision alloc] init]; }
 
-- (id)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *)body
-{
-    self = [super init];
 
-    if (self) {
-        // do set up
-        _docId = documentId;
-        _private_body = body;
-    }
-
-    return self;
+-(instancetype) init {
+    return [self initWithDocumentId:nil body:nil attachments:nil sourceRevisionId:nil];
 }
 
-- (id)initWithSourceRevisionId:(NSString *)sourceRevId
+- (instancetype)initWithDocumentId:(NSString *)documentId body:(NSMutableDictionary *)body
 {
-    self = [super init];
+    return [self initWithDocumentId:documentId body:body attachments:nil sourceRevisionId:nil];
+}
 
-    if (self) {
+- (instancetype)initWithSourceRevisionId:(NSString *)sourceRevId
+{
+    return [self initWithDocumentId:nil body:nil attachments:nil sourceRevisionId:sourceRevId];
+}
+
+- (instancetype)initWithDocumentId:(NSString*) documentId
+                              body:(NSMutableDictionary *)body
+                       attachments: (NSMutableDictionary *)attachments
+                  sourceRevisionId:(NSString*)sourceRevId {
+    
+    //deliberately call init rather than initWithDocId:revisionId:body:attachments:
+    // we need the revision id to be nil for the APIs on CDTDatastore to work.
+    self = [super init];
+    
+    if (self){
+        _docId = documentId;
+        _private_body = body ? body : [NSMutableDictionary dictionary];
+        _private_attachments = attachments ? attachments : [NSMutableDictionary dictionary];
         _sourceRevId = sourceRevId;
     }
-
+    
     return self;
 }
 

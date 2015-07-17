@@ -35,6 +35,7 @@
 #import "TD_Database+Insertion.h"
 #import "TDStatus.h"
 #import "DBQueryUtils.h"
+#import "CDTAttachment.h"
 
 @interface DatastoreCRUD : CloudantSyncTests
 
@@ -330,6 +331,8 @@
 
     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
     rev.docId = testDocId;
+    rev.body = nil;
+    rev.attachments = nil;
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
@@ -470,6 +473,7 @@
 {
     NSError *error;
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    doc.body = nil;
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document was created without a body");
 }
@@ -478,8 +482,17 @@
     NSError *error;
     CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
     doc.docId = @"doc1";
+    doc.body = nil;
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document with Id but no body created");
+}
+
+- (void)testCreateWithDefaultMutableRevision {
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
+    XCTAssertNotNil(saved, @"Default document was not created");
+    XCTAssertNil(error,"reccieved an error, expected no error");
 }
 
 -(void)testCreateWithOnlyBodyCDTMutableDocumentRevision{
@@ -488,6 +501,31 @@
     doc.body = [@{@"DocumentBodyItem1":@"Hi",@"Hello":@"World"} mutableCopy];
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
     XCTAssertTrue(saved, @"Document was not created");
+}
+
+-(void) testCreateWithAppendedBodyData {
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    [doc.body setObject:@"Modified" forKey:@"value"];
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
+    XCTAssertTrue(saved, @"Document was not created");
+    XCTAssertEqualObjects(saved.body, @{@"value":@"Modified"});
+    XCTAssertNil(error, @"Error was not nil, an error occured creating the document");
+}
+
+-(void) testCreateWithAppenedAttachment {
+    
+    NSData * data = [@"Hello World!" dataUsingEncoding:NSUTF8StringEncoding];
+    CDTAttachment * attachment =  [[CDTUnsavedDataAttachment alloc]initWithData:data name:@"helloWorld.txt" type:@"txt"];
+                                   //initWithName:@"HelloWorld.txt" type:@"txt" size:[data length]];
+    
+    NSError *error;
+    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    [doc.attachments setObject:attachment forKey:attachment.name];
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
+    XCTAssertTrue(saved, @"Document was not created");
+    XCTAssertTrue([saved.attachments count] == 1);
+    XCTAssertNil(error,@"Error was not nil, an error occured creating the document");
 }
 
 #pragma mark - READ tests
