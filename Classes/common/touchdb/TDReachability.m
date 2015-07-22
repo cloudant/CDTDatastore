@@ -24,7 +24,7 @@ static void ClientCallback(SCNetworkReachabilityRef target, SCNetworkReachabilit
 
 @interface TDReachability ()
 @property (readwrite, nonatomic) BOOL reachabilityKnown;
-@property (readwrite, nonatomic) uint32_t reachabilityFlags;
+@property (readwrite, nonatomic) SCNetworkReachabilityFlags reachabilityFlags;
 - (void)flagsChanged:(SCNetworkReachabilityFlags)flags;
 @end
 
