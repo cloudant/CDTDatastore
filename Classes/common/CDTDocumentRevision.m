@@ -28,8 +28,6 @@
 @property (nonatomic, strong, readonly) NSArray *revsInfo;
 @property (nonatomic, strong, readonly) NSArray *conflicts;
 @property (nonatomic, strong, readonly) TD_Body *td_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_attachments;
 
 @end
 
@@ -138,7 +136,7 @@
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
-        _private_attachments = attachments;
+        _attachments = attachments;
         _sequence = sequence;
         if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
@@ -149,9 +147,9 @@
             NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
-            _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+            _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
         } else
-            _private_body = [NSDictionary dictionary];
+            _body = [NSDictionary dictionary];
     }
     return self;
 }
@@ -178,14 +176,10 @@
     CDTMutableDocumentRevision *mutableCopy =
         [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
     mutableCopy.docId = self.docId;
-    mutableCopy.attachments = self.attachments;
-    mutableCopy.body = self.private_body;
+    mutableCopy.attachments = [self.attachments mutableCopy];
+    mutableCopy.body = [self.body mutableCopy];
 
     return mutableCopy;
 }
-
-- (NSDictionary *)body { return self.private_body; }
-
-- (NSDictionary *)attachments { return self.private_attachments; }
 
 @end

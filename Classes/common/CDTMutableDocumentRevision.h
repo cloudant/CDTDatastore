@@ -12,6 +12,8 @@
 
 @property (nonatomic, strong, readwrite) NSString *sourceRevId;
 @property (nonatomic, strong, readwrite) NSString *docId;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *body;
+@property (nonatomic, strong, readwrite) NSMutableDictionary *attachments;
 
 /**
  *   Creates an empty CDTMutableDocumentRevision
@@ -46,13 +48,5 @@
                               body:(NSMutableDictionary *)body
                        attachments: (NSMutableDictionary *)attachments
                   sourceRevisionId:(NSString*)sourceRevId;
-
-- (void)setBody:(NSDictionary *)body;
-
-- (NSMutableDictionary *)body;
-
-- (NSMutableDictionary *)attachments;
-
-- (void)setAttachments:(NSDictionary *)attachments;
 
 @end

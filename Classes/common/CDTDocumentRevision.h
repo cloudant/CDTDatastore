@@ -35,6 +35,10 @@
 
 @property (nonatomic, readonly) SequenceNumber sequence;
 
+@property (nonatomic, readonly, strong) NSDictionary *body;
+
+@property (nonatomic, readonly, strong) NSDictionary *attachments;
+
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
                body:(NSDictionary *)body
@@ -79,9 +83,5 @@
  @return mutable copy of this document
  */
 - (CDTMutableDocumentRevision *)mutableCopy;
-
-- (NSDictionary *)body;
-
-- (NSDictionary *)attachments;
 
 @end
