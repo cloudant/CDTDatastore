@@ -185,11 +185,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 - (BOOL)startWithError:(NSError *__autoreleasing *)error;
 
 /**
-  Use startWithError. This will be deprecated.
- */
-- (void)start __deprecated;
-
-/**
  * Stop an in-progress replication or attempt to stop a replication that has not yet started.
  *
  * Replications are queued on a separate thread. If the replication is already running,

@@ -154,8 +154,6 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 #pragma mark Lifecycle
 
-- (void)start { [self startWithError:nil]; }
-
 - (BOOL)startWithError:(NSError *__autoreleasing *)error;
 {
     @synchronized(self)
