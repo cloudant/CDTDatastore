@@ -188,8 +188,6 @@
 -(CDTDocumentRevision *)resolve:(NSString *)docId conflicts:(NSArray *)conflicts
 {
     CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
-    mutableRev.body = @{};
-    mutableRev.attachments = @{};
     mutableRev.docId = docId;
     
     for(CDTDocumentRevision * revision in conflicts){

@@ -45,15 +45,15 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
 
         rev.docId = @"mike12";
-        rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         rev.docId = @"mike34";
-        rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         rev.docId = @"mike72";
-        rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" }  mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         [ds ensureIndexed:@[ @"name" ] withName:@"name"];
@@ -109,7 +109,7 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         CDTQResultSet *results = [ds find:query];
         expect(results).toNot.beNil();
         CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
         expect([ds updateAllIndexes]).to.beTruthy();
     });

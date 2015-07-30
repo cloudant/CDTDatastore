@@ -11,9 +11,6 @@
 
 @interface CDTMutableDocumentRevision ()
 
-@property (strong, nonatomic, readwrite) NSMutableDictionary *private_attachments;
-@property (strong, nonatomic, readwrite) NSMutableDictionary *private_body;
-
 @end
 
 @implementation CDTMutableDocumentRevision
@@ -21,6 +18,8 @@
 @synthesize docId = _docId;
 @synthesize revId = _revId;
 @synthesize deleted = _deleted;
+@synthesize body = _body;
+@synthesize attachments = _attachments;
 
 + (CDTMutableDocumentRevision *)revision { return [[CDTMutableDocumentRevision alloc] init]; }
 
@@ -50,23 +49,12 @@
     
     if (self){
         _docId = documentId;
-        _private_body = body ? body : [NSMutableDictionary dictionary];
-        _private_attachments = attachments ? attachments : [NSMutableDictionary dictionary];
+        _body = body ? body : [NSMutableDictionary dictionary];
+        _attachments = attachments ? attachments : [NSMutableDictionary dictionary];
         _sourceRevId = sourceRevId;
     }
     
     return self;
-}
-
-- (void)setBody:(NSDictionary *)body { self.private_body = [body mutableCopy]; }
-
-- (NSMutableDictionary *)body { return self.private_body; }
-
-- (NSMutableDictionary *)attachments { return self.private_attachments; }
-
-- (void)setAttachments:(NSMutableDictionary *)attachments
-{
-    self.private_attachments = [attachments mutableCopy];
 }
 
 -(CDTMutableDocumentRevision*) mutableCopy{

@@ -63,25 +63,25 @@ SpecBegin(CDTQQueryExecutorSorting)
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @12,
                     @"pet" : @[ @"cat", @"dog" ],
                     @"same" : @"all"
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"fred",
                     @"age" : @34,
                     @"pet" : @"parrot",
                     @"same" : @"all"
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred11";
-                rev.body = @{ @"name" : @"fred", @"age" : @11, @"pet" : @"fish", @"same" : @"all" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @11, @"pet" : @"fish", @"same" : @"all" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [CDTQIndexManager managerUsingDatastore:ds error:nil];

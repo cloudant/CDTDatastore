@@ -88,7 +88,7 @@
 {
     NSError * error;
     CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
-    revision.body = @{@"infinity":@(INFINITY)};
+    revision.body = [@{@"infinity":@(INFINITY)} mutableCopy];
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
                                                                      error:&error];
@@ -104,7 +104,7 @@
 -(void) testDocumentWithNonSerialisableValue {
     NSError * error;
     CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
-    revision.body = @{@"nonserialisable":[NSDate date]};
+    revision.body = [@{@"nonserialisable":[NSDate date]}mutableCopy];
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
                                                                      error:&error];
@@ -1874,7 +1874,7 @@
 
     CDTMutableDocumentRevision *mutableRev = [CDTMutableDocumentRevision revision];
     mutableRev.docId = docId;
-    mutableRev.body = @{ @"hello" : @"world" };
+    mutableRev.body = [@{ @"hello" : @"world" } mutableCopy];
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:nil];
 
     mutableRev = [rev mutableCopy];
