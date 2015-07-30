@@ -65,48 +65,48 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
             
             rev.docId = @"mike12";
-            rev.body = @{ @"name" : @"mike",
+            rev.body = [@{ @"name" : @"mike",
                           @"age" : @12,
                           @"pet" : @"cat",
-                          @"comment" : @"He lives in Bristol, UK and his best friend is Fred."};
+                          @"comment" : @"He lives in Bristol, UK and his best friend is Fred."} mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"mike34";
-            rev.body = @{ @"name" : @"mike",
+            rev.body = [@{ @"name" : @"mike",
                           @"age" : @34,
                           @"pet" : @"dog",
-                          @"comment" : @"He lives in a van down by the river in Bristol."};
+                          @"comment" : @"He lives in a van down by the river in Bristol."} mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"mike72";
-            rev.body = @{ @"name" : @"mike",
+            rev.body = [@{ @"name" : @"mike",
                           @"age" : @72,
                           @"pet" : @"cat",
                           @"comment" : @"He's retired and has memories of spending time "
-                                       @"with his cat Remus."};
+                                       @"with his cat Remus."} mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"fred34";
-            rev.body = @{ @"name" : @"fred",
+            rev.body = [@{ @"name" : @"fred",
                           @"age" : @34,
                           @"pet" : @"cat",
                           @"comment" : @"He lives next door to Mike and his cat Romulus "
-                                       @"is brother to Remus."};
+                                       @"is brother to Remus."} mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"fred12";
-            rev.body = @{ @"name" : @"fred",
+            rev.body = [@{ @"name" : @"fred",
                           @"age" : @12,
                           @"pet" : @"cat",
-                          @"comment" : @"He lives in Bristol, UK and his best friend is Mike."};
+                          @"comment" : @"He lives in Bristol, UK and his best friend is Mike."}  mutableCopy];;
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"john34";
             rev.body =
-                @{ @"name" : @"john",
+                [@{ @"name" : @"john",
                    @"age" : @34,
                    @"pet" : @"cat",
-                   @"comment" : @"وهو يعيش في بريستول، المملكة المتحدة، وأفضل صديق له هو مايك."};
+                   @"comment" : @"وهو يعيش في بريستول، المملكة المتحدة، وأفضل صديق له هو مايك."} mutableCopy];;
             [ds createDocumentFromRevision:rev error:nil];
             
             im = [CDTQIndexManager managerUsingDatastore:ds error:nil];

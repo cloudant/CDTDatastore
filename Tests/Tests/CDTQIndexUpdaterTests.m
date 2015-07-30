@@ -84,7 +84,7 @@ SpecBegin(CDTQIndexUpdater)
             it(@"returns correctly for single field", ^{
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                 rev.docId = @"id123";
-                rev.body = @{ @"name" : @"mike" };
+                rev.body = [@{ @"name" : @"mike" } mutableCopy];
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts = [CDTQIndexUpdater partsToIndexRevision:saved
                                                                      inIndex:@"anIndex"
@@ -99,7 +99,7 @@ SpecBegin(CDTQIndexUpdater)
             it(@"returns correctly for two fields", ^{
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                 rev.docId = @"id123";
-                rev.body = @{ @"name" : @"mike", @"age" : @12 };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12 } mutableCopy];
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToIndexRevision:saved
@@ -139,7 +139,7 @@ SpecBegin(CDTQIndexUpdater)
             it(@"returns correctly for missing fields", ^{
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                 rev.docId = @"id123";
-                rev.body = @{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" };
+                rev.body = [@{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" } mutableCopy];
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToIndexRevision:saved
@@ -156,7 +156,7 @@ SpecBegin(CDTQIndexUpdater)
             it(@"still indexes a blank row if no fields", ^{
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                 rev.docId = @"id123";
-                rev.body = @{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" };
+                rev.body = [@{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" } mutableCopy];
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToIndexRevision:saved
@@ -173,7 +173,7 @@ SpecBegin(CDTQIndexUpdater)
                 it(@"indexes a single array field", ^{
                     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                     rev.docId = @"id123";
-                    rev.body = @{ @"name" : @"mike", @"pet" : @[ @"cat", @"dog", @"parrot" ] };
+                    rev.body = [@{ @"name" : @"mike", @"pet" : @[ @"cat", @"dog", @"parrot" ] } mutableCopy];
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements =
                         [CDTQIndexUpdater partsToIndexRevision:saved
@@ -209,7 +209,7 @@ SpecBegin(CDTQIndexUpdater)
                 it(@"indexes a single array field in subdoc", ^{
                     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                     rev.docId = @"id123";
-                    rev.body = @{ @"name" : @"mike", @"pet" : @{@"species" : @[ @"cat", @"dog" ]} };
+                    rev.body = [@{ @"name" : @"mike", @"pet" : @{@"species" : @[ @"cat", @"dog" ]} } mutableCopy];
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements =
                         [CDTQIndexUpdater partsToIndexRevision:saved
@@ -240,11 +240,11 @@ SpecBegin(CDTQIndexUpdater)
                 it(@"rejects multiple array fields", ^{
                     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                     rev.docId = @"id123";
-                    rev.body = @{
+                    rev.body = [@{
                         @"name" : @"mike",
                         @"pet" : @[ @"cat", @"dog", @"parrot" ],
                         @"pet2" : @[ @"cat", @"dog", @"parrot" ]
-                    };
+                    } mutableCopy];
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements =
                         [CDTQIndexUpdater partsToIndexRevision:saved
@@ -258,7 +258,7 @@ SpecBegin(CDTQIndexUpdater)
                     // Only the "name" field should be included as a result of this test.
                     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                     rev.docId = @"id123";
-                    rev.body = @{ @"name" : @"mike", @"pet" : @[] };
+                    rev.body = [@{ @"name" : @"mike", @"pet" : @[] } mutableCopy];
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements = [CDTQIndexUpdater partsToIndexRevision:saved
                                                                          inIndex:@"anIndex"
@@ -309,27 +309,27 @@ SpecBegin(CDTQIndexUpdater)
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"john72";
-                rev.body = @{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" };
+                rev.body = [@{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
@@ -365,7 +365,7 @@ SpecBegin(CDTQIndexUpdater)
 
                 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                 rev.docId = @"newdoc";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
@@ -405,7 +405,7 @@ SpecBegin(CDTQIndexUpdater)
                     
                     CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
                     rev.docId = @"newdoc";
-                    rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                    rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                     [ds createDocumentFromRevision:rev error:nil];
                     
                     expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();

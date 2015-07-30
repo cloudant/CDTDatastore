@@ -76,23 +76,23 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
+                rev.body [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -369,43 +369,43 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
                 
                 rev.docId = @"mike31";
-                rev.body = @{ @"name" : @"mike", @"score" : @31 };
+                rev.body = [@{ @"name" : @"mike", @"score" : @31 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"fred11";
-                rev.body = @{ @"name" : @"fred", @"score" : @11 };
+                rev.body = [@{ @"name" : @"fred", @"score" : @11 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john15";
-                rev.body = @{ @"name" : @"john", @"score" : @15 };
+                rev.body = [@{ @"name" : @"john", @"score" : @15 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john-15";
-                rev.body = @{ @"name" : @"john", @"score" : @-15 };
+                rev.body = [@{ @"name" : @"john", @"score" : @-15 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john15.2";
-                rev.body = @{ @"name" : @"john", @"score" : @15.2 };
+                rev.body = [@{ @"name" : @"john", @"score" : @15.2 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john15.6";
-                rev.body = @{ @"name" : @"john", @"score" : @15.6 };
+                rev.body = [@{ @"name" : @"john", @"score" : @15.6 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john0";
-                rev.body = @{ @"name" : @"john", @"score" : @0 };
+                rev.body = [@{ @"name" : @"john", @"score" : @0 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john0.0";
-                rev.body = @{ @"name" : @"john", @"score" : @0.0 };
+                rev.body = [@{ @"name" : @"john", @"score" : @0.0 }mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john0.6";
-                rev.body = @{ @"name" : @"john", @"score" : @0.6 };
+                rev.body = [@{ @"name" : @"john", @"score" : @0.6 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john-0.6";
-                rev.body = @{ @"name" : @"john", @"score" : @-0.6 };
+                rev.body = [@{ @"name" : @"john", @"score" : @-0.6 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -513,39 +513,39 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @12,
                     @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @23,
                     @"pet" : @{@"species" : @"cat", @"name" : @{@"first" : @"mike"}}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @34,
                     @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -602,31 +602,31 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"اسم34";
-                rev.body = @{ @"name" : @"اسم", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"اسم", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fredarabic";
-                rev.body = @{ @"اسم" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"اسم" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"freddatatype";
-                rev.body = @{ @"@datatype" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"@datatype" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -670,39 +670,39 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @12,
                     @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @23,
                     @"pet" : @{@"species" : @"cat", @"name" : @{@"first" : @"mike"}}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{
+                rev.body = [@{
                     @"name" : @"mike",
                     @"age" : @34,
                     @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-                };
+                } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -767,27 +767,27 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"john72";
-                rev.body = @{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" };
+                rev.body = [@{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -952,11 +952,11 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -993,11 +993,11 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike23";
-                rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" } mutableCopy];
                 CDTDocumentRevision* toRetrieve = [ds createDocumentFromRevision:rev error:nil];
                 docRev = toRetrieve.revId;
 
@@ -1035,23 +1035,23 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -1151,29 +1151,29 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike",
+                rev.body = [@{ @"name" : @"mike",
                               @"age" : @34,
-                              @"pet" : @[ @"cat", @"dog", @"fish" ] };
+                              @"pet" : @[ @"cat", @"dog", @"fish" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john44";
-                rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] };
+                rev.body = [@{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john22";
-                rev.body = @{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -1322,23 +1322,23 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
@@ -1389,29 +1389,29 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
                 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"fred34";
-                rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
+                rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike",
+                rev.body = [@{ @"name" : @"mike",
                               @"age" : @34,
-                              @"pet" : @[ @"cat", @"dog", @"fish" ] };
+                              @"pet" : @[ @"cat", @"dog", @"fish" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"fred12";
-                rev.body = @{ @"name" : @"fred", @"age" : @12 };
+                rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john44";
-                rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] };
+                rev.body = [@{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 rev.docId = @"john22";
-                rev.body = @{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
                 
                 im = [imClass managerUsingDatastore:ds error:nil];
@@ -1477,15 +1477,15 @@ SharedExamplesBegin(QueryExecution)
                 CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
                 rev.docId = @"mike12";
-                rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike34";
-                rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"mike72";
-                rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
+                rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
@@ -1541,7 +1541,7 @@ SharedExamplesBegin(QueryExecution)
                 [im ensureIndexed:@[ @"large_field" ] withName:@"large"];
 
                 for (int i = 0; i < 100; i++) {
-                    rev.body = @{ @"large_field" : @"cat" };
+                    rev.body = [@{ @"large_field" : @"cat" } mutableCopy];
                     [ds createDocumentFromRevision:rev error:nil];
                 }
 
@@ -1568,7 +1568,7 @@ SharedExamplesBegin(QueryExecution)
 
                     for (int i = 0; i < 100; i++) {
                         rev.docId = [NSString stringWithFormat:@"d%d", i];
-                        rev.body = @{ @"large_field" : @"cat", @"idx" : @(i) };
+                        rev.body = [@{ @"large_field" : @"cat", @"idx" : @(i) } mutableCopy];
                         [ds createDocumentFromRevision:rev error:nil];
                     }
                     NSDictionary* query = @{ @"large_field" : @"cat" };
@@ -1582,7 +1582,7 @@ SharedExamplesBegin(QueryExecution)
 
                     for (int i = 0; i < 150; i++) {
                         rev.docId = [NSString stringWithFormat:@"d%d", i];
-                        rev.body = @{ @"large_field" : @"cat", @"idx" : @(i) };
+                        rev.body = [@{ @"large_field" : @"cat", @"idx" : @(i) } mutableCopy];
                         [ds createDocumentFromRevision:rev error:nil];
                     }
 
@@ -1675,23 +1675,23 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
 
             rev.docId = @"mike12";
-            rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev.docId = @"mike34";
-            rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev.docId = @"mike72";
-            rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat", @"town" : @"bristol" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat", @"town" : @"bristol" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev.docId = @"fred34";
-            rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev.docId = @"fred12";
-            rev.body = @{ @"name" : @"fred", @"age" : @12, @"town" : @"bristol" };
+            rev.body = [@{ @"name" : @"fred", @"age" : @12, @"town" : @"bristol" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             im = [imClass managerUsingDatastore:ds error:nil];
@@ -1782,35 +1782,35 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
             
             rev.docId = @"mike24";
-            rev.body = @{ @"name" : @"mike", @"age" : @24, @"pet" : @[ @"cat" ] };
+            rev.body = [@{ @"name" : @"mike", @"age" : @24, @"pet" : @[ @"cat" ] } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"mike12";
-            rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
+            rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"fred34";
-            rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @[ @"cat", @"dog" ] };
+            rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @[ @"cat", @"dog" ] } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"john44";
-            rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"john", @"age" : @44, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"fred72";
-            rev.body = @{ @"name" : @"fred", @"age" : @72, @"pet" : @[ @"dog" ] };
+            rev.body = [@{ @"name" : @"fred", @"age" : @72, @"pet" : @[ @"dog" ] } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"john12";
-            rev.body = @{ @"name" : @"john", @"age" : @12 };
+            rev.body = [@{ @"name" : @"john", @"age" : @12 } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev.docId = @"bill34";
-            rev.body = @{ @"name" : @"bill", @"age" : @34, @"pet" : @[ @"cat", @"parrot" ] };
+            rev.body = [@{ @"name" : @"bill", @"age" : @34, @"pet" : @[ @"cat", @"parrot" ] } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             rev.docId = @"fred11";
-            rev.body = @{ @"name" : @"fred", @"age" : @11, @"pet" : @[]};
+            rev.body = [@{ @"name" : @"fred", @"age" : @11, @"pet" : @[]} mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             im = [imClass managerUsingDatastore:ds error:nil];
