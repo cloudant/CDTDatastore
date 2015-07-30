@@ -288,7 +288,6 @@
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document
                                                                     error:&error];
     document = [rev mutableCopy];
-    document.attachments = [NSMutableDictionary dictionary];
     
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
@@ -1121,7 +1120,6 @@
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:document
                                                                     error:&error];
     document = [rev mutableCopy];
-    document.attachments = [NSMutableDictionary dictionary];
     
     CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision: document
                                                                      error:&error];
