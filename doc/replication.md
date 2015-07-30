@@ -67,7 +67,7 @@ devices. This web service needs to:
 
 Replications are set up in code on a device. Use `CDTPullReplication` and
 `CDTPushReplication` objects to create pre-configured `CDTReplicator` objects
-using a `CDTReplicatorFactory`. Then call `-start` on the `CDTReplicator` object
+using a `CDTReplicatorFactory`. Then call `-startWithError:` on the `CDTReplicator` object
 to start a replication. Each `CDTReplicator` object can be assigned a delegate
 to receive messages when replication completes or encounters an error.
 
@@ -98,11 +98,15 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&err
 
 // Check replicator isn't nil, if so check error
 
-// Start the replication and wait for it to complete
-[replicator start];
-while (replicator.isActive) {
-    [NSThread sleepForTimeInterval:1.0f];
-    NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+// Start the replication
+if ([replicator startWithError:&error]){
+    //handle error
+} else {
+    //wait for it to complete
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
 }
 ```
 
@@ -129,11 +133,15 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pullReplication error:&err
 
 // Check replicator isn't nil, if so check error
 
-// Start the replication and wait for it to complete
-[replicator start];
-while (replicator.isActive) {
-    [NSThread sleepForTimeInterval:1.0f];
-    NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+// Start the replication
+if ([replicator startWithError:&error]){
+    //handle error
+} else {
+    //wait for it to complete
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
 }
 ```
 
@@ -185,5 +193,5 @@ CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:
 NSError *error;
 self.replicator = [replicatorFactory oneWay:pushReplication error:&error];
 self.replicator.delegate = self.replicatorDelegate;
-[self.replicator start];
+[self.replicator startWithError:&error];
 ```
