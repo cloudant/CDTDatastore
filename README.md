@@ -116,18 +116,18 @@ CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"
 // Create a document
 CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
 rev.docId = @"doc1";  // Or don't and get an ID generated for you
-rev.body = @{
+rev.body = [@{
     @"description": @"Buy milk",
     @"completed": @NO,
     @"type": @"com.cloudant.sync.example.task"
-};
+} mutableCopy];
 
 // Add an attachment -- binary data like a JPEG
 CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                           initWithPath:@"/path/to/image.jpg"
                           name:@"cute_cat.jpg"
                           type:@"image/jpeg"];
-rev.attachments = @{ att1.name:att1 };
+rev.attachments[att1.name] = att1;
 
 // Save the document to the database
 CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
@@ -175,7 +175,7 @@ var body = [
     "completed": false,
     "type": "com.cloudant.sync.example.task"
 ] as NSMutableDictionary
-rev.setBody(body)
+rev.body = body
 
 // Save the document to the database
 let revision = datastore.createDocumentFromRevision(rev, error: &error)
