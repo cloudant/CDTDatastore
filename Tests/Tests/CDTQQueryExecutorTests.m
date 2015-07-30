@@ -88,7 +88,7 @@ SharedExamplesBegin(QueryExecution)
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred34";
-                rev.body [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
+                rev.body =[@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
                 [ds createDocumentFromRevision:rev error:nil];
 
                 rev.docId = @"fred12";
