@@ -1874,7 +1874,7 @@
 
     CDTMutableDocumentRevision *mutableRev = [CDTMutableDocumentRevision revision];
     mutableRev.docId = docId;
-    mutableRev.body = @{ @"hello" : @"world" };
+    mutableRev.body = [@{ @"hello" : @"world" } mutableCopy];
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:nil];
 
     mutableRev = [rev mutableCopy];
