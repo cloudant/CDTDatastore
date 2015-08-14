@@ -50,25 +50,25 @@ SpecBegin(CDTQFilterFieldsTest)
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev;
 
-            rev.docId = @"mike12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike72";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
             rev.body = @{ @"name" : @"fred", @"age" : @12 };
             [ds createDocumentFromRevision:rev error:nil];
 
@@ -166,7 +166,7 @@ SpecBegin(CDTQFilterFieldsTest)
                         expect(rev.body.count).to.equal(1);
                         expect(rev.body[@"name"]).to.equal(@"mike");
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev mutableCopy];
                         expect(mutable.body.count).to.equal(3);
                         expect(mutable.body[@"name"]).to.equal(@"mike");
                         expect(mutable.body[@"age"]).to.equal(@12);
@@ -186,11 +186,12 @@ SpecBegin(CDTQFilterFieldsTest)
                         expect(rev.body[@"name"]).to.equal(@"mike");
 
                         CDTDocumentRevision *original = [ds getDocumentWithId:rev.docId error:nil];
-                        CDTMutableDocumentRevision *update = [original mutableCopy];
-                        update.body[@"name"] = @"charles";
-                        expect([ds updateDocumentFromRevision:update error:nil]).toNot.beNil();
+                        NSMutableDictionary *updatedBody = [original.body mutableCopy];
+                        updatedBody[@"name"] = @"charles";
+                        original.body = updatedBody;
+                        expect([ds updateDocumentFromRevision:original error:nil]).toNot.beNil();
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev mutableCopy];
                         expect(mutable).to.beNil();
                     }];
             });
@@ -208,7 +209,7 @@ SpecBegin(CDTQFilterFieldsTest)
 
                         expect([ds deleteDocumentFromRevision:rev error:nil]).toNot.beNil();
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev mutableCopy];
                         expect(mutable).to.beNil();
                     }];
             });

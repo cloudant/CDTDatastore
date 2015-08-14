@@ -88,7 +88,7 @@
 
 - (void)testEventFiredOnCreate
 {
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = @{@"hello": @"world"};
     
     XCTAssertNotNil([self.datastore createDocumentFromRevision:rev error:nil],
@@ -103,7 +103,7 @@
 
 - (void)testEventFiredOnUpdate
 {
-    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
     mutableRev.body = @{@"hello": @"world"};
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
@@ -127,7 +127,7 @@
 
 - (void)testEventFiredOnDelete
 {
-    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
     mutableRev.body = @{@"hello": @"world"};
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
@@ -150,37 +150,37 @@
 - (void)testEventFiredOnMultipleDelete
 {
     NSError * error;
-    CDTMutableDocumentRevision * mutableRev =  [CDTMutableDocumentRevision revision];
-    mutableRev.docId = @"aTestDocId";
-    mutableRev.body = @{@"hello":@"world"};
-    
-    CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
-    
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"aTestDocId"];
+    rev.body = @{ @"hello" : @"world" };
+
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
+
     XCTAssertNotNil(rev, @"Document was not created");
-    
-    mutableRev = [rev  mutableCopy];
-    [mutableRev.body setObject:@"objc" forKey:@"writtenIn"];
-    [self.datastore updateDocumentFromRevision:mutableRev error:&error];
-    
+
+    NSMutableDictionary *body = [rev.body mutableCopy];
+    [body setObject:@"objc" forKey:@"writtenIn"];
+    rev.body = body;
+    [self.datastore updateDocumentFromRevision:rev error:&error];
+
     //now need to force insert into the DB little messy though
-    
-    [mutableRev.body setObject:@"conflictedinsert" forKey:@"conflictedkeyconflicted"];
-    
+
+    [body setObject:@"conflictedinsert" forKey:@"conflictedkeyconflicted"];
+
     //borrow conversion code from update then do force insert
     
     TD_Revision *converted = [[TD_Revision alloc]initWithDocID:rev.docId
                                                          revID:rev.revId
                                                        deleted:rev.deleted];
-    converted.body = [[TD_Body alloc]initWithProperties:mutableRev.body];
-    
+    converted.body = [[TD_Body alloc] initWithProperties:body];
+
     TDStatus status;
-    
-    TD_Revision *new = [self.datastore.database putRevision:converted
-                                             prevRevisionID:rev.revId
-                                              allowConflict:YES
-                                                     status:&status];
-    
-   [self.datastore deleteDocumentWithId:mutableRev.docId error:&error];
+
+    [self.datastore.database putRevision:converted
+                          prevRevisionID:rev.revId
+                           allowConflict:YES
+                                  status:&status];
+
+    [self.datastore deleteDocumentWithId:rev.docId error:&error];
 
     //3 notifications get fired for the set up, another one for the double delete
     XCTAssertEqual(self.watcher.counter, (NSInteger)4, @"Event not fired");

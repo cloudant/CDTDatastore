@@ -73,25 +73,25 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -365,46 +365,46 @@ SharedExamplesBegin(QueryExecution)
             beforeEach(^{
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
-                
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
-                
-                rev.docId = @"mike31";
+
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike31"];
                 rev.body = @{ @"name" : @"mike", @"score" : @31 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"fred11";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred11"];
                 rev.body = @{ @"name" : @"fred", @"score" : @11 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john15";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john15"];
                 rev.body = @{ @"name" : @"john", @"score" : @15 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john-15";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john-15"];
                 rev.body = @{ @"name" : @"john", @"score" : @-15 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john15.2";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john15.2"];
                 rev.body = @{ @"name" : @"john", @"score" : @15.2 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john15.6";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john15.6"];
                 rev.body = @{ @"name" : @"john", @"score" : @15.6 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john0";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john0"];
                 rev.body = @{ @"name" : @"john", @"score" : @0 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john0.0";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john0.0"];
                 rev.body = @{ @"name" : @"john", @"score" : @0.0 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john0.6";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john0.6"];
                 rev.body = @{ @"name" : @"john", @"score" : @0.6 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john-0.6";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john-0.6"];
                 rev.body = @{ @"name" : @"john", @"score" : @-0.6 };
                 [ds createDocumentFromRevision:rev error:nil];
                 
@@ -510,9 +510,10 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
+                ;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @12,
@@ -520,7 +521,7 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @23,
@@ -528,7 +529,7 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @34,
@@ -536,15 +537,15 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -599,33 +600,33 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"اسم34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"اسم34"];
                 rev.body = @{ @"name" : @"اسم", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fredarabic";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fredarabic"];
                 rev.body = @{ @"اسم" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"freddatatype";
+                rev = [CDTDocumentRevision revisionWithDocId:@"freddatatype"];
                 rev.body = @{ @"@datatype" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -667,9 +668,9 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @12,
@@ -677,7 +678,7 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @23,
@@ -685,7 +686,7 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @34,
@@ -693,15 +694,15 @@ SharedExamplesBegin(QueryExecution)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -764,29 +765,29 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"john72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"john72"];
                 rev.body = @{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -949,13 +950,13 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -990,13 +991,13 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
                 CDTDocumentRevision* toRetrieve = [ds createDocumentFromRevision:rev error:nil];
                 docRev = toRetrieve.revId;
@@ -1032,25 +1033,25 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -1148,31 +1149,31 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"mike34";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike",
                               @"age" : @34,
                               @"pet" : @[ @"cat", @"dog", @"fish" ] };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"fred12";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john44";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john44"];
                 rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john22";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john22"];
                 rev.body = @{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -1319,25 +1320,25 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -1385,32 +1386,32 @@ SharedExamplesBegin(QueryExecution)
             beforeEach(^{
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
-                
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
-                
-                rev.docId = @"mike12";
+
+                CDTDocumentRevision* rev;
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"fred34";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"mike34";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike",
                               @"age" : @34,
                               @"pet" : @[ @"cat", @"dog", @"fish" ] };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"fred12";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john44";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john44"];
                 rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @[ @"hamster", @"snake" ] };
                 [ds createDocumentFromRevision:rev error:nil];
-                
-                rev.docId = @"john22";
+
+                rev = [CDTDocumentRevision revisionWithDocId:@"john22"];
                 rev.body = @{ @"name" : @"john", @"age" : @22, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
                 
@@ -1474,17 +1475,17 @@ SharedExamplesBegin(QueryExecution)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
                 rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -1537,7 +1538,7 @@ SharedExamplesBegin(QueryExecution)
 
             it(@"stops when querying lots of docs", ^{
 
-                CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision* rev = [CDTDocumentRevision revision];
                 [im ensureIndexed:@[ @"large_field" ] withName:@"large"];
 
                 for (int i = 0; i < 100; i++) {
@@ -1563,11 +1564,12 @@ SharedExamplesBegin(QueryExecution)
             describe(@"large result set", ^{
 
                 it(@"limits correctly", ^{
-                    CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                    CDTDocumentRevision* rev = [CDTDocumentRevision revision];
                     [im ensureIndexed:@[ @"large_field", @"idx" ] withName:@"large"];
 
                     for (int i = 0; i < 100; i++) {
-                        rev.docId = [NSString stringWithFormat:@"d%d", i];
+                        rev = [CDTDocumentRevision
+                            revisionWithDocId:[NSString stringWithFormat:@"d%d", i]];
                         rev.body = @{ @"large_field" : @"cat", @"idx" : @(i) };
                         [ds createDocumentFromRevision:rev error:nil];
                     }
@@ -1577,11 +1579,12 @@ SharedExamplesBegin(QueryExecution)
                 });
 
                 it(@"skips and limits across batch border", ^{
-                    CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+                    CDTDocumentRevision* rev = [CDTDocumentRevision revision];
                     [im ensureIndexed:@[ @"large_field", @"idx" ] withName:@"large"];
 
                     for (int i = 0; i < 150; i++) {
-                        rev.docId = [NSString stringWithFormat:@"d%d", i];
+                        rev = [CDTDocumentRevision
+                            revisionWithDocId:[NSString stringWithFormat:@"d%d", i]];
                         rev.body = @{ @"large_field" : @"cat", @"idx" : @(i) };
                         [ds createDocumentFromRevision:rev error:nil];
                     }
@@ -1672,25 +1675,25 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
 
-            CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision* rev;
 
-            rev.docId = @"mike12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike72";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat", @"town" : @"bristol" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
             rev.body = @{ @"name" : @"fred", @"age" : @12, @"town" : @"bristol" };
             [ds createDocumentFromRevision:rev error:nil];
 
@@ -1778,38 +1781,38 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
         beforeEach(^{
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
-            
-            CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
-            
-            rev.docId = @"mike24";
+
+            CDTDocumentRevision* rev = [CDTDocumentRevision revision];
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike24"];
             rev.body = @{ @"name" : @"mike", @"age" : @24, @"pet" : @[ @"cat" ] };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"mike12";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @[ @"cat", @"dog" ] };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"fred34";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @[ @"cat", @"dog" ] };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"john44";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"john44"];
             rev.body = @{ @"name" : @"john", @"age" : @44, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"fred72";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred72"];
             rev.body = @{ @"name" : @"fred", @"age" : @72, @"pet" : @[ @"dog" ] };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"john12";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"john12"];
             rev.body = @{ @"name" : @"john", @"age" : @12 };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"bill34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"bill34"];
             rev.body = @{ @"name" : @"bill", @"age" : @34, @"pet" : @[ @"cat", @"parrot" ] };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"fred11";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred11"];
             rev.body = @{ @"name" : @"fred", @"age" : @11, @"pet" : @[]};
             [ds createDocumentFromRevision:rev error:nil];
             

@@ -82,8 +82,8 @@ SpecBegin(CDTQIndexUpdater)
         describe(@"when generating INSERT statements", ^{
 
             it(@"returns correctly for single field", ^{
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                 rev.body = @{ @"name" : @"mike" };
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts = [CDTQIndexUpdater partsToIndexRevision:saved
@@ -97,8 +97,8 @@ SpecBegin(CDTQIndexUpdater)
             });
 
             it(@"returns correctly for two fields", ^{
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12 };
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
@@ -113,8 +113,8 @@ SpecBegin(CDTQIndexUpdater)
             });
 
             it(@"returns correctly for multiple fields", ^{
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @12,
@@ -137,8 +137,8 @@ SpecBegin(CDTQIndexUpdater)
             });
 
             it(@"returns correctly for missing fields", ^{
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                 rev.body = @{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" };
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
@@ -154,8 +154,8 @@ SpecBegin(CDTQIndexUpdater)
             });
 
             it(@"still indexes a blank row if no fields", ^{
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                 rev.body = @{ @"name" : @"mike", @"pet" : @"cat", @"ignored" : @"something" };
                 CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                 CDTQSqlParts *parts =
@@ -171,8 +171,8 @@ SpecBegin(CDTQIndexUpdater)
             context(@"when indexing arrays", ^{
 
                 it(@"indexes a single array field", ^{
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"id123";
+                    CDTDocumentRevision *rev;
+                    rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                     rev.body = @{ @"name" : @"mike", @"pet" : @[ @"cat", @"dog", @"parrot" ] };
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements =
@@ -207,8 +207,8 @@ SpecBegin(CDTQIndexUpdater)
                 });
 
                 it(@"indexes a single array field in subdoc", ^{
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"id123";
+                    CDTDocumentRevision *rev;
+                    rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                     rev.body = @{ @"name" : @"mike", @"pet" : @{@"species" : @[ @"cat", @"dog" ]} };
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements =
@@ -238,8 +238,8 @@ SpecBegin(CDTQIndexUpdater)
                 });
 
                 it(@"rejects multiple array fields", ^{
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"id123";
+                    CDTDocumentRevision *rev;
+                    rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                     rev.body = @{
                         @"name" : @"mike",
                         @"pet" : @[ @"cat", @"dog", @"parrot" ],
@@ -256,8 +256,8 @@ SpecBegin(CDTQIndexUpdater)
                 it(@"returns correctly for empty array field", ^{
                     // Treat an empty array field the same as a missing field.
                     // Only the "name" field should be included as a result of this test.
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"id123";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                     rev.body = @{ @"name" : @"mike", @"pet" : @[] };
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements = [CDTQIndexUpdater partsToIndexRevision:saved
@@ -273,10 +273,10 @@ SpecBegin(CDTQIndexUpdater)
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
                 });
-                
+
                 it(@"returns correctly for empty array in a subdoc", ^{
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"id123";
+                    CDTDocumentRevision *rev;
+                    rev = [CDTDocumentRevision revisionWithDocId:@"id123"];
                     rev.body = @{ @"name" : @"mike", @"pet" : @{@"species" : @[] } };
                     CDTDocumentRevision *saved = [ds createDocumentFromRevision:rev error:nil];
                     NSArray *statements = [CDTQIndexUpdater partsToIndexRevision:saved
@@ -292,7 +292,7 @@ SpecBegin(CDTQIndexUpdater)
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
                 });
-                
+
             });
 
         });
@@ -306,29 +306,29 @@ SpecBegin(CDTQIndexUpdater)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision *rev;
 
-                rev.docId = @"mike12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
                 rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike23";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike23"];
                 rev.body = @{ @"name" : @"mike", @"age" : @23, @"pet" : @"parrot" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"mike34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
                 rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"john72";
+                rev = [CDTDocumentRevision revisionWithDocId:@"john72"];
                 rev.body = @{ @"name" : @"john", @"age" : @34, @"pet" : @"fish" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{ @"name" : @"fred", @"age" : @43, @"pet" : @"snake" };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred12";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -363,8 +363,8 @@ SpecBegin(CDTQIndexUpdater)
                 CDTQIndexUpdater *updater =
                     [[CDTQIndexUpdater alloc] initWithDatabase:queue datastore:ds];
 
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                rev.docId = @"newdoc";
+                CDTDocumentRevision *rev;
+                rev = [CDTDocumentRevision revisionWithDocId:@"newdoc"];
                 rev.body = @{ @"name" : @"fred", @"age" : @12 };
                 [ds createDocumentFromRevision:rev error:nil];
 
@@ -402,9 +402,9 @@ SpecBegin(CDTQIndexUpdater)
                         (FMDatabaseQueue *)[im performSelector:@selector(database)];
                     CDTQIndexUpdater *updater =
                         [[CDTQIndexUpdater alloc] initWithDatabase:queue datastore:ds];
-                    
-                    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-                    rev.docId = @"newdoc";
+
+                    CDTDocumentRevision *rev;
+                    rev = [CDTDocumentRevision revisionWithDocId:@"newdoc"];
                     rev.body = @{ @"name" : @"fred", @"age" : @12 };
                     [ds createDocumentFromRevision:rev error:nil];
                     

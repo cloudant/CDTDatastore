@@ -39,12 +39,12 @@
  * if there are conflicts found for the document ID.
  *
  * When called by [CDTDatastore resolveConflictsForDocument:resolver:error:],
- * the returned CDTDocumentRevision or CDTMutableDocumentRevision is declared the winner and all
+ * the returned CDTDocumentRevision is declared the winner and all
  * other conflicting revisions in the tree will be deleted. This all happens within a single
  * database transaction in order to ensure atomicity.
  *
  * The output of this method should be deterministic. That is, for the given docId and
- * conflict set, the same CDTDocumentRevision or CDTMutableDocumentRevision should be returned for
+ * conflict set, the same CDTDocumentRevision should be returned for
  * all calls.
  *
  * Additionally, this method should not modify other documents or attempt to query the database

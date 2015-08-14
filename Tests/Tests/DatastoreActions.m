@@ -19,7 +19,6 @@
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
 #import "FMDatabaseAdditions.h"
-#import "CDTMutableDocumentRevision.h"
 #import "CDTDocumentRevision.h"
 #import "TDJSON.h"
 
@@ -98,9 +97,8 @@
 {
     NSError *error;
     CDTDatastore *datastore = [self.factory datastoreNamed:@"test_database" error:&error];
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"myDocId"];
     rev.body = @{ @"hello" : @"world" };
-    rev.docId = @"myDocId";
     
     CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev error:&error];
     rev = [revision mutableCopy];

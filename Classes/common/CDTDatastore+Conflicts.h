@@ -33,8 +33,8 @@
  revisions in a particular document tree and passes that array to the given
  [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method
  must return the winning revision either chosen from the array or a new document revision defined
- with a CDTMutableDocumentRevision. This method will check the returned revision for validity
- (eg CDTMutableDocumentRevision has a parent revision) and then delete all losing revisions. This
+ with a CDTDocumentRevision. This method will check the returned revision for validity
+ (eg CDTDocumentRevision has a parent revision) and then delete all losing revisions. This
  all happens within a single database transaction in order to ensure atomicity.
 
  It is envisioned that this method will be used in conjunction with getConflictedDocumentIds.

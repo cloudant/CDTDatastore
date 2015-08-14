@@ -24,7 +24,6 @@
 #import "TD_Database+Insertion.h"
 #import "CDTConflictResolver.h"
 #import "TDStatus.h"
-#import "CDTMutableDocumentRevision.h"
 #import "TDInternal.h"
 #import <FMDB/FMDB.h>
 #import "TD_Body.h"
@@ -59,15 +58,17 @@
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     NSMutableArray *attachmentsToCopy = [NSMutableArray array];
 
+    BOOL isNewRevision = YES;  // TODO work out whether we can more easily tell if a rev is `dirty'
+
     if (resolvedRev == nil) {  // do nothing
         return kTDStatusOK;
-    } else if ([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]) {
-        CDTMutableDocumentRevision *mutableResolvedRev = (CDTMutableDocumentRevision *)resolvedRev;
+    } else if (isNewRevision) {
+        CDTDocumentRevision *mutableResolvedRev = (CDTDocumentRevision *)resolvedRev;
 
-        if (mutableResolvedRev.sourceRevId == nil) {
+        if (mutableResolvedRev.revId == nil) {
             [NSException raise:@"Source Revision cannot be nil" format:@""];
         } else {
-            winningRev = mutableResolvedRev.sourceRevId;
+            winningRev = mutableResolvedRev.revId;
 
             // need to download attachments to the blob store if there are any which are not saved
 
@@ -105,7 +106,7 @@
         // I assume thats already attached so I just insert
         TDStatus status;
 
-        if ([resolvedRev isKindOfClass:[CDTMutableDocumentRevision class]]) {
+        if (isNewRevision) {
             TD_Revision *converted =
                 [[TD_Revision alloc] initWithDocID:resolvedRev.docId revID:nil deleted:NO];
             converted.body = [[TD_Body alloc] initWithProperties:resolvedRev.body];

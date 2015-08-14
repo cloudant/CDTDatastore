@@ -60,9 +60,8 @@ SpecBegin(CDTQQueryExecutorSorting)
                 ds = [factory datastoreNamed:@"test" error:nil];
                 expect(ds).toNot.beNil();
 
-                CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+                CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
 
-                rev.docId = @"mike12";
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @12,
@@ -71,7 +70,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred34";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
                 rev.body = @{
                     @"name" : @"fred",
                     @"age" : @34,
@@ -80,7 +79,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                 };
                 [ds createDocumentFromRevision:rev error:nil];
 
-                rev.docId = @"fred11";
+                rev = [CDTDocumentRevision revisionWithDocId:@"fred11"];
                 rev.body = @{ @"name" : @"fred", @"age" : @11, @"pet" : @"fish", @"same" : @"all" };
                 [ds createDocumentFromRevision:rev error:nil];
 
