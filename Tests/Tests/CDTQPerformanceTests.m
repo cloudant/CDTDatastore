@@ -51,7 +51,7 @@ SpecBegin(CDTQPerformance)
             // Create databases with 1k, 10k, 50k, 100k docs for tests
             //
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev;
 
             CDTDatastore *ds1k = [factory datastoreNamed:@"test1k" error:nil];
             CDTDatastore *ds10k = [factory datastoreNamed:@"test10k" error:nil];
@@ -60,8 +60,8 @@ SpecBegin(CDTQPerformance)
             for (int i = 0; i < 100000; i++) {
                 
                 @autoreleasepool {
-                    
-                rev.docId = [NSString stringWithFormat:@"doc-%d", i];
+                    rev = [CDTDocumentRevision
+                        revisionWithDocId:[NSString stringWithFormat:@"doc-%d", i]];
                 rev.body = @{
                     @"name" : @"mike",
                     @"age" : @34,

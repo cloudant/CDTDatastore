@@ -320,12 +320,6 @@
             location = "group:CDTMisc.m">
          </FileRef>
          <FileRef
-            location = "group:CDTMutableDocumentRevision.h">
-         </FileRef>
-         <FileRef
-            location = "group:CDTMutableDocumentRevision.m">
-         </FileRef>
-         <FileRef
             location = "group:CloudantSync.h">
          </FileRef>
          <Group

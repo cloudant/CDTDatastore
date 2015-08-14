@@ -24,7 +24,6 @@
 #import "CDTQResultSet.h"
 
 #import "CDTDocumentRevision.h"
-#import "CDTMutableDocumentRevision.h"
 
 #import "CDTAttachment.h"
 

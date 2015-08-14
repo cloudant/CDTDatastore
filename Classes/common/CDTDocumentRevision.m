@@ -14,7 +14,6 @@
 //  and limitations under the License.
 
 #import "CDTDocumentRevision.h"
-#import "CDTMutableDocumentRevision.h"
 #import "Attachments/CDTAttachment.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
@@ -28,8 +27,6 @@
 @property (nonatomic, strong, readonly) NSArray *revsInfo;
 @property (nonatomic, strong, readonly) NSArray *conflicts;
 @property (nonatomic, strong, readonly) TD_Body *td_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_attachments;
 
 @end
 
@@ -39,6 +36,30 @@
 @synthesize revId = _revId;
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
+
++ (CDTDocumentRevision *)revision
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:nil
+                                           revisionId:nil
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:nil
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:revId
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
 
 + (CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
                                     forDocument:(NSURL *)documentURL
@@ -111,8 +132,8 @@
 
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
-               body:(NSDictionary *)body
-        attachments:(NSDictionary *)attachments
+               body:(NSMutableDictionary *)body
+        attachments:(NSMutableDictionary *)attachments
 {
     return [self initWithDocId:docId
                     revisionId:revId
@@ -132,13 +153,10 @@
     self = [super init];
 
     if (self) {
-        if (!docId || !revId) {
-            return nil;
-        }
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
-        _private_attachments = attachments;
+        _attachments = [NSDictionary dictionaryWithDictionary:attachments];
         _sequence = sequence;
         if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
@@ -149,9 +167,9 @@
             NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
-            _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+            _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
         } else
-            _private_body = [NSDictionary dictionary];
+            _body = [NSDictionary dictionary];
     }
     return self;
 }
@@ -173,19 +191,21 @@
     return json;
 }
 
-- (CDTMutableDocumentRevision *)mutableCopy
+- (CDTDocumentRevision *)mutableCopy
 {
-    CDTMutableDocumentRevision *mutableCopy =
-        [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
-    mutableCopy.docId = self.docId;
-    mutableCopy.attachments = self.attachments;
-    mutableCopy.body = self.private_body;
+    CDTDocumentRevision *mutableCopy = [[CDTDocumentRevision alloc] initWithDocId:self.docId
+                                                                       revisionId:self.revId
+                                                                             body:self.body
+                                                                      attachments:self.attachments];
 
     return mutableCopy;
 }
 
-- (NSDictionary *)body { return self.private_body; }
+- (void)setBody:(NSDictionary *)body { _body = body; }
 
-- (NSDictionary *)attachments { return self.private_attachments; }
+- (void)setAttachments:(NSMutableDictionary *)attachments
+{
+    _attachments = attachments;
+}
 
 @end

@@ -18,7 +18,7 @@
 #import "TD_Revision.h"
 
 @class TD_RevisionList;
-@class CDTMutableDocumentRevision;
+@class CDTDocumentRevision;
 
 /**
  * Represents a single revision of a document in a datastore.
@@ -34,6 +34,9 @@
 @property (nonatomic, readonly) BOOL deleted;
 
 @property (nonatomic, readonly) SequenceNumber sequence;
+
+@property (nonatomic, strong) NSDictionary *body;
+@property (nonatomic, strong) NSDictionary *attachments;
 
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
@@ -62,6 +65,12 @@
                                     forDocument:(NSURL *)documentURL
                                           error:(NSError *__autoreleasing *)error;
 
++ (CDTDocumentRevision *)revision;
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId;
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId;
+
 /**
  Return document content as an NSData object.
 
@@ -78,10 +87,6 @@
 
  @return mutable copy of this document
  */
-- (CDTMutableDocumentRevision *)mutableCopy;
-
-- (NSDictionary *)body;
-
-- (NSDictionary *)attachments;
+- (CDTDocumentRevision *)mutableCopy;
 
 @end

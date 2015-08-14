@@ -65,8 +65,8 @@
 - (void)addTodoItem:(NSString*)description {
     CDTTodo *todo = [[CDTTodo alloc] initWithDescription:description
                                                completed:NO];
-    
-    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *revision = [CDTDocumentRevision revision];
     revision.body = [todo toDict];
     
     NSError *error;
@@ -99,8 +99,8 @@
     todo.completed = !todo.completed;
 
     NSLog(@"Toggling completed status for %@", todo.taskDescription);
-    
-    CDTMutableDocumentRevision * mutableRevision = [revision mutableCopy];
+
+    CDTDocumentRevision *mutableRevision = [revision mutableCopy];
     mutableRevision.body = [todo toDict];
     
     NSError *error;

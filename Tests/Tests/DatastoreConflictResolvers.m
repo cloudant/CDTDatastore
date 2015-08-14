@@ -17,7 +17,6 @@
 #import "TD_Revision.h"
 #import "TD_Body.h"
 #import "CDTDocumentRevision.h"
-#import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 
 #pragma mark CDTTestBiggestRevResolver
@@ -187,19 +186,34 @@
 
 -(CDTDocumentRevision *)resolve:(NSString *)docId conflicts:(NSArray *)conflicts
 {
-    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
-    mutableRev.body = @{};
-    mutableRev.attachments = @{};
-    mutableRev.docId = docId;
-    
+    NSString *revId = nil;
+    if (self.selectParentRev) {
+        // pick a random rev from the array and use that as the parent
+        int lowerBound = 0;
+        int upperBound = (int)conflicts.count - 1;
+        int randomParentIndex = lowerBound + arc4random() % (upperBound - lowerBound);
+        CDTDocumentRevision *rev = [conflicts objectAtIndex:randomParentIndex];
+        revId = rev.revId;
+        self.selectedParent = rev;
+    }
+
+    CDTDocumentRevision *mutableRev;
+    if (revId) {
+        mutableRev = [CDTDocumentRevision revisionWithDocId:docId revId:revId];
+    } else {
+        mutableRev = [CDTDocumentRevision revisionWithDocId:docId];
+    }
+
+    NSMutableDictionary *mergedBody = [NSMutableDictionary dictionary];
+    NSMutableDictionary *mergedAttachments = [NSMutableDictionary dictionary];
+
     for(CDTDocumentRevision * revision in conflicts){
         for(NSString *key in revision.body){
-            [mutableRev.body setObject:[revision.body objectForKey:key] forKey:key];
+            mergedBody[key] = revision.body[key];
         }
         for(NSString * key in revision.attachments){
-            [mutableRev.attachments setObject:[revision.attachments objectForKey: key] forKey:key];
+            mergedAttachments[key] = revision.attachments[key];
         }
-        
     }
     
     if(self.addAttachment){
@@ -212,20 +226,12 @@
         CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
                                                                               name:attachmentName
                                                                               type:@"image/jpg"];
-        [mutableRev.attachments setObject:attachment forKey:attachment.name];
+        mergedAttachments[attachment.name] = attachment;
+    }
 
-    }
-    
-    if(self.selectParentRev){
-        //pick a random rev from the array and use that as the parent
-        int lowerBound = 0;
-        int upperBound = [conflicts count]-1;
-        int randomParentIndex = lowerBound + arc4random() % (upperBound - lowerBound);
-        CDTDocumentRevision *rev =  [conflicts objectAtIndex:randomParentIndex];
-        mutableRev.sourceRevId = rev.revId;
-        self.selectedParent = rev;
-    }
-    
+    mutableRev.body = mergedBody;
+    mutableRev.attachments = mergedAttachments;
+
     return mutableRev;
     
 }

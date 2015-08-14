@@ -44,7 +44,7 @@
     return self;
 }
 
-- (CDTMutableDocumentRevision *)mutableCopy
+- (CDTDocumentRevision *)mutableCopy
 {
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:self.docId error:nil];
     if (rev == nil) {
@@ -56,7 +56,7 @@
         return nil;
     }
 
-    return [rev mutableCopy];
+    return rev;
 }
 
 @end

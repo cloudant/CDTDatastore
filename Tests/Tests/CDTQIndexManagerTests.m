@@ -85,7 +85,7 @@ SpecBegin(CDTQIndexManager)
 
         it(@"non-empty index", ^{
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev = [CDTDocumentRevision revision];
 
             rev.body = @{
                 @"name" : @"mike",
@@ -132,7 +132,7 @@ SpecBegin(CDTQIndexManager)
 
         it(@"the right non-empty index", ^{
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev = [CDTDocumentRevision revision];
 
             rev.body = @{
                 @"name" : @"mike",
@@ -180,11 +180,11 @@ SpecBegin(CDTQIndexManager)
             expect([im listIndexes][@"basic3"]).toNot.beNil();
 
         });
-        
+
         it(@"text index", ^{
-            
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-            
+
+            CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+
             rev.body = @{
                          @"name" : @"mike",
                          @"age" : @12,

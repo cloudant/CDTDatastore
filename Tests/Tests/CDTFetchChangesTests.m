@@ -21,7 +21,7 @@
 #import "CDTFetchChanges.h"
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
-#import "CDTMutableDocumentRevision.h"
+#import "CDTDocumentRevision.h"
 
 #define CDTFETCHANGESTESTS_TOTALDOCCOUNT 1100
 #define CDTFETCHANGESTESTS_DELETEDOCCOUNT 5
@@ -242,8 +242,8 @@
 + (void)populateDatastore:(CDTDatastore *)datastore withDocuments:(NSUInteger)counter
 {
     for (NSUInteger i = 0; i < counter; i++) {
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.docId = [CDTFetchChangesTests docIdWithIndex:i];
+        CDTDocumentRevision *rev =
+            [CDTDocumentRevision revisionWithDocId:[CDTFetchChangesTests docIdWithIndex:i]];
         rev.body = @{ [NSString stringWithFormat:@"hello-%lu", (unsigned long)i] : @"world" };
 
         [datastore createDocumentFromRevision:rev error:nil];

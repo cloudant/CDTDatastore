@@ -16,7 +16,6 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDatastoreManager.h"
-#import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 #import "CDTDatastore+Attachments.h"
 #import "CDTEncryptionKeyNilProvider.h"
@@ -467,7 +466,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 #pragma mark fromRevision API methods
 
-- (CDTDocumentRevision *)createDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)createDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error
 {
     // first lets check to see if we can save the document
@@ -597,7 +596,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return saved;
 }
 
-- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error
 {
     if (!revision.body) {
@@ -616,7 +615,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     TD_Revision *converted = [[TD_Revision alloc] initWithDocID:revision.docId
-                                                          revID:revision.sourceRevId
+                                                          revID:revision.revId
                                                         deleted:revision.deleted];
     converted.body = [[TD_Body alloc] initWithProperties:revision.body];
 
@@ -651,7 +650,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         result = [datastore updateDocumentFromTDRevision:converted
                                                    docId:revision.docId
-                                                 prevRev:revision.sourceRevId
+                                                 prevRev:revision.revId
                                            inTransaction:db
                                                 rollback:rollback
                                                    error:error];
@@ -745,12 +744,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     // A mutable document revision stores the revId in other property
-    NSString *prevRevisionID = nil;
-    if ([revision isKindOfClass:[CDTMutableDocumentRevision class]]) {
-        prevRevisionID = ((CDTMutableDocumentRevision *)revision).sourceRevId;
-    } else {
-        prevRevisionID = revision.revId;
-    }
+    NSString *prevRevisionID = revision.revId;
 
     TD_Revision *td_revision =
         [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:YES];

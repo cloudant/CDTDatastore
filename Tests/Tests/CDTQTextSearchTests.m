@@ -61,47 +61,47 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
         beforeEach(^{
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
-            
-            CDTMutableDocumentRevision* rev = [CDTMutableDocumentRevision revision];
-            
-            rev.docId = @"mike12";
+
+            CDTDocumentRevision *rev;
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike",
                           @"age" : @12,
                           @"pet" : @"cat",
                           @"comment" : @"He lives in Bristol, UK and his best friend is Fred."};
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"mike34";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
             rev.body = @{ @"name" : @"mike",
                           @"age" : @34,
                           @"pet" : @"dog",
                           @"comment" : @"He lives in a van down by the river in Bristol."};
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"mike72";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
             rev.body = @{ @"name" : @"mike",
                           @"age" : @72,
                           @"pet" : @"cat",
                           @"comment" : @"He's retired and has memories of spending time "
                                        @"with his cat Remus."};
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"fred34";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred",
                           @"age" : @34,
                           @"pet" : @"cat",
                           @"comment" : @"He lives next door to Mike and his cat Romulus "
                                        @"is brother to Remus."};
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"fred12";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
             rev.body = @{ @"name" : @"fred",
                           @"age" : @12,
                           @"pet" : @"cat",
                           @"comment" : @"He lives in Bristol, UK and his best friend is Mike."};
             [ds createDocumentFromRevision:rev error:nil];
-            
-            rev.docId = @"john34";
+
+            rev = [CDTDocumentRevision revisionWithDocId:@"john34"];
             rev.body =
                 @{ @"name" : @"john",
                    @"age" : @34,

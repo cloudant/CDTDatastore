@@ -42,17 +42,17 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
 
         // create some docs
 
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        CDTDocumentRevision *rev;
 
-        rev.docId = @"mike12";
+        rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
         rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
         [ds createDocumentFromRevision:rev error:nil];
 
-        rev.docId = @"mike34";
+        rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
         rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
         [ds createDocumentFromRevision:rev error:nil];
 
-        rev.docId = @"mike72";
+        rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
         rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
         [ds createDocumentFromRevision:rev error:nil];
 
@@ -108,7 +108,7 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         NSDictionary *query = @{ @"name" : @"mike" };
         CDTQResultSet *results = [ds find:query];
         expect(results).toNot.beNil();
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        CDTDocumentRevision *rev = [CDTDocumentRevision revision];
         rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" };
         [ds createDocumentFromRevision:rev error:nil];
         expect([ds updateAllIndexes]).to.beTruthy();
