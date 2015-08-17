@@ -260,7 +260,9 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
  * Taken from TDServer.m.
  */
 - (void) runReplicatorThread {
-    self.session = [[CDTURLSession alloc] initWithDelegate:nil callbackThread:_replicatorThread];
+    self.session = [[CDTURLSession alloc] initWithDelegate:nil
+                                            callbackThread:_replicatorThread
+                                       requestInterceptors:@[]];
     @autoreleasepool {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread starting...");
         

@@ -14,8 +14,9 @@
 
 #import <Foundation/Foundation.h>
 #import "CDTURLSessionTask.h"
+#import "CDTMacros.h"
 
-@class CDTURLSessionFilterContext;
+@class CDTHTTPInterceptorContext;
 
 /** 
  Façade class to NSURLSession, makes completion handlers run on
@@ -25,8 +26,8 @@
 @interface CDTURLSession : NSObject
 
 /**
- * Initalises a CDTURLSession without a delegate. Calling this method will result in 
- * completionHandlers being called on the thread which called this method.
+ * Initalises a CDTURLSession without a delegate and an empty array of interceptors. Calling this 
+ * method will result in completionHandlers being called on the thread which called this method.
  **/
 - (instancetype)init;
 
@@ -35,9 +36,11 @@
  *
  * @param delegate an object that implements NSURLSessionDelegate protocol
  * @param thread the thread which callbacks should be run on
+ * @param reuqestInterceptors array of interceptors that should be run before each request is made.
  **/
-- (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate
-                  callbackThread:(NSThread *)thread;
+- (instancetype)initWithDelegate:(NSObject<NSURLSessionDelegate> *)delegate
+                  callbackThread:(NSThread *)thread
+             requestInterceptors:(NSArray *)requestInterceptors NS_DESIGNATED_INITIALIZER;
 
 /**
  * Performs a data task for a request.
