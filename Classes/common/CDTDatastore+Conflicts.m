@@ -58,7 +58,7 @@
     NSMutableArray *downloadedAttachments = [NSMutableArray array];
     NSMutableArray *attachmentsToCopy = [NSMutableArray array];
 
-    BOOL isNewRevision = YES;  // TODO work out whether we can more easily tell if a rev is `dirty'
+    BOOL isNewRevision = resolvedRev.isChanged;
 
     if (resolvedRev == nil) {  // do nothing
         return kTDStatusOK;

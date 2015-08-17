@@ -168,8 +168,11 @@
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
             _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        } else
+        } else {
             _body = [NSDictionary dictionary];
+        }
+
+        _isChanged = NO;
     }
     return self;
 }
@@ -201,10 +204,15 @@
     return mutableCopy;
 }
 
-- (void)setBody:(NSDictionary *)body { _body = body; }
+- (void)setBody:(NSDictionary *)body
+{
+    self.isChanged = YES;
+    _body = body;
+}
 
 - (void)setAttachments:(NSMutableDictionary *)attachments
 {
+    self.isChanged = YES;
     _attachments = attachments;
 }
 
