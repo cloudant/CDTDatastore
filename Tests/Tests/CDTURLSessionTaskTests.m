@@ -20,21 +20,29 @@
 
 - (void)testTaskCorrectlyProxiesCalls
 {
-    NSURLSessionDataTask *task = [[NSURLSessionDataTask alloc]init];
+    NSURLSessionDataTask *task = [[NSURLSessionDataTask alloc] init];
     id mockedTask = OCMPartialMock(task);
     OCMStub([mockedTask state]).andReturn(NSURLSessionTaskStateSuspended);
     OCMStub([(NSURLSessionDataTask *)mockedTask resume]).andDo(nil);
     OCMStub([mockedTask cancel]).andDo(nil);
-    
-    CDTURLSessionTask * cdtTask  = [[CDTURLSessionTask alloc]initWithTask:mockedTask];
-    
+
+    NSURLSession *session = [NSURLSession
+        sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    id mockedSession = OCMPartialMock(session);
+    OCMStub([mockedSession dataTaskWithRequest:[OCMArg any] completionHandler:[OCMArg any]])
+        .andReturn(task);
+
+    NSURLRequest *r = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost"]];
+
+    CDTURLSessionTask *cdtTask =
+        [[CDTURLSessionTask alloc] initWithSession:mockedSession request:r interceptors:nil];
+
     //call void methods methods
     [cdtTask resume];
     [cdtTask cancel];
     
     //verify that object state is as expected
     XCTAssertEqual(NSURLSessionTaskStateSuspended, cdtTask.state);
-    XCTAssertEqual(mockedTask, cdtTask.task);
     
     //verify mock methods called
     OCMVerify([(NSURLSessionDataTask *)mockedTask resume]);

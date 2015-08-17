@@ -49,7 +49,9 @@
     self = [super initWithDatabaseURL:databaseURL mode:mode conflicts:includeConflicts lastSequence:lastSequenceID client:client];
     
     if(self){
-        _session = [[CDTURLSession alloc]initWithDelegate:self callbackThread:[NSThread currentThread]];
+        _session = [[CDTURLSession alloc] initWithDelegate:self
+                                            callbackThread:[NSThread currentThread]
+                                       requestInterceptors:@[]];
     }
     return self;
 }

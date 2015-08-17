@@ -11,28 +11,34 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
+//
+
 #import <Foundation/Foundation.h>
 #import "CDTMacros.h"
 
 @interface CDTURLSessionTask : NSObject
+
+@property (nonatomic, copy) void (^completionHandler)
+    (NSData *data, NSURLResponse *response, NSError *error);
 
 /*
  * The current state of the task within the session.
  */
 @property (readonly) NSURLSessionTaskState state;
 
-/*
- * The NSURLSessionTask backing this one
+/**
+ Don't call this initialiser; it will throw an exception.
  */
-@property (nonnull,readonly) NSURLSessionTask *task;
-
 - (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+
 /*
  * Initalises an instance of CDTURLSessionTask
  *
  *  @param task the NSURLSessionTask to be wrapped
  */
-- (nullable instancetype)initWithTask:(nonnull NSURLSessionTask *)task NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithSession:(nonnull NSURLSession *)session
+                                 request:(nonnull NSURLRequest *)request
+                            interceptors:(nullable NSArray *)interceptors NS_DESIGNATED_INITIALIZER;
 
 /*
  * Resumes the execution of this task
