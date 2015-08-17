@@ -38,6 +38,8 @@
 @property (nonatomic, strong) NSDictionary *body;
 @property (nonatomic, strong) NSDictionary *attachments;
 
+@property (nonatomic) bool isChanged;
+
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
                body:(NSDictionary *)body
