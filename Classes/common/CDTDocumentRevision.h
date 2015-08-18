@@ -16,6 +16,7 @@
 #import <Foundation/Foundation.h>
 
 #import "TD_Revision.h"
+#import "CDTChangedObserver.h"
 
 @class TD_RevisionList;
 @class CDTDocumentRevision;
@@ -23,7 +24,7 @@
 /**
  * Represents a single revision of a document in a datastore.
  */
-@interface CDTDocumentRevision : NSObject
+@interface CDTDocumentRevision : NSObject <CDTChangedObserver>
 
 /** Document ID for this document revision. */
 @property (nonatomic, strong, readonly) NSString *docId;
@@ -35,10 +36,10 @@
 
 @property (nonatomic, readonly) SequenceNumber sequence;
 
-@property (nonatomic, strong) NSDictionary *body;
-@property (nonatomic, strong) NSDictionary *attachments;
+@property (nonatomic, strong) NSMutableDictionary *body;
+@property (nonatomic, strong) NSMutableDictionary *attachments;
 
-@property (nonatomic) bool isChanged;
+@property (nonatomic, getter=isChanged) bool changed;
 
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
