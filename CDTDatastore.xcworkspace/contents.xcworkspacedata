@@ -583,6 +583,25 @@
          <FileRef
             location = "group:CDTMacros.h">
          </FileRef>
+         <Group
+            location = "container:"
+            name = "Utils">
+            <FileRef
+               location = "group:Classes/common/Utils/CDTChangedDictionary.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Utils/CDTChangedDictionary.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Utils/CDTChangedArray.h">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Utils/CDTChangedArray.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/Utils/CDTChangedObserver.h">
+            </FileRef>
+         </Group>
       </Group>
       <Group
          location = "group:Classes/ios"

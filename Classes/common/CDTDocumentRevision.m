@@ -21,6 +21,8 @@
 #import "TD_Database.h"
 #import "CDTLogging.h"
 
+#import "CDTChangedDictionary.h"
+
 @interface CDTDocumentRevision ()
 
 @property (nonatomic, strong, readonly) TD_RevisionList *revs;
@@ -156,7 +158,7 @@
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
-        _attachments = [NSDictionary dictionaryWithDictionary:attachments];
+        _attachments = [CDTChangedDictionary dictionaryWrappingContents:attachments];
         _sequence = sequence;
         if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
@@ -167,12 +169,14 @@
             NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
-            _body = [NSDictionary dictionaryWithDictionary:mutableCopy];
+            _body = [CDTChangedDictionary dictionaryWrappingContents:mutableCopy];
         } else {
-            _body = [NSDictionary dictionary];
+            _body = [CDTChangedDictionary dictionaryWrappingContents:@{}];
         }
 
-        _isChanged = NO;
+        _changed = NO;
+        ((CDTChangedDictionary *)_body).delegate = self;
+        ((CDTChangedDictionary *)_attachments).delegate = self;
     }
     return self;
 }
@@ -204,16 +208,24 @@
     return mutableCopy;
 }
 
+- (void)contentOfObjectDidChange:(NSObject *)object { self.changed = YES; }
+
 - (void)setBody:(NSDictionary *)body
 {
-    self.isChanged = YES;
-    _body = body;
+    self.changed = YES;
+
+    // No need to wrap the dictionary with a CDTChangedDictionary
+    // because we've already marked ourselves as changed.
+    _body = [body mutableCopy];
 }
 
 - (void)setAttachments:(NSMutableDictionary *)attachments
 {
-    self.isChanged = YES;
-    _attachments = attachments;
+    self.changed = YES;
+
+    // No need to wrap the dictionary with a CDTChangedDictionary
+    // because we've already marked ourselves as changed.
+    _attachments = [attachments mutableCopy];
 }
 
 @end
