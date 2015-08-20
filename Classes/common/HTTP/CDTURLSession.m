@@ -48,8 +48,8 @@
     return self;
 }
 
-- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
-                            completionHandler:(void (^)(NSData *data,
+- (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
+                         completionHandler:(void (^)(NSData *data,
                                                         NSURLResponse *response,
                                                         NSError *error))completionHandler
 {
@@ -71,7 +71,7 @@
         
     } ];
     
-    return task;
+    return [[CDTURLSessionTask alloc]initWithTask:task];
     
 }
 

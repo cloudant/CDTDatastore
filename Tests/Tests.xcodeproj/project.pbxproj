@@ -31,6 +31,8 @@
 		985A188B19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188919D2CCEB000283E9 /* DatastoreConflicts.m */; };
 		985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */; };
 		985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */; };
+		989158DE1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */; };
+		989158DF1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */; };
 		989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		98BB740019E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
@@ -192,6 +194,7 @@
 		985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		985A188919D2CCEB000283E9 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUD.m; path = Attachments/AttachmentCRUD.m; sourceTree = "<group>"; };
+		989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTURLSessionTaskTests.m; sourceTree = "<group>"; };
 		989E6E21198799AE00FB8510 /* DatastoreCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreCRUD.m; sourceTree = "<group>"; };
 		98BB73FE19E5927600C57866 /* CloudantTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CloudantTests.h; sourceTree = "<group>"; };
 		98BB73FF19E5927600C57866 /* CloudantTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantTests.m; sourceTree = "<group>"; };
@@ -339,6 +342,7 @@
 		27389E15185345FD0027A404 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				989158DC1B8B7D3D00FFF509 /* HTTP */,
 				CD2188CF1AE570480036F59F /* Encryption */,
 				CD3FBCA11AB05A170032376E /* Helpers */,
 				CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */,
@@ -473,6 +477,14 @@
 				03034DD60492427AC73C43CD /* Pods-osx.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		989158DC1B8B7D3D00FFF509 /* HTTP */ = {
+			isa = PBXGroup;
+			children = (
+				989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */,
+			);
+			name = HTTP;
 			sourceTree = "<group>";
 		};
 		CD2188CF1AE570480036F59F /* Encryption */ = {
@@ -759,6 +771,7 @@
 				EC0C833C1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */,
 				985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */,
 				98DDEB9F1A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
+				989158DE1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */,
 				9F4E646B19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
 				EC0C83461AB217290051042F /* CDTQInvalidQuerySyntax.m in Sources */,
 				98BB740019E5927600C57866 /* CloudantTests.m in Sources */,
@@ -835,6 +848,7 @@
 				EC0C833D1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */,
 				9F0D2403188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				98DDEBA01A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
+				989158DF1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */,
 				9F4E646C19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
 				EC0C83471AB217290051042F /* CDTQInvalidQuerySyntax.m in Sources */,
 				98BB740119E5927600C57866 /* CloudantTests.m in Sources */,

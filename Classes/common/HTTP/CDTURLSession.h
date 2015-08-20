@@ -13,6 +13,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTURLSessionTask.h"
 
 @class CDTURLSessionFilterContext;
 
@@ -27,7 +28,7 @@
  * Initalises a CDTURLSession without a delegate. Calling this method will result in 
  * completionHandlers being called on the thread which called this method.
  **/
-- (instancetype) init;
+- (instancetype)init;
 
 /**
  * Initalise a CDTURLSession.
@@ -35,7 +36,8 @@
  * @param delegate an object that implements NSURLSessionDelegate protocol
  * @param thread the thread which callbacks should be run on
  **/
--(instancetype) initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread*)thread;
+- (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate
+                  callbackThread:(NSThread *)thread;
 
 /**
  * Performs a data task for a request.
@@ -43,10 +45,10 @@
  * @param request The request to make
  * @param completionHandler A block to call when the request completes
  *
- * @return returns a data task to used the make the request. `resume` needs to be called
+ * @return returns a task to used the make the request. `resume` needs to be called
  * in order for the task to start making the request.
  */
-- (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request
-                            completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler;
+- (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
+                         completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler;
 
 @end
