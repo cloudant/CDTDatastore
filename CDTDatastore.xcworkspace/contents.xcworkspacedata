@@ -11,6 +11,12 @@
             location = "container:"
             name = "HTTP">
             <FileRef
+               location = "group:Classes/common/HTTP/CDTURLSessionTask.m">
+            </FileRef>
+            <FileRef
+               location = "group:Classes/common/HTTP/CDTURLSessionTask.h">
+            </FileRef>
+            <FileRef
                location = "group:Classes/common/HTTP/CDTURLSession.h">
             </FileRef>
             <FileRef

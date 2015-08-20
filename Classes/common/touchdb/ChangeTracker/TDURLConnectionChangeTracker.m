@@ -38,7 +38,7 @@
 @property (strong, nonatomic) NSDate* startTime;
 @property (nonatomic, readwrite) NSUInteger totalRetries;
 @property (nonatomic, strong) CDTURLSession * session;
-@property (nonatomic, strong) NSURLSessionDataTask * task;
+@property (nonatomic, strong) CDTURLSessionTask * task;
 @end
 
 @implementation TDURLConnectionChangeTracker
