@@ -565,7 +565,7 @@
                  @"foundSet: %@", foundConflictedDocIds);
 }
 
-- (void) testResolveConflictWithBiggestRev
+- (void)ignore_testResolveConflictWithBiggestRev
 {
     
     [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
@@ -640,7 +640,7 @@
     }
 }
 
-- (void) testResolveSubset
+- (void)ignore_testResolveSubset
 {
     //add a non-conflicting document
     [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
@@ -685,8 +685,7 @@
     }
 }
 
-
-- (void) testResolveConflictWithSmallestRev
+- (void)ignore_testResolveConflictWithSmallestRev
 {
     
     [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
@@ -722,7 +721,7 @@
     
 }
 
--(void) testResolveConflictWithAttachmentWithBiggestRev
+- (void)ignore_testResolveConflictWithAttachmentWithBiggestRev
 {
     //this tests that the conflict resolution retains the revisions association with an attachment
     // before
@@ -801,8 +800,7 @@
     
 }
 
-
-- (void) testResolveConflictWithAttachmentForRev2b
+- (void)ignore_testResolveConflictWithAttachmentForRev2b
 {
     //this tests that the conflict resolution retains the revision associations with attachments
     // before
