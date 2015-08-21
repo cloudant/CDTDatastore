@@ -20,6 +20,16 @@ about style; Apple's guidelines cover the essentials of naming.
 Code style for CDTDatastore is defined with a clang format file (.clang-format) in the 
 root of the project. All code should be formatted using the clang-format tool. 
 
+There are two options for using `clang-format`, aside from directly invoking on the command line:
+
+1. Get `git` to enforce style on commit, for just changed portions of files (strongly recommended).
+   This uses a commit hook.
+2. Install `clang-format` into Xcode, and format sections as you change them.
+
+### Setting up `git` to auto-format changed code (recommended)
+
+Follow the instructions [here](http://dx13.co.uk/articles/2015/4/3/Setting-up-git-clang-format.html).
+
 ### Installing clang-format into Xcode
 
 Clang-format can be installed into Xcode using the 
@@ -28,7 +38,7 @@ The easiest way to do this is via [Alcatraz](https://github.com/mneorr/Alcatraz)
 You can also install the plugin from source using the instractions at 
 [ClangFormat-Xcode](https://github.com/travisjeffery/ClangFormat-Xcode).
 
-#### Setting up Xcode
+##### Setting up Xcode
 
 You can set up `ClangFormat-Xcode` to format the whole file on every save. Unfortunately,
 many of the files in the codebase are not yet formatted, so we suggest *not* setting this
