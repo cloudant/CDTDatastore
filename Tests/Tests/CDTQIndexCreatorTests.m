@@ -275,7 +275,7 @@ SpecBegin(CDTQIndexCreator)
                 name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
                                 withName:@"anotherTextIndex"
                                     type:@"text"];
-                expect(name).to.beNil;
+                expect(name).to.beNil();
             });
 
             it(@"doesn't support using the geo type", ^{

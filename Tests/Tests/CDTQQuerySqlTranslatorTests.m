@@ -1177,25 +1177,25 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
         it(@"returns nil for query containing invalid operator", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$blah" : @"mike" } } ];
-            expect(actual).to.beNil;
+            expect(actual).to.beNil();
         });
         
         it(@"returns nil for query containing invalid operator using $not", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$not" : @{ @"$blah" : @"mike" } } } ];
-            expect(actual).to.beNil;
+            expect(actual).to.beNil();
         });
         
         it(@"returns nil for query using $not without additional operator", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$not" : @"mike" } } ];
-            expect(actual).to.beNil;
+            expect(actual).to.beNil();
         });
         
         it(@"returns nil for query using $in without an array", ^{
             NSDictionary *actual = [CDTQQueryValidator normaliseAndValidateQuery:@{
                 @"name" : @{ @"$in" : @"mike" } } ];
-            expect(actual).to.beNil;
+            expect(actual).to.beNil();
         });
         
         it(@"correctly normalizes query with MOD operator", ^{
