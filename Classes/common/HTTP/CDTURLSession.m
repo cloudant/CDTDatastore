@@ -14,12 +14,13 @@
 
 #import "CDTURLSession.h"
 #import "MYBlockUtils.h"
+#import "CDTLogging.h"
 
 @interface CDTURLSession ()
 
-@property NSURLSession *session;
-@property NSThread * thread;
-
+@property (nonatomic, strong) NSURLSession *session;
+@property (nonatomic, strong) NSThread *thread;
+@property (nonatomic, strong) NSArray *interceptors;
 
 @end
 
@@ -29,18 +30,22 @@
 
 - (instancetype)init
 {
-    return [self initWithDelegate:nil callbackThread:[NSThread currentThread]];
+    return [self initWithDelegate:nil
+                   callbackThread:[NSThread currentThread]
+              requestInterceptors:@[]];
 }
 
-- (instancetype)initWithDelegate:(id<NSURLSessionDelegate>)delegate callbackThread:(NSThread *)thread
+- (instancetype)initWithDelegate:(NSObject<NSURLSessionDelegate> *)delegate
+                  callbackThread:(NSThread *)thread
+             requestInterceptors:(NSArray *)requestInterceptors;
 {
     NSParameterAssert(thread);
     self = [super init];
     if (self) {
         _thread = thread;
-        
+        _interceptors = [NSArray arrayWithArray:requestInterceptors];
+
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
-        
         _session = [NSURLSession sessionWithConfiguration:config
                                                  delegate:delegate
                                             delegateQueue:nil];
@@ -48,36 +53,25 @@
     return self;
 }
 
+- (void)dealloc { [self.session finishTasksAndInvalidate]; }
+
 - (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
                          completionHandler:(void (^)(NSData *data,
                                                         NSURLResponse *response,
                                                         NSError *error))completionHandler
 {
+    CDTURLSessionTask *task = [[CDTURLSessionTask alloc] initWithSession:self.session
+                                                                 request:request
+                                                            interceptors:self.interceptors];
     __weak CDTURLSession *weakSelf = self;
-    NSURLSessionDataTask *task = [self.session dataTaskWithRequest:request
-                                                 completionHandler: ^void (NSData *data,
-                                                                           NSURLResponse *response,
-                                                                           NSError *error) {
-        
+    task.completionHandler = ^void(NSData *data, NSURLResponse *response, NSError *error) {
         __strong CDTURLSession *strongSelf = weakSelf;
-                                                     
         if (strongSelf) {
             data = [NSData dataWithData:data];
-        
-            MYOnThread(strongSelf.thread, ^{
-                completionHandler(data, response, error);
-            });
+            MYOnThread(strongSelf.thread, ^{ completionHandler(data, response, error); });
         }
-        
-    } ];
-    
-    return [[CDTURLSessionTask alloc]initWithTask:task];
-    
-}
-
--(void)dealloc
-{
-    [self.session finishTasksAndInvalidate];
+    };
+    return task;
 }
 
 @end

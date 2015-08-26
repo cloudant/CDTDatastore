@@ -25,6 +25,7 @@
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
 		8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
+		9823C84B1B8B1ECD00154EC5 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */; };
 		985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188919D2CCEB000283E9 /* DatastoreConflicts.m */; };
@@ -32,7 +33,8 @@
 		985F84D4198BD3A4004D8713 /* AttachmentCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */; };
 		985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */; };
 		989158DE1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */; };
-		989158DF1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */; };
+		989158E01B8C827000FFF509 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */; };
+		989158E11B8C841500FFF509 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */; };
 		989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 989E6E21198799AE00FB8510 /* DatastoreCRUD.m */; };
 		98BB740019E5927600C57866 /* CloudantTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98BB73FF19E5927600C57866 /* CloudantTests.m */; };
@@ -191,6 +193,7 @@
 		5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = schema6to7upgrade.touchdb; path = Assets/schema6to7upgrade.touchdb; sourceTree = "<group>"; };
+		9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTURLSessionTests.m; sourceTree = "<group>"; };
 		985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		985A188919D2CCEB000283E9 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUD.m; path = Attachments/AttachmentCRUD.m; sourceTree = "<group>"; };
@@ -483,6 +486,7 @@
 			isa = PBXGroup;
 			children = (
 				989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */,
+				9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */,
 			);
 			name = HTTP;
 			sourceTree = "<group>";
@@ -781,6 +785,7 @@
 				9F4E646D19DC815B00FE37E1 /* SetUpDatastore.m in Sources */,
 				985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */,
 				985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */,
+				9823C84B1B8B1ECD00154EC5 /* CDTURLSessionTests.m in Sources */,
 				9F0D240B188E3C3A00D3D04E /* TDCollateJSONTests.m in Sources */,
 				EC0C83601AB217290051042F /* CDTQSQLOnlyQueryExecutor.m in Sources */,
 				CDADD5BF1AEFD643003CA9EF /* FMDatabase+SQLCipher.m in Sources */,
@@ -815,6 +820,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				989158E11B8C841500FFF509 /* CDTURLSessionTests.m in Sources */,
+				989158E01B8C827000FFF509 /* CDTURLSessionTaskTests.m in Sources */,
 				985F84D5198BDA6D004D8713 /* AttachmentCRUD.m in Sources */,
 				9F0D2409188E378700D3D04E /* TDCanonicalJSONTests.m in Sources */,
 				EC0C834B1AB217290051042F /* CDTQQueryExecutorTests.m in Sources */,
@@ -848,7 +855,6 @@
 				EC0C833D1AB217290051042F /* CDTDatastoreQueryTests.m in Sources */,
 				9F0D2403188DFE8600D3D04E /* TD_RevisionTests.m in Sources */,
 				98DDEBA01A41CD3400767178 /* DatastoreManagerTests.m in Sources */,
-				989158DF1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m in Sources */,
 				9F4E646C19DC815B00FE37E1 /* CDTReplicationTests.m in Sources */,
 				EC0C83471AB217290051042F /* CDTQInvalidQuerySyntax.m in Sources */,
 				98BB740119E5927600C57866 /* CloudantTests.m in Sources */,
