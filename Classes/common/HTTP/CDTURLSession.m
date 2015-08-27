@@ -66,7 +66,7 @@
     __weak CDTURLSession *weakSelf = self;
     task.completionHandler = ^void(NSData *data, NSURLResponse *response, NSError *error) {
         __strong CDTURLSession *strongSelf = weakSelf;
-        if (strongSelf) {
+        if (strongSelf && completionHandler) {
             data = [NSData dataWithData:data];
             MYOnThread(strongSelf.thread, ^{ completionHandler(data, response, error); });
         }
