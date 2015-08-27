@@ -19,7 +19,9 @@
 
 @interface CDTHTTPInterceptorContext : NSObject
 
-@property (nonnull, readonly, nonatomic, strong) NSMutableURLRequest *request;
+@property (nonnull, readwrite, nonatomic, strong) NSMutableURLRequest *request;
+@property (nonatomic) BOOL shouldRetry;
+@property (nullable, readwrite, nonatomic, strong) NSURLResponse *response;
 
 /**
  *  Unavaiable, use -initWithRequest
@@ -34,8 +36,8 @@
  *
  *  @param request the request this context should represent
  **/
-- (nullable instancetype)initWithRequest:(nonnull NSMutableURLRequest*)request NS_DESIGNATED_INITIALIZER;
-
+- (nullable instancetype)initWithRequest:(nonnull NSMutableURLRequest *)request
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

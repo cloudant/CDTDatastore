@@ -23,7 +23,7 @@
 /**
  Request we're carrying out.
  */
-@property (nonatomic, strong) NSURLRequest *request;
+@property (nonnull, nonatomic, strong) NSURLRequest *request;
 
 /*
  * The NSURLSessionTask backing this one
@@ -35,21 +35,25 @@
 /**
  Request interceptors. -init... filters to only valid request interceptors
  */
-@property (nonatomic, strong) NSArray *requestInterceptors;
+@property (nonnull, nonatomic, strong) NSArray *requestInterceptors;
+
+@property (nonnull, nonatomic, strong) NSArray *responseInterceptors;
+
+@property (nonatomic) int remainingRetries;
 
 @end
 
 @implementation CDTURLSessionTask
 
-- (instancetype)init
+- (nullable instancetype)init
 {
     NSAssert(NO, @"Use designated initializer");
     return nil;
 }
 
-- (instancetype)initWithSession:(NSURLSession *)session
-                        request:(NSURLRequest *)request
-                   interceptors:(NSArray *)interceptors
+- (nullable instancetype)initWithSession:(NSURLSession *)session
+                                 request:(NSURLRequest *)request
+                            interceptors:(NSArray *)interceptors
 {
     NSParameterAssert(session);
     NSParameterAssert(request);
@@ -59,6 +63,8 @@
         _session = session;
         _request = [request mutableCopy];
         _requestInterceptors = [self filterRequestInterceptors:interceptors];
+        _responseInterceptors = [self filterResponseInterceptors:interceptors];
+        _remainingRetries = 10;
     }
     return self;
 }
@@ -67,24 +73,7 @@
 {
     NSURLSessionTask *t = self.inProgressTask;
     if (!t) {
-        CDTHTTPInterceptorContext *ctx =
-            [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
-
-        // We make sure all objects support `interceptRequestInContext:` during init.
-        for (NSObject<CDTHTTPInterceptor> *obj in self.requestInterceptors) {
-            ctx = [obj interceptRequestInContext:ctx];
-        }
-
-        __weak CDTURLSessionTask *weakSelf = self;
-        self.inProgressTask = [self.session
-            dataTaskWithRequest:ctx.request
-              completionHandler:^void(NSData *data, NSURLResponse *response, NSError *error) {
-                  __strong CDTURLSessionTask *self = weakSelf;
-                  if (self && self.completionHandler) {
-                      data = [NSData dataWithData:data];
-                      self.completionHandler(data, response, error);
-                  }
-              }];
+        self.inProgressTask = [self makeRequest];
     }
     [self.inProgressTask resume];
 }
@@ -108,36 +97,75 @@
 
 #pragma mark Helpers
 
+- (nonnull NSURLSessionDataTask *)makeRequest
+{
+    __block CDTHTTPInterceptorContext *ctx =
+        [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
+
+    // We make sure all objects support `interceptRequestInContext:` during init.
+    for (NSObject<CDTHTTPInterceptor> *obj in self.requestInterceptors) {
+        ctx = [obj interceptRequestInContext:ctx];
+    }
+
+    __weak CDTURLSessionTask *weakSelf = self;
+    return [self.session
+        dataTaskWithRequest:ctx.request
+          completionHandler:^void(NSData *data, NSURLResponse *response, NSError *error) {
+            __strong CDTURLSessionTask *strongSelf = weakSelf;
+            if (strongSelf) {
+                ctx.response = response;
+                for (NSObject<CDTHTTPInterceptor> *obj in strongSelf.responseInterceptors) {
+                    ctx = [obj interceptResponseInContext:ctx];
+                }
+
+                if (ctx.shouldRetry && strongSelf.remainingRetries > 0) {
+                    // retry
+                    strongSelf.remainingRetries--;
+                    strongSelf.inProgressTask = [strongSelf makeRequest];
+                    [strongSelf.inProgressTask resume];
+                } else if (strongSelf.completionHandler) {
+                    strongSelf.completionHandler(data, response, error);
+                }
+            }
+          }];
+}
+
 /**
  Copy the interceptor array, filtering out non-compliant classes.
 
- We do this once during -init... to avoid spamming the logs for every retry. This checks for
- responding to `interceptRequestInContext:` as we're creating a request interceptor array,
- not a response one.
+ We do this once during `-init...`. This checks for responding to `interceptRequestInContext:`
+ as we're creating a request interceptor array, not a response one.
  */
-- (NSArray *)filterRequestInterceptors:(NSArray *)proposedRequestInterceptors
+- (nonnull NSArray *)filterRequestInterceptors:(nonnull NSArray *)proposedRequestInterceptors
 {
-    NSMutableArray *acc = [NSMutableArray array];
+    NSMutableArray *requestInterceptors = [NSMutableArray array];
 
     for (NSObject *obj in proposedRequestInterceptors) {
-        if (![obj conformsToProtocol:@protocol(CDTHTTPInterceptor)]) {
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ doesn't conform to protocol \
-                       CDTURLSessionInterceptor, skipping",
-                       obj);
-            continue;
+        if ([obj respondsToSelector:@selector(interceptRequestInContext:)]) {
+            [requestInterceptors addObject:obj];
         }
-
-        if (![obj respondsToSelector:@selector(interceptRequestInContext:)]) {
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ doesn't respond to \
-                       interceptRequestInContext:, skipping",
-                       obj);
-            continue;
-        }
-
-        [acc addObject:obj];
     }
 
-    return [NSArray arrayWithArray:acc];
+    return [NSArray arrayWithArray:requestInterceptors];
+}
+
+/**
+ Copy the interceptor array, filtering out non-compliant classes.
+
+ We do this once during `-init...`. This checks for responding to `interceptResponseInContext:`
+ as we're creating a response interceptor array, not a request one.
+ */
+- (nonnull NSArray *)filterResponseInterceptors:(nonnull NSArray *)proposedResponseInterceptors
+{
+    NSMutableArray *responseInterceptors = [NSMutableArray array];
+
+    for (NSObject *obj in proposedResponseInterceptors) {
+        if ([obj respondsToSelector:@selector(interceptResponseInContext:)]) {
+            [responseInterceptors addObject:obj];
+        }
+    }
+
+    return [NSArray arrayWithArray:responseInterceptors];
 }
 
 @end
