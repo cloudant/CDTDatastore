@@ -26,6 +26,38 @@
 #import "TD_Revision.h"
 #import "TDPuller.h"
 #import "TDPusher.h"
+#import "AllNullResponseURLProtocol.h"
+
+@interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
+
+@property (nonatomic) BOOL changesFeedRequestMade;
+
+@end
+
+@implementation ChangesFeedRequestCheckInterceptor
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _changesFeedRequestMade = NO;
+    }
+    return self;
+}
+
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
+{
+    // determines if the interceptor was run before request
+    NSURL *url = context.request.URL;
+
+    if ([[url path] containsString:@"/_changes"]) {
+        self.changesFeedRequestMade = YES;
+    }
+
+    return context;
+}
+
+@end
 
 @interface CDTReplicationTests : CloudantSyncTests
 
@@ -33,6 +65,37 @@
 
 @implementation CDTReplicationTests
 
+- (void)testFiltersWithChangesFeed
+{
+    NSError *error;
+    // we need a real live remote here, so the reachability test before the replication starts
+    // passes, it doesn't need a couch server, since the NSURLProtocol will 404 any request.
+    NSString *remoteUrl = @"https://example.com";
+
+    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
+
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull =
+        [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl] target:tmp];
+    ChangesFeedRequestCheckInterceptor *interceptor =
+        [[ChangesFeedRequestCheckInterceptor alloc] init];
+    [pull addInterceptor:interceptor];
+    CDTReplicatorFactory *replicatorFactory =
+        [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+
+    CDTReplicator *replicator = [replicatorFactory oneWay:pull error:&error];
+
+    [replicator startWithError:&error];
+
+    while (replicator.state != CDTReplicatorStateComplete &&
+           replicator.state != CDTReplicatorStateError) {
+        NSLog(@"Replicating......");
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    }
+
+    XCTAssertTrue(interceptor.changesFeedRequestMade);
+    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
+}
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
     
@@ -43,12 +106,14 @@
 -(void)testDictionaryForPullReplicationDocument
 {
     NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
-    NSDictionary *expectedDictionary = @{@"target":@"test_database",
-                                         @"source": remoteUrl,
-                                         @"filter": @"myddoc/myfilter",
-                                         @"query_params":@{@"min":@23, @"max":@43}};
+    NSDictionary *expectedDictionary = @{
+        @"target" : @"test_database",
+        @"source" : remoteUrl,
+        @"filter" : @"myddoc/myfilter",
+        @"query_params" : @{@"min" : @23, @"max" : @43},
+        @"interceptors" : @[]
+    };
 
-    
     NSError *error;
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl]
@@ -76,9 +141,11 @@
 -(void)testDictionaryForPushReplicationDocument
 {
     NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
-    NSDictionary *expectedDictionary = @{@"source":@"test_database",
-                                         @"target": remoteUrl};
-    
+    NSDictionary *expectedDictionary =
+        @{ @"source" : @"test_database",
+           @"target" : remoteUrl,
+           @"interceptors" : @[] };
+
     NSError *error;
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     

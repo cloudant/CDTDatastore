@@ -97,6 +97,18 @@
 
 @implementation CDTURLSessionTests
 
+- (void)setUp
+{
+    [super setUp];
+    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
+}
+
+- (void)tearDown
+{
+    [super tearDown];
+    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
+}
+
 - (void)testInterceptorsSetCorrectly
 {
     CDTCountingHTTPRequestInterceptor *countingInterceptor =
@@ -165,8 +177,6 @@
 
 - (void)testMaxNumberOfRetriesEnforced
 {
-    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
-
     CDTRetryingHTTPInterceptor *replayingInterceptor =
         [[CDTRetryingHTTPInterceptor alloc] initWithNumberOfRetires:1000000];
     CDTURLSession *session = [[CDTURLSession alloc] initWithDelegate:nil
@@ -188,8 +198,6 @@
     }
     // it should be called 11 times because we retry a request 10 times making 11 reqests in total
     XCTAssertEqual(replayingInterceptor.timesCalled, 11);
-
-    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
 }
 
 @end

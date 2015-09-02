@@ -48,6 +48,7 @@
                 conflicts:(BOOL)includeConflicts
              lastSequence:(id)lastSequenceID
                    client:(id<TDChangeTrackerClient>)client
+                  session:(CDTURLSession*)session
 {
     NSParameterAssert(databaseURL);
     NSParameterAssert(client);
@@ -59,7 +60,8 @@
                                                                         mode:mode
                                                                    conflicts:includeConflicts
                                                                 lastSequence:lastSequenceID
-                                                                      client:client];
+                                                                      client:client
+                                                                     session:session];
         }
         _databaseURL = databaseURL;
         _client = client;
