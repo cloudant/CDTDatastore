@@ -25,7 +25,7 @@
 
 @property (readonly) CDTDatastore *datastore;
 @property (readonly) CDTTodoReplicator *todoReplicator;
-@property (nonatomic,strong) NSArray *taskRevisions;
+@property (nonatomic, strong) NSArray *todoList;
 @property (nonatomic,readonly) BOOL showOnlyCompleted;
 
 @property (nonatomic,weak) UISegmentedControl *showCompletedSegmentedControl;
@@ -38,23 +38,11 @@
 
 @implementation CDTViewController
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-}
-
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
     [self reloadTasks];
     [self.tableView reloadData];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 #pragma mark Data managment
@@ -65,13 +53,10 @@
 - (void)addTodoItem:(NSString*)description {
     CDTTodo *todo = [[CDTTodo alloc] initWithDescription:description
                                                completed:NO];
-
-    CDTDocumentRevision *revision = [CDTDocumentRevision revision];
-    revision.body = [todo toDict];
     
     NSError *error;
-    [self.datastore createDocumentFromRevision:revision error:&error];
-    
+    [self.datastore createDocumentFromRevision:todo.rev error:&error];
+
     if (error != nil) {
         NSLog(@"Error adding item: %@", error);
     }
@@ -80,11 +65,11 @@
 /**
  Delete a todo item from the database.
  */
-- (void)deleteTodoItem:(CDTDocumentRevision*)revision {
-    
+- (void)deleteTodoItem:(CDTTodo *)todo
+{
     NSError *error;
-    [self.datastore deleteDocumentFromRevision:revision error:&error];
-    
+    [self.datastore deleteDocumentFromRevision:todo.rev error:&error];
+
     if (error != nil) {
         NSLog(@"Error deleting item: %@", error);
     }
@@ -93,19 +78,14 @@
 /**
  Toggle the completed state for a todo in the database.
  */
-- (BOOL)toggleTodoCompletedForRevision:(CDTDocumentRevision*)revision {
-
-    CDTTodo *todo = [CDTTodo fromDict:revision.body];
+- (BOOL)toggleTodoCompletedForRevision:(CDTTodo *)todo
+{
+    NSLog(@"Toggling completed status for %@", todo.taskDescription);
     todo.completed = !todo.completed;
 
-    NSLog(@"Toggling completed status for %@", todo.taskDescription);
-
-    CDTDocumentRevision *mutableRevision = [revision mutableCopy];
-    mutableRevision.body = [todo toDict];
-    
     NSError *error;
-    [self.datastore updateDocumentFromRevision:mutableRevision error:&error];
-    
+    [self.datastore updateDocumentFromRevision:todo.rev error:&error];
+
     if (error != nil) {
         NSLog(@"Error updating item: %@", error);
         return !todo.completed;  // we didn't manage to save the new revision
@@ -131,10 +111,10 @@
 
     NSMutableArray *tasks = [NSMutableArray array];
     [result enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger idx, BOOL *stop) {
-        [tasks addObject:rev];
+        [tasks addObject:[[CDTTodo alloc] initWithDocumentRevision:rev]];
     }];
 
-    self.taskRevisions = [NSArray arrayWithArray:tasks];
+    self.todoList = [NSArray arrayWithArray:tasks];
 }
 
 
@@ -204,13 +184,13 @@
  We also animate the transition between lists.
  */
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"Selected row at [%i, %i]", indexPath.section, indexPath.row);
+    NSLog(@"Selected row at [%li, %li]", (long)indexPath.section, (long)indexPath.row);
     if (indexPath.section == 1) {
         // Get the revision, toggle completed status on the body
         // and save a new revision, passing the current revision
         // ID and rev.
-        CDTDocumentRevision *revision = [self.taskRevisions objectAtIndex:indexPath.row];
-        BOOL nowComplete = [self toggleTodoCompletedForRevision:revision];
+        CDTTodo *todo = [self.todoList objectAtIndex:indexPath.row];
+        BOOL nowComplete = [self toggleTodoCompletedForRevision:todo];
         [self reloadTasks];
 
         // As we're using a segmented control, animate the change
@@ -240,10 +220,13 @@
 /**
  Todo items can be deleted using the swipe-to-delete gesture.
  */
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView
+    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+     forRowAtIndexPath:(NSIndexPath *)indexPath
+{
     if (editingStyle == UITableViewCellEditingStyleDelete) {
-        CDTDocumentRevision *revision = [self.taskRevisions objectAtIndex:indexPath.row];
-        [self deleteTodoItem:revision];
+        CDTTodo *todo = [self.todoList objectAtIndex:indexPath.row];
+        [self deleteTodoItem:todo];
         [self reloadTasks];
         [self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
                               withRowAnimation:UITableViewRowAnimationLeft];
@@ -260,12 +243,7 @@
     if (section == 0) {
         return 2;
     } else {
-        int count = self.taskRevisions.count;
-        if (count < 0) { // error
-            return 0;
-        } else {
-            return count;
-        }
+        return self.todoList.count;
     }
 }
 
@@ -301,10 +279,7 @@
     } else {
         // Item cell
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TodoCell"];
-        CDTDocumentRevision *task = [self.taskRevisions objectAtIndex:indexPath.row];
-        
-        NSDictionary *body = task.body;
-        CDTTodo *todo = [CDTTodo fromDict:body];
+        CDTTodo *todo = [self.todoList objectAtIndex:indexPath.row];
         cell.textLabel.text = todo.taskDescription;
         if (todo.completed) {
             cell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -325,9 +300,9 @@
 {
     [self.tableView beginUpdates];
 
-    NSInteger oldCount = self.taskRevisions.count;
+    NSInteger oldCount = self.todoList.count;
     [self reloadTasks];
-    NSInteger newCount = self.taskRevisions.count;
+    NSInteger newCount = self.todoList.count;
 
     UITableViewRowAnimation directionIn, directionOut;
     if (self.showOnlyCompleted) {
@@ -347,7 +322,7 @@
         [self.tableView reloadRowsAtIndexPaths:ips withRowAnimation:directionIn];
         [ips removeAllObjects];
 
-        for (int i = newCount; i < oldCount; i++) {
+        for (NSInteger i = newCount; i < oldCount; i++) {
             [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
         }
         [self.tableView deleteRowsAtIndexPaths:ips withRowAnimation:directionIn];
@@ -360,7 +335,7 @@
         [self.tableView reloadRowsAtIndexPaths:ips withRowAnimation:directionIn];
         [ips removeAllObjects];
 
-        for (int i = oldCount; i < newCount; i++) {
+        for (NSInteger i = oldCount; i < newCount; i++) {
             [ips addObject:[NSIndexPath indexPathForRow:i inSection:1]];
         }
         [self.tableView insertRowsAtIndexPaths:ips withRowAnimation:directionOut];

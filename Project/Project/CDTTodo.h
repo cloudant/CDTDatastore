@@ -16,8 +16,10 @@
 
 #import <Foundation/Foundation.h>
 
+@class CDTDocumentRevision;
+
 /**
- A simple class that maps from a JSON document to a Todo task, to
+ A simple class that maps from a document revision to a Todo task, to
  prevent typos in keys and hold the type information in one place.
  */
 @interface CDTTodo : NSObject
@@ -25,9 +27,19 @@
 @property (nonatomic,strong) NSString *taskDescription;
 @property (nonatomic) BOOL completed;
 
+/**
+ Uptodate version of the CDTDocumentRevision associated with this task.
+ */
+@property (nonatomic, strong, readonly) CDTDocumentRevision *rev;
+
+/**
+ Create a new task
+ */
 -(instancetype)initWithDescription:(NSString*)description completed:(BOOL)completed;
 
-+(instancetype)fromDict:(NSDictionary*)dict;
--(NSDictionary*)toDict;
+/**
+ Initialise an existing task from a document revision.
+ */
+- (instancetype)initWithDocumentRevision:(CDTDocumentRevision *)rev;
 
 @end
