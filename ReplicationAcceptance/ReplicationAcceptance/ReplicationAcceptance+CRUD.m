@@ -59,23 +59,22 @@
             if (error.code != 404) {  // new doc, so not error
                 XCTAssertNil(error, @"Error creating docs: %@", error);
                 XCTAssertNotNil(rev, @"Error creating docs: rev was nil");
+            } else {
+                rev = [CDTDocumentRevision revisionWithDocId:docId];
             }
+        } else {
+            rev = [CDTDocumentRevision revisionWithDocId:docId];
         }
 
-        error = nil;
-        CDTMutableDocumentRevision *mdrev = [CDTMutableDocumentRevision revision];
-        mdrev.docId = docId;
-        mdrev.body = @{@"hello": @"world", @"docnum":@(i)};
-        
-        if (rev == nil) {  // we need to update an existing rev
-            rev = [self.datastore createDocumentFromRevision:mdrev
-                                                       error:&error];
+        rev.body = [@{ @"hello" : @"world", @"docnum" : @(i) } mutableCopy];
+
+        if (rev.revId == nil) {  // new doc
+            rev = [self.datastore createDocumentFromRevision:rev error:&error];
             //            NSLog(@"Created %@", docId);
             XCTAssertNil(error, @"Error creating doc: %@", error);
             XCTAssertNotNil(rev, @"Error creating doc: rev was nil");
-        } else {
-            mdrev.sourceRevId = rev.revId;
-            rev = [self.datastore updateDocumentFromRevision:mdrev error:&error];
+        } else {  // update
+            rev = [self.datastore updateDocumentFromRevision:rev error:&error];
 
             //            NSLog(@"Updated %@", docId);
             XCTAssertNil(error, @"Error updating doc: %@", error);
@@ -92,12 +91,11 @@
 -(void) createLocalDocWithId:(NSString*)docId revs:(NSInteger)n_revs
 {
     NSError *error;
-    
-    CDTMutableDocumentRevision *mdrev = [CDTMutableDocumentRevision revision];
-    mdrev.docId = docId;
-    mdrev.body = @{@"hello": @"world"};
-    
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mdrev error:&error];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
+
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
 
     XCTAssertNil(error, @"Error creating docs: %@", error);
     XCTAssertNotNil(rev, @"Error creating docs: rev was nil, but so was error");
@@ -113,7 +111,7 @@
 {
     NSError *error;
     for (long i = 0; i < n_revs-1; i++) {
-        rev = [self.datastore updateDocumentFromRevision:[rev mutableCopy] error:&error];
+        rev = [self.datastore updateDocumentFromRevision:rev error:&error];
     }
     return rev;
 }

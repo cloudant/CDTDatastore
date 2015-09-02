@@ -126,10 +126,9 @@
     NSError *error;
     
     NSString *docId = @"document1";
-    CDTMutableDocumentRevision *mrev = [CDTMutableDocumentRevision revision];
-    mrev.docId = docId;
-    mrev.body =@{@"hello": @12};
-    
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @12 } mutableCopy];
+
     NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
     NSString *content = @"blahblah";
     NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
@@ -141,20 +140,18 @@
     
     [originalAttachments setObject:data forKey:name];
 
-    
-    mrev.attachments = attachments;
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
-    
+    rev.attachments = attachments;
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
+
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:1],
                   @"Incorrect number of attachments");
     
     [self pushTo:remoteDbURL from:self.datastore];
-    
-    CDTMutableDocumentRevision *mRev = [rev mutableCopy];
-    mRev.attachments = [@{} mutableCopy];
-    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:mRev error:&error];
-    
+
+    rev.attachments = [@{} mutableCopy];
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:rev error:&error];
+
     XCTAssertNotNil(rev2, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev2 equalTo:0],
                   @"Incorrect number of attachments");
@@ -313,10 +310,9 @@
     NSError *error;
     
     NSString *docId = @"document1";
-    CDTMutableDocumentRevision *mrev = [CDTMutableDocumentRevision revision];
-    mrev.docId = docId;
-    mrev.body =@{@"hello": @12};
-    
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @12 } mutableCopy];
+
     NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
     for (NSInteger i = 1; i <= nAttachments; i++) {
         NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
@@ -329,10 +325,9 @@
         
         [originalAttachments setObject:data forKey:name];
     }
-    
-    mrev.attachments = attachments;
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
 
+    rev.attachments = attachments;
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
 
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
@@ -394,10 +389,9 @@
     NSString *docId = @"document1";
     
     NSError *error;
-    CDTMutableDocumentRevision *mrev = [CDTMutableDocumentRevision revision];
-    mrev.docId = docId;
-    mrev.body =@{@"hello": @12};
-    
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @12 } mutableCopy];
+
     NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
     for (NSInteger i = 1; i <= nAttachments; i++) {
         NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
@@ -410,9 +404,9 @@
         
         [originalAttachments setObject:data forKey:name];
     }
-    
-    mrev.attachments = attachments;
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
+
+    rev.attachments = attachments;
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
 
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
@@ -433,11 +427,10 @@
         NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
         [attachments removeObjectForKey:name];
     }
-    mrev.attachments = attachments;
-    mrev.sourceRevId = rev.revId;
-    
-    rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
-    
+    rev.attachments = attachments;
+
+    rev = [self.datastore updateDocumentFromRevision:rev error:nil];
+
     XCTAssertNotNil(rev, @"Attachments are not deleted.");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
                  @"Incorrect number of attachments");
@@ -494,10 +487,9 @@
     NSString *docId = @"document1";
     
     NSError *error;
-    CDTMutableDocumentRevision *mrev = [CDTMutableDocumentRevision revision];
-    mrev.docId = docId;
-    mrev.body =@{@"hello": @12};
-    
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @12 } mutableCopy];
+
     NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
     for (NSInteger i = 1; i <= nAttachments; i++) {
         NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
@@ -510,10 +502,10 @@
         
         [originalAttachments setObject:data forKey:name];
     }
-    
-    mrev.attachments = attachments;
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mrev error:&error];
-    
+
+    rev.attachments = attachments;
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
+
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
                  @"Incorrect number of attachments");
@@ -533,11 +525,10 @@
         NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
         [attachments removeObjectForKey:name];
     }
-    mrev.attachments = attachments;
-    mrev.sourceRevId = rev.revId;
-    
-    rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
-    
+    rev.attachments = attachments;
+
+    rev = [self.datastore updateDocumentFromRevision:rev error:nil];
+
     XCTAssertNotNil(rev, @"Attachments are not deleted.");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments/2],
                  @"Incorrect number of attachments");
@@ -703,9 +694,8 @@
                                                                           name:attachmentName
                                                                           type:@"text/plain"];    
     NSError *error = nil;
-    CDTMutableDocumentRevision *mrev = [rev mutableCopy];
-    [mrev.attachments setObject:attachment forKey:attachmentName];
-    rev = [self.datastore updateDocumentFromRevision:mrev error:&error];
+    [rev.attachments setObject:attachment forKey:attachmentName];
+    rev = [self.datastore updateDocumentFromRevision:rev error:&error];
 
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     
@@ -774,9 +764,8 @@
     
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId
                                                            error:nil];
-    CDTMutableDocumentRevision *mrev = [rev mutableCopy];
-    [mrev.attachments removeObjectForKey:attachmentName];
-    rev = [self.datastore updateDocumentFromRevision:mrev error:nil];
+    [rev.attachments removeObjectForKey:attachmentName];
+    rev = [self.datastore updateDocumentFromRevision:rev error:nil];
 
     XCTAssertNotNil(rev, @"Unable to add attachments to document");
     XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:(NSUInteger)0],
