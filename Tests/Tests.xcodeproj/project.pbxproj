@@ -15,11 +15,13 @@
 		27389E3618534E050027A404 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
 		27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
+		279709B91B99CB09001DEC59 /* AllNullResponseURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */; settings = {ASSET_TAGS = (); }; };
 		27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CCEDCB187AD64F006F3C66 /* InfoPlist.strings */; };
 		27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E2E18534E050027A404 /* CloudantSyncTests.m */; };
 		27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27D96E4418E1E0D400DEA006 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 27D96E4218E1E0D400DEA006 /* lorem.txt */; };
 		27D96E4518E1E0D400DEA006 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 27D96E4218E1E0D400DEA006 /* lorem.txt */; };
+		27DE648B1B99A1C700BFED48 /* AllNullResponseURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */; settings = {ASSET_TAGS = (); }; };
 		27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
@@ -188,6 +190,8 @@
 		27CCEDCE187AD64F006F3C66 /* Tests_OSX.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests_OSX.m; sourceTree = "<group>"; };
 		27CCEDD0187AD64F006F3C66 /* Tests OSX-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests OSX-Prefix.pch"; sourceTree = "<group>"; };
 		27D96E4218E1E0D400DEA006 /* lorem.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lorem.txt; path = Assets/lorem.txt; sourceTree = "<group>"; };
+		27DE64891B99A1C700BFED48 /* AllNullResponseURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllNullResponseURLProtocol.h; sourceTree = "<group>"; };
+		27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AllNullResponseURLProtocol.m; sourceTree = "<group>"; };
 		27F43D4718E99C31003E8422 /* AmazonMD5Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AmazonMD5Util.h; sourceTree = "<group>"; };
 		27F43D4818E99C31003E8422 /* AmazonMD5Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AmazonMD5Util.m; sourceTree = "<group>"; };
 		5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
@@ -529,6 +533,8 @@
 				CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */,
 				CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */,
 				CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */,
+				27DE64891B99A1C700BFED48 /* AllNullResponseURLProtocol.h */,
+				27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -753,6 +759,7 @@
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				EC0C835E1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
+				27DE648B1B99A1C700BFED48 /* AllNullResponseURLProtocol.m in Sources */,
 				CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
 				EC0C83421AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
@@ -831,6 +838,7 @@
 				CD25B2851AFA49E2001113BB /* CDTBlobDataTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				EC0C835F1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
+				279709B91B99CB09001DEC59 /* AllNullResponseURLProtocol.m in Sources */,
 				EC0C83431AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,

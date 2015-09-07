@@ -1,9 +1,9 @@
 //
-//  CDTHTTPInterceptorContext.m
-//  
+//  CannedResponseURLProtocol.h
+//  Tests
 //
-//  Created by Rhys Short on 17/08/2015.
-//
+//  Created by Michael Rhodes on 04/09/2015.
+//  Copyright (c) 2015 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -14,24 +14,13 @@
 //  and limitations under the License.
 //
 
-#import "CDTHTTPInterceptorContext.h"
+#import <Foundation/Foundation.h>
 
-@implementation CDTHTTPInterceptorContext
-
--(instancetype)init {
-    NSAssert(NO, @"Call the designated initaliser");
-    return nil;
-}
-
-- (instancetype)initWithRequest:(NSMutableURLRequest *)request {
-    NSParameterAssert(request);
-    self = [super init];
-    
-    if (self) {
-        _request = request;
-        _shouldRetry = NO;
-    }
-    return self;
-}
+/**
+ A simple NSURLProtocol which responds to *every* request, and responds with a 404 and
+ empty data. Intended to stub where we don't care about the request, but want to avoid
+ side-effects.
+ */
+@interface AllNullResponseURLProtocol : NSURLProtocol
 
 @end

@@ -18,8 +18,8 @@
 
 @interface CDTURLSessionTask : NSObject
 
-@property (nonatomic, copy) void (^completionHandler)
-    (NSData *data, NSURLResponse *response, NSError *error);
+@property (nullable, nonatomic, copy) void (^completionHandler)
+    (NSData *__nullable data, NSURLResponse *__nullable response, NSError *__nullable error);
 
 /*
  * The current state of the task within the session.
