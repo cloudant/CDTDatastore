@@ -138,7 +138,9 @@ NSString *docId = revision.docId;
 CDTDocumentRevision *retrieved = [datastore getDocumentWithId:docId
                                                         error:&error];
 ```
-If you are using Swift, install the libraries as per the instructions above, and configure a bridging header for your project. Pull in the CloudantSync.h header into the bridging header, and you should be good to go:
+If you are using Swift, install the libraries as per the instructions above, 
+and configure a bridging header for your project. Pull in the CloudantSync.h 
+header into the bridging header, and you should be good to go:
 
 ```objc
 #import <CloudantSync.h>
@@ -255,7 +257,10 @@ CDTQResultSet *result = [datastore find:query];
 
 See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md).
 
-As of version 0.16.0 the indexing and querying code has been re-written and has more features than the previous implementation.  For details about migrating to a 0.16.0+ indexing and query version from a previous version see [Index and Querying Migration](https://github.com/cloudant/CDTDatastore/blob/master/doc/query-migration.md).
+As of version 0.16.0 the indexing and querying code has been re-written and 
+has more features than the previous implementation.  For details about 
+migrating to a 0.16.0+ indexing and query version from a previous version 
+see [Index and Querying Migration](https://github.com/cloudant/CDTDatastore/blob/master/doc/query-migration.md).
 
 ### Conflicts
 
