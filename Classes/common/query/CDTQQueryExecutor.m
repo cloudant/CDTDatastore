@@ -17,7 +17,7 @@
 #import "CDTQIndexManager.h"
 #import "CDTQResultSet.h"
 #import "CDTQQuerySqlTranslator.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 #import "CDTQUnindexedMatcher.h"
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
@@ -115,9 +115,10 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
     CDTQUnindexedMatcher *matcher = [self matcherForIndexCoverage:indexesCoverQuery selector:query];
 
     if (matcher) {
-        LogWarn(@"Query could not be executed using indexes alone; falling back to filtering "
-                @"documents themselves. This will be VERY SLOW as each candidate document is "
-                @"loaded from the datastore and matched against the query selector.");
+        CDTLogWarn(CDTQ_LOG_CONTEXT,
+                   @"Query could not be executed using indexes alone; falling back to filtering "
+                   @"documents themselves. This will be VERY SLOW as each candidate document is "
+                   @"loaded from the datastore and matched against the query selector.");
     }
 
     CDTDatastore *ds = self.datastore;
@@ -160,12 +161,15 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
 
     for (NSDictionary *clause in sortDocument) {
         if (![clause isKindOfClass:[NSDictionary class]]) {
-            LogError(@"Sort clauses must be dict, e.g., {name: asc}. Did you just use a string?");
+            CDTLogError(
+                CDTQ_LOG_CONTEXT,
+                @"Sort clauses must be dict, e.g., {name: asc}. Did you just use a string?");
             return NO;
         }
 
         if (clause.count > 1) {
-            LogError(@"Each order clause can only be a single field, %@", clause);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Each order clause can only be a single field, %@",
+                        clause);
             return NO;
         }
 
@@ -173,12 +177,14 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
         NSString *direction = clause[fieldName];
 
         if (![fieldName isKindOfClass:[NSString class]]) {
-            LogError(@"Field names in sort clause must be strings, %@", fieldName);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Field names in sort clause must be strings, %@",
+                        fieldName);
             return NO;
         }
 
         if (![@[ @"ASC", @"DESC" ] containsObject:[direction uppercaseString]]) {
-            LogError(@"Order direction %@ not valid, use `asc` or `desc`", direction);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Order direction %@ not valid, use `asc` or `desc`",
+                        direction);
             return NO;
         }
     }
@@ -193,12 +199,14 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
 {
     for (NSString *field in fields) {
         if (![field isKindOfClass:[NSString class]]) {
-            LogError(@"Projection field should be string object: %@", [field description]);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Projection field should be string object: %@",
+                        [field description]);
             return NO;
         }
 
         if ([field rangeOfString:@"."].location != NSNotFound) {
-            LogError(@"Projection field cannot use dotted notation: %@", [field description]);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Projection field cannot use dotted notation: %@",
+                        [field description]);
             return NO;
         }
     };
@@ -209,7 +217,8 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
 + (NSArray *)normaliseFields:(NSArray *)fields
 {
     if (fields.count == 0) {
-        LogWarn(@"Projection fields array is empty, disabling project for this query");
+        CDTLogWarn(CDTQ_LOG_CONTEXT,
+                   @"Projection fields array is empty, disabling project for this query");
         return nil;
     }
 
@@ -349,7 +358,7 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
 {
     NSString *chosenIndex = [CDTQQueryExecutor chooseIndexForSort:sortDocument fromIndexes:indexes];
     if (chosenIndex == nil) {
-        LogError(@"No single index can satisfy order %@", sortDocument);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"No single index can satisfy order %@", sortDocument);
         return nil;
     }
 

@@ -18,7 +18,6 @@
 #import "CDTQResultSet.h"
 #import "CDTQValueExtractor.h"
 #import "CDTFetchChanges.h"
-#import "CDTQLogging.h"
 #import "CDTLogging.h"
 
 #import "CloudantSync.h"
@@ -109,7 +108,7 @@
             *error = [NSError errorWithDomain:CDTQIndexManagerErrorDomain
                                          code:CDTQIndexErrorSqlError
                                      userInfo:userInfo];
-            LogError(@"Problem updating index %@", indexName);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Problem updating index %@", indexName);
         }
     }
 
@@ -133,60 +132,57 @@
 
     fetcher.documentChangedBlock = ^(CDTDocumentRevision *revision) {
 
-        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"documentChangedBlock: <%@,%@>", indexName,
-                      revision.docId);
+      CDTLogVerbose(CDTQ_LOG_CONTEXT, @"documentChangedBlock: <%@,%@>", indexName, revision.docId);
 
-        [updateBatch addObject:revision];
+      [updateBatch addObject:revision];
 
-        if (updateBatch.count > 500) {
-            CDTQIndexUpdater *self = weakSelf;
-            if (self) {
-                success =
-                    success &&
-                    [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
-                [updateBatch removeAllObjects];
-            }
-        }
+      if (updateBatch.count > 500) {
+          CDTQIndexUpdater *self = weakSelf;
+          if (self) {
+              success =
+                  success &&
+                  [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
+              [updateBatch removeAllObjects];
+          }
+      }
 
     };
 
     fetcher.documentWithIDWasDeletedBlock = ^(NSString *docId) {
 
-        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"documentWithIDWasDeletedBlock: <%@,%@>", indexName,
-                      docId);
+      CDTLogVerbose(CDTQ_LOG_CONTEXT, @"documentWithIDWasDeletedBlock: <%@,%@>", indexName, docId);
 
-        [deleteBatch addObject:docId];
+      [deleteBatch addObject:docId];
 
-        if (deleteBatch.count > 500) {
-            CDTQIndexUpdater *self = weakSelf;
-            if (self) {
-                success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
-                [deleteBatch removeAllObjects];
-            }
-        }
+      if (deleteBatch.count > 500) {
+          CDTQIndexUpdater *self = weakSelf;
+          if (self) {
+              success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
+              [deleteBatch removeAllObjects];
+          }
+      }
 
     };
 
-    fetcher.fetchRecordChangesCompletionBlock =
-        ^(NSString *newSeqVal, NSString *prevSeqVal, NSError *error) {
+    fetcher.fetchRecordChangesCompletionBlock = ^(NSString *newSeqVal, NSString *prevSeqVal,
+                                                  NSError *error) {
 
-        CDTLogVerbose(CDTQ_LOGGING_CONTEXT, @"fetchRecordChangesCompletionBlock: <%@,%@>",
-                      indexName, newSeqVal);
+      CDTLogVerbose(CDTQ_LOG_CONTEXT, @"fetchRecordChangesCompletionBlock: <%@,%@>", indexName,
+                    newSeqVal);
 
-        CDTQIndexUpdater *self = weakSelf;
-        if (self) {
-            // Process any remaining updates and deletes
-            success =
-                success &&
-                [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
-            [updateBatch removeAllObjects];
-            success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
-            [deleteBatch removeAllObjects];
+      CDTQIndexUpdater *self = weakSelf;
+      if (self) {
+          // Process any remaining updates and deletes
+          success = success &&
+                    [self processUpdateBatch:updateBatch forIndex:indexName fieldNames:fieldNames];
+          [updateBatch removeAllObjects];
+          success = success && [self processDeleteBatch:deleteBatch forIndex:indexName];
+          [deleteBatch removeAllObjects];
 
-            if (success) {
-                [self updateMetadataForIndex:indexName lastSequence:[newSeqVal longLongValue]];
-            }
-        }
+          if (success) {
+              [self updateMetadataForIndex:indexName lastSequence:[newSeqVal longLongValue]];
+          }
+      }
 
     };
 
@@ -227,7 +223,8 @@
                 }
 
                 if (!success) {
-                    LogError(@"Updating index %@ failed, CDTSqlParts: %@", indexName, insert);
+                    CDTLogError(CDTQ_LOG_CONTEXT, @"Updating index %@ failed, CDTSqlParts: %@",
+                                indexName, insert);
                     break;
                 }
             }
@@ -325,7 +322,8 @@
     }
 
     if (n_arrays > 1) {
-        LogError(
+        CDTLogError(
+            CDTQ_LOG_CONTEXT,
             @"Indexing %@ in index %@ includes >1 array field; only array field per index allowed",
             rev.docId, indexName);
         return nil;
