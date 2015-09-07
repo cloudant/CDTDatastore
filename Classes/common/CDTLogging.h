@@ -37,9 +37,10 @@
 #define CDTTD_REMOTE_REQUEST_CONTEXT 14
 #define CDTTD_JSON_CONTEXT 15
 #define CDTTD_VIEW_CONTEXT 16
+#define CDTQ_LOG_CONTEXT 17
 
 #define CDTSTART_CONTEXT CDTINDEX_LOG_CONTEXT
-#define CDTEND_CONTEXT CDTTD_VIEW_CONTEXT
+#define CDTEND_CONTEXT CDTQ_LOG_CONTEXT
 
 #ifdef DEBUG
 
@@ -77,5 +78,17 @@ extern DDLogLevel CDTLoggingLevels[];
     LOG_MAYBE(CDTLogAsync, CDTLoggingLevels[context - CDTSTART_CONTEXT], DDLogFlagVerbose, context, nil, \
               __PRETTY_FUNCTION__, frmt, ##__VA_ARGS__)
 #define CDTChangeLogLevel(context, logLevel) CDTLoggingLevels[context - CDTSTART_CONTEXT] = logLevel
+
+// These macros were previously in the CDTQLogging.h header file, they now map onto
+// CDTLog* macros.
+#define CDTQ_LOGGING_CONTEXT CDTQ_LOG_CONTEXT
+
+#define LogError(frmt, ...) CDTLogError(CDTQ_LOG_CONTEXT, frmt, ##__VA_ARGS__)
+#define LogWarn(frmt, ...) CDTLogWarn(CDTQ_LOG_CONTEXT, frmt, ##__VA_ARGS__)
+#define LogInfo(frmt, ...) CDTLogInfo(CDTQ_LOG_CONTEXT, frmt, ##__VA_ARGS__)
+#define LogDebug(frmt, ...) CDTLogDebug(CDTQ_LOG_CONTEXT, frmt, ##__VA_ARGS__)
+#define LogVerbose(frmt, ...) CDTLogVerbose(CDTQ_LOG_CONTEXT, frmt, ##__VA_ARGS__)
+
+#define CDTQChangeLogLevel(level) CDTChangeLogLevel(CDTQ_LOG_CONTEXT, level)
 
 #endif
