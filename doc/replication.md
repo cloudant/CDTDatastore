@@ -195,3 +195,7 @@ self.replicator = [replicatorFactory oneWay:pushReplication error:&error];
 self.replicator.delegate = self.replicatorDelegate;
 [self.replicator startWithError:&error];
 ```
+
+## Customising HTTP requests made during replication
+
+This can be done with HTTP interceptors. These are documented [here](https://github.com/cloudant/CDTDatastore/blob/master/doc/httpinterceptors.md).
