@@ -39,6 +39,23 @@
 #import "ChangeTrackerNSURLProtocolTimedOut.h"
 #import "TDInternal.h"
 #import "CDTHTTPInterceptor.h"
+#import "CDTRATestContext.h"
+
+@interface CountingHTTPInterceptor : NSObject <CDTHTTPInterceptor>
+
+@property (nonatomic) int timesCalled;
+
+@end
+
+@implementation CountingHTTPInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
+{
+    self.timesCalled++;
+    return context;
+}
+
+@end
 
 @interface ReplicationAcceptance () 
 
@@ -174,7 +191,105 @@ static NSUInteger largeRevTreeSize = 1500;
 #pragma mark - Tests
 
 /**
- Load up a local database with n_docs with a single rev, then push it to 
+ Tests that the top level APIs for adding Interceptors correctly
+ propagate down the interceptors provided.
+ */
+- (void)testReplicationSuccessfullyRunsInterceptors
+{
+    // Create docs in local store
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:n_docs];
+
+    CountingHTTPInterceptor *interceptor = [[CountingHTTPInterceptor alloc] init];
+    CDTPullReplication *pull =
+        [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                           target:self.datastore];
+    [pull addInterceptor:interceptor];
+
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:pull error:nil];
+
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [replicator startWithError:nil];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+
+    XCTAssertGreaterThan(interceptor.timesCalled, 0);
+    int previousNumberOfTimesCalled = interceptor.timesCalled;
+
+    [pull clearInterceptors];
+    replicator = [self.replicatorFactory oneWay:pull error:nil];
+    [replicator startWithError:nil];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    XCTAssertEqual(previousNumberOfTimesCalled, interceptor.timesCalled);
+}
+
+/**
+ Verifies that a modifed context object is
+ successfully passed down the interceptor pipeline for requests.
+ **/
+- (void)testInterceptorRequestPipeline
+{
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:n_docs];
+
+    TestRequestPiplineInterceptor1 *first = [[TestRequestPiplineInterceptor1 alloc] init];
+    TestRequestPiplineInterceptor2 *second = [[TestRequestPiplineInterceptor2 alloc] init];
+
+    CDTPullReplication *pull =
+        [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                           target:self.datastore];
+    [pull addInterceptors:@[ first, second ]];
+
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:pull error:nil];
+
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [replicator startWithError:nil];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    XCTAssertTrue(second.expectedContextFound);
+}
+
+/**
+ Verifies that a modifed context object is
+ successfully passed down the interceptor pipeline for responses.
+ **/
+- (void)testInterceptorResponsePipeline
+{
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:n_docs];
+
+    TestResponsePiplineInterceptor1 *first = [[TestResponsePiplineInterceptor1 alloc] init];
+    TestResponsePiplineInterceptor2 *second = [[TestResponsePiplineInterceptor2 alloc] init];
+
+    CDTPullReplication *pull =
+        [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                           target:self.datastore];
+    [pull addInterceptors:@[ first, second ]];
+
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:pull error:nil];
+
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [replicator startWithError:nil];
+
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    XCTAssertTrue(second.expectedContextFound);
+}
+
+/**
+ Load up a local database with n_docs with a single rev, then push it to
  the configured remote database.
  */
 -(void)testPushLotsOfOneRevDocuments
