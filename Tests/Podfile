@@ -9,6 +9,7 @@ def import_pods
     pod 'Specta'
     pod 'Expecta'
     pod 'OCMock'
+    pod 'OHHTTPStubs'
 end
 
 target :ios do

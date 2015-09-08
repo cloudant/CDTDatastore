@@ -3,7 +3,15 @@
 //  Tests
 //
 //  Created by Rhys Short on 24/08/2015.
+//  Copyright (c) 2015 IBM Corp.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 //
 
 #import <XCTest/XCTest.h>
@@ -11,8 +19,7 @@
 #import "CDTURLSession.h"
 #import "CDTHTTPInterceptorContext.h"
 #import "CDTHTTPInterceptor.h"
-
-#import "AllNullResponseURLProtocol.h"
+#import <OHHTTPStubs/OHHTTPStubs.h>
 
 // Expose private vars used by tests
 @interface CDTURLSessionTask (Tests)
@@ -100,13 +107,18 @@
 - (void)setUp
 {
     [super setUp];
-    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {
+      return YES;
+    }
+        withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+          return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:404 headers:@{}];
+        }];
 }
 
 - (void)tearDown
 {
     [super tearDown];
-    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
+    [OHHTTPStubs removeAllStubs];
 }
 
 - (void)testInterceptorsSetCorrectly

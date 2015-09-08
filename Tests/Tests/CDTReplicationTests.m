@@ -26,8 +26,7 @@
 #import "TD_Revision.h"
 #import "TDPuller.h"
 #import "TDPusher.h"
-#import "AllNullResponseURLProtocol.h"
-
+#import <OHHTTPStubs/OHHTTPStubs.h>
 @interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
 
 @property (nonatomic) BOOL changesFeedRequestMade;
@@ -65,14 +64,21 @@
 
 @implementation CDTReplicationTests
 
+- (void)setUp { [super setUp]; }
+- (void)tearDown { [super tearDown]; }
 - (void)testFiltersWithChangesFeed
 {
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {
+      return YES;
+    }
+        withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+          return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:404 headers:@{}];
+        }];
+
     NSError *error;
     // we need a real live remote here, so the reachability test before the replication starts
     // passes, it doesn't need a couch server, since the NSURLProtocol will 404 any request.
     NSString *remoteUrl = @"https://example.com";
-
-    [NSURLProtocol registerClass:[AllNullResponseURLProtocol class]];
 
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     CDTPullReplication *pull =
@@ -94,7 +100,7 @@
     }
 
     XCTAssertTrue(interceptor.changesFeedRequestMade);
-    [NSURLProtocol unregisterClass:[AllNullResponseURLProtocol class]];
+    [OHHTTPStubs removeAllStubs];
 }
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
