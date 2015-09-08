@@ -21,7 +21,7 @@
 
 @property (nonnull, readwrite, nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic) BOOL shouldRetry;
-@property (nullable, readwrite, nonatomic, strong) NSURLResponse *response;
+@property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
 
 /**
  *  Unavaiable, use -initWithRequest
