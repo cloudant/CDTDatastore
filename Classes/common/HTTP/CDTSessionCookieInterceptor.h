@@ -1,9 +1,9 @@
 //
-//  CannedResponseURLProtocol.h
-//  Tests
+//  CDTSessionCookieInterceptor.h
 //
-//  Created by Michael Rhodes on 04/09/2015.
-//  Copyright (c) 2015 Cloudant. All rights reserved.
+//
+//  Created by Rhys Short on 08/09/2015.
+//  Copyright (c) 2015 IBM Corp.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -15,12 +15,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CDTHTTPInterceptor.h"
+#import "CDTMacros.h"
 
-/**
- A simple NSURLProtocol which responds to *every* request, and responds with a 404 and
- empty data. Intended to stub where we don't care about the request, but want to avoid
- side-effects.
- */
-@interface AllNullResponseURLProtocol : NSURLProtocol
+@interface CDTSessionCookieInterceptor : NSObject <CDTHTTPInterceptor>
+
+- (nullable instancetype)init NS_UNAVAILABLE;
+
+- (nullable instancetype)initWithUsername:(nonnull NSString*)username
+                                 password:(nonnull NSString*)password NS_DESIGNATED_INITIALIZER;
 
 @end

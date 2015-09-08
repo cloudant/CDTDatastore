@@ -15,19 +15,19 @@
 		27389E3618534E050027A404 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
 		27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
-		279709B91B99CB09001DEC59 /* AllNullResponseURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */; settings = {ASSET_TAGS = (); }; };
 		27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CCEDCB187AD64F006F3C66 /* InfoPlist.strings */; };
 		27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E2E18534E050027A404 /* CloudantSyncTests.m */; };
 		27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27D96E4418E1E0D400DEA006 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 27D96E4218E1E0D400DEA006 /* lorem.txt */; };
 		27D96E4518E1E0D400DEA006 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 27D96E4218E1E0D400DEA006 /* lorem.txt */; };
-		27DE648B1B99A1C700BFED48 /* AllNullResponseURLProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */; settings = {ASSET_TAGS = (); }; };
 		27F43D4918E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		27F43D4A18E99C31003E8422 /* AmazonMD5Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 27F43D4818E99C31003E8422 /* AmazonMD5Util.m */; };
 		640AB8661E6344B98E64E18E /* libPods-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D0295E40984E2788387EEE /* libPods-ios.a */; };
 		8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		9823C84B1B8B1ECD00154EC5 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */; };
+		985849EE1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; settings = {ASSET_TAGS = (); }; };
+		985849EF1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; settings = {ASSET_TAGS = (); }; };
 		985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188919D2CCEB000283E9 /* DatastoreConflicts.m */; };
@@ -190,14 +190,13 @@
 		27CCEDCE187AD64F006F3C66 /* Tests_OSX.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Tests_OSX.m; sourceTree = "<group>"; };
 		27CCEDD0187AD64F006F3C66 /* Tests OSX-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests OSX-Prefix.pch"; sourceTree = "<group>"; };
 		27D96E4218E1E0D400DEA006 /* lorem.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lorem.txt; path = Assets/lorem.txt; sourceTree = "<group>"; };
-		27DE64891B99A1C700BFED48 /* AllNullResponseURLProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllNullResponseURLProtocol.h; sourceTree = "<group>"; };
-		27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AllNullResponseURLProtocol.m; sourceTree = "<group>"; };
 		27F43D4718E99C31003E8422 /* AmazonMD5Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AmazonMD5Util.h; sourceTree = "<group>"; };
 		27F43D4818E99C31003E8422 /* AmazonMD5Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AmazonMD5Util.m; sourceTree = "<group>"; };
 		5F1D517F9EA361A799566573 /* Pods-ios.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ios.release.xcconfig"; path = "Pods/Target Support Files/Pods-ios/Pods-ios.release.xcconfig"; sourceTree = "<group>"; };
 		635BE7F70A3A4DFFA9455CDC /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */ = {isa = PBXFileReference; lastKnownFileType = file; name = schema6to7upgrade.touchdb; path = Assets/schema6to7upgrade.touchdb; sourceTree = "<group>"; };
 		9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTURLSessionTests.m; sourceTree = "<group>"; };
+		985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTSessionCookieInterceptorTests.m; sourceTree = "<group>"; };
 		985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTDatastoreEvents.m; path = Events/CDTDatastoreEvents.m; sourceTree = "<group>"; };
 		985A188919D2CCEB000283E9 /* DatastoreConflicts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreConflicts.m; sourceTree = "<group>"; };
 		985F84D3198BD3A4004D8713 /* AttachmentCRUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AttachmentCRUD.m; path = Attachments/AttachmentCRUD.m; sourceTree = "<group>"; };
@@ -491,6 +490,7 @@
 			children = (
 				989158DD1B8B7D6300FFF509 /* CDTURLSessionTaskTests.m */,
 				9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */,
+				985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */,
 			);
 			name = HTTP;
 			sourceTree = "<group>";
@@ -533,8 +533,6 @@
 				CD3FBCA31AB05A170032376E /* CDTHelperFixedKeyProvider.m */,
 				CD3FBCA41AB05A170032376E /* CDTHelperOneUseKeyProvider.h */,
 				CD3FBCA51AB05A170032376E /* CDTHelperOneUseKeyProvider.m */,
-				27DE64891B99A1C700BFED48 /* AllNullResponseURLProtocol.h */,
-				27DE648A1B99A1C700BFED48 /* AllNullResponseURLProtocol.m */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -759,7 +757,6 @@
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				EC0C835E1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
-				27DE648B1B99A1C700BFED48 /* AllNullResponseURLProtocol.m in Sources */,
 				CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
 				EC0C83421AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
@@ -775,6 +772,7 @@
 				EC0C83481AB217290051042F /* CDTQPerformanceTests.m in Sources */,
 				EC0C835C1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				989E6E22198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
+				985849EE1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */,
 				9F0D241A18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,
 				9FC082981913378F0024EA1E /* DatastoreConflictResolvers.m in Sources */,
 				EC0C83621AB217290051042F /* Tests.m in Sources */,
@@ -838,7 +836,6 @@
 				CD25B2851AFA49E2001113BB /* CDTBlobDataTests.m in Sources */,
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				EC0C835F1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
-				279709B91B99CB09001DEC59 /* AllNullResponseURLProtocol.m in Sources */,
 				EC0C83431AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
@@ -854,6 +851,7 @@
 				EC1D10881B27514300B98462 /* CDTQContainsInAnyOrderMatcher.m in Sources */,
 				CD2188E41AE571410036F59F /* CDTEncryptionKeychainUtilsAESTests.m in Sources */,
 				EC0C83491AB217290051042F /* CDTQPerformanceTests.m in Sources */,
+				985849EF1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */,
 				EC0C835D1AB217290051042F /* CDTQMatcherQueryExecutor.m in Sources */,
 				989E6E23198799AE00FB8510 /* DatastoreCRUD.m in Sources */,
 				9F0D241B18932DA700D3D04E /* TDSequenceMapTests.m in Sources */,

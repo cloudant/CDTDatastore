@@ -31,6 +31,12 @@
             <FileRef
                location = "group:Classes/common/HTTP/CDTURLSessionTask.m">
             </FileRef>
+            <FileRef
+               location = "group:/Users/rhys/XCodeProjects/CDTDatastore/Classes/common/HTTP/CDTSessionCookieInterceptor.h">
+            </FileRef>
+            <FileRef
+               location = "group:/Users/rhys/XCodeProjects/CDTDatastore/Classes/common/HTTP/CDTSessionCookieInterceptor.m">
+            </FileRef>
          </Group>
          <Group
             location = "container:"
