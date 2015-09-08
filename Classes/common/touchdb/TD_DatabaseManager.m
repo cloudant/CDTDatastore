@@ -227,6 +227,7 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                                isPush:(BOOL*)outIsPush
                               headers:(NSDictionary**)outHeaders
                            authorizer:(id<TDAuthorizer>*)outAuthorizer
+                     httpInterceptors:(NSArray**)interceptors
 {
     // http://wiki.apache.org/couchdb/Replication
     NSDictionary* sourceDict = parseSourceOrTarget(properties, @"source");
@@ -279,6 +280,10 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
         *outHeaders = $castIf(NSDictionary, properties[@"headers"]);
     }
 
+    if (interceptors) {
+        *interceptors = properties[@"interceptors"];
+    }
+
     //    if (outAuthorizer) {
     //        *outAuthorizer = nil;
     //        NSDictionary* auth = $castIf(NSDictionary, remoteDict[@"auth"]);
@@ -319,7 +324,8 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
                                     remote:NULL
                                     isPush:&push
                                    headers:NULL
-                                authorizer:NULL];
+                                authorizer:NULL
+                          httpInterceptors:NULL];
 }
 
 - (TDReplicator*)replicatorWithProperties:(NSDictionary*)properties status:(TDStatus*)outStatus
@@ -331,13 +337,15 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
     BOOL push;
     NSDictionary* headers;
     id<TDAuthorizer> authorizer;
+    NSArray* httpInterceptors;
 
     TDStatus status = [self parseReplicatorProperties:properties
                                            toDatabase:&db
                                                remote:&remote
                                                isPush:&push
                                               headers:&headers
-                                           authorizer:&authorizer];
+                                           authorizer:&authorizer
+                                     httpInterceptors:&httpInterceptors];
     if (TDStatusIsError(status)) {
         if (outStatus) *outStatus = status;
         return nil;
@@ -345,8 +353,11 @@ static NSDictionary* parseSourceOrTarget(NSDictionary* properties, NSString* key
 
     BOOL continuous = [$castIf(NSNumber, properties[@"continuous"]) boolValue];
 
-    TDReplicator* repl =
-        [[TDReplicator alloc] initWithDB:db remote:remote push:push continuous:continuous];
+    TDReplicator* repl = [[TDReplicator alloc] initWithDB:db
+                                                   remote:remote
+                                                     push:push
+                                               continuous:continuous
+                                             interceptors:httpInterceptors];
     if (!repl) {
         if (outStatus) *outStatus = kTDStatusServerError;
         return nil;

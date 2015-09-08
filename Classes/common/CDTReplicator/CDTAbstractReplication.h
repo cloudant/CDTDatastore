@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTHTTPInterceptor.h"
 
 @class CDTDatastore;
 
@@ -126,6 +127,16 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 
 */
 @property (nonatomic, copy) NSDictionary* optionalHeaders;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@property (nonnull, nonatomic, readonly, strong) NSArray* httpInterceptors;
+
+- (void)addInterceptor:(nonnull NSObject<CDTHTTPInterceptor>*)interceptor;
+- (void)addInterceptors:(nonnull NSArray*)interceptors;
+- (void)clearInterceptors;
+
+NS_ASSUME_NONNULL_END
 
 /**
  Returns the default "User-Agent" header value used in HTTP requests made during replication.

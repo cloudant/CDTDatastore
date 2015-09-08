@@ -56,6 +56,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 @property (nonatomic, strong) NSThread *replicatorThread;
 @property (nonatomic) BOOL replicatorStopped;
 @property (nonatomic, strong,readwrite) CDTURLSession *session;
+@property (nonatomic, strong) NSArray* interceptors;
 
 - (void) updateActive;
 - (void) fetchRemoteCheckpointDoc;
@@ -67,8 +68,11 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 + (NSString*)progressChangedNotification { return TDReplicatorProgressChangedNotification; }
 
 + (NSString*)stoppedNotification { return TDReplicatorStoppedNotification; }
-
-- (id)initWithDB:(TD_Database*)db remote:(NSURL*)remote push:(BOOL)push continuous:(BOOL)continuous
+- (instancetype)initWithDB:(TD_Database*)db
+                    remote:(NSURL*)remote
+                      push:(BOOL)push
+                continuous:(BOOL)continuous
+              interceptors:(NSArray*)interceptors
 {
     NSParameterAssert(db);
     NSParameterAssert(remote);
@@ -76,7 +80,11 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     // TDReplicator is an abstract class; instantiating one actually instantiates a subclass.
     if ([self class] == [TDReplicator class]) {
         Class klass = push ? [TDPusher class] : [TDPuller class];
-        return [[klass alloc] initWithDB:db remote:remote push:push continuous:continuous];
+        return [[klass alloc] initWithDB:db
+                                  remote:remote
+                                    push:push
+                              continuous:continuous
+                            interceptors:interceptors];
     }
 
     self = [super init];
@@ -91,6 +99,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         _sessionID = [$sprintf(@"repl%03d", ++sLastSessionID) copy];
         _replicatorThread = nil;
         _replicatorStopped = NO;
+        _interceptors = interceptors;
     }
     return self;
 }
@@ -262,7 +271,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 - (void) runReplicatorThread {
     self.session = [[CDTURLSession alloc] initWithDelegate:nil
                                             callbackThread:_replicatorThread
-                                       requestInterceptors:@[]];
+                                       requestInterceptors:self.interceptors];
     @autoreleasepool {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread starting...");
         

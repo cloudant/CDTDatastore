@@ -56,7 +56,11 @@ extern NSString* TDReplicatorStoppedNotification;
 + (NSString*)progressChangedNotification;
 + (NSString*)stoppedNotification;
 
-- (id)initWithDB:(TD_Database*)db remote:(NSURL*)remote push:(BOOL)push continuous:(BOOL)continuous;
+- (instancetype)initWithDB:(TD_Database*)db
+                    remote:(NSURL*)remote
+                      push:(BOOL)push
+                continuous:(BOOL)continuous
+              interceptors:(NSArray*)interceptors;
 
 @property (weak, readonly) TD_Database* db;
 @property (readonly) NSURL* remote;

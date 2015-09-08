@@ -43,15 +43,23 @@
 
 @implementation TDURLConnectionChangeTracker
 
-
--(instancetype) initWithDatabaseURL:(NSURL *)databaseURL mode:(TDChangeTrackerMode)mode conflicts:(BOOL)includeConflicts lastSequence:(id)lastSequenceID client:(id<TDChangeTrackerClient>)client
+- (instancetype)initWithDatabaseURL:(NSURL *)databaseURL
+                               mode:(TDChangeTrackerMode)mode
+                          conflicts:(BOOL)includeConflicts
+                       lastSequence:(id)lastSequenceID
+                             client:(id<TDChangeTrackerClient>)client
+                            session:(CDTURLSession *)session
 {
-    self = [super initWithDatabaseURL:databaseURL mode:mode conflicts:includeConflicts lastSequence:lastSequenceID client:client];
-    
+    NSParameterAssert(session);
+    self = [super initWithDatabaseURL:databaseURL
+                                 mode:mode
+                            conflicts:includeConflicts
+                         lastSequence:lastSequenceID
+                               client:client
+                              session:session];
+
     if(self){
-        _session = [[CDTURLSession alloc] initWithDelegate:self
-                                            callbackThread:[NSThread currentThread]
-                                       requestInterceptors:@[]];
+        _session = session;
     }
     return self;
 }

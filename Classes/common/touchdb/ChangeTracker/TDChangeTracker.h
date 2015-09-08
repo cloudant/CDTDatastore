@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTURLSession.h"
 @class TDChangeTracker;
 @protocol TDAuthorizer;
 
@@ -49,7 +50,8 @@ typedef enum TDChangeTrackerMode { kOneShot, kLongPoll, kContinuous } TDChangeTr
                      mode:(TDChangeTrackerMode)mode
                 conflicts:(BOOL)includeConflicts
              lastSequence:(id)lastSequenceID
-                   client:(id<TDChangeTrackerClient>)client;
+                   client:(id<TDChangeTrackerClient>)client
+                  session:(CDTURLSession*)session;
 
 @property (readonly, nonatomic) NSURL* databaseURL;
 @property (readonly, nonatomic) NSString* databaseName;
