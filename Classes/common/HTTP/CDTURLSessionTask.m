@@ -113,7 +113,7 @@
           completionHandler:^void(NSData *data, NSURLResponse *response, NSError *error) {
             __strong CDTURLSessionTask *strongSelf = weakSelf;
             if (strongSelf) {
-                ctx.response = response;
+                ctx.response = (NSHTTPURLResponse*)response;
                 for (NSObject<CDTHTTPInterceptor> *obj in strongSelf.responseInterceptors) {
                     ctx = [obj interceptResponseInContext:ctx];
                 }
