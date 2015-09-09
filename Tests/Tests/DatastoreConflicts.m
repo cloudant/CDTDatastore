@@ -112,20 +112,20 @@
         CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
                                                                               name:@"bonsai-boston"
                                                                               type:@"image/jpg"];
-        mutableRevision = [rev1 mutableCopy];
+        mutableRevision = [rev1 copy];
         mutableRevision.attachments = @{attachment.name:attachment};
         mutableRevision.body = @{@"foo2.a":@"bar2.a"};
         rev2a = [self.datastore updateDocumentFromRevision:mutableRevision error:&error];
         
     }
     else{
-        mutableRevision = [rev1 mutableCopy];
+        mutableRevision = [rev1 copy];
         mutableRevision.body = @{@"foo2.a":@"bar2.a"};
         rev2a = [datastore updateDocumentFromRevision:mutableRevision error:&error];
     }
     
     error = nil;
-    mutableRevision = [rev2a mutableCopy];
+    mutableRevision = [rev2a copy];
     mutableRevision.body = @{@"foo3.a":@"bar3.a"};
     [datastore updateDocumentFromRevision:mutableRevision error:&error];
     

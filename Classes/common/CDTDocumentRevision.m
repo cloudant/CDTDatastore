@@ -158,7 +158,7 @@
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
-        _attachments = [CDTChangedDictionary dictionaryWrappingContents:attachments];
+        _attachments = [CDTChangedDictionary dictionaryCopyingContents:attachments];
         _sequence = sequence;
         if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
@@ -169,9 +169,9 @@
             NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
-            _body = [CDTChangedDictionary dictionaryWrappingContents:mutableCopy];
+            _body = [CDTChangedDictionary dictionaryCopyingContents:mutableCopy];
         } else {
-            _body = [CDTChangedDictionary dictionaryWrappingContents:@{}];
+            _body = [CDTChangedDictionary dictionaryCopyingContents:@{}];
         }
 
         _changed = NO;
@@ -198,14 +198,13 @@
     return json;
 }
 
-- (CDTDocumentRevision *)mutableCopy
+- (CDTDocumentRevision *)copy
 {
-    CDTDocumentRevision *mutableCopy = [[CDTDocumentRevision alloc] initWithDocId:self.docId
-                                                                       revisionId:self.revId
-                                                                             body:self.body
-                                                                      attachments:self.attachments];
-
-    return mutableCopy;
+    CDTDocumentRevision *copy = [[CDTDocumentRevision alloc] initWithDocId:self.docId
+                                                                revisionId:self.revId
+                                                                      body:self.body
+                                                               attachments:self.attachments];
+    return copy;
 }
 
 - (void)contentOfObjectDidChange:(NSObject *)object { self.changed = YES; }

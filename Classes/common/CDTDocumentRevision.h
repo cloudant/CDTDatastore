@@ -86,10 +86,14 @@
 - (NSData *)documentAsDataError:(NSError *__autoreleasing *)error;
 
 /**
- Return a mutable copy of this document.
+ Return a copy of this document.
 
- @return mutable copy of this document
+ Dictionary and array objects in the `body` are deep-copied.
+
+ The attachment array is copied, individual `CDTAttachment` objects are not.
+
+ @return copy of this document
  */
-- (CDTDocumentRevision *)mutableCopy;
+- (CDTDocumentRevision *)copy;
 
 @end
