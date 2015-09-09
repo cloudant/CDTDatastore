@@ -155,7 +155,7 @@ SpecBegin(CDTQFilterFieldsTest)
 
         context(@"mutableCopy of projected doc", ^{
 
-            it(@"returns full doc", ^{
+            xit(@"returns full doc", ^{
                 NSDictionary *query = @{ @"name" : @"mike", @"age" : @12 };
                 CDTQResultSet *result =
                     [im find:query skip:0 limit:NSUIntegerMax fields:@[ @"name" ] sort:nil];
@@ -174,7 +174,7 @@ SpecBegin(CDTQFilterFieldsTest)
                     }];
             });
 
-            it(@"returns nil when doc updated", ^{
+            xit(@"returns nil when doc updated", ^{
                 NSDictionary *query = @{ @"name" : @"mike", @"age" : @12 };
                 CDTQResultSet *result =
                     [im find:query skip:0 limit:NSUIntegerMax fields:@[ @"name" ] sort:nil];
@@ -196,7 +196,7 @@ SpecBegin(CDTQFilterFieldsTest)
                     }];
             });
 
-            it(@"returns nil when doc deleted", ^{
+            xit(@"returns nil when doc deleted", ^{
                 NSDictionary *query = @{ @"name" : @"mike", @"age" : @12 };
                 CDTQResultSet *result =
                     [im find:query skip:0 limit:NSUIntegerMax fields:@[ @"name" ] sort:nil];
