@@ -114,8 +114,8 @@
     XCTAssertEqual(self.watcher.counter, (NSInteger)1, @"Event not fired");
     XCTAssertEqual(self.globalWatcher.counter, (NSInteger)1, @"Event not fired");
     XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
-    
-    mutableRev = rev1.mutableCopy;
+
+    mutableRev = [rev1 copy];
     mutableRev.body = @{@"hello2": @"world2"};
     XCTAssertNotNil([self.datastore updateDocumentFromRevision:mutableRev error:nil],
                    @"Document wasn't updated");

@@ -85,7 +85,7 @@
 
 - (NSEnumerator *)keyEnumerator { return [self.wrappedDictionary keyEnumerator]; }
 
-+ (CDTChangedDictionary *)dictionaryWrappingContents:(NSDictionary *)dictionary
++ (CDTChangedDictionary *)dictionaryCopyingContents:(NSDictionary *)dictionary
 {
     // We need to create the changed dictionary at the end to avoid setting
     // isChanged prematurely.
@@ -95,11 +95,11 @@
         NSObject *ob = dictionary[key];
         if ([ob isKindOfClass:[NSDictionary class]]) {
             CDTChangedDictionary *tmp =
-                [CDTChangedDictionary dictionaryWrappingContents:(NSDictionary *)ob];
+                [CDTChangedDictionary dictionaryCopyingContents:(NSDictionary *)ob];
             tmp.delegate = changedDict;
             changedDict[key] = tmp;
         } else if ([ob isKindOfClass:[NSArray class]]) {
-            CDTChangedArray *tmp = [CDTChangedDictionary arrayWrappingContents:(NSArray *)ob];
+            CDTChangedArray *tmp = [CDTChangedDictionary arrayCopyingContents:(NSArray *)ob];
             tmp.delegate = changedDict;
             changedDict[key] = tmp;
         } else {
@@ -113,18 +113,18 @@
     return changedDict;
 }
 
-+ (CDTChangedArray *)arrayWrappingContents:(NSArray *)array
++ (CDTChangedArray *)arrayCopyingContents:(NSArray *)array
 {
     CDTChangedArray *changedArray = [CDTChangedArray emptyArray];
 
     for (NSObject *ob in array) {
         if ([ob isKindOfClass:[NSDictionary class]]) {
             CDTChangedDictionary *tmp =
-                [CDTChangedDictionary dictionaryWrappingContents:(NSDictionary *)ob];
+                [CDTChangedDictionary dictionaryCopyingContents:(NSDictionary *)ob];
             tmp.delegate = changedArray;
             [changedArray addObject:tmp];
         } else if ([ob isKindOfClass:[NSArray class]]) {
-            CDTChangedArray *tmp = [CDTChangedDictionary arrayWrappingContents:(NSArray *)ob];
+            CDTChangedArray *tmp = [CDTChangedDictionary arrayCopyingContents:(NSArray *)ob];
             tmp.delegate = changedArray;
             [changedArray addObject:tmp];
         } else {

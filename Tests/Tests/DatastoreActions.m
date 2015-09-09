@@ -101,7 +101,7 @@
     rev.body = @{ @"hello" : @"world" };
     
     CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev error:&error];
-    rev = [revision mutableCopy];
+    rev = [revision copy];
     rev.body = @{ @"hello" : @"world", @"test" : @"testy" };
     revision = [datastore updateDocumentFromRevision:rev error:&error];
     

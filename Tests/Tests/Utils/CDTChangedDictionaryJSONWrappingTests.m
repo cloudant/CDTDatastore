@@ -38,7 +38,7 @@
         @"array" : @[ @[ @"foo", @YES ], @{@"foo" : @YES}, @"two" ]
     };
 
-    self.dictionary = [CDTChangedDictionary dictionaryWrappingContents:dictionary];
+    self.dictionary = [CDTChangedDictionary dictionaryCopyingContents:dictionary];
 }
 
 - (void)testUnmodified { XCTAssertFalse(self.dictionary.isChanged); }

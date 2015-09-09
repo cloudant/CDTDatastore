@@ -62,6 +62,6 @@
 /**
  Wrap a nested JSON-compatible structure with Changed dictionary and array objects.
  */
-+ (CDTChangedDictionary *)dictionaryWrappingContents:(NSDictionary *)dictionary;
++ (CDTChangedDictionary *)dictionaryCopyingContents:(NSDictionary *)dictionary;
 
 @end

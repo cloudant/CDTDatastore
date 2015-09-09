@@ -431,8 +431,8 @@
     error = nil;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    
-    doc = [ob mutableCopy];
+
+    doc = [ob copy];
     doc.body = [@{key2:value2} mutableCopy];
     
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:doc error:&error];
@@ -443,8 +443,8 @@
     error = nil;
     NSString *key3 = @"hi";
     NSString *value3 = @"adam";
-    
-    doc = [ob mutableCopy];
+
+    doc = [ob copy];
     doc.body = [@{key3:value3} mutableCopy];
     
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:doc error:&error];
@@ -668,7 +668,7 @@
         else{
             cdt_rev = [self.datastore getDocumentWithId:randomId
                                                   error:&error];
-            CDTDocumentRevision *update = [cdt_rev mutableCopy];
+            CDTDocumentRevision *update = [cdt_rev copy];
             update.body = rev.body;
             XCTAssertNil(error, @"Error getting document");
             XCTAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
@@ -999,7 +999,7 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     error = nil;
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
 
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
@@ -1096,7 +1096,7 @@
     
     error = nil;
 
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = nil;
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error updating document with nil document body");
@@ -1134,7 +1134,7 @@
     
     for(int i = 0; i < numOfUpdates; i++){
         error = nil;
-        rev = [ob mutableCopy];
+        rev = [ob copy];
         rev.body = bodies[i+1];
         ob = [self.datastore updateDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document. Update Number %d", i);
@@ -1257,7 +1257,7 @@
     NSString *value2 = @"adam";
     NSError *error;
     NSDictionary *body2dict =@{key1:value1, key2:value2, delkey:delvalue};
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [body2dict mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil");
@@ -1491,7 +1491,7 @@
     NSString *docId = ob.docId;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");
@@ -1617,7 +1617,7 @@
     NSString *docId = ob.docId;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");
@@ -1652,7 +1652,7 @@
     error = nil;
     NSString *key3 = @"chew";
     NSString *value3 = @"branca";
-    rev = [ob2 mutableCopy];
+    rev = [ob2 copy];
     rev.body = [@{key3:value3} mutableCopy];
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error updating deleted document");
@@ -1865,27 +1865,6 @@
     
 }
 
-- (void)testDeleteMutableDocumentRevision
-{
-    NSString *docId = @"testDeleteWithMutableDocumentRevision";
-
-    CDTDocumentRevision *mutableRev;
-    mutableRev = [CDTDocumentRevision revisionWithDocId:docId];
-    mutableRev.body = @{ @"hello" : @"world" };
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:nil];
-
-    mutableRev = [rev mutableCopy];
-
-    NSError *error = nil;
-    rev = [self.datastore deleteDocumentFromRevision:mutableRev error:&error];
-    XCTAssertNotNil(rev, @"Delete opeation should not fail: %@", error);
-
-    CDTDocumentRevision *deletedRev =
-        [self.datastore getDocumentWithId:docId rev:rev.revId error:&error];
-    XCTAssertNotNil(deletedRev, @"A deleted document is still in the datastore: %@", error);
-    XCTAssertTrue(deletedRev.deleted, @"This document should be set as deleted");
-}
-
 #pragma mark - Other Tests
 
 -(void)testCompactSingleDoc
@@ -1903,7 +1882,7 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     error = nil;
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");
