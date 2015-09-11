@@ -181,6 +181,8 @@
     return self;
 }
 
+- (BOOL)isFullRevision { return YES; }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 - (NSData *)documentAsDataError:(NSError *__autoreleasing *)error
