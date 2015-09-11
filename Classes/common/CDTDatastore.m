@@ -599,9 +599,27 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 - (CDTDocumentRevision *)updateDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error
 {
+    if (!revision.isFullRevision) {
+        if (error) {
+            NSString *reason = @"Trying to save revision where isFullVersion is NO";
+            NSString *msg = @"Possibly trying to save projected query result.";
+            NSString *recovery = @"Try calling -copy on projected revisions before saving.";
+            NSDictionary *info = @{
+                NSLocalizedFailureReasonErrorKey : reason,
+                NSLocalizedDescriptionKey : msg,
+                NSLocalizedRecoverySuggestionErrorKey : recovery
+            };
+            *error =
+                [NSError errorWithDomain:TDHTTPErrorDomain code:kTDStatusBadRequest userInfo:info];
+        }
+        return nil;
+    }
+
     if (!revision.body) {
         TDStatus status = kTDStatusBadRequest;
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
