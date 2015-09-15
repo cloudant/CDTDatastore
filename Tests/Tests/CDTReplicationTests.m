@@ -64,8 +64,6 @@
 
 @implementation CDTReplicationTests
 
-- (void)setUp { [super setUp]; }
-- (void)tearDown { [super tearDown]; }
 - (void)testFiltersWithChangesFeed
 {
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {

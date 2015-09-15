@@ -1709,7 +1709,7 @@ static NSUInteger largeRevTreeSize = 1500;
     
     while (!changeTrackerStopped) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate distantFuture]];
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:5.0f]];
     }
     
     XCTAssertTrue(changeTrackerGotChanges);
