@@ -94,7 +94,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                                                              mode:mode
                                                         conflicts:YES
                                                      lastSequence:_lastSequence
-                                                           client:self];
+                                                           client:self
+                                                          session:self.session];
     // Limit the number of changes to return, so we can parse the feed in parts:
     _changeTracker.limit = kChangesFeedLimit;
     _changeTracker.filterName = _filterName;
@@ -362,7 +363,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // results in compiler error (could be undefined variable)
     __weak TDPuller* weakSelf = self;
     TDMultipartDownloader* dl;
-    dl = [[TDMultipartDownloader alloc] initWithURL:TDAppendToURL(_remote, path)
+    dl = [[TDMultipartDownloader alloc] initWithSession:self.session URL:TDAppendToURL(_remote, path)
                                            database:_db
                                      requestHeaders:self.requestHeaders
                                        onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
@@ -375,21 +376,21 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                                            } else {
                                                TD_Revision* gotRev =
                                                    [TD_Revision revisionWithProperties:dl.document];
-                                               gotRev.sequence = rev.sequence;
-                                               // Add to batcher ... eventually it will be fed to
-                                               // -insertRevisions:.
-                                               [_downloadsToInsert queueObject:gotRev];
-                                               [strongSelf asyncTaskStarted];
-                                           }
-
-                                           // Note that we've finished this task:
-                                           [strongSelf removeRemoteRequest:dl];
-                                           [strongSelf asyncTasksFinished:1];
-                                           --_httpConnectionCount;
-                                           // Start another task if there are still revisions
-                                           // waiting to be pulled:
-                                           [strongSelf pullRemoteRevisions];
-                                       }];
+                                                   gotRev.sequence = rev.sequence;
+                                                   // Add to batcher ... eventually it will be fed to
+                                                   // -insertRevisions:.
+                                                   [_downloadsToInsert queueObject:gotRev];
+                                                   [strongSelf asyncTaskStarted];
+                                               }
+                                               
+                                               // Note that we've finished this task:
+                                               [strongSelf removeRemoteRequest:dl];
+                                               [strongSelf asyncTasksFinished:1];
+                                               --_httpConnectionCount;
+                                               // Start another task if there are still revisions
+                                               // waiting to be pulled:
+                                               [strongSelf pullRemoteRevisions];
+                                           }];
     [self addRemoteRequest:dl];
     dl.authorizer = _authorizer;
     [dl start];

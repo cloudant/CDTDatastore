@@ -18,6 +18,7 @@
 #import "TDMisc.h"
 
 #import "CollectionUtils.h"
+#import <errno.h>
 
 #ifdef GNUSTEP
 #import <openssl/sha.h>
@@ -209,12 +210,15 @@ BOOL TDMayBeTransientError(NSError* error)
 {
     NSString* domain = error.domain;
     NSInteger code = error.code;
-    if ($equal(domain, NSURLErrorDomain)) {
+    if ([domain isEqualToString:NSURLErrorDomain]) {
         return code == NSURLErrorTimedOut || code == NSURLErrorCannotConnectToHost ||
                code == NSURLErrorNetworkConnectionLost;
-    } else if ($equal(domain, TDHTTPErrorDomain)) {
+    } else if ([domain isEqualToString:TDHTTPErrorDomain]) {
         // Internal Server Error, Bad Gateway, Service Unavailable or Gateway Timeout:
         return code == 500 || code == 502 || code == 503 || code == 504;
+    } else if ([domain isEqualToString:NSPOSIXErrorDomain]) {
+        //connection reset by peer see errno.h
+        return code == ECONNRESET;
     } else {
         return NO;
     }

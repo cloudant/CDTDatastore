@@ -1,20 +1,24 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+- [IOS] Minimum iOS version now iOS 7. We now use NSURLSession
+- [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession
+- [NEW] HTTP Interceptor API. See [Http Interceptors](https://github.com/cloudant/CDTDatastore/blob/master/doc/httpinterceptors.md) for details.
+
 ## 0.18.0 (2015-09-07)
 
 - [FIX] Can build with Xcode 7.
 - [NEW] Added query support for the `$size` operator.
-- [NEW] CDTFetchChanges class now has `resultsLimit` and `moreComing` 
+- [NEW] CDTFetchChanges class now has `resultsLimit` and `moreComing`
     properties.
 - [NEW] `getAllDocumentIds` on CDTDatastore.
-- [FIX] Fixed issue where at least one index had to be created before a query 
-    would execute.  You can now query for documents without the existence of 
+- [FIX] Fixed issue where at least one index had to be created before a query
+    would execute.  You can now query for documents without the existence of
     any indexes.
 - [FIX] A bug where getAllDocuments could get confused when there were
     conflicts within the datastore created in a certain order.
-- [REMOVED] Removed deprecated method `start` on CDTReplicator, use 
+- [REMOVED] Removed deprecated method `start` on CDTReplicator, use
     `startWithError` instead.
-- 
 
 ## 0.17.1 (2015-06-24)
 

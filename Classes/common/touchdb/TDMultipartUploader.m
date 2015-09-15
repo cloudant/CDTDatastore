@@ -20,13 +20,13 @@
 
 @implementation TDMultipartUploader
 
-- (id)initWithURL:(NSURL *)url
+- (instancetype)initWithSession:(CDTURLSession*) session URL:(NSURL *)url
           streamer:(TDMultipartWriter *)writer
     requestHeaders:(NSDictionary *)requestHeaders
       onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
     Assert(writer);
-    self = [super initWithMethod:@"PUT"
+    self = [super initWithSession:session method:@"PUT"
                              URL:url
                             body:writer
                   requestHeaders:requestHeaders
@@ -58,7 +58,7 @@
     return [_multipartWriter openForInputStream];
 }
 
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+-(void)requestDidError:(NSError *)error
 {
     if ($equal(error.domain, NSURLErrorDomain) &&
         error.code == NSURLErrorRequestBodyStreamExhausted) {
@@ -67,7 +67,7 @@
         NSError *writerError = _multipartWriter.error;
         if (writerError) error = writerError;
     }
-    [super connection:connection didFailWithError:error];
+    [super requestDidError:error];
 }
 
 @end

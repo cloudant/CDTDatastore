@@ -25,37 +25,33 @@
 
 @implementation TDMultipartDownloader
 
-- (id)initWithURL:(NSURL *)url
-          database:(TD_Database *)database
-    requestHeaders:(NSDictionary *)requestHeaders
-      onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
+- (instancetype)initWithSession:(CDTURLSession*) session
+                  URL:(NSURL *)url
+             database:(TD_Database *)database
+       requestHeaders:(NSDictionary *)requestHeaders
+         onCompletion:(TDRemoteRequestCompletionBlock)onCompletion
 {
-    self = [super initWithMethod:@"GET"
+    self = [super initWithSession:session method:@"GET"
                              URL:url
                             body:nil
                   requestHeaders:requestHeaders
                     onCompletion:onCompletion];
     if (self) {
         _db = database;
+        _reader = [[TDMultipartDocumentReader alloc] initWithDatabase:_db];
+        [_request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
     }
     return self;
 }
 
 - (NSString *)description { return $sprintf(@"%@[%@]", [self class], _request.URL.path); }
 
-- (void)setupRequest:(NSMutableURLRequest *)request withBody:(id)body
-{
-    [request setValue:@"multipart/related, application/json" forHTTPHeaderField:@"Accept"];
-    request.HTTPBody = body;
-}
-
 - (NSDictionary *)document { return _reader.document; }
 
 #pragma mark - URL CONNECTION CALLBACKS:
 
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+- (void)receivedResponse:(NSURLResponse *)response
 {
-    _reader = [[TDMultipartDocumentReader alloc] initWithDatabase:_db];
     TDStatus status = (TDStatus)((NSHTTPURLResponse *)response).statusCode;
     if (status < 300) {
         // Check the content type to see whether it's a multipart response:
@@ -70,18 +66,15 @@
             return;
         }
     }
-
-    [super connection:connection didReceiveResponse:response];
+    
+    [super receivedResponse:response];
 }
 
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+- (void)receivedData:(NSData *)data
 {
-    [super connection:connection didReceiveData:data];
+    [super receivedData:data];
     if (![_reader appendData:data]) [self cancelWithStatus:_reader.status];
-}
 
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection
-{
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading (%u attachments)", self,
                (unsigned)_reader.attachmentCount);
     if (![_reader finish]) {
@@ -89,7 +82,7 @@
         return;
     }
 
-    [self clearConnection];
+    [self clearSession];
     [self respondWithResult:self error:nil];
 }
 

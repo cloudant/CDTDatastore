@@ -27,8 +27,8 @@ Pod::Spec.new do |s|
   s.author       = { "Cloudant, Inc." => "support@cloudant.com" }
   s.source       = { :git => "https://github.com/cloudant/CDTDatastore.git", :tag => s.version.to_s }
 
-  s.ios.deployment_target = '6.0'
-  s.osx.deployment_target = '10.8'
+  s.ios.deployment_target = '7.0'
+  s.osx.deployment_target = '10.9'
 
   s.requires_arc = true
 

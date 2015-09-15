@@ -40,6 +40,7 @@ it add the following line to your Podfile:
 ```ruby
 pod "CDTDatastore"
 ```
+Note: We only support building on the latest stable release of Xcode
 
 [gs]: https://github.com/cloudant/CDTDatastore/wiki/Getting-Started
 

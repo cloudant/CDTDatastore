@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CDTURLSession.h"
 @protocol TDAuthorizer;
 
 /** The signature of the completion block called by a TDRemoteRequest.
@@ -17,29 +18,26 @@ typedef void (^TDRemoteRequestCompletionBlock)(id result, NSError* error);
 
 /** Asynchronous HTTP request; a fairly simple wrapper around NSURLConnection that calls a
  * completion block when ready. */
-@interface TDRemoteRequest : NSObject <NSURLConnectionDelegate
-#if TARGET_OS_IPHONE || defined(__MAC_10_8)
-                                       ,
-                                       NSURLConnectionDataDelegate
-#endif
-                                       > {
+@interface TDRemoteRequest : NSObject {
    @protected
     NSMutableURLRequest* _request;
     id<TDAuthorizer> _authorizer;
     TDRemoteRequestCompletionBlock _onCompletion;
-    NSURLConnection* _connection;
     int _status;
     UInt8 _retryCount;
     bool _dontLog404;
     bool _challenged;
+
 }
 
 /** Creates a request; call -start to send it on its way. */
-- (id)initWithMethod:(NSString*)method
+- (instancetype)initWithSession:(CDTURLSession*)session
+                         method:(NSString*)method
                  URL:(NSURL*)url
                 body:(id)body
       requestHeaders:(NSDictionary*)requestHeaders
         onCompletion:(TDRemoteRequestCompletionBlock)onCompletion;
+
 
 @property (strong, nonatomic) id<TDAuthorizer> authorizer;
 
@@ -57,10 +55,12 @@ typedef void (^TDRemoteRequestCompletionBlock)(id result, NSError* error);
 @property (readonly) NSMutableDictionary* statusInfo;
 
 // protected:
-- (void)setupRequest:(NSMutableURLRequest*)request withBody:(id)body;
-- (void)clearConnection;
+- (void)clearSession;
 - (void)cancelWithStatus:(int)status;
 - (void)respondWithResult:(id)result error:(NSError*)error;
+- (void)receivedData:(NSData *)data;
+- (void)receivedResponse:(NSURLResponse *)response;
+- (void)requestDidError:(NSError*)error;
 
 // The value to use for the User-Agent HTTP header.
 + (NSString*)userAgentHeader;

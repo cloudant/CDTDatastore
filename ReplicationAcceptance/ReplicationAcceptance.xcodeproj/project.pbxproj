@@ -45,6 +45,8 @@
 		984775061AB886790024B64C /* ReplicationSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 984775041AB886790024B64C /* ReplicationSettings.m */; };
 		984775081AB888F40024B64C /* ReplicationSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = 984775071AB888F40024B64C /* ReplicationSettings.plist */; };
 		984775091AB888F40024B64C /* ReplicationSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = 984775071AB888F40024B64C /* ReplicationSettings.plist */; };
+		989242BC1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; settings = {ASSET_TAGS = (); }; };
+		989242BD1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; settings = {ASSET_TAGS = (); }; };
 		9F8CA2C71A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
 		9F8CA2C81A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
 		9F8CA2C91A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
@@ -117,6 +119,8 @@
 		984775031AB886790024B64C /* ReplicationSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplicationSettings.h; sourceTree = "<group>"; };
 		984775041AB886790024B64C /* ReplicationSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReplicationSettings.m; sourceTree = "<group>"; };
 		984775071AB888F40024B64C /* ReplicationSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ReplicationSettings.plist; sourceTree = "<group>"; };
+		989242BA1BA033F800FEE788 /* CDTRATestContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTRATestContext.h; sourceTree = "<group>"; };
+		989242BB1BA033F800FEE788 /* CDTRATestContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTRATestContext.m; sourceTree = "<group>"; };
 		9F8CA2C51A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChangeTrackerNSURLProtocolTimedOut.h; sourceTree = "<group>"; };
 		9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChangeTrackerNSURLProtocolTimedOut.m; sourceTree = "<group>"; };
 		9F8CA2CA1A64E63F00A0E91C /* CDTRunBlocksForReplicatorDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTRunBlocksForReplicatorDelegate.h; sourceTree = "<group>"; };
@@ -253,6 +257,8 @@
 				9FC2F13019F72B710032A074 /* ReplicatorURLProtocolTester.m */,
 				984775031AB886790024B64C /* ReplicationSettings.h */,
 				984775041AB886790024B64C /* ReplicationSettings.m */,
+				989242BA1BA033F800FEE788 /* CDTRATestContext.h */,
+				989242BB1BA033F800FEE788 /* CDTRATestContext.m */,
 			);
 			path = ReplicationAcceptance;
 			sourceTree = "<group>";
@@ -635,6 +641,7 @@
 				9F95598F1A5F184000435808 /* ChangeTrackerDelegate.m in Sources */,
 				9FC2F12C19F070710032A074 /* ReplicatorURLProtocol.m in Sources */,
 				27A7E6AF189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
+				989242BC1BA033F800FEE788 /* CDTRATestContext.m in Sources */,
 				9F8CA2C71A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB718DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775051AB886790024B64C /* ReplicationSettings.m in Sources */,
@@ -653,6 +660,7 @@
 				9F9559901A5F184000435808 /* ChangeTrackerDelegate.m in Sources */,
 				9FC2F12D19F070710032A074 /* ReplicatorURLProtocol.m in Sources */,
 				27A7E6B0189975B2007FAF1C /* CloudantReplicationBase.m in Sources */,
+				989242BD1BA033F800FEE788 /* CDTRATestContext.m in Sources */,
 				9F8CA2C81A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */,
 				27DFEEB818DB4A0D0052D487 /* Attachments.m in Sources */,
 				984775061AB886790024B64C /* ReplicationSettings.m in Sources */,

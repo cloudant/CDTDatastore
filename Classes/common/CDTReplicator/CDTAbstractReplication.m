@@ -19,6 +19,14 @@
 
 NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
+@interface CDTAbstractReplication ()
+
+NS_ASSUME_NONNULL_BEGIN
+@property (nonnull, nonatomic, readwrite, strong) NSArray *httpInterceptors;
+NS_ASSUME_NONNULL_END
+
+@end
+
 @implementation CDTAbstractReplication
 
 + (NSString *)defaultUserAgentHTTPHeader { return [TDRemoteRequest userAgentHeader]; }
@@ -28,10 +36,46 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
     CDTAbstractReplication *copy = [[[self class] allocWithZone:zone] init];
     if (copy) {
         copy.optionalHeaders = self.optionalHeaders;
+        copy.httpInterceptors = [self.httpInterceptors copyWithZone:zone];
     }
 
     return copy;
 }
+
+NS_ASSUME_NONNULL_BEGIN
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _httpInterceptors = @[];
+    }
+    return self;
+}
+
+/**
+ * This method is a convience method and is the same as calling
+ * -addinterceptors: with a single element array.
+ */
+- (void)addInterceptor:(NSObject<CDTHTTPInterceptor> *)interceptor
+{
+    [self addInterceptors:@[ interceptor ]];
+}
+
+/**
+ * Appends the interceptors in the array to the list of
+ * interceptors to run for each request made to the
+ * server.
+ *
+ * @param interceptors the interceptors to append to the list
+ **/
+- (void)addInterceptors:(NSArray *)interceptors
+{
+    self.httpInterceptors = [self.httpInterceptors arrayByAddingObjectsFromArray:interceptors];
+}
+
+- (void)clearInterceptors { self.httpInterceptors = @[]; }
+NS_ASSUME_NONNULL_END
 
 /**
  This method sets all of the common replication parameters. The subclasses,
@@ -123,6 +167,7 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
         doc[@"headers"] = self.optionalHeaders;
     }
+    doc[@"interceptors"] = self.httpInterceptors;
 
     return [NSDictionary dictionaryWithDictionary:doc];
 }

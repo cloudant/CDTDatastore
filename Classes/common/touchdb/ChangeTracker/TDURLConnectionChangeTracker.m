@@ -27,23 +27,47 @@
 #import "TDJSON.h"
 #import "CDTLogging.h"
 #import "TDMisc.h"
+#import "CDTURLSession.h"
 
 #define kMaxRetries 6
 #define kInitialRetryDelay 0.2
 
 @interface TDURLConnectionChangeTracker()
 @property (strong, nonatomic) NSMutableData* inputBuffer;
-@property (strong, nonatomic) NSURLConnection *connection;
 @property (strong, nonatomic) NSMutableURLRequest *request;
 @property (strong, nonatomic) NSDate* startTime;
 @property (nonatomic, readwrite) NSUInteger totalRetries;
+@property (nonatomic, strong) CDTURLSession * session;
+@property (nonatomic, strong) CDTURLSessionTask * task;
 @end
 
 @implementation TDURLConnectionChangeTracker
 
+- (instancetype)initWithDatabaseURL:(NSURL *)databaseURL
+                               mode:(TDChangeTrackerMode)mode
+                          conflicts:(BOOL)includeConflicts
+                       lastSequence:(id)lastSequenceID
+                             client:(id<TDChangeTrackerClient>)client
+                            session:(CDTURLSession *)session
+{
+    NSParameterAssert(session);
+    self = [super initWithDatabaseURL:databaseURL
+                                 mode:mode
+                            conflicts:includeConflicts
+                         lastSequence:lastSequenceID
+                               client:client
+                              session:session];
+
+    if(self){
+        _session = session;
+    }
+    return self;
+}
+
+
 - (BOOL)start
 {
-    if (self.connection) return NO;
+    if (self.task) return NO;
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting...", [self class]);
     [super start];
@@ -58,17 +82,7 @@
         [self.request setValue:self.requestHeaders[key] forHTTPHeaderField:key];
     }
     
-    // Add cookie headers from the NSHTTPCookieStorage:
-    NSArray* cookies = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL:url];
-    NSDictionary* cookieHeaders = [NSHTTPCookie requestHeaderFieldsWithCookies:cookies];
     NSArray *requestHeadersKeys = [self.requestHeaders allKeys];
-    for (NSString* headerName in cookieHeaders) {
-        if ([requestHeadersKeys containsObject:headerName]) {
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Overwriting '%@' header with value %@",
-                       self, headerName, cookieHeaders[headerName]);
-        }
-        [self.request setValue:cookieHeaders[headerName] forHTTPHeaderField:headerName];
-    }
 
     if (self.authorizer) {
         NSString* authHeader = [self.authorizer authorizeURLRequest:self.request forRealm:nil];
@@ -81,17 +95,20 @@
         }
     }
     
-    self.connection = [[NSURLConnection alloc] initWithRequest:self.request
-                                                      delegate:self
-                                              startImmediately:NO];
+    __weak TDURLConnectionChangeTracker *weakSelf = self;
+    self.task = [self.session dataTaskWithRequest:self.request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        TDURLConnectionChangeTracker *strongSelf = weakSelf;
+        if(error){
+            [strongSelf failedWithError:error];
+            return;
+        } else {
+            [strongSelf receivedResponse:response];
+            [strongSelf receivedData:data];
+            [strongSelf finishedLoading];
+        }
+    }];
 
-    if (!self.connection) {
-        CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@: GET %@ failed to create NSURLConnection",
-                   self, TDCleanURLtoString(url));
-        return NO;
-    }
-    [self.connection scheduleInRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    [self.connection start];
+    [self.task resume];
     
     self.inputBuffer = [NSMutableData dataWithCapacity:0];
         
@@ -103,9 +120,10 @@
 
 - (void)clearConnection
 {
-    [self.connection cancel];
-    [self.connection unscheduleFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-    self.connection = nil;
+    if(self.task.state != NSURLSessionTaskStateCompleted){
+        [self.task cancel];
+    }
+    self.task = nil;
     self.inputBuffer = nil;
 }
 
@@ -114,7 +132,7 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self
                                              selector:@selector(start)
                                                object:nil];  // cancel pending retries
-    if (self.connection) {
+    if (self.task) {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: stop", [self class]);
         [self clearConnection];
     }
@@ -137,12 +155,10 @@
     }
 }
 
-#pragma mark - NSURLConnectionDataDelegate delegate:
-
-- (void)connection:(NSURLConnection *)connection willSendRequestForAuthenticationChallenge:
-    (NSURLAuthenticationChallenge *)challenge
-{
-    id<NSURLAuthenticationChallengeSender> sender = challenge.sender;
+-(void)  URLSession:(NSURLSession *)session
+               task:(NSURLSessionTask *)task
+didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
+  completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential *))completionHandler{
     NSURLProtectionSpace *space = challenge.protectionSpace;
     NSString *authMethod = space.authenticationMethod;
     CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"Got challenge for %@: method=%@, proposed=%@, err=%@",
@@ -163,7 +179,7 @@
             if (cred) {
                 CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: useCredential: %@",
                               [self class], cred);
-                [sender useCredential:cred forAuthenticationChallenge:challenge];
+                completionHandler(NSURLSessionAuthChallengeUseCredential,cred);
                 // Update my authorizer so my owner (the replicator) can pick it up when I'm done
                 _authorizer = [[TDBasicAuthorizer alloc] initWithCredential:cred];
                 return;
@@ -172,7 +188,7 @@
         
         CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: continueWithoutCredential",
                       [self class]);
-        [sender continueWithoutCredentialForAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengeUseCredential,nil);
     }
     else if ($equal(authMethod, NSURLAuthenticationMethodServerTrust)) {
         
@@ -182,22 +198,22 @@
             CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ useCredential for trust: %@",
                           self, trust);
             NSURLCredential *cred = [NSURLCredential credentialForTrust:trust];
-            [sender useCredential:cred forAuthenticationChallenge:challenge];
+            completionHandler(NSURLSessionAuthChallengeUseCredential, cred);
             
         }
         else {
             CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@ challenge: cancel", self);
-            [sender cancelAuthenticationChallenge:challenge];
+            completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge,nil);
         }
     }
     else {
         CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ challenge: performDefaultHandling", self);
-        [sender performDefaultHandlingForAuthenticationChallenge:challenge];
+        completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
     }
     
 }
 
--(void) connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+-(void)receivedResponse:(NSURLResponse *)response
 {
     NSHTTPURLResponse *httpresponse = (NSHTTPURLResponse *)response;
     TDStatus status = (TDStatus)httpresponse.statusCode;
@@ -227,7 +243,7 @@
     
 }
 
--(void) connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+-(void)receivedData:(NSData *)data
 {
     CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: didReceiveData: %ld bytes",
                   [self class], (unsigned long)[data length]);
@@ -235,7 +251,7 @@
     [self.inputBuffer appendData:data];
 }
 
--(void) connectionDidFinishLoading:(NSURLConnection *)connection
+-(void) finishedLoading
 {
     //parse the input buffer into JSON (or NSArray of changes?)
     CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@: didFinishLoading, %u bytes", self,
@@ -273,14 +289,15 @@
     
     [self clearConnection];
     
-    if (restart)
+    if (restart){
         [self start];  // Next poll...
-    else
+    } else {
         [self stopped];
+    }
     
 }
 
--(void) connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+-(void) failedWithError:(NSError *)error
 {
     [self retryOrError:error];
 }
