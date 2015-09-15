@@ -1,8 +1,8 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
-- [IOS] Minimum iOS version now iOS 7. We now use NSURLSession
-- [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession
+## 0.19.0 (2015-09-15)
+- [IOS] Minimum iOS version now iOS 7. We now use NSURLSession.
+- [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession.
 - [NEW] HTTP Interceptor API. See [Http Interceptors](https://github.com/cloudant/CDTDatastore/blob/master/doc/httpinterceptors.md) for details.
 
 ## 0.18.0 (2015-09-07)
