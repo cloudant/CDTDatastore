@@ -1,6 +1,6 @@
 # Migrating to new APIs
 
-## 0.17.1 &rarr; 0.18.0
+## 0.17.1 → 0.18.0
 
 This change removes `CDTMutableDocumentRevision`. In a sense, it's the next
 logical step from the `0.8` transition, further streamlining document create,
@@ -75,7 +75,7 @@ rev1 = [datastore createDocumentFromRevision:rev
 [datastore deleteDocumentFromRevision:rev1 error:&error];
 ```
 
-## 0.7 &rarr; 0.8
+## 0.7 → 0.8
 
 This change introduces `CDTMutableDocumentRevision` to fix problems when
 creating, updating and removing documents. For example, you can now modify
