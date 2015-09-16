@@ -70,7 +70,7 @@ delete documents.
 Documents are represented as a set of revisions. To create a document, you
 set up the initial revision of the document and save that to the datastore.
 
-Create a mutable document revision object, set its body, ID and attachments
+Create a document revision object with an ID, set its body and attachments
 and then call `-createDocumentFromRevision:error:` to add it to the datastore:
 
 ```objc
@@ -79,13 +79,12 @@ CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"
 NSError *error;
 
 // Create a document
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-rev.docId = @"doc1";  // Or don't assign the docId property, we'll generate one
-rev.body = @{
+CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+rev.body = [@{
     @"description": @"Buy milk",
     @"completed": @NO,
     @"type": @"com.cloudant.sync.example.task"
-};
+} mutableCopy];
 CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
                                                                 error:&error];
 ```
@@ -104,19 +103,17 @@ CDTDocumentRevision *retrieved = [datastore getDocumentWithId:docId
                                                         error:&error];
 ```
 
-You get an immutable revision back from this method call. To make changes to
-the document, you need to call `-mutableCopy` on the revision and save it
-back to the datastore, as shown below.
+You can make updates to `retrieved` which can then be saved to the datastore
+as an update.
 
 ### Update
 
-To update a document, call `mutableCopy` on the original document revision,
-make your changes and save the document:
+To update a document, just make your changes to the revision and save the
+document:
 
 ```objc
-CDTMutableDocumentRevision *update = [retrieved mutableCopy];
-update.body[@"completed"] = @YES;  // Or assign a new NSDictionary
-CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+retrieved.body[@"completed"] = @YES;  // Or assign a new NSMutableDictionary
+CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:retrieved
                                                                error:&error];
 ```
 
@@ -125,7 +122,7 @@ CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
 To delete a document, you need the current revision:
 
 ```objc
-BOOL deleted = [datastore deleteDocumentFromRevision:saved
+BOOL deleted = [datastore deleteDocumentFromRevision:updated
                                                error:&error];
 ```
 
@@ -173,21 +170,20 @@ To add an attachment to a document, just add (or overwrite) the attachment
 in the `attachments` dictionary:
 
 ```objc
-// Create a new document
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-// or get an existing one and create a mutable copy
-CDTDocumentRevision *retrieved = [datastore getDocumentWithId:@"mydoc"
-                                                        error:&error];
-CDTMutableDocumentRevision *rev = [retrieved mutableCopy];
+// Create a new document:
+CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+// or get an existing one:
+CDTDocumentRevision *rev = [datastore getDocumentWithId:@"mydoc"
+                                                  error:&error];
 
-rev.body = @{ ... };
+rev.body = [@{ ... } mutableCopy];
 CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                   initWithPath:@"/path/to/image.jpg"
                           name:@"cute_cat.jpg"
                           type:@"image/jpeg"]];
 
 // As with the document body, you can replace all attachments:
-rev.attachments = @{ att1.name: att1 };
+rev.attachments = [@{ att1.name: att1 } mutableCopy];
 
 // Or just add or update a single one:
 rev.attachments[att1.name] = att1;
@@ -212,8 +208,8 @@ CDTUnsavedDataAttachment *att2 = [[CDTUnsavedDataAttachment alloc]
                           name:@"cute_cat.jpg"
                           type:@"image/jpeg"]];
 
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-rev.attachments = @{ att1.name: att1, att2.name: att2 };
+CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+rev.attachments = [@{ att1.name: att1, att2.name: att2 } mutableCopy];
 CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev
                                                              error:&error];
 ```
@@ -233,9 +229,8 @@ To remove an attachment, remove it from the `attachments` dictionary:
 ```objc
 CDTDocumentRevision *retrieved = [datastore getDocumentWithId:@"mydoc"
                                                         error:&error];
-CDTMutableDocumentRevision *update = [retrieved mutableCopy];
-[update.attachments removeObjectForKey:@"cute_cat.jpg"];
-CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+[retrieved.attachments removeObjectForKey:@"cute_cat.jpg"];
+CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:retrieved
                                                                error:&error];
 
 ```
@@ -259,17 +254,16 @@ This is the simplest case as we don't need to worry about previous revisions.
 1. Add a document with body, but not attachments or ID. You'll get an
    autogenerated ID.
     ```objc
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.body = @{ ... };
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+    rev.body = [@{ ... } mutableCopy];
 
     CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
     ```
 
 1. Add a new document to the store with a body and ID, but without attachments.
     ```objc
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.docId = @"doc1";
-    rev.body = @{ ... };
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+    rev.body = [@{ ... } mutableCopy];
 
     CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev
                                                                  error:&error];
@@ -277,15 +271,14 @@ This is the simplest case as we don't need to worry about previous revisions.
 
 1. Add a new document to the store with attachments.
     ```objc
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.docId = @"doc1";
-    rev.body = @{ ... };
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+    rev.body = [@{ ... } mutableCopy];
 
     CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                       initWithPath:@"path"
                               name:@"filename"
                               type:@"image/jpeg"]]
-    rev.attachments = @{ att1.name:att1 };
+    rev.attachments = [@{ att1.name:att1 } mutableCopy];
 
     CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
     ```
@@ -293,21 +286,21 @@ This is the simplest case as we don't need to worry about previous revisions.
 1. Add a document with body and attachments, but no ID. You'll get an
    autogenerated ID.
     ```objc
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.body = @{ ... };
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+    rev.body = [@{ ... } mutableCopy];
 
     CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                       initWithPath:@"path"
                               name:@"filename"
                               type:@"image/jpeg"]]
-    rev.attachments = @{ att1.name:att1 };
+    rev.attachments = [@{ att1.name:att1 } mutableCopy];
 
     CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
     ```
 
 1. You can't create a document without a body (body is the only required property).
     ```objc
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.docId = @"doc1";
 
     CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
@@ -323,9 +316,8 @@ For the first set of examples the original document is set up with a body
 and no attachments:
 
 ```objc
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-rev.docId = @"doc1";
-rev.body = @{ ... };
+CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+rev.body = [@{ ... } mutableCopy];
 
 CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
 ```
@@ -342,9 +334,8 @@ CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
 
 1. Update body for doc that has no attachments, keeping no attachments
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body = @{ ... };
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    saved.body = [@{ ... } mutableCopy];
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
@@ -352,55 +343,50 @@ CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
    that a mutableCopy of a document with no attachments has an
    `NSMutableDictionary` set for its `attachments` property.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body[@"hello"] = @"world";
-    update.attachments[@att1.name] = att1;
+    saved.body[@"hello"] = @"world";
+    saved.attachments[@att1.name] = att1;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update body for doc with no attachments, removing attachments dictionary
    entirely.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body[@"hello"] = @"world";
-    update.attachments = nil;
+    saved.body[@"hello"] = @"world";
+    saved.attachments = nil;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update the attachments without changing the body, add attachments to a doc
    that had none.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.attachments[@att1.name] = att1;
+    saved.attachments[@att1.name] = att1;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update attachments by copying from another revision.
     ```objc
     CDTMutableDocumentRevision *anotherDoc = [datastore getDocumentForId:@"anotherId"];
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.attachments = anotherDoc.attachments;
+    saved.attachments = anotherDoc.attachments;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Updating a document using an outdated source revision causes a conflict
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body = @{ ... };
-    [datastore updateDocumentFromRevision:update];
+    saved.body = [@{ ... } mutableCopy];
+    [datastore updateDocumentFromRevision:saved];
 
-    CDTMutableDocumentRevision *update2 = [saved mutableCopy];
-    update2.body = @{ ... ... };
+    // Note this is the old revision!
+    saved.body = @{ ... ... };
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     // Updated should be nil, and error should be set/exception thrown
     ```
@@ -410,108 +396,102 @@ For the second set of examples the original document is set up with a body and
 several attachments:
 
 ```objc
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-rev.docId = @"doc1";
-rev.body = @{ ... };
+CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+rev.body = [@{ ... } mutableCopy];
 
 CDTUnsavedFileAttachment *att1 = /* blah */
 /* set up more attachments */
-rev.attachments = @{ att1.name:att1, att2.name:att2, att3.name:att3 };
+rev.attachments = [@{ att1.name:att1, att2.name:att2, att3.name:att3 } mutableCopy];
 
 CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
 ```
 
 1. Update body without changing attachments
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body[@"hello"] = @"world";
+    saved.body[@"hello"] = @"world";
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update];
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
+                                                                   error:&error];
     // Should have the same attachments
     ```
 
 1. Update the attachments without changing the body, remove attachments
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    [update.attachments removeObjectForKey:att1.name];
+    [saved.attachments removeObjectForKey:att1.name];
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update the attachments without changing the body, add attachments
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
     // Create att100 attachment
-    update.attachments[att100.name] = att100;
+    saved.attachments[att100.name] = att100;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update the attachments without changing the body, remove all attachments
    by setting `nil` for attachments dictionary.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.attachments = nil;
+    saved.attachments = nil;
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Update the attachments without changing the body, remove all attachments
    by setting an empty dictionary.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.attachments = @{};
+    saved.attachments = [@{} mutableCopy];
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
 1. Copy an attachment from one document to another.
     ```objc
     // Create a revision with attachments
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.docId = @"doc1";
-    rev.body = @{ ... };
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+    rev.body = [@{ ... } mutableCopy];
     CDTUnsavedFileAttachment *att1 = /* blah */
-    rev.attachments = @{ att1.name: att1 };
+    rev.attachments = [@{ att1.name: att1 } mutableCopy];
     CDTDocumentRevision *revWithAttachments = [datastore createDocumentFromRevision:rev
                                                                               error:&error];
 
     // Add attachment to "saved" from "revWithAttachments"
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
     CDTAttachment *savedAttachment = revWithAttachments.attachments[@"nameOfAttachment"];
-    update.attachments = @{savedAttachment.name: savedAttachment};
+    saved.attachments = @{savedAttachment.name: savedAttachment};
 
-    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
                                                                    error:&error];
     ```
 
-### Creating a document from a `mutableCopy`
+### Creating a document by copying data
 
-It should be possible to create a new document from a `mutableCopy` of an existing document.
+It should be possible to create a new document by copying data from another
+document:
 
-
-1. Add a document from a `mutableCopy`, with attachments
+1. Copy a document with attachments, adding or modifying one attachment
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.docId = @"doc2";
-    update.body[@"hello"] = @"world";
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc2"];
+    rev.body = [saved.body mutableCopy];
+    rev.body[@"hello"] = @"world";
     // Create att100 attachment
-    update.attachments[att100.name] = att100;
+    rev.attachments = [saved.attachments mutableCopy];
+    rev.attachments[att100.name] = att100;
 
-    CDTDocumentRevision *updated = [datastore createDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore createDocumentFromRevision:rev
                                                                    error:&error];
     ```
 
-1. Add a document from a `mutableCopy`, without attachments
+1. Copy a document's body to a new document, adding or changing a value, 
+   without also copying attachments
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.docId = @"doc2";
-    update.body = @{ ... };
-    update.attachments = nil;
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc2"];
+    rev.body = [saved.body mutableCopy];
+    rev.body[@"hello"] = @"world";
 
     CDTDocumentRevision *updated = [datastore createDocumentFromRevision:update
                                                                    error:&error];
@@ -520,14 +500,15 @@ It should be possible to create a new document from a `mutableCopy` of an existi
 1. Fail if the document ID is present in the datastore. Note this shouldn't
    fail if the document is being added to a different datastore.
     ```objc
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    update.body[@"hello"] = @"world";
+    // Doc ID same as `saved`:
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+    rev.body[@"hello"] = @"world";
 
-    CDTDocumentRevision *updated = [datastore createDocumentFromRevision:update
+    CDTDocumentRevision *updated = [datastore createDocumentFromRevision:rev
                                                                    error:&error];
     // Fails, saved is nil
 
-    CDTDocumentRevision *updated = [other_datastore createDocumentFromRevision:update
+    CDTDocumentRevision *updated = [other_datastore createDocumentFromRevision:rev
                                                                          error:&error];
     // Succeeds
     ```

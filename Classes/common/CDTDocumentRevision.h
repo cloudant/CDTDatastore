@@ -76,10 +76,25 @@
                                     forDocument:(NSURL *)documentURL
                                           error:(NSError *__autoreleasing *)error;
 
+/**
+ Create a new, blank revision which will have an ID generated on saving.
+ */
 + (CDTDocumentRevision *)revision;
 
+/**
+ Create a new, blank revision with an assigned ID.
+ */
 + (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId;
 
+/**
+ Create a blank revision with a rev ID, which will be treated as an update when saving.
+
+ In general, not that useful in day-to-day life, where updates will be made to document
+ revisions retrieved from a datastore.
+
+ Useful during testing and when it's not necessary to start with an existing revision's
+ content.
+ */
 + (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId;
 
 /**

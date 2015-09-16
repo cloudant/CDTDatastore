@@ -1,5 +1,11 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+
+- [BREAKING] CDTMutableDocumentRevision removed. CDTDocumentRevision objects
+  are now mutable -- you can change them and pass to
+  `updateDocumentFromRevision:error:` to make document updates.
+
 ## 0.19.1 (2015-10-9)
 - [FIX] CDTSessionCookieInterceptableSession works now; we used GET rather than
    POST in error.
@@ -9,6 +15,7 @@
 - [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession.
 - [NEW] HTTP Interceptor API. See [Http Interceptors](https://github.com/cloudant/CDTDatastore/blob/master/doc/httpinterceptors.md) for details.
 
+<<<<<<< HEAD
 ## 0.18.0 (2015-09-07)
 
 - [FIX] Can build with Xcode 7.
