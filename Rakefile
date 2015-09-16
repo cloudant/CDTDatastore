@@ -1,4 +1,27 @@
 #
+#  The various workspaces, schemes and destinations we test using
+#
+
+# Workspaces
+CDTDATASTORE_WS = 'CDTDatastore.xcworkspace'
+ENCRYPTION_WS = 'EncryptionTests/EncryptionTests.xcworkspace'
+REPLICATION_ACCEPTANCE_WS = './ReplicationAcceptance/ReplicationAcceptance.xcworkspace'
+
+# Schemes
+TESTS_IOS = 'Tests iOS'
+TESTS_OSX = 'Tests OSX'
+ENCRYPTION_IOS = 'Encryption Tests'
+ENCRYPTION_OSX = 'Encryption Tests OSX'
+REPLICATION_ACCEPTANCE_IOS = 'RA_Tests'
+REPLICATION_ACCEPTANCE_OSX = 'RA_Tests_OSX'
+REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'RA_EncryptionTests'
+REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'RA_EncryptionTests_OSX'
+
+# Destinations
+IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 4S'
+OSX_DEST = 'platform=OS X'
+
+#
 #  Primary tasks
 #
 
@@ -79,27 +102,8 @@ task :docs do
 end
 
 #
-#  Helper methods and defines
+#  Helper methods
 #
-
-# Workspaces
-CDTDATASTORE_WS = 'CDTDatastore.xcworkspace'
-ENCRYPTION_WS = 'EncryptionTests/EncryptionTests.xcworkspace'
-REPLICATION_ACCEPTANCE_WS = './ReplicationAcceptance/ReplicationAcceptance.xcworkspace'
-
-# Schemes
-TESTS_IOS = 'Tests iOS'
-TESTS_OSX = 'Tests OSX'
-ENCRYPTION_IOS = 'Encryption Tests'
-ENCRYPTION_OSX = 'Encryption Tests OSX'
-REPLICATION_ACCEPTANCE_IOS = 'RA_Tests'
-REPLICATION_ACCEPTANCE_OSX = 'RA_Tests_OSX'
-REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'RA_EncryptionTests'
-REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'RA_EncryptionTests_OSX'
-
-# Destinations
-IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 4S'
-OSX_DEST = 'platform=OS X'
 
 # Runs `build` target for workspace/scheme/destination
 def run_build(workspace, scheme, destination)
