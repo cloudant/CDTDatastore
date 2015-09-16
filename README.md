@@ -127,7 +127,7 @@ CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                           initWithPath:@"/path/to/image.jpg"
                           name:@"cute_cat.jpg"
                           type:@"image/jpeg"];
-rev.attachments = @[@{ att1.name:att1 } mutableCopy];
+rev.attachments[att1.name] = att;
 
 // Save the document to the database
 CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
