@@ -116,7 +116,7 @@ CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"
 // Create a document
 CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
 // Use [CDTDocumentRevision revision] to get an ID generated for you on saving
-rev.body = @[@{
+rev.body = [@{
     @"description": @"Buy milk",
     @"completed": @NO,
     @"type": @"com.cloudant.sync.example.task"
