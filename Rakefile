@@ -63,19 +63,11 @@ task :testencryptionosx do
 end
 
 desc "Run tests for all platforms"
-task :test do
-  sh "rake testios"
-  sh "rake testosx"
-  sh "rake testencryptionios"
-  sh "rake testencryptionosx"
+task :test => [:testosx, :testios, :testencryptionosx, :testencryptionios] do
 end
 
 desc "Task for travis"
-task :travis do
-  sh "rake testios"
-  sh "rake testosx"
-  sh "rake testencryptionios"
-  sh "rake testencryptionosx"
+task :travis => [:test] do
   sh "pod lib lint --allow-warnings"
 end
 
