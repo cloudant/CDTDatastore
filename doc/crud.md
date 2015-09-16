@@ -473,7 +473,7 @@ CDTDocumentRevision *saved = [datastore createDocumentFromRevision:rev];
 It should be possible to create a new document by copying data from another
 document:
 
-1. Copy a document with attachments
+1. Copy a document with attachments, adding or modifying one attachment
     ```objc
     CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc2"];
     rev.body = [saved.body mutableCopy];
@@ -486,7 +486,8 @@ document:
                                                                    error:&error];
     ```
 
-1. Add a document from a `mutableCopy`, without attachments
+1. Copy a document's body to a new document, adding or changing a value, 
+   without also copying attachments
     ```objc
     CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc2"];
     rev.body = [saved.body mutableCopy];
