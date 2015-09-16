@@ -4,7 +4,8 @@
 
 - [BREAKING] CDTMutableDocumentRevision removed. CDTDocumentRevision objects
   are now mutable -- you can change them and pass to
-  `updateDocumentFromRevision:error:` to make document updates.
+  `updateDocumentFromRevision:error:` to make document updates. See
+  [doc/api-migration.md](doc/api-migration.md).
 - [NEW] Added query support for the `$size` operator.
 - [FIX] Fixed issue where at least one index had to be created before a query
   would execute.  You can now query for documents without the existence of any
