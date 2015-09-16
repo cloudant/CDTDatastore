@@ -1,5 +1,16 @@
 # Migrating to new APIs
 
+This document covers migrating your code when a CDTDatastore release has 
+breaking API changes. Each section covers migrating from one particular 
+version to another. The section titles state the specific versions between 
+which the change was made; often one can migrate from earlier versions than 
+the one specified on the left of the title to the new version specified
+on the right.
+
+Feel free to file bugs if the instructions don't work for you; we'll use
+these to improve the documentation and we'll obviously also try to help
+you through the process.
+
 ## 0.17.1 → 0.18.0
 
 This change removes `CDTMutableDocumentRevision`. In a sense, it's the next
