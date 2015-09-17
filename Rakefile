@@ -1,159 +1,46 @@
-desc "Run the CDTDatastore Tests for iOS"
-task :testios do
-    # build using xcpretty as otherwise it's very verbose when running tests
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
-  unless $ios_success
-    puts "** Build failed"
-    exit(-1)
-  end
-  $ios_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
-  puts "\033[0;31m! iOS unit tests failed with status code #{$?}" unless $ios_success
-  if $ios_success
-    puts "** All tests executed successfully"
-  else
-    exit(-1)
-  end
-end
+#
+#  The various workspaces, schemes and destinations we test using
+#
 
-desc "Run the CDTDatastore Tests for OS X"
-task :testosx do
-    # build using xcpretty as otherwise it's very verbose when running tests
-  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests OSX' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
-  unless $osx_success
-    puts "** Build failed"
-    exit(-1)
-  end
-  $osx_success = system("xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests OSX' -destination 'platform=OS X' test")
-  puts "\033[0;31m! OS X unit tests failed with status code #{$?}" unless $osx_success
-  if $osx_success
-    puts "** All tests executed successfully"
-  else
-    exit(-1)
-  end
-end
+# Workspaces
+CDTDATASTORE_WS = 'CDTDatastore.xcworkspace'
+ENCRYPTION_WS = 'EncryptionTests/EncryptionTests.xcworkspace'
+REPLICATION_ACCEPTANCE_WS = './ReplicationAcceptance/ReplicationAcceptance.xcworkspace'
 
-desc "Run the CDTDatastore Encryption Tests for iOS"
-task :testencryptionios do
-  # build using xcpretty as otherwise it's very verbose when running tests
-  $ios_success = system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
-  unless $ios_success
-    puts "** Build failed"
-    exit(-1)
-  end
-  $ios_success = system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
-  puts "\033[0;31m! iOS unit tests failed with status code #{$?}" unless $ios_success
-  if $ios_success
-    puts "** All tests executed successfully"
-  else
-    exit(-1)
-  end
-end
+# Schemes
+TESTS_IOS = 'Tests iOS'
+TESTS_OSX = 'Tests OSX'
+ENCRYPTION_IOS = 'Encryption Tests'
+ENCRYPTION_OSX = 'Encryption Tests OSX'
+REPLICATION_ACCEPTANCE_IOS = 'RA_Tests'
+REPLICATION_ACCEPTANCE_OSX = 'RA_Tests_OSX'
+REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'RA_EncryptionTests'
+REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'RA_EncryptionTests_OSX'
 
-desc "Run the CDTDatastore Encryption Tests for OS X"
-task :testencryptionosx do
-  # build using xcpretty as otherwise it's very verbose when running tests
-  $osx_success = system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests OSX' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
-  unless $osx_success
-    puts "** Build failed"
-    exit(-1)
-  end
-  $osx_success = system("xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests OSX' -destination 'platform=OS X' test")
-  puts "\033[0;31m! OS X unit tests failed with status code #{$?}" unless $osx_success
-  if $osx_success
-    puts "** All tests executed successfully"
-  else
-    exit(-1)
-  end
-end
+# Destinations
+IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 4S'
+OSX_DEST = 'platform=OS X'
+
+#
+#  Primary tasks
+#
 
 desc "Run tests for all platforms"
-task :test do
-  sh "rake testios"
-  sh "rake testosx"
-  sh "rake testencryptionios"
-  sh "rake testencryptionosx"
+task :test => [:testosx, :testios, :testencryptionosx, :testencryptionios] do
 end
 
 desc "Task for travis"
-task :travis do
-  sh "rake testios"
-  sh "rake testosx"
-  sh "rake testencryptionios"
-  sh "rake testencryptionosx"
+task :travis => [:test] do
   sh "pod lib lint --allow-warnings"
 end
+
+#
+#  Update pods
+#
 
 desc "pod update all test projects"
 task :podupdatetests do
   sh "for i in Tests EncryptionTests\ndo\ncd $i ; pod update ; cd ..\ndone"
-end
-
-desc "Run the replication acceptance tests for OS X"
-task :replicationacceptanceosx do
-    # build using xcpretty as otherwise it's very verbose when running tests
-    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests_OSX' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
-    unless $osx_success
-      puts "** Build failed"
-      exit(-1)
-    end
-    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests_OSX' -destination 'platform=OS X' test")
-    puts "\033[0;31m! OS X unit tests failed" unless $osx_success
-    if $osx_success
-        puts "** All tests executed successfully"
-    else
-        exit(-1)
-    end
-end
-
-desc "Run the replication acceptance tests for iOS"
-task :replicationacceptanceios do
-    # build using xcpretty as otherwise it's very verbose when running tests
-    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
-    unless $ios_success
-      puts "** Build failed"
-      exit(-1)
-    end
-    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_Tests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
-    puts "\033[0;31m! iOS unit tests failed" unless $ios_success
-    if $ios_success
-        puts "** All tests executed successfully"
-    else
-        exit(-1)
-    end
-end
-
-desc "Run the replication acceptance tests for OS X with encrypted datastores"
-task :encryptionreplicationacceptanceosx do
-    # build using xcpretty as otherwise it's very verbose when running tests
-    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests_OSX' -destination 'platform=OS X' build | xcpretty; exit ${PIPESTATUS[0]}")
-    unless $osx_success
-      puts "** Build failed"
-      exit(-1)
-    end
-    $osx_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests_OSX' -destination 'platform=OS X' test")
-    puts "\033[0;31m! OS X unit tests failed" unless $osx_success
-    if $osx_success
-        puts "** All tests executed successfully"
-    else
-        exit(-1)
-    end
-end
-
-desc "Run the replication acceptance tests for iOS with encrypted datastores"
-task :encryptionreplicationacceptanceios do
-    # build using xcpretty as otherwise it's very verbose when running tests
-    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' build | xcpretty; exit ${PIPESTATUS[0]}")
-    unless $ios_success
-      puts "** Build failed"
-      exit(-1)
-    end
-    $ios_success = system("xcodebuild -workspace ./ReplicationAcceptance/ReplicationAcceptance.xcworkspace -scheme 'RA_EncryptionTests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test")
-    puts "\033[0;31m! iOS unit tests failed" unless $ios_success
-    if $ios_success
-        puts "** All tests executed successfully"
-    else
-        exit(-1)
-    end
 end
 
 desc "pod update all included projects"
@@ -161,7 +48,79 @@ task :podupdate => [:podupdatetests] do
   sh "for i in ReplicationAcceptance Project\ndo\ncd $i ; pod update ; cd ..\ndone"
 end
 
+#
+#  Specific test tasks
+#
+
+desc "Run the CDTDatastore Tests for iOS"
+task :testios do
+  test(CDTDATASTORE_WS, TESTS_IOS, IPHONE_DEST)
+end
+
+desc "Run the CDTDatastore Tests for OS X"
+task :testosx do
+  test(CDTDATASTORE_WS, TESTS_OSX, OSX_DEST)
+end
+
+desc "Run the CDTDatastore Encryption Tests for iOS"
+task :testencryptionios do
+  test(ENCRYPTION_WS, ENCRYPTION_IOS, IPHONE_DEST)
+end
+
+desc "Run the CDTDatastore Encryption Tests for OS X"
+task :testencryptionosx do
+  test(ENCRYPTION_WS, ENCRYPTION_OSX, OSX_DEST)
+end
+
+desc "Run the replication acceptance tests for OS X"
+task :replicationacceptanceosx do
+  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
+end
+
+desc "Run the replication acceptance tests for iOS"
+task :replicationacceptanceios do
+  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
+end
+
+desc "Run the replication acceptance tests for OS X with encrypted datastores"
+task :encryptionreplicationacceptanceosx do
+  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_OSX, OSX_DEST)
+end
+
+desc "Run the replication acceptance tests for iOS with encrypted datastores"
+task :encryptionreplicationacceptanceios do
+  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_IOS, IOS_DEST)
+end
+
+#
+#  Update docs
+#
+
 desc "Build docs and install to Xcode"
 task :docs do
   system("appledoc --keep-intermediate-files --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -i Classes/vendor -i Classes/common/touchdb Classes/")
+end
+
+#
+#  Helper methods
+#
+
+# Runs `build` target for workspace/scheme/destination
+def run_build(workspace, scheme, destination)
+  # build using xcpretty as otherwise it's very verbose when running tests
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' build | xcpretty; exit ${PIPESTATUS[0]}")
+end
+
+# Runs `test` target for workspace/scheme/destination
+def run_tests(workspace, scheme, destination)
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test")
+end
+
+def test(workspace, scheme, destination)
+  unless run_build(workspace, scheme, destination)
+    fail "[FAILED] Build #{workspace}, #{scheme}"
+  end
+  unless run_tests(workspace, scheme, destination)
+    fail "[FAILED] Tests #{workspace}, #{scheme}"
+  end
 end
