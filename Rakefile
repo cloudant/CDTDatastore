@@ -108,17 +108,12 @@ end
 # Runs `build` target for workspace/scheme/destination
 def run_build(workspace, scheme, destination)
   # build using xcpretty as otherwise it's very verbose when running tests
-  $ios_success = system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' build | xcpretty; exit ${PIPESTATUS[0]}")
-  return $ios_success
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' build | xcpretty; exit ${PIPESTATUS[0]}")
 end
 
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
-  $ios_success = system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test")
-  unless $ios_success
-    puts "\033[0;31m! Unit tests failed with status code #{$?}"
-  end
-  return $ios_success
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test")
 end
 
 def test(workspace, scheme, destination)
