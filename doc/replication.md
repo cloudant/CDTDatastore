@@ -99,7 +99,7 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&err
 // Check replicator isn't nil, if so check error
 
 // Start the replication
-if ([replicator startWithError:&error]){
+if (![replicator startWithError:&error]){
     //handle error
 } else {
     //wait for it to complete
