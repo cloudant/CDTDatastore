@@ -90,6 +90,31 @@ CDTDatastore gets regularly tested on the following platforms:
 - iPad Air (Simulator), iOS 8.1 and 7.1
 - iPad Retina (Simulator), iOS 8.1 and 7.1  
 
+## Cloudant and iOS 9
+
+At the moment, Cloudant has a SHA1-signed SSL certificate. We are working
+on rolling out a SHA2-signed certificate, but it's taking longer than
+we'd hoped. So meanwhile, you unfortunately need to make an exception to
+Apple's [App Transport Security](https://developer.apple.com/library/prerelease/ios/technotes/App-Transport-Security-Technote/index.html) to connect to Cloudant.
+
+Add the following to your application's `info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+	<key>NSExceptionDomains</key>
+    <dict>
+        <key>cloudant.com</key>
+        <dict>
+            <key>NSIncludesSubdomains</key>
+            <true/>
+            <key>NSExceptionRequiresForwardSecrecy</key>
+            <false/>
+        </dict>
+    </dict>
+</dict>
+```
+
 ## <a name="overview"></a>Overview of the library
 
 Once the libraries are added to a project, the basics of adding and reading
