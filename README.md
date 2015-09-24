@@ -234,7 +234,7 @@ It's still a bit raw right now:
 Replication is used to synchronise data between the local datastore and a
 remote database, either a CouchDB instance or a Cloudant database. Many
 datastores can replicate with the same remote database, meaning that
-cross-device syncronisation is acheived by setting up replications from each
+cross-device synchronisation is achieved by setting up replications from each
 device the the remote database.
 
 Replication is simple to get started in the common cases:
@@ -301,7 +301,7 @@ because it allows us to store multiple versions of a document. In the main,
 there's a single, linear tree -- just a single branch -- running from the
 creation of the document to the current revision. It's possible, however,
 to create further branches in the tree. At this point your document is
-conflicted and needs some surgury to resolve the conflicts and bring it
+conflicted and needs some surgery to resolve the conflicts and bring it
 back to full health.
 
 - See [conflicts documentation](https://github.com/cloudant/CDTDatastore/blob/master/doc/conflicts.md).
@@ -309,7 +309,7 @@ back to full health.
 
 ## Requirements
 
-All requirements are included in the source code or pulled in as dependecies
+All requirements are included in the source code or pulled in as dependencies
 via `pod install`.
 
 ## Contributors
