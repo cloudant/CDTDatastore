@@ -216,7 +216,7 @@ Environment Variable | Purpose | Default
 `TEST_COUCH_PORT` | Port couchdb is listening on | `5984`
 `TEST_COUCH_HTTP` | http protocol to use, either http or https | `http`
 `TEST_COUCH_USERNAME` | CouchDB account username | 
-`TEST_COUCH_PASSWROD` | CouchDB account Password | 
+`TEST_COUCH_PASSWORD` | CouchDB account Password | 
 
 
 Example
@@ -234,7 +234,7 @@ $ xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests_OSX -
 
 ## Contributing your changes
 
-We follow a fairly standard proceedure:
+We follow a fairly standard procedure:
 
 * Fork the CDTDatastore repo into your own account, clone to your machine.
 * Create a branch with your changes on (`git checkout -b my-new-feature`)
