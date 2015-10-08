@@ -105,6 +105,7 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
     components.path = @"/_session";
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:components.URL];
+    request.HTTPMethod = @"POST";
     request.HTTPBody = self.sessionRequestBody;
 
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
