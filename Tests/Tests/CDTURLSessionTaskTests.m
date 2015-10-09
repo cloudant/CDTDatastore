@@ -38,7 +38,7 @@
         sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     id mockedSession = OCMPartialMock(session);
     OCMStub([mockedSession dataTaskWithRequest:[OCMArg any] completionHandler:[OCMArg any]])
-        .andReturn(task);
+        .andReturn(mockedTask);
 
     NSURLRequest *r = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost"]];
 
@@ -50,8 +50,8 @@
     [cdtTask cancel];
     
     //verify that object state is as expected
-    XCTAssertEqual(NSURLSessionTaskStateSuspended, cdtTask.state);
-    
+    XCTAssertEqual(NSURLSessionTaskStateSuspended, [cdtTask state]);
+
     //verify mock methods called
     OCMVerify([(NSURLSessionDataTask *)mockedTask resume]);
     OCMVerify([mockedTask cancel]);
