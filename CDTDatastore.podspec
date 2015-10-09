@@ -34,69 +34,40 @@ Pod::Spec.new do |s|
 
   s.default_subspec = 'standard'
 
-  s.subspec 'standard' do |sp|
-    # DUPLICATED CODE - Check subspec 'SQLCipher' - BEGIN
-    # CDTDatastore code depends on FMDB, without this dependency the code will
-    # not compile ('pod lib lint' will fail). FMDB can be compiled based on
-    # SQLite or SQLCipher and we want to offer both options. To do that, we have
-    # to define 2 subspecs and specify in both the CDTDatastore code and one of
-    # FMDB subspecs.
-    # If you try to make one of the subspecs to depend on the other to avoid the
-    # duplicated code, the resulting subspec will include at the same time
-    # SQLite and SQLCipher.
+  # CDTDatastore code depends on FMDB, without this dependency the code will
+  # not compile ('pod lib lint' will fail). FMDB can be compiled based on
+  # SQLite or SQLCipher and we want to offer both options. To do that, we have
+  # to define 2 subspecs and specify in both the CDTDatastore code and one of
+  # FMDB subspecs.
+  ['standard', 'SQLCipher'].each do |subspec_label|
+    s.subspec subspec_label do |sp|
 
-    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
+      sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
 
-    sp.source_files = 'Classes/**/*.{h,m}'
+      sp.source_files = 'Classes/**/*.{h,m}'
 
-    sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
-    sp.ios.exclude_files = 'Classes/osx'
-    sp.osx.exclude_files = 'Classes/ios'
+      sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
+      sp.ios.exclude_files = 'Classes/osx'
+      sp.osx.exclude_files = 'Classes/ios'
 
-    sp.dependency 'CDTDatastore/common-dependencies'
+      sp.dependency 'CDTDatastore/common-dependencies'
 
-    # DUPLICATED CODE - Check subspec 'SQLCipher' - END
+      if subspec_label == 'standard'
+        sp.library = 'sqlite3', 'z'
+        sp.dependency 'FMDB', '= 2.3'
+      else
+        sp.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
+        sp.library = 'z'
+        sp.dependency 'FMDB/SQLCipher', '= 2.3'
 
-    sp.library = 'sqlite3', 'z'
-
-    sp.dependency 'FMDB', '= 2.3'
-  end
-
-  s.subspec 'SQLCipher' do |sp|
-    # DUPLICATED CODE - Check subspec 'standard' - BEGIN
-    # CDTDatastore code depends on FMDB, without this dependency the code will
-    # not compile ('pod lib lint' will fail). FMDB can be compiled based on
-    # SQLite or SQLCipher and we want to offer both options. To do that, we have
-    # to define 2 subspecs and specify in both the CDTDatastore code and one of
-    # FMDB subspecs.
-    # If you try to make one of the subspecs to depend on the other to avoid the
-    # duplicated code, the resulting subspec will include at the same time
-    # SQLite and SQLCipher.
-
-    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
-
-    sp.source_files = 'Classes/**/*.{h,m}'
-
-    sp.exclude_files = 'Classes/vendor/MYUtilities/*.{h,m}'
-    sp.ios.exclude_files = 'Classes/osx'
-    sp.osx.exclude_files = 'Classes/ios'
-
-    sp.dependency 'CDTDatastore/common-dependencies'
-
-    # DUPLICATED CODE - Check subspec 'standard' - END
-
-    sp.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
-
-    sp.library = 'z'
-
-    sp.dependency 'FMDB/SQLCipher', '= 2.3'
-
-    # Some CDTDatastore classes use SQLite functions, therefore we have
-    # to include 'SQLCipher' although 'FMDB/SQLCipher' also depends on it
-    # or they will not compile (linker will not find some symbols).
-    # Also, we have to force cocoapods to configure SQLCipher with support
-    # for FTS.
-    sp.dependency 'SQLCipher/fts', '~> 3.1.0'
+        # Some CDTDatastore classes use SQLite functions, therefore we have
+        # to include 'SQLCipher' although 'FMDB/SQLCipher' also depends on it
+        # or they will not compile (linker will not find some symbols).
+        # Also, we have to force cocoapods to configure SQLCipher with support
+        # for FTS.
+        sp.dependency 'SQLCipher/fts', '~> 3.1.0'
+      end
+    end
   end
 
   s.subspec 'common-dependencies' do |sp|
