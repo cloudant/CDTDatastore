@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## 0.19.1 (2015-10-9)
+- [FIX] CDTSessionCookieInterceptableSession works now; we used GET rather than
+   POST in error.
+
 ## 0.19.0 (2015-09-15)
 - [IOS] Minimum iOS version now iOS 7. We now use NSURLSession.
 - [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession.
