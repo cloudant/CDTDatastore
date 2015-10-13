@@ -159,7 +159,7 @@ would be:
 Clearly, in the general case this will discard the user's data(!),
 but it'll do for this example.
 
-It is also possible to return a `CDTMutableDocumentRevision` from
+It is also possible to return a `CDTDocumentRevision` from
 `resolve`, perhaps by merging data from the conflicts:
 
 ```objc
@@ -168,7 +168,7 @@ It is also possible to return a `CDTMutableDocumentRevision` from
 -(CDTDocumentRevision *)resolve:(NSString*)docId
                       conflicts:(NSArray*)conflicts
 {
-    CDTMutableDocumentRevision *rev = [[conflicts objectAtIndex:0] mutableCopy];
+    CDTDocumentRevision *rev = conflicts[0];
     rev.body = /* ...update body, perhaps with data from the other conflicts */
     rev.attachments = /* ...you can also create/update/delete attachments */
     return rev;

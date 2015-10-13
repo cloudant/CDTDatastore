@@ -1,5 +1,12 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+
+- [BREAKING] CDTMutableDocumentRevision removed. CDTDocumentRevision objects
+  are now mutable -- you can change them and pass to
+  `updateDocumentFromRevision:error:` to make document updates. See
+  [doc/api-migration.md](doc/api-migration.md).
+
 ## 0.19.1 (2015-10-9)
 - [FIX] CDTSessionCookieInterceptableSession works now; we used GET rather than
    POST in error.

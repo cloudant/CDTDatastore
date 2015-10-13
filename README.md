@@ -46,7 +46,7 @@ Note: We only support building on the latest stable release of Xcode
 
 ### Using in a Swift app
 
-CDTDatastore is useable from Swift out of the box with a few small quirks. Install as per the 
+CDTDatastore is useable from Swift out of the box with a few small quirks. Install as per the
 instructions above, and import CloudantSync.h into your [bridging header](https://developer.apple.com/library/ios/documentation/swift/conceptual/buildingcocoaapps/MixandMatch.html). If you need to iterate
 over the CDTQueryResult class, you need to create a small extension before you can do so in Swift:
 
@@ -88,7 +88,7 @@ CDTDatastore gets regularly tested on the following platforms:
 - iPhone 6 (Simulator), iOS 8.1
 - iPad 2 (Simulator), iOS 8.1 and 7.1
 - iPad Air (Simulator), iOS 8.1 and 7.1
-- iPad Retina (Simulator), iOS 8.1 and 7.1  
+- iPad Retina (Simulator), iOS 8.1 and 7.1
 
 ## Cloudant and iOS 9
 
@@ -140,32 +140,34 @@ CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"
                                             error:&outError];
 
 // Create a document
-CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-rev.docId = @"doc1";  // Or don't and get an ID generated for you
-rev.body = @{
+CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+// Use [CDTDocumentRevision revision] to get an ID generated for you on saving
+rev.body = [@{
     @"description": @"Buy milk",
     @"completed": @NO,
     @"type": @"com.cloudant.sync.example.task"
-};
+} mutableCopy];
 
 // Add an attachment -- binary data like a JPEG
 CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
                           initWithPath:@"/path/to/image.jpg"
                           name:@"cute_cat.jpg"
                           type:@"image/jpeg"];
-rev.attachments = @{ att1.name:att1 };
+rev.attachments[att1.name] = att;
 
 // Save the document to the database
 CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev
                                                                 error:&error];
+// `revision` will be `nil` on failures.
 
 // Read a document
 NSString *docId = revision.docId;
 CDTDocumentRevision *retrieved = [datastore getDocumentWithId:docId
                                                         error:&error];
 ```
-If you are using Swift, install the libraries as per the instructions above, 
-and configure a bridging header for your project. Pull in the CloudantSync.h 
+
+If you are using Swift, install the libraries as per the instructions above,
+and configure a bridging header for your project. Pull in the CloudantSync.h
 header into the bridging header, and you should be good to go:
 
 ```objc
@@ -196,8 +198,7 @@ if let err = error {
 }
 
 // Create a document
-var rev = CDTMutableDocumentRevision()
-rev.docId = "doc1"  // Or don't and get an ID generated for you
+var rev = CDTDocumentRevision(docId:"doc1")
 var body = [
     "description": "Buy milk",
     "completed": false,
@@ -222,8 +223,8 @@ if let err = error {
 Read more in [the CRUD document](https://github.com/cloudant/CDTDatastore/blob/master/doc/crud.md).
 
 You can subscribe for notifications of changes in the database, which
-is described in 
-[the events documentation](https://github.com/cloudant/cdtdatastore/blob/master/doc/events.md). 
+is described in
+[the events documentation](https://github.com/cloudant/cdtdatastore/blob/master/doc/events.md).
 It's still a bit raw right now:
 
 - You receive a notification for all new revisions in replication (which can be more

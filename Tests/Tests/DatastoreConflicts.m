@@ -25,7 +25,6 @@
 #import "CDTDatastore+Internal.h"
 #import "CDTDocumentRevision.h"
 #import "CDTConflictResolver.h"
-#import "CDTMutableDocumentRevision.h"
 #import "CDTHelperOneUseKeyProvider.h"
 
 #import "FMDatabaseAdditions.h"
@@ -97,9 +96,8 @@
     XCTAssertNotNil(anId, @"ID string is nil");
     
     NSError *error;
-    CDTMutableDocumentRevision * mutableRevision = [CDTMutableDocumentRevision revision];
-    mutableRevision.body =@{@"foo1.a":@"bar1.a"};
-    mutableRevision.docId = anId;
+    CDTDocumentRevision *mutableRevision = [CDTDocumentRevision revisionWithDocId:anId];
+    mutableRevision.body = @{ @"foo1.a" : @"bar1.a" };
     CDTDocumentRevision *rev1;
     rev1 = [datastore createDocumentFromRevision:mutableRevision error:&error];
     
@@ -114,20 +112,20 @@
         CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
                                                                               name:@"bonsai-boston"
                                                                               type:@"image/jpg"];
-        mutableRevision = [rev1 mutableCopy];
+        mutableRevision = [rev1 copy];
         mutableRevision.attachments = @{attachment.name:attachment};
         mutableRevision.body = @{@"foo2.a":@"bar2.a"};
         rev2a = [self.datastore updateDocumentFromRevision:mutableRevision error:&error];
         
     }
     else{
-        mutableRevision = [rev1 mutableCopy];
+        mutableRevision = [rev1 copy];
         mutableRevision.body = @{@"foo2.a":@"bar2.a"};
         rev2a = [datastore updateDocumentFromRevision:mutableRevision error:&error];
     }
     
     error = nil;
-    mutableRevision = [rev2a mutableCopy];
+    mutableRevision = [rev2a copy];
     mutableRevision.body = @{@"foo3.a":@"bar3.a"};
     [datastore updateDocumentFromRevision:mutableRevision error:&error];
     
@@ -209,7 +207,7 @@
                                               toDatastore:(CDTDatastore*)datastore
 {
     NSError *error;
-    CDTMutableDocumentRevision * mutableRev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
     mutableRev.body = body;
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
@@ -567,7 +565,7 @@
                  @"foundSet: %@", foundConflictedDocIds);
 }
 
-- (void) testResolveConflictWithBiggestRev
+- (void)testResolveConflictWithBiggestRev
 {
     
     [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
@@ -642,7 +640,7 @@
     }
 }
 
-- (void) testResolveSubset
+- (void)testResolveSubset
 {
     //add a non-conflicting document
     [self addNonConflictingDocumentWithBody:@{@"conflict":@"no"} toDatastore:self.datastore];
@@ -687,8 +685,7 @@
     }
 }
 
-
-- (void) testResolveConflictWithSmallestRev
+- (void)testResolveConflictWithSmallestRev
 {
     
     [self addConflictingDocumentWithId:@"doc0" toDatastore:self.datastore];
@@ -724,7 +721,7 @@
     
 }
 
--(void) testResolveConflictWithAttachmentWithBiggestRev
+- (void)testResolveConflictWithAttachmentWithBiggestRev
 {
     //this tests that the conflict resolution retains the revisions association with an attachment
     // before
@@ -803,8 +800,7 @@
     
 }
 
-
-- (void) testResolveConflictWithAttachmentForRev2b
+- (void)testResolveConflictWithAttachmentForRev2b
 {
     //this tests that the conflict resolution retains the revision associations with attachments
     // before

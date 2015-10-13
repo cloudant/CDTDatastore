@@ -16,14 +16,14 @@
 #import <Foundation/Foundation.h>
 
 #import "TD_Revision.h"
+#import "CDTChangedObserver.h"
 
 @class TD_RevisionList;
-@class CDTMutableDocumentRevision;
 
 /**
  * Represents a single revision of a document in a datastore.
  */
-@interface CDTDocumentRevision : NSObject
+@interface CDTDocumentRevision : NSObject <CDTChangedObserver>
 
 /** Document ID for this document revision. */
 @property (nonatomic, strong, readonly) NSString *docId;
@@ -34,6 +34,20 @@
 @property (nonatomic, readonly) BOOL deleted;
 
 @property (nonatomic, readonly) SequenceNumber sequence;
+
+@property (nonatomic, strong) NSMutableDictionary *body;
+@property (nonatomic, strong) NSMutableDictionary *attachments;
+
+@property (nonatomic, getter=isChanged) bool changed;
+
+/**
+ Indicates if this document revision contains all fields and attachments. If NO, datastore
+ will refuse to save.
+
+ This allows for document projections to conform to the CDTDocumentRevision API without
+ risking their being saved to the datastore.
+ */
+- (BOOL)isFullRevision;
 
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
@@ -63,6 +77,27 @@
                                           error:(NSError *__autoreleasing *)error;
 
 /**
+ Create a new, blank revision which will have an ID generated on saving.
+ */
++ (CDTDocumentRevision *)revision;
+
+/**
+ Create a new, blank revision with an assigned ID.
+ */
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId;
+
+/**
+ Create a blank revision with a rev ID, which will be treated as an update when saving.
+
+ In general, not that useful in day-to-day life, where updates will be made to document
+ revisions retrieved from a datastore.
+
+ Useful during testing and when it's not necessary to start with an existing revision's
+ content.
+ */
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId;
+
+/**
  Return document content as an NSData object.
 
  This is often the format an object mapper will require.
@@ -74,14 +109,14 @@
 - (NSData *)documentAsDataError:(NSError *__autoreleasing *)error;
 
 /**
- Return a mutable copy of this document.
+ Return a copy of this document.
 
- @return mutable copy of this document
+ Dictionary and array objects in the `body` are deep-copied.
+
+ The attachment array is copied, individual `CDTAttachment` objects are not.
+
+ @return copy of this document
  */
-- (CDTMutableDocumentRevision *)mutableCopy;
-
-- (NSDictionary *)body;
-
-- (NSDictionary *)attachments;
+- (CDTDocumentRevision *)copy;
 
 @end

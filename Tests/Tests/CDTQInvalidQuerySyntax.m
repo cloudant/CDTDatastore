@@ -56,25 +56,25 @@ SpecBegin(CDTQQueryExecutorInvalidSyntax) describe(@"cloudant query using invali
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev;
 
-            rev.docId = @"mike12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike72";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
             rev.body = @{ @"name" : @"fred", @"age" : @12 };
             [ds createDocumentFromRevision:rev error:nil];
 

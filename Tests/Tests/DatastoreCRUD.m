@@ -22,7 +22,6 @@
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
-#import "CDTMutableDocumentRevision.h"
 #import "TD_Revision.h"
 
 #import "FMDatabaseAdditions.h"
@@ -87,7 +86,7 @@
 -(void) testDocumentWithInfinityValue
 {
     NSError * error;
-    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *revision = [CDTDocumentRevision revision];
     revision.body = @{@"infinity":@(INFINITY)};
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
@@ -103,7 +102,7 @@
 
 -(void) testDocumentWithNonSerialisableValue {
     NSError * error;
-    CDTMutableDocumentRevision * revision = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *revision = [CDTDocumentRevision revision];
     revision.body = @{@"nonserialisable":[NSDate date]};
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:revision
@@ -272,9 +271,8 @@
     //creates the tables in the sqlite db. otherwise, the database would be empty.
 
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
-    
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    doc.docId = testDocId;
+
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:testDocId];
     doc.body = [@{key:value} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -329,8 +327,8 @@
     NSError *error;
     NSString *testDocId = @"document_id_for_cannotInsertNil";
 
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.docId = testDocId;
+    CDTDocumentRevision *rev;
+    rev = [CDTDocumentRevision revisionWithDocId:testDocId];
     rev.body = nil;
     rev.attachments = nil;
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
@@ -351,9 +349,9 @@
     NSString *key = @"hello";
     NSString *value = @"world";
     NSString *testDocId = @"document_id_for_testCreateDocumentWithIdInBody";
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-    rev.docId = testDocId;
+
+    CDTDocumentRevision *rev;
+    rev = [CDTDocumentRevision revisionWithDocId:testDocId];
     rev.body = [@{key:value,@"_id":testDocId} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
@@ -367,17 +365,15 @@
     NSString *key = @"hello";
     NSString *value = @"world";
     NSString *testDocId = @"document_id_for_CannotCreateNewDocWithoutUniqueID";
-        
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    doc.docId = testDocId;
+
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:testDocId];
     doc.body = [@{key:value} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(error, @"Error creating document");
     XCTAssertNotNil(ob, @"CDTDocumentRevision object was nil");
     
     error = nil;
-    doc = [CDTMutableDocumentRevision revision];
-    doc.docId = testDocId;
+    doc = [CDTDocumentRevision revisionWithDocId:testDocId];
     doc.body = [@{key:value} mutableCopy];
     ob = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNotNil(error, @"Error was nil when creating second doc with same doc_id");
@@ -388,7 +384,7 @@
 -(void)testAddDocument
 {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     doc.body = [@{@"hello": @"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     
@@ -399,8 +395,7 @@
 -(void)testCreateDocumentWithId
 {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    doc.docId = @"document_id_for_test";
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"document_id_for_test"];
     doc.body = [@{@"hello":@"world"} mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
@@ -427,7 +422,7 @@
     NSError *error;
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     doc.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -436,8 +431,8 @@
     error = nil;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    
-    doc = [ob mutableCopy];
+
+    doc = [ob copy];
     doc.body = [@{key2:value2} mutableCopy];
     
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:doc error:&error];
@@ -448,8 +443,8 @@
     error = nil;
     NSString *key3 = @"hi";
     NSString *value3 = @"adam";
-    
-    doc = [ob mutableCopy];
+
+    doc = [ob copy];
     doc.body = [@{key3:value3} mutableCopy];
     
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:doc error:&error];
@@ -458,30 +453,29 @@
     
 }
 
--(void)testCreateUsingCDTMutableDocumentRevision
+- (void)testCreateUsingCDTDocumentRevision
 {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"MyFirstTestDoc"];
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
-    doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertTrue(saved, @"Failed to save new document");
     
 }
 
--(void) testCreateWithoutBodyInCDTMutableDocumentRevision
+- (void)testCreateWithoutBodyInCDTDocumentRevision
 {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     doc.body = nil;
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document was created without a body");
 }
 
--(void)testCreateWithaDocumentIdNoBodyCDTMutableDocumentRevision{
+- (void)testCreateWithaDocumentIdNoBodyCDTDocumentRevision
+{
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    doc.docId = @"doc1";
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"doc1"];
     doc.body = nil;
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document with Id but no body created");
@@ -489,15 +483,16 @@
 
 - (void)testCreateWithDefaultMutableRevision {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNotNil(saved, @"Default document was not created");
     XCTAssertNil(error,"reccieved an error, expected no error");
 }
 
--(void)testCreateWithOnlyBodyCDTMutableDocumentRevision{
+- (void)testCreateWithOnlyBodyCDTDocumentRevision
+{
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     doc.body = [@{@"DocumentBodyItem1":@"Hi",@"Hello":@"World"} mutableCopy];
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
     XCTAssertTrue(saved, @"Document was not created");
@@ -505,8 +500,10 @@
 
 -(void) testCreateWithAppendedBodyData {
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    [doc.body setObject:@"Modified" forKey:@"value"];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
+    NSMutableDictionary *body = [doc.body mutableCopy];
+    body[@"value"] = @"Modified";
+    doc.body = body;
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
     XCTAssertTrue(saved, @"Document was not created");
     XCTAssertEqualObjects(saved.body, @{@"value":@"Modified"});
@@ -514,15 +511,17 @@
 }
 
 -(void) testCreateWithAppenedAttachment {
-    
-    NSData * data = [@"Hello World!" dataUsingEncoding:NSUTF8StringEncoding];
-    CDTAttachment * attachment =  [[CDTUnsavedDataAttachment alloc]initWithData:data name:@"helloWorld.txt" type:@"txt"];
+    NSData *data = [@"Hello World!" dataUsingEncoding:NSUTF8StringEncoding];
+    CDTAttachment *attachment =
+        [[CDTUnsavedDataAttachment alloc] initWithData:data name:@"helloWorld.txt" type:@"txt"];
                                    //initWithName:@"HelloWorld.txt" type:@"txt" size:[data length]];
     
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
-    [doc.attachments setObject:attachment forKey:attachment.name];
-    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision: doc error:&error];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
+    NSMutableDictionary *attachments = [doc.attachments mutableCopy];
+    attachments[attachment.name] = attachment;
+    doc.attachments = attachments;
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertTrue(saved, @"Document was not created");
     XCTAssertTrue([saved.attachments count] == 1);
     XCTAssertNil(error,@"Error was not nil, an error occured creating the document");
@@ -533,8 +532,8 @@
 -(void)testGetDocument
 {
     NSError *error;
-    
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *doc = [CDTDocumentRevision revision];
     doc.body = [@{@"hello":@"world"}mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:doc error:&error];
@@ -558,8 +557,8 @@
 -(void)testGetDocumentWithIdAndRev
 {
     NSError *error;
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello":@"world"} mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
@@ -586,7 +585,7 @@
     
     for (int i = 0; i < 200; i++) {
         error = nil;
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        CDTDocumentRevision *rev = [CDTDocumentRevision revision];
         rev.body = [@{@"hello":@"world",@"index":[NSNumber numberWithInt:i]} mutableCopy];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document");
@@ -618,8 +617,8 @@
 -(void)testGetNonExistingDocument
 {
     NSError *error;
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello":@"world"}mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -657,10 +656,8 @@
         //generate docutment body for a random doc id.
         NSString* randomId = [ids objectAtIndex:arc4random_uniform((u_int32_t)ids.count)];
         NSDictionary *dict = @{@"hello":[NSString stringWithFormat:@"world-%i", i]};
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+        CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:randomId];
         rev.body = [dict mutableCopy];
-        rev.docId = randomId;
-        
 
         error = nil;
         if([lastDocForId[randomId][@"numUpdates"] intValue] == 0) {
@@ -671,7 +668,7 @@
         else{
             cdt_rev = [self.datastore getDocumentWithId:randomId
                                                   error:&error];
-            CDTMutableDocumentRevision *update = [cdt_rev mutableCopy];
+            CDTDocumentRevision *update = [cdt_rev copy];
             update.body = rev.body;
             XCTAssertNil(error, @"Error getting document");
             XCTAssertNotNil(cdt_rev, @"retrieved CDTDocumentRevision was nil");
@@ -788,8 +785,8 @@
         // Results will be ordered by docId, so give an orderable ID.
         error = nil;
         NSString *docId = [NSString stringWithFormat:@"hello-%010d", i];
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.docId = docId;
+        CDTDocumentRevision *rev;
+        rev = [CDTDocumentRevision revisionWithDocId:docId];
         rev.body = bodies[i];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document");
@@ -814,8 +811,8 @@
         // Results will be ordered by docId, so give an orderable ID.
         error = nil;
         NSString *docId = [NSString stringWithFormat:@"hello-%04d", i];
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.docId = docId;
+        CDTDocumentRevision *rev;
+        rev = [CDTDocumentRevision revisionWithDocId:docId];
         rev.body = bodies[i];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document");
@@ -952,8 +949,8 @@
     NSError *error;
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -964,9 +961,10 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     error = nil;
-    rev = [ob mutableCopy];
-    rev.body = [@{key2:value2} mutableCopy];
-    rev.docId = @"Idonotexist";
+    rev = [[CDTDocumentRevision alloc] initWithDocId:@"Idonotexist"
+                                          revisionId:ob.revId
+                                                body:[@{ key2 : value2 } mutableCopy]
+                                         attachments:nil];
 
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     
@@ -988,8 +986,8 @@
     NSError *error;
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
@@ -1001,7 +999,7 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     error = nil;
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
 
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
@@ -1087,8 +1085,8 @@
     //creates the tables in the sqlite db. otherwise, the database would be empty.
     
     NSError *error;
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello":@"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -1098,7 +1096,7 @@
     
     error = nil;
 
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = nil;
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error updating document with nil document body");
@@ -1125,8 +1123,8 @@
     int numOfUpdates = 1001;
 
     NSArray *bodies = [self generateDocuments:numOfUpdates + 1];
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = bodies[0];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -1136,7 +1134,7 @@
     
     for(int i = 0; i < numOfUpdates; i++){
         error = nil;
-        rev = [ob mutableCopy];
+        rev = [ob copy];
         rev.body = bodies[i+1];
         ob = [self.datastore updateDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document. Update Number %d", i);
@@ -1244,8 +1242,8 @@
     // Create the first revision
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision  revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:nil];
@@ -1259,7 +1257,7 @@
     NSString *value2 = @"adam";
     NSError *error;
     NSDictionary *body2dict =@{key1:value1, key2:value2, delkey:delvalue};
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [body2dict mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil");
@@ -1315,15 +1313,15 @@
 
 -(void) testUpdateDocumentThroughCDTMutableRevision{
     NSError *error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"MyFirstTestDoc"];
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
-    doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertTrue(saved, @"Failed to save new document");
-    
-    CDTMutableDocumentRevision *update = [saved mutableCopy];
-    [update.body setObject:@"UpdatedDocValue" forKey:@"UpdatedDoc"];
-    CDTDocumentRevision *updated = [self.datastore updateDocumentFromRevision:update error:&error];
+
+    NSMutableDictionary *update = [saved.body mutableCopy];
+    [update setObject:@"UpdatedDocValue" forKey:@"UpdatedDoc"];
+    saved.body = update;
+    CDTDocumentRevision *updated = [self.datastore updateDocumentFromRevision:saved error:&error];
     XCTAssertTrue(updated, @"Object did not update");
 }
 
@@ -1333,8 +1331,7 @@
 {
     NSError *error = nil;
 
-    
-    CDTMutableDocumentRevision *mRev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *mRev = [CDTDocumentRevision revision];
     mRev.body = [@{@"name": @"Zambia", @"area": @(752614)} mutableCopy];
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mRev error:&error];
 
@@ -1351,7 +1348,7 @@
 {
     NSError *error = nil;
 
-    CDTMutableDocumentRevision *mRev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *mRev = [CDTDocumentRevision revision];
     mRev.body = [@{@"name": @"Zambia", @"area": @(752614)} mutableCopy];
     
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mRev error:&error];
@@ -1374,7 +1371,7 @@
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     NSError *error;
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello": @"world"} mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
@@ -1483,7 +1480,7 @@
     
     //create document
     NSError *error;
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello":@"world"} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -1494,7 +1491,7 @@
     NSString *docId = ob.docId;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");
@@ -1608,7 +1605,7 @@
     
     //create document rev 1-
     NSError *error;
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{@"hello": @"world"}mutableCopy];
 
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
@@ -1620,7 +1617,7 @@
     NSString *docId = ob.docId;
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");
@@ -1655,7 +1652,7 @@
     error = nil;
     NSString *key3 = @"chew";
     NSString *value3 = @"branca";
-    rev = [ob2 mutableCopy];
+    rev = [ob2 copy];
     rev.body = [@{key3:value3} mutableCopy];
     CDTDocumentRevision *ob3 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error updating deleted document");
@@ -1675,8 +1672,8 @@
         error = nil;
         // Results will be ordered by docId, so give an orderable ID.
         NSString *docId = [NSString stringWithFormat:@"hello-%010d", i];
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.docId = docId;
+        CDTDocumentRevision *rev;
+        rev = [CDTDocumentRevision revisionWithDocId:docId];
         rev.body = bodies[i];
         CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document");
@@ -1783,8 +1780,8 @@
         error = nil;
         // Results will be ordered by docId, so give an orderable ID.
         NSString *docId = [NSString stringWithFormat:@"hello-%010d", i];
-        CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
-        rev.docId = docId;
+        CDTDocumentRevision *rev;
+        rev = [CDTDocumentRevision revisionWithDocId:docId];
         rev.body = bodies[i];
         CDTDocumentRevision *aRev = [self.datastore createDocumentFromRevision:rev error:&error];
         XCTAssertNil(error, @"Error creating document");
@@ -1816,9 +1813,8 @@
 -(void)testDeleteUsingCDTDocumentRevision
 {
     NSError * error;
-    CDTMutableDocumentRevision *doc = [CDTMutableDocumentRevision revision];
+    CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"MyFirstTestDoc"];
     doc.body = [@{@"title":@"Testing New creation API",@"FirstTest":@YES} mutableCopy];
-    doc.docId = @"MyFirstTestDoc";
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertTrue(saved, @"Failed to save new document");
     
@@ -1829,32 +1825,33 @@
 -(void) testDeleteDocumentUsingIdHasMultipleLeafNodesInTree
 {
     NSError * error;
-    CDTMutableDocumentRevision * mutableRev =  [CDTMutableDocumentRevision revision];
-    mutableRev.docId = @"aTestDocId";
+    CDTDocumentRevision *mutableRev;
+    mutableRev = [CDTDocumentRevision revisionWithDocId:@"aTestDocId"];
     mutableRev.body = @{@"hello":@"world"};
     
     CDTDocumentRevision * rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
     
     XCTAssertNotNil(rev, @"Document was not created");
-    
-    mutableRev = [rev  mutableCopy];
-    [mutableRev.body setObject:@"objc" forKey:@"writtenIn"];
-    
-    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:mutableRev error:&error];
-    
+
+    NSMutableDictionary *body = [rev.body mutableCopy];
+    [body setObject:@"objc" forKey:@"writtenIn"];
+    rev.body = body;
+
+    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:rev error:&error];
+
     XCTAssertNotNil(rev2, @"Failed performing update");
     
     //now need to force insert into the DB little messy though
-    
-    [mutableRev.body setObject:@"conflictedinsert" forKey:@"conflictedkeyconflicted"];
-    
+
+    [body setObject:@"conflictedinsert" forKey:@"conflictedkeyconflicted"];
+
     //borrow conversion code from update then do force insert
     
     TD_Revision *converted = [[TD_Revision alloc]initWithDocID:rev.docId
                                                          revID:rev.revId
                                                        deleted:rev.deleted];
-    converted.body = [[TD_Body alloc]initWithProperties:mutableRev.body];
-    
+    converted.body = [[TD_Body alloc] initWithProperties:body];
+
     TDStatus status;
     
     TD_Revision *new = [self.datastore.database putRevision:converted
@@ -1868,27 +1865,6 @@
     
 }
 
-- (void)testDeleteMutableDocumentRevision
-{
-    NSString *docId = @"testDeleteWithMutableDocumentRevision";
-
-    CDTMutableDocumentRevision *mutableRev = [CDTMutableDocumentRevision revision];
-    mutableRev.docId = docId;
-    mutableRev.body = @{ @"hello" : @"world" };
-    CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:nil];
-
-    mutableRev = [rev mutableCopy];
-
-    NSError *error = nil;
-    rev = [self.datastore deleteDocumentFromRevision:mutableRev error:&error];
-    XCTAssertNotNil(rev, @"Delete opeation should not fail: %@", error);
-
-    CDTDocumentRevision *deletedRev =
-        [self.datastore getDocumentWithId:docId rev:rev.revId error:&error];
-    XCTAssertNotNil(deletedRev, @"A deleted document is still in the datastore: %@", error);
-    XCTAssertTrue(deletedRev.deleted, @"This document should be set as deleted");
-}
-
 #pragma mark - Other Tests
 
 -(void)testCompactSingleDoc
@@ -1896,8 +1872,8 @@
     NSError *error;
     NSString *key1 = @"hello";
     NSString *value1 = @"world";
-    
-    CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
     rev.body = [@{key1:value1} mutableCopy];
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error creating document");
@@ -1906,7 +1882,7 @@
     NSString *key2 = @"hi";
     NSString *value2 = @"mike";
     error = nil;
-    rev = [ob mutableCopy];
+    rev = [ob copy];
     rev.body = [@{key2:value2} mutableCopy];
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNil(error, @"Error updating document");

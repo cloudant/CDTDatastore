@@ -15,6 +15,12 @@
 		27389E3618534E050027A404 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
 		27651C6419001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
 		27651C6519001B54006FEF7F /* bonsai-boston.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 27651C6319001B54006FEF7F /* bonsai-boston.jpg */; };
+		278EC7BB1B82061500292E02 /* CDTChangedDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7BA1B82061500292E02 /* CDTChangedDictionaryTests.m */; };
+		278EC7BC1B82061500292E02 /* CDTChangedDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7BA1B82061500292E02 /* CDTChangedDictionaryTests.m */; };
+		278EC7BE1B820F9000292E02 /* CDTChangedArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7BD1B820F9000292E02 /* CDTChangedArrayTests.m */; };
+		278EC7BF1B820F9000292E02 /* CDTChangedArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7BD1B820F9000292E02 /* CDTChangedArrayTests.m */; };
+		278EC7C11B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7C01B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m */; };
+		278EC7C21B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 278EC7C01B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m */; };
 		27CCEDCD187AD64F006F3C66 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27CCEDCB187AD64F006F3C66 /* InfoPlist.strings */; };
 		27CCEDD6187AD70C006F3C66 /* CloudantSyncTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E2E18534E050027A404 /* CloudantSyncTests.m */; };
 		27CCEDD7187AD719006F3C66 /* DatastoreActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 27389E3018534E050027A404 /* DatastoreActions.m */; };
@@ -184,6 +190,9 @@
 		27389E2E18534E050027A404 /* CloudantSyncTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CloudantSyncTests.m; sourceTree = "<group>"; };
 		27389E3018534E050027A404 /* DatastoreActions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatastoreActions.m; sourceTree = "<group>"; };
 		27651C6319001B54006FEF7F /* bonsai-boston.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = "bonsai-boston.jpg"; path = "Assets/bonsai-boston.jpg"; sourceTree = "<group>"; };
+		278EC7BA1B82061500292E02 /* CDTChangedDictionaryTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTChangedDictionaryTests.m; path = Utils/CDTChangedDictionaryTests.m; sourceTree = "<group>"; };
+		278EC7BD1B820F9000292E02 /* CDTChangedArrayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTChangedArrayTests.m; path = Utils/CDTChangedArrayTests.m; sourceTree = "<group>"; };
+		278EC7C01B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDTChangedDictionaryJSONWrappingTests.m; path = Utils/CDTChangedDictionaryJSONWrappingTests.m; sourceTree = "<group>"; };
 		27CCEDC6187AD64F006F3C66 /* Tests OSX.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tests OSX.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CCEDCA187AD64F006F3C66 /* Tests OSX-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Tests OSX-Info.plist"; sourceTree = "<group>"; };
 		27CCEDCC187AD64F006F3C66 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -349,6 +358,7 @@
 			isa = PBXGroup;
 			children = (
 				989158DC1B8B7D3D00FFF509 /* HTTP */,
+				278EC7B91B8205D500292E02 /* Utils */,
 				CD2188CF1AE570480036F59F /* Encryption */,
 				CD3FBCA11AB05A170032376E /* Helpers */,
 				CD1C82501B42D7AA00DB7044 /* CDTFetchChangesTests.m */,
@@ -414,6 +424,16 @@
 				27389E1D185345FD0027A404 /* Tests-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		278EC7B91B8205D500292E02 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				278EC7BA1B82061500292E02 /* CDTChangedDictionaryTests.m */,
+				278EC7BD1B820F9000292E02 /* CDTChangedArrayTests.m */,
+				278EC7C01B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m */,
+			);
+			name = Utils;
 			sourceTree = "<group>";
 		};
 		27ACD1EC193DDDCC00658EC2 /* Events */ = {
@@ -756,8 +776,10 @@
 				EC0C834C1AB217290051042F /* CDTQQuerySortTests.m in Sources */,
 				9F0D240E188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				EC0C835E1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
+				278EC7C11B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m in Sources */,
 				CD2188E51AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				CD196E6D1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
+				278EC7BB1B82061500292E02 /* CDTChangedDictionaryTests.m in Sources */,
 				EC0C83421AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
 				9F0D23F7188DF30D00D3D04E /* TDMultiStreamWriterTests.m in Sources */,
 				ECA0DC611AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,
@@ -813,6 +835,7 @@
 				9F0D23F4188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				CD2188DC1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */,
 				CD0D10EC1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
+				278EC7BE1B820F9000292E02 /* CDTChangedArrayTests.m in Sources */,
 				CD3FBCA61AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD2188DA1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
 				CDD0251C1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */,
@@ -837,8 +860,10 @@
 				9F0D23F2188B4FA900D3D04E /* TDMultipartReaderTests.m in Sources */,
 				EC0C835F1AB217290051042F /* CDTQSQLOnlyIndexManager.m in Sources */,
 				EC0C83431AB217290051042F /* CDTQIndexManagerTests.m in Sources */,
+				278EC7C21B821AB000292E02 /* CDTChangedDictionaryJSONWrappingTests.m in Sources */,
 				CD2188E61AE571410036F59F /* CDTEncryptionKeychainUtilsPBKDF2Tests.m in Sources */,
 				CD196E6E1B18CD090039133F /* TD_DatabaseBlobFilenamesTests.m in Sources */,
+				278EC7BC1B82061500292E02 /* CDTChangedDictionaryTests.m in Sources */,
 				9F0D2400188DF96600D3D04E /* TD_DatabaseManagerTests.m in Sources */,
 				9F0D240F188F01DD00D3D04E /* TDMiscTests.m in Sources */,
 				ECA0DC621AFD568D00E174BC /* CDTQTextSearchTests.m in Sources */,
@@ -892,6 +917,7 @@
 				9F0D23F5188B4FFF00D3D04E /* TDMultipartWriterTests.m in Sources */,
 				CD2188DD1AE5711A0036F59F /* DatastoreManagerEncryptionTests.m in Sources */,
 				CD0D10ED1AB09CE8003315B5 /* TD_DatabaseDeletionTests.m in Sources */,
+				278EC7BF1B820F9000292E02 /* CDTChangedArrayTests.m in Sources */,
 				CD3FBCA71AB05A170032376E /* CDTHelperFixedKeyProvider.m in Sources */,
 				CD2188DB1AE5711A0036F59F /* DatastoreEncryptionTests.m in Sources */,
 				CDD0251D1B0F631C007D185D /* TDBlobStoreEncryptionTests.m in Sources */,

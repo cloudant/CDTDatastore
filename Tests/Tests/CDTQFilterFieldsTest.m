@@ -50,25 +50,25 @@ SpecBegin(CDTQFilterFieldsTest)
             ds = [factory datastoreNamed:@"test" error:nil];
             expect(ds).toNot.beNil();
 
-            CDTMutableDocumentRevision *rev = [CDTMutableDocumentRevision revision];
+            CDTDocumentRevision *rev;
 
-            rev.docId = @"mike12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
             rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"mike72";
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
             rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred34";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
             rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.docId = @"fred12";
+            rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
             rev.body = @{ @"name" : @"fred", @"age" : @12 };
             [ds createDocumentFromRevision:rev error:nil];
 
@@ -153,6 +153,45 @@ SpecBegin(CDTQFilterFieldsTest)
             }];
         });
 
+        context(@"projected revisions", ^{
+
+            it(@"cannot be saved until copied", ^{
+                NSDictionary *query = @{ @"name" : @"mike", @"age" : @12 };
+                CDTQResultSet *result =
+                    [im find:query skip:0 limit:NSUIntegerMax fields:@[ @"name" ] sort:nil];
+                expect(result.documentIds.count).to.equal(1);
+
+                __block CDTDocumentRevision *projected = nil;
+
+                [result
+                    enumerateObjectsUsingBlock:^(CDTDocumentRevision *rev, NSUInteger i, BOOL *s) {
+                        projected = rev;
+                        *s = YES;
+                    }];
+
+                expect(projected.body.count).to.equal(1);
+                expect(projected.body[@"name"]).to.equal(@"mike");
+
+                NSError *error;
+                CDTDocumentRevision *pRev = [ds updateDocumentFromRevision:projected error:&error];
+                expect(pRev).to.beNil();
+                expect(error.localizedDescription)
+                    .to.equal(@"Possibly trying to save projected query result.");
+                expect(error.localizedFailureReason)
+                    .to.equal(@"Trying to save revision where isFullVersion is NO");
+                expect(error.localizedRecoverySuggestion)
+                    .to.equal(@"Try calling -copy on projected revisions before saving.");
+
+                CDTDocumentRevision *copy = [projected copy];
+                expect(copy.body.count).to.equal(3);
+                expect(copy.body[@"name"]).to.equal(@"mike");
+                expect(copy.body[@"age"]).to.equal(@12);
+                expect(copy.body[@"pet"]).to.equal(@"cat");
+                expect([ds updateDocumentFromRevision:copy error:nil]).toNot.beNil();
+            });
+
+        });
+
         context(@"mutableCopy of projected doc", ^{
 
             it(@"returns full doc", ^{
@@ -166,7 +205,7 @@ SpecBegin(CDTQFilterFieldsTest)
                         expect(rev.body.count).to.equal(1);
                         expect(rev.body[@"name"]).to.equal(@"mike");
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev copy];
                         expect(mutable.body.count).to.equal(3);
                         expect(mutable.body[@"name"]).to.equal(@"mike");
                         expect(mutable.body[@"age"]).to.equal(@12);
@@ -186,11 +225,12 @@ SpecBegin(CDTQFilterFieldsTest)
                         expect(rev.body[@"name"]).to.equal(@"mike");
 
                         CDTDocumentRevision *original = [ds getDocumentWithId:rev.docId error:nil];
-                        CDTMutableDocumentRevision *update = [original mutableCopy];
-                        update.body[@"name"] = @"charles";
-                        expect([ds updateDocumentFromRevision:update error:nil]).toNot.beNil();
+                        NSMutableDictionary *updatedBody = [original.body mutableCopy];
+                        updatedBody[@"name"] = @"charles";
+                        original.body = updatedBody;
+                        expect([ds updateDocumentFromRevision:original error:nil]).toNot.beNil();
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev copy];
                         expect(mutable).to.beNil();
                     }];
             });
@@ -208,7 +248,7 @@ SpecBegin(CDTQFilterFieldsTest)
 
                         expect([ds deleteDocumentFromRevision:rev error:nil]).toNot.beNil();
 
-                        CDTMutableDocumentRevision *mutable = [rev mutableCopy];
+                        CDTDocumentRevision *mutable = [rev copy];
                         expect(mutable).to.beNil();
                     }];
             });

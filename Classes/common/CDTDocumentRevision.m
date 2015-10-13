@@ -14,7 +14,6 @@
 //  and limitations under the License.
 
 #import "CDTDocumentRevision.h"
-#import "CDTMutableDocumentRevision.h"
 #import "Attachments/CDTAttachment.h"
 #import "TDJSON.h"
 #import "TD_Revision.h"
@@ -22,14 +21,14 @@
 #import "TD_Database.h"
 #import "CDTLogging.h"
 
+#import "CDTChangedDictionary.h"
+
 @interface CDTDocumentRevision ()
 
 @property (nonatomic, strong, readonly) TD_RevisionList *revs;
 @property (nonatomic, strong, readonly) NSArray *revsInfo;
 @property (nonatomic, strong, readonly) NSArray *conflicts;
 @property (nonatomic, strong, readonly) TD_Body *td_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_body;
-@property (nonatomic, strong, readonly) NSDictionary *private_attachments;
 
 @end
 
@@ -39,6 +38,30 @@
 @synthesize revId = _revId;
 @synthesize deleted = _deleted;
 @synthesize sequence = _sequence;
+
++ (CDTDocumentRevision *)revision
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:nil
+                                           revisionId:nil
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:nil
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
+
++ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId
+{
+    return [[CDTDocumentRevision alloc] initWithDocId:docId
+                                           revisionId:revId
+                                                 body:[NSMutableDictionary dictionary]
+                                          attachments:[NSMutableDictionary dictionary]];
+}
 
 + (CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
                                     forDocument:(NSURL *)documentURL
@@ -111,8 +134,8 @@
 
 - (id)initWithDocId:(NSString *)docId
          revisionId:(NSString *)revId
-               body:(NSDictionary *)body
-        attachments:(NSDictionary *)attachments
+               body:(NSMutableDictionary *)body
+        attachments:(NSMutableDictionary *)attachments
 {
     return [self initWithDocId:docId
                     revisionId:revId
@@ -132,13 +155,10 @@
     self = [super init];
 
     if (self) {
-        if (!docId || !revId) {
-            return nil;
-        }
         _docId = docId;
         _revId = revId;
         _deleted = deleted;
-        _private_attachments = attachments;
+        _attachments = [CDTChangedDictionary dictionaryCopyingContents:attachments];
         _sequence = sequence;
         if (!deleted && body) {
             NSMutableDictionary *mutableCopy = [body mutableCopy];
@@ -149,12 +169,19 @@
             NSArray *keysToRemove = [[body allKeys] filteredArrayUsingPredicate:_prefixPredicate];
 
             [mutableCopy removeObjectsForKeys:keysToRemove];
-            _private_body = [NSDictionary dictionaryWithDictionary:mutableCopy];
-        } else
-            _private_body = [NSDictionary dictionary];
+            _body = [CDTChangedDictionary dictionaryCopyingContents:mutableCopy];
+        } else {
+            _body = [CDTChangedDictionary dictionaryCopyingContents:@{}];
+        }
+
+        _changed = NO;
+        ((CDTChangedDictionary *)_body).delegate = self;
+        ((CDTChangedDictionary *)_attachments).delegate = self;
     }
     return self;
 }
+
+- (BOOL)isFullRevision { return YES; }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -173,19 +200,33 @@
     return json;
 }
 
-- (CDTMutableDocumentRevision *)mutableCopy
+- (CDTDocumentRevision *)copy
 {
-    CDTMutableDocumentRevision *mutableCopy =
-        [[CDTMutableDocumentRevision alloc] initWithSourceRevisionId:self.revId];
-    mutableCopy.docId = self.docId;
-    mutableCopy.attachments = self.attachments;
-    mutableCopy.body = self.private_body;
-
-    return mutableCopy;
+    CDTDocumentRevision *copy = [[CDTDocumentRevision alloc] initWithDocId:self.docId
+                                                                revisionId:self.revId
+                                                                      body:self.body
+                                                               attachments:self.attachments];
+    return copy;
 }
 
-- (NSDictionary *)body { return self.private_body; }
+- (void)contentOfObjectDidChange:(NSObject *)object { self.changed = YES; }
 
-- (NSDictionary *)attachments { return self.private_attachments; }
+- (void)setBody:(NSDictionary *)body
+{
+    self.changed = YES;
+
+    // No need to wrap the dictionary with a CDTChangedDictionary
+    // because we've already marked ourselves as changed.
+    _body = [body mutableCopy];
+}
+
+- (void)setAttachments:(NSMutableDictionary *)attachments
+{
+    self.changed = YES;
+
+    // No need to wrap the dictionary with a CDTChangedDictionary
+    // because we've already marked ourselves as changed.
+    _attachments = [attachments mutableCopy];
+}
 
 @end

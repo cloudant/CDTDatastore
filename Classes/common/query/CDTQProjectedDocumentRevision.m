@@ -44,7 +44,10 @@
     return self;
 }
 
-- (CDTMutableDocumentRevision *)mutableCopy
+/** A projection doesn't contain attachments, nor all fields from a document. */
+- (BOOL)isFullRevision { return NO; }
+
+- (CDTDocumentRevision *)copy
 {
     CDTDocumentRevision *rev = [self.datastore getDocumentWithId:self.docId error:nil];
     if (rev == nil) {
@@ -56,7 +59,7 @@
         return nil;
     }
 
-    return [rev mutableCopy];
+    return rev;
 }
 
 @end

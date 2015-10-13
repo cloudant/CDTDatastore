@@ -16,7 +16,6 @@
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDatastoreManager.h"
-#import "CDTMutableDocumentRevision.h"
 #import "CDTAttachment.h"
 #import "CDTDatastore+Attachments.h"
 #import "CDTEncryptionKeyNilProvider.h"
@@ -56,7 +55,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 - (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database
 {
     CDTEncryptionKeyNilProvider *provider = [CDTEncryptionKeyNilProvider provider];
-    
+
     return [self initWithManager:manager database:database encryptionKeyProvider:provider];
 }
 
@@ -76,7 +75,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             _manager = manager;
             _database = database;
             _keyProvider = provider;
-            
+
             NSString *dir = [[database path] stringByDeletingLastPathComponent];
             NSString *name = [database name];
             _extensionsDir = [dir
@@ -88,7 +87,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                        object:database];
         }
     }
-    
+
     return self;
 }
 
@@ -293,26 +292,26 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     if (![self ensureDatabaseOpen]) {
         return nil;
     }
-    
+
     NSMutableArray *result = [NSMutableArray array];
     struct TDQueryOptions query = {.limit = UINT_MAX,
                                    .inclusiveEnd = YES,
                                    .skip = 0,
                                    .descending = NO,
                                    .includeDocs = NO};
-    
+
     NSDictionary *dictResults;
     do {
         dictResults = [self.database getDocsWithIDs:nil options:&query];
         for (NSDictionary *row in dictResults[@"rows"]) {
             [result addObject:row[@"id"]];
         }
-        
+
         query.skip = query.skip + query.limit;
     } while (((NSArray *)dictResults[@"rows"]).count > 0);
-    
+
     return [NSArray arrayWithArray:result];
-    
+
 }
 
 - (NSArray *)getAllDocumentsOffset:(NSUInteger)offset
@@ -349,7 +348,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     for (NSDictionary *row in dictResults[@"rows"]) {
         NSString *docId = row[@"id"];
-        
+
         NSString *revId = row[@"value"][@"rev"];
 
         // deleted field only present in deleted documents, but to be safe we use
@@ -417,18 +416,18 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 }
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error
 {
-    
-    
+
+
     //Firstly check if the document body is valid json
     if(![NSJSONSerialization isValidJSONObject:body]){
         //body isn't valid json, set error
         if (error){
             *error = TDStatusToNSError(kTDStatusBadJSON, nil);
         }
-        
+
         return NO;
     }
-    
+
     // Check user hasn't provided _fields, which should be provided
     // as metadata in the CDTDocumentRevision object rather than
     // via _fields in the body dictionary.
@@ -467,7 +466,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 #pragma mark fromRevision API methods
 
-- (CDTDocumentRevision *)createDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)createDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error
 {
     // first lets check to see if we can save the document
@@ -597,12 +596,28 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return saved;
 }
 
-- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error
 {
+    if (!revision.isFullRevision) {
+        if (error) {
+            NSString *reason = @"Trying to save revision where isFullVersion is NO";
+            NSString *msg = @"Possibly trying to save projected query result.";
+            NSString *recovery = @"Try calling -copy on projected revisions before saving.";
+            NSDictionary *info = @{
+                NSLocalizedFailureReasonErrorKey : reason,
+                NSLocalizedDescriptionKey : msg,
+                NSLocalizedRecoverySuggestionErrorKey : recovery
+            };
+            *error =
+                [NSError errorWithDomain:TDHTTPErrorDomain code:kTDStatusBadRequest userInfo:info];
+        }
+        return nil;
+    }
+
     if (!revision.body) {
         TDStatus status = kTDStatusBadRequest;
-        if (error){
+        if (error) {
             *error = TDStatusToNSError(status, nil);
         }
         return nil;
@@ -618,7 +633,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     TD_Revision *converted = [[TD_Revision alloc] initWithDocID:revision.docId
-                                                          revID:revision.sourceRevId
+                                                          revID:revision.revId
                                                         deleted:revision.deleted];
     converted.body = [[TD_Body alloc] initWithProperties:revision.body];
 
@@ -653,7 +668,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
         result = [datastore updateDocumentFromTDRevision:converted
                                                    docId:revision.docId
-                                                 prevRev:revision.sourceRevId
+                                                 prevRev:revision.revId
                                            inTransaction:db
                                                 rollback:rollback
                                                    error:error];
@@ -747,12 +762,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     // A mutable document revision stores the revId in other property
-    NSString *prevRevisionID = nil;
-    if ([revision isKindOfClass:[CDTMutableDocumentRevision class]]) {
-        prevRevisionID = ((CDTMutableDocumentRevision *)revision).sourceRevId;
-    } else {
-        prevRevisionID = revision.revId;
-    }
+    NSString *prevRevisionID = revision.revId;
 
     TD_Revision *td_revision =
         [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:YES];
@@ -834,7 +844,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         }
         return NO;
     }
-    
+
     return YES;
 }
 

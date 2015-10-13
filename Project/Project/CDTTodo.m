@@ -16,32 +16,42 @@
 
 #import "CDTTodo.h"
 
+#import <CloudantSync.h>
+
 @implementation CDTTodo
 
 -(instancetype)initWithDescription:(NSString*)description completed:(BOOL)completed
 {
     self = [super init];
     if (self) {
-        _taskDescription = description;
-        _completed = completed;
+        _rev = [CDTDocumentRevision revision];
+        _rev.body = [@{
+            @"description" : description,
+            @"completed" : @(completed),
+            @"type" : @"com.cloudant.sync.example.task"
+        } mutableCopy];
     }
     return self;
 }
 
-+(instancetype)fromDict:(NSDictionary*)dict
+- (instancetype)initWithDocumentRevision:(CDTDocumentRevision *)rev
 {
-    return [[[self class] alloc] initWithDescription:[dict objectForKey:@"description"]
-                                      completed:[[dict objectForKey:@"completed"] boolValue]];
+    self = [super init];
+    if (self) {
+        _rev = rev;
+    }
+    return self;
 }
 
--(NSDictionary*)toDict
+- (NSString *)taskDescription { return self.rev.body[@"description"]; }
+
+- (void)setTaskDescription:(NSString *)taskDescription
 {
-    NSDictionary *dict = @{
-                          @"description": self.taskDescription,
-                          @"completed": @(self.completed),
-                          @"type": @"com.cloudant.sync.example.task"
-                          };
-    return dict;
+    self.rev.body[@"description"] = taskDescription;
 }
+
+- (BOOL)completed { return [self.rev.body[@"completed"] boolValue]; }
+
+- (void)setCompleted:(BOOL)completed { self.rev.body[@"completed"] = @(completed); }
 
 @end

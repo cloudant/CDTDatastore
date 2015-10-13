@@ -18,7 +18,7 @@
 
 @class CDTDocumentRevision;
 @class FMDatabase;
-@class CDTMutableDocumentRevision;
+@class CDTDocumentRevision;
 
 /** NSNotification posted when a document is updated.
  UserInfo keys:
@@ -202,7 +202,7 @@ extern NSString *const CDTDatastoreChangeNotification;
  *
  * @return document revision created
  */
-- (CDTDocumentRevision *)createDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)createDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error;
 
 /**
@@ -214,7 +214,7 @@ extern NSString *const CDTDatastoreChangeNotification;
  *  @return the updated document
  *
  */
-- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTMutableDocumentRevision *)revision
+- (CDTDocumentRevision *)updateDocumentFromRevision:(CDTDocumentRevision *)revision
                                               error:(NSError *__autoreleasing *)error;
 /**
  * Deletes a document from the datastore.
