@@ -371,7 +371,7 @@ CDTUnsavedFileAttachment *att1 = [[CDTUnsavedFileAttachment alloc]
 
 1. Update attachments by copying from another revision.
     ```objc
-    CDTMutableDocumentRevision *anotherDoc = [datastore getDocumentForId:@"anotherId"];
+    CDTDocumentRevision *anotherDoc = [datastore getDocumentForId:@"anotherId"];
     saved.attachments = anotherDoc.attachments;
 
     CDTDocumentRevision *updated = [datastore updateDocumentFromRevision:saved
