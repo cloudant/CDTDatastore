@@ -168,46 +168,35 @@ header into the bridging header, and you should be good to go:
 To add, and read documents in Swift, the basics are:
 
 ```swift
-var error: NSError?
+do {
+    let fileManager = NSFileManager.defaultManager()
 
-let fileManager  = NSFileManager.defaultManager()
-let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-	as NSURL
-let storeURL     = documentsDir.URLByAppendingPathComponent("cloudant-sync-datastore")
-let path         = storeURL.path
+    let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).last!
 
-// Create Datastore Manager
-let manager = CDTDatastoreManager(directory: path, error: &error)
-if let err = error {
-    println("Error creating datastore manager: \(err.localizedDescription)")
-}
+    let storeURL = documentsDir.URLByAppendingPathComponent("cloudant-sync-datastore")
+    let path = storeURL.path
 
-// Note: data store name must not contain capital letters
-let datastore = manager.datastoreNamed("my_datastore", error: &error)
-if let err = error {
-    println("Error creating datastore: \(err.localizedDescription)")
-}
+    let manager = try CDTDatastoreManager(directory: path)
+    let datastore = try manager.datastoreNamed("my_datastore")
 
-// Create a document
-var rev = CDTDocumentRevision(docId:"doc1")
-var body = [
-    "description": "Buy milk",
-    "completed": false,
-    "type": "com.cloudant.sync.example.task"
-] as NSMutableDictionary
-rev.setBody(body)
+    // Create a document
+    let rev = CDTDocumentRevision(docId: "doc1")
+    rev.body = ["description":"Buy Milk", "completed": false, "type":"com.cloudant.sync.example.task"]
 
-// Save the document to the database
-let revision = datastore.createDocumentFromRevision(rev, error: &error)
-if let err = error {
-    println("Error storing document: \(err.localizedDescription)")
-}
+    // Add an attachment - binary data like a JPEG
+    let att1 = CDTUnsavedFileAttachment(path: "/path/to/image/jpg", name: "cute_cat.jpg", type: "image/jpeg")
+    rev.attachments[att1.name] = att1
 
-// Read a document
-let docId = revision.docId
-let retrieved = datastore.getDocumentWithId(docId, error: &error)
-if let err = error {
-    println("Error retrieving document: \(err.localizedDescription)")
+    // Save the document to the database
+    let revision = try datastore.createDocumentFromRevision(rev)
+
+    // Read a document
+    let docId = revision.docId
+    let retrieved = try datastore.getDocumentWithId(docId)
+
+
+} catch {
+    print("Encountered an error: \(error)")
 }
 ```
 
@@ -253,7 +242,27 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&err
 // Start the replicator
 [replicator start];
 ```
+```swift
+do {
+    // Create and start the replicator -- -start is essential!
+    let replicatorFactory = CDTReplicatorFactory(datastoreManager: manager)
 
+    let s = "https://apikey:apipassword@username.cloudant.com/my_database"
+    let remoteDatabaseURL = NSURL(string: s)
+    let datastore = try manager.datastoreNamed("my_datastore");
+
+    // Replicate from the local to remote database
+    let pushReplication = CDTPushReplication(source: datastore, target: remoteDatabaseURL)
+    let replicator =  try replicatorFactory.oneWay(pushReplication)
+
+    // Start the replicator
+    try replicator.start()
+
+
+} catch {
+    print("Encountered an error: \(error)")
+}
+```
 Read more in [the replication docs](https://github.com/cloudant/CDTDatastore/blob/master/doc/replication.md).
 
 ### Finding data
@@ -273,11 +282,21 @@ CDTQResultSet *result = [datastore find:query];
 }];
 ```
 
+```swift
+let query = [ "name" : "John", // name equals John
+    "age" : ["$gt" : 25] // age greater than 25
+]
+let result = datastore.find(query)
+result.enumerateObjectsUsingBlock({ (rev, idx, stop) -> Void in
+    // do something
+})
+```
+
 See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md).
 
-As of version 0.16.0 the indexing and querying code has been re-written and 
-has more features than the previous implementation.  For details about 
-migrating to a 0.16.0+ indexing and query version from a previous version 
+As of version 0.16.0 the indexing and querying code has been re-written and
+has more features than the previous implementation.  For details about
+migrating to a 0.16.0+ indexing and query version from a previous version
 see [Index and Querying Migration](https://github.com/cloudant/CDTDatastore/blob/master/doc/query-migration.md).
 
 ### Conflicts
@@ -336,4 +355,3 @@ limitations under the License.
   directory).
 * FMDB, by Gus Mueller, is under the MIT License.
 * Google Toolbox For Mac is under the Apache License 2.0.
-
