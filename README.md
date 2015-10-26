@@ -259,7 +259,7 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&err
 
 //check error
 
-// Fire-and-forget (there are easy ways to monitor the state too)
+// Start the replicator
 [replicator start];
 ```
 
