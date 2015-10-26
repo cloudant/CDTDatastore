@@ -47,16 +47,7 @@ Note: We only support building on the latest stable release of Xcode
 ### Using in a Swift app
 
 CDTDatastore is useable from Swift out of the box with a few small quirks. Install as per the
-instructions above, and import CloudantSync.h into your [bridging header](https://developer.apple.com/library/ios/documentation/swift/conceptual/buildingcocoaapps/MixandMatch.html). If you need to iterate
-over the CDTQueryResult class, you need to create a small extension before you can do so in Swift:
-
-```swift
-extension CDTQueryResult: SequenceType {
-    public func generate() -> NSFastGenerator {
-        return NSFastGenerator(self)
-    }
-}
-```
+instructions above, and import CloudantSync.h into your [bridging header](https://developer.apple.com/library/ios/documentation/swift/conceptual/buildingcocoaapps/MixandMatch.html).
 
 The [Overview](#overview) section below has examples in both Objective-C and Swift.
 
