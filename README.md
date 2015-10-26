@@ -171,7 +171,8 @@ To add, and read documents in Swift, the basics are:
 do {
     let fileManager = NSFileManager.defaultManager()
 
-    let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).last!
+    let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory,
+        inDomains: .UserDomainMask).last!
 
     let storeURL = documentsDir.URLByAppendingPathComponent("cloudant-sync-datastore")
     let path = storeURL.path
@@ -181,10 +182,14 @@ do {
 
     // Create a document
     let rev = CDTDocumentRevision(docId: "doc1")
-    rev.body = ["description":"Buy Milk", "completed": false, "type":"com.cloudant.sync.example.task"]
+    rev.body = ["description":"Buy Milk",
+        "completed": false,
+        "type":"com.cloudant.sync.example.task"]
 
     // Add an attachment - binary data like a JPEG
-    let att1 = CDTUnsavedFileAttachment(path: "/path/to/image/jpg", name: "cute_cat.jpg", type: "image/jpeg")
+    let att1 = CDTUnsavedFileAttachment(path: "/path/to/image/jpg",
+        name: "cute_cat.jpg",
+        type: "image/jpeg")
     rev.attachments[att1.name] = att1
 
     // Save the document to the database
@@ -283,7 +288,8 @@ CDTQResultSet *result = [datastore find:query];
 ```
 
 ```swift
-let query = [ "name" : "John", // name equals John
+let query = [
+    "name" : "John", // name equals John
     "age" : ["$gt" : 25] // age greater than 25
 ]
 let result = datastore.find(query)
