@@ -20,6 +20,7 @@
 #import "CDTHTTPInterceptorContext.h"
 #import "CDTHTTPInterceptor.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
+#import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 
 // Expose private vars used by tests
 @interface CDTURLSessionTask (Tests)
