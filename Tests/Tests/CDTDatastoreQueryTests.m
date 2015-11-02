@@ -89,6 +89,13 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         expect(results).toNot.beNil();
         expect([results.documentIds count]).to.equal(3);
     });
+    
+    it(@"can find documents and ignore non-existent documents", ^{
+        NSDictionary *query = @{ @"_id" : @{ @"$in" : @[@"mike12", @"mike34", @"mike72", @"mike-not-found"] } };
+        CDTQResultSet *results = [ds find:query];
+        expect(results).toNot.beNil();
+        expect([results.documentIds count]).to.equal(3);
+    });
 
     it(@" can delete an index", ^{
         [ds ensureIndexed:@[ @"name", @"address" ] withName:@"basic"];

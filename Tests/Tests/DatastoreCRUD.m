@@ -614,6 +614,44 @@
     }
 }
 
+-(void)testGetDocumentsWithIds_NonExistentDocument
+{
+    NSError *error;
+    NSMutableArray *docIds = [NSMutableArray arrayWithCapacity:20];
+    
+    for (int i = 0; i < 200; i++) {
+        error = nil;
+        CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+        rev.body = [@{@"hello":@"world",@"index":[NSNumber numberWithInt:i]} mutableCopy];
+        CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
+        XCTAssertNil(error, @"Error creating document");
+        
+        NSString *docId = ob.docId;
+        [docIds addObject:docId];
+    }
+    
+    NSArray *retrivedDocIds = @[docIds[5], docIds[7], docIds[12], docIds[170], @"i_do_not_exist"];
+    NSArray *obs = [self.datastore getDocumentsWithIds:retrivedDocIds];
+    XCTAssertNotNil(obs, @"Error getting documents");
+    
+    XCTAssertEqual([obs count], 4, @"Unexpected number of documents");
+    
+    int ob_index = 0;
+    for (NSNumber *index in @[@5, @7, @12, @170]) {
+        NSString *docId = [docIds objectAtIndex:[index intValue]];
+        CDTDocumentRevision *retrieved = [obs objectAtIndex:ob_index];
+        
+        XCTAssertNotNil(retrieved, @"retrieved object was nil");
+        XCTAssertEqualObjects(retrieved.docId, docId, @"Object retrieved from database has wrong docid");
+        const NSUInteger expected_count = 2;
+        XCTAssertEqual(retrieved.body.count, expected_count, @"Object from database has != 2 keys");
+        XCTAssertEqualObjects(retrieved.body[@"hello"], @"world", @"Object from database has wrong data");
+        XCTAssertEqualObjects(retrieved.body[@"index"], index, @"Object from database has wrong data");
+        
+        ob_index++;
+    }
+}
+
 -(void)testGetNonExistingDocument
 {
     NSError *error;

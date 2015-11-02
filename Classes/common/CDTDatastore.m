@@ -350,6 +350,12 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         NSString *docId = row[@"id"];
 
         NSString *revId = row[@"value"][@"rev"];
+        
+        // If a document isn't found, docId and revId will be null, and row will
+        // contain an @"error" key.
+        if (docId == nil && revId == nil && [row[@"error"] isEqualToString:@"not_found"]) {
+            continue;
+        }
 
         // deleted field only present in deleted documents, but to be safe we use
         // the fact that (BOOL)[nil -boolValue] is false
