@@ -27,6 +27,7 @@
 #import "TDPuller.h"
 #import "TDPusher.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
+#import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 @interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
 
 @property (nonatomic) BOOL changesFeedRequestMade;
