@@ -1,5 +1,13 @@
 # CDTDatastore CHANGELOG
 
+## 0.19.2 (2015-11-3)
+- [FIX] Replications using multipart attachment uploads would hang ([Issue #211](https://github.com/cloudant/CDTDatastore/issues/211))
+- [FIX] Skip not found documents when performing allDocsQuery ([Issue #207](https://github.com/cloudant/CDTDatastore/issues/207))
+
+## 0.19.1 (2015-10-9)
+- [FIX] CDTSessionCookieInterceptableSession works now; we used GET rather than
+   POST in error.
+
 ## 0.19.0 (2015-09-15)
 - [IOS] Minimum iOS version now iOS 7. We now use NSURLSession.
 - [OSX] Minimum OSX version now OSX 10.9. We now use NSURLSession.
