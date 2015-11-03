@@ -16,6 +16,24 @@
 #import <FMDatabase.h>
 #import "FMDatabaseQueue.h"
 
+#import "TDReplicator.h"
+#import "TDPusher.h"
+
+@interface CDTReplicator (test)
+@property (nonatomic, strong) TDReplicator *tdReplicator;
+@end
+
+@interface TDPusher (test)
+- (void)setSendAllDocumentsWithAttachmentsAsMultipart:(BOOL)value;
+@end
+
+@implementation TDPusher (test)
+- (void)setSendAllDocumentsWithAttachmentsAsMultipart:(BOOL)value
+{
+	self->_sendAllDocumentsWithAttachmentsAsMultipart = value;
+}
+@end
+
 @interface Attachments : CloudantReplicationBase
 
 @property (nonatomic,strong) CDTDatastore *datastore;
@@ -357,6 +375,111 @@
     
     [self deleteRemoteDatabase:remoteDbName
                    instanceURL:self.remoteRootURL];
+}
+
+- (void)testReplicateMultipartAttachments
+{
+    NSUInteger nAttachments = 10;
+
+    //
+    // Set up remote database
+    //
+
+    NSString *remoteDbName =
+        [NSString stringWithFormat:@"%@-test-database-%@", self.remoteDbPrefix,
+                                   [CloudantReplicationBase generateRandomString:5]];
+    NSURL *remoteDbURL = [self.remoteRootURL URLByAppendingPathComponent:remoteDbName];
+
+    [self createRemoteDatabase:remoteDbName instanceURL:self.remoteRootURL];
+
+    //
+    // Add attachments to a document in the local store
+    //
+
+    // Contains {attachmentName: attachmentContent} for later checking
+    NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
+
+    NSError *error;
+
+    NSString *docId = @"document1";
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+    rev.body = [@{ @"hello" : @12 } mutableCopy];
+
+    NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
+    for (NSInteger i = 1; i <= nAttachments; i++) {
+        NSString *content = [NSString stringWithFormat:@"blahblah-%li", (long)i];
+        NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+
+        NSString *name = [NSString stringWithFormat:@"attachment-%li", (long)i];
+        CDTAttachment *attachment =
+            [[CDTUnsavedDataAttachment alloc] initWithData:data name:name type:@"text/plain"];
+        [attachments setObject:attachment forKey:name];
+
+        [originalAttachments setObject:data forKey:name];
+    }
+
+    rev.attachments = attachments;
+    rev = [self.datastore createDocumentFromRevision:rev error:&error];
+
+    XCTAssertNotNil(rev, @"Unable to add attachments to document");
+    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:nAttachments],
+                  @"Incorrect number of attachments");
+
+    //
+    // Push to remote
+    //
+
+    CDTReplicator *replicator =
+        [self.replicatorFactory onewaySourceDatastore:self.datastore targetURI:remoteDbURL];
+
+    [replicator addObserver:self
+                 forKeyPath:@"tdReplicator"
+                    options:NSKeyValueObservingOptionNew
+                    context:NULL];
+
+    [replicator startWithError:nil];
+
+    // Time out test after 120 seconds
+    NSDate *start = [NSDate date];
+    while (replicator.isActive && ([[NSDate date] timeIntervalSinceDate:start] < 120)) {
+        [NSThread sleepForTimeInterval:1.0f];
+    }
+
+    if (replicator.isActive) {
+        XCTFail(@"Test timed out");
+    }
+
+    [replicator removeObserver:self forKeyPath:@"tdReplicator"];
+
+    //
+    // Checks
+    //
+
+    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:remoteDbURL],
+                  @"Local and remote database comparison failed");
+
+    XCTAssertTrue(
+        [self compareAttachmentsForCurrentRevisions:self.datastore withDatabase:remoteDbURL],
+        @"Local and remote database attachment comparison failed");
+
+    //
+    // Clean up
+    //
+
+    [self deleteRemoteDatabase:remoteDbName instanceURL:self.remoteRootURL];
+}
+
+/* This is a little hacky, but it was the easiest way I could find to force a multipart upload. */
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context
+{
+    if ([keyPath isEqual:@"tdReplicator"]) {
+        CDTReplicator *replicator = (CDTReplicator *)object;
+        TDPusher *pusher = (TDPusher *)replicator.tdReplicator;
+        [pusher setSendAllDocumentsWithAttachmentsAsMultipart:YES];
+    }
 }
 
 /**
