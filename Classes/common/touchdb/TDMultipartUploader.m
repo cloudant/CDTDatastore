@@ -70,4 +70,11 @@
     [super requestDidError:error];
 }
 
+- (void)receivedData:(NSData *)data
+{
+    [super receivedData:data];
+    [self clearSession];
+    [self respondWithResult:self error:nil];
+}
+
 @end
