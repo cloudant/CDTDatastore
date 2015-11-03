@@ -7,6 +7,11 @@
   `updateDocumentFromRevision:error:` to make document updates. See
   [doc/api-migration.md](doc/api-migration.md).
 
+## 0.19.2 (2015-11-3)
+- [FIX] Replications using multipart attachment uploads would hang ([Issue #211](https://github.com/cloudant/CDTDatastore/issues/211))
+- [FIX] Skip not found documents when performing allDocsQuery ([Issue #207](https://github.com/cloudant/CDTDatastore/issues/207))
+
+
 ## 0.19.1 (2015-10-9)
 - [FIX] CDTSessionCookieInterceptableSession works now; we used GET rather than
    POST in error.
