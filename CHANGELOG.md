@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 1.0.0 (2015-11-6)
 
 - [BREAKING] CDTMutableDocumentRevision removed. CDTDocumentRevision objects
   are now mutable -- you can change them and pass to
