@@ -47,7 +47,7 @@ The `CDTDatabaseManager` handles creating and initialising non-existent
 datastores, so the object returned is ready for reading and writing.
 
 To delete a datastore and all associated data (i.e., attachments and
-extension data such as indexes (see [index-query.md](doc/index-query.md)):
+extension data such as indexes (see [query.md](query.md)):
 
 ```objc
 BOOL success = [manager deleteDatastoreNamed:@"my_datastore"
@@ -130,7 +130,7 @@ BOOL deleted = [datastore deleteDocumentFromRevision:updated
 
 You don't need to know the ID of the document to retrieve it. CDTDatastore
 provides ways to index and search the fields of your JSON documents.
-For more, see [index-query.md](doc/index-query.md).
+For more, see [query.md](query.md).
 
 ## Conflicts
 
@@ -142,7 +142,7 @@ example if a replication had changed the document since it had been read from
 the local datastore by the applicaiton.
 
 The update and delete methods may fail because the revision you passed in isn't
-the current revision of that document. See [conflicts.md](doc/conflicts.md) for
+the current revision of that document. See [conflicts.md](conflicts.md) for
 more information about this.
 
 ## Getting all documents
@@ -534,6 +534,6 @@ document:
        ```
 
     This marks *all* leaf nodes deleted. Make sure to read
-    [conflicts.md](doc/conflicts.md) before using this method as it can result
+    [conflicts.md](conflicts.md) before using this method as it can result
     in data loss (deleting conflicted versions of documents, not just the
     current winner).
