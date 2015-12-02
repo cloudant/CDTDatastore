@@ -44,7 +44,7 @@
 #import "CDTQIndexUpdater.h"
 #import "CDTQQueryExecutor.h"
 #import "CDTQIndexCreator.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 
 #import "CDTEncryptionKeyProvider.h"
 #import "CDTDatastore+EncryptionKey.h"
@@ -214,7 +214,7 @@ static const int VERSION = 2;
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
 {
-    LogError(@"-ensureIndexed: not implemented");
+    CDTLogError(CDTQ_LOG_CONTEXT, @"-ensureIndexed: not implemented");
     return nil;
 }
 
@@ -291,7 +291,7 @@ static const int VERSION = 2;
         success = success && [db executeUpdate:sql withArgumentsInArray:@[ indexName ]];
 
         if (!success) {
-            LogError(@"Failed to delete index: %@", indexName);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Failed to delete index: %@", indexName);
             *rollback = YES;
         }
     }];
@@ -326,7 +326,7 @@ static const int VERSION = 2;
                    sort:(NSArray *)sortDocument
 {
     if (!query) {
-        LogError(@"-find called with nil selector; bailing.");
+        CDTLogError(CDTQ_LOG_CONTEXT, @"-find called with nil selector; bailing.");
         return nil;
     }
 
@@ -375,10 +375,10 @@ static const int VERSION = 2;
 - (BOOL)isTextSearchEnabled
 {
     if (!_textSearchEnabled) {
-        LogInfo(@"Based on SQLite compile options, "
-                @"text search is currently not supported.  "
-                @"To enable text search recompile SQLite with "
-                @"the full text saerch compile options turned on.");
+        CDTLogInfo(CDTQ_LOG_CONTEXT, @"Based on SQLite compile options, "
+                                     @"text search is currently not supported.  "
+                                     @"To enable text search recompile SQLite with "
+                                     @"the full text saerch compile options turned on.");
     }
     return _textSearchEnabled;
 }
@@ -456,7 +456,8 @@ static const int VERSION = 2;
       NSError *thisError = nil;
       success = [db setKeyWithProvider:provider error:&thisError];
       if (!success) {
-          LogError(@"Problem configuring database with encryption key: %@", thisError);
+          CDTLogError(CDTQ_LOG_CONTEXT, @"Problem configuring database with encryption key: %@",
+                      thisError);
       }
     }];
 
@@ -502,7 +503,7 @@ static const int VERSION = 2;
         success = success && [db executeUpdate:sql];
 
         if (!success) {
-            LogError(@"Failed to update schema");
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Failed to update schema");
             *rollback = YES;
         }
     }];

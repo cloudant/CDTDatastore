@@ -15,7 +15,7 @@
 #import "CDTQQueryValidator.h"
 #import "CDTQQueryConstants.h"
 
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 
 @implementation CDTQQueryValidator
 
@@ -379,13 +379,15 @@
     for (id obj in clauses) {
         valid = NO;
         if (![obj isKindOfClass:[NSDictionary class]]) {
-            LogError(@"Operator argument must be a dictionary %@", [clauses description]);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Operator argument must be a dictionary %@",
+                        [clauses description]);
             break;
         }
         NSDictionary *clause = (NSDictionary *)obj;
         if ([clause count] != 1) {
-            LogError(@"Operator argument clause should only have one key value pair: %@",
-                     [clauses description]);
+            CDTLogError(CDTQ_LOG_CONTEXT,
+                        @"Operator argument clause should only have one key value pair: %@",
+                        [clauses description]);
             break;
         }
 
@@ -409,7 +411,7 @@
             valid = [CDTQQueryValidator validateTextClause:clause[key]
                                        withTextClauseLimit:textClauseLimitReached];
         } else {
-            LogError(@"%@ operator cannot be a top level operator", key);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"%@ operator cannot be a top level operator", key);
             break;
         }
 
@@ -467,25 +469,26 @@
 + (BOOL)validateTextClause:(NSObject *)clause withTextClauseLimit:(BOOL *)textClauseLimitReached
 {
     if (![clause isKindOfClass:[NSDictionary class]]) {
-        LogError(@"Text search expects an NSDictionary, found %@ instead.", clause);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Text search expects an NSDictionary, found %@ instead.",
+                    clause);
         return NO;
     }
     
     NSDictionary *textClause = (NSDictionary *) clause;
     if ([textClause count] != 1) {
-        LogError(@"Unexpected content %@ in text search.", textClause);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Unexpected content %@ in text search.", textClause);
         return NO;
     }
     
     NSString *operator = [textClause allKeys][0];
     if (![operator isEqualToString:SEARCH]) {
-        LogError(@"Invalid operator %@ in text search.", operator);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Invalid operator %@ in text search.", operator);
         return NO;
     }
     
     if (*textClauseLimitReached) {
-        LogError(@"Multiple text search clauses not allowed in a query.  "
-                  "Rewrite query to contain at most one text search clause.");
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Multiple text search clauses not allowed in a query.  "
+                                       "Rewrite query to contain at most one text search clause.");
         return NO;
     }
     
@@ -536,9 +539,10 @@
        ![((NSArray *) modulus)[1] isKindOfClass:[NSNumber class]] ||
        [((NSArray *) modulus)[0] integerValue] == 0) {
         valid = NO;
-        LogError(@"$mod operator requires a two element NSArray containing NSNumbers "
-                 @"where the first number, the divisor, is not zero.  As in: "
-                 @"{ \"$mod\" : [ 2, 1 ] }.  Where 2 is the divisor and 1 is the remainder.");
+        CDTLogError(CDTQ_LOG_CONTEXT,
+                    @"$mod operator requires a two element NSArray containing NSNumbers "
+                    @"where the first number, the divisor, is not zero.  As in: "
+                    @"{ \"$mod\" : [ 2, 1 ] }.  Where 2 is the divisor and 1 is the remainder.");
     }
     
     return valid;
@@ -550,7 +554,7 @@
     
     if(![textSearch isKindOfClass:[NSString class]]){
         valid = NO;
-        LogError(@"$search operator requires an NSString");
+        CDTLogError(CDTQ_LOG_CONTEXT, @"$search operator requires an NSString");
     }
     
     return valid;
@@ -562,7 +566,7 @@
 
     if (![exists isKindOfClass:[NSNumber class]]) {
         valid = NO;
-        LogError(@"$exists operator expects YES or NO");
+        CDTLogError(CDTQ_LOG_CONTEXT, @"$exists operator expects YES or NO");
     }
 
     return valid;
@@ -571,7 +575,8 @@
 + (BOOL)validateCompoundOperatorOperand:(NSObject *)operand
 {
     if (![operand isKindOfClass:[NSArray class]]) {
-        LogError(@"Argument to compound operator is not an NSArray: %@", [operand description]);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Argument to compound operator is not an NSArray: %@",
+                    [operand description]);
         return NO;
     }
     return YES;

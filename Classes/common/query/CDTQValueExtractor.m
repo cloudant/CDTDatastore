@@ -13,7 +13,7 @@
 //  and limitations under the License.
 
 #import "CDTQValueExtractor.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 
 #import <CDTDocumentRevision.h>
 
@@ -56,7 +56,8 @@
     for (NSString *field in path) {
         currentLevel = currentLevel[field];
         if (currentLevel == nil || ![currentLevel isKindOfClass:[NSDictionary class]]) {
-            LogVerbose(@"Could not extract field %@ from document %@", possiblyDottedField, body);
+            CDTLogVerbose(CDTQ_LOG_CONTEXT, @"Could not extract field %@ from document %@",
+                          possiblyDottedField, body);
             return nil;  // we ran out of stuff before we reached the full path length
         }
     }

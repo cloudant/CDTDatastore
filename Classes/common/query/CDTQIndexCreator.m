@@ -16,7 +16,7 @@
 
 #import "CDTQIndexManager.h"
 #import "CDTQIndexUpdater.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 
 #import "CloudantSync.h"
 #import <FMDB/FMDB.h>
@@ -69,8 +69,8 @@
     
     if ([index.indexType.lowercaseString isEqualToString:@"text"]) {
         if (![CDTQIndexManager ftsAvailableInDatabase:self.database]) {
-            LogError(@"Text search not supported.  To add support for text "
-                     @"search, enable FTS compile options in SQLite.");
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Text search not supported.  To add support for text "
+                                          @"search, enable FTS compile options in SQLite.");
             return nil;
         }
     }
@@ -86,7 +86,8 @@
     // Check there are no duplicate field names in the array
     NSSet *uniqueNames = [NSSet setWithArray:fieldNames];
     if (uniqueNames.count != fieldNames.count) {
-        LogError(@"Cannot create index with duplicated field names %@", fieldNames);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Cannot create index with duplicated field names %@",
+                    fieldNames);
         return nil;
     }
 
@@ -108,7 +109,8 @@
     // else fail.
     NSDictionary *existingIndexes = [CDTQIndexManager listIndexesInDatabaseQueue:self.database];
     if ([CDTQIndexCreator indexLimitReached:index basedOnIndexes:existingIndexes]) {
-        LogError(@"Index limit reached.  Cannot create index %@.", index.indexName);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Index limit reached.  Cannot create index %@.",
+                    index.indexName);
         return nil;
     }
     if (existingIndexes[index.indexName] != nil) {
@@ -202,7 +204,8 @@
     NSArray *parts = [fieldName componentsSeparatedByString:@"."];
     for (NSString *part in parts) {
         if ([part hasPrefix:@"$"]) {
-            LogError(@"Field names cannot start with a $ in field %@", fieldName);
+            CDTLogError(CDTQ_LOG_CONTEXT, @"Field names cannot start with a $ in field %@",
+                        fieldName);
             return NO;
         }
     }
@@ -249,9 +252,10 @@
             NSString *type = existingIndex[@"type"];
             if ([type.lowercaseString isEqualToString:kCDTQTextType] &&
                 ![name.lowercaseString isEqualToString:index.indexName.lowercaseString]) {
-                LogError(@"The text index %@ already exists.  "
-                          "One text index per datastore permitted.  "
-                          "Delete %@ and recreate %@", name, name, index.indexName);
+                CDTLogError(CDTQ_LOG_CONTEXT, @"The text index %@ already exists.  "
+                                               "One text index per datastore permitted.  "
+                                               "Delete %@ and recreate %@",
+                            name, name, index.indexName);
                 return YES;
             }
         }

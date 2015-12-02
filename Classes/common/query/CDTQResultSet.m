@@ -13,7 +13,7 @@
 //  and limitations under the License.
 
 #import "CDTQResultSet.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 #import "CDTQProjectedDocumentRevision.h"
 #import "CDTQUnindexedMatcher.h"
 

@@ -17,7 +17,7 @@
 #import "CDTQQueryConstants.h"
 
 #import "CDTQQuerySqlTranslator.h"
-#import "CDTQLogging.h"
+#import "CDTLogging.h"
 #import "CDTQValueExtractor.h"
 #import "CDTQQueryValidator.h"
 
@@ -221,7 +221,7 @@
         return invertResult ? !passed : passed;
     } else {
         // We constructed the tree, so shouldn't end up here; error if we do.
-        LogError(@"Found unexpected selector execution tree: %@", node);
+        CDTLogError(CDTQ_LOG_CONTEXT, @"Found unexpected selector execution tree: %@", node);
         return NO;
     }
 }
@@ -259,7 +259,7 @@
         passed = (exists == expectedBool);
 
     } else {
-        LogWarn(@"Found unexpected operator in selector: %@", operator);
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Found unexpected operator in selector: %@", operator);
         passed = NO;  // didn't understand
     }
 
@@ -282,7 +282,7 @@
         return NO;  // NSNull fails all lt/gt/lte/gte tests
 
     } else if (!([l isKindOfClass:[NSString class]] || [l isKindOfClass:[NSNumber class]])) {
-        LogWarn(@"Value in document not NSNumber or NSString: %@", l);
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Value in document not NSNumber or NSString: %@", l);
         return NO;  // Not sure how to compare values that are not numbers or strings
 
     } else if ([l isKindOfClass:[NSString class]]) {
@@ -319,7 +319,7 @@
     }
 
     if (!([l isKindOfClass:[NSString class]] || [l isKindOfClass:[NSNumber class]])) {
-        LogWarn(@"Value in document not NSNumber or NSString: %@", l);
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Value in document not NSNumber or NSString: %@", l);
         return NO;  // Not sure how to compare values that are not numbers or strings
     }
 
@@ -333,7 +333,7 @@
     }
 
     if (!([l isKindOfClass:[NSString class]] || [l isKindOfClass:[NSNumber class]])) {
-        LogWarn(@"Value in document not NSNumber or NSString: %@", l);
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Value in document not NSNumber or NSString: %@", l);
         return NO;  // Not sure how to compare values that are not numbers or strings
     }
 
@@ -347,7 +347,7 @@
     }
 
     if (!([l isKindOfClass:[NSString class]] || [l isKindOfClass:[NSNumber class]])) {
-        LogWarn(@"Value in document not NSNumber or NSString: %@", l);
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Value in document not NSNumber or NSString: %@", l);
         return NO;  // Not sure how to compare values that are not numbers or strings
     }
 
