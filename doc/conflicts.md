@@ -109,15 +109,34 @@ a helper method to streamline the process of resolving conflicts.
 
 There's a method on the `CDTDatastore` interface:
 
+Objective-C:
+
 ```objc
 - (NSArray*)getConflictedDocumentIds;
 ```
 
+Swift:
+
+```swift
+public func getConflictedDocumentIds() -> [AnyObject]!
+```
+
 This method returns an iterator over the document IDs:
+
+
+Objective-C:
 
 ```objc
 for (NSString *docId in [datastore getConflictedDocumentIds]) {
     NSLog(@"%@", docId);
+}
+```
+
+Swift:
+
+```swift
+for docId in datastore.getConflictedDocumentIds() {
+    print(docId)
 }
 ```
 
@@ -130,6 +149,8 @@ of the `CDTDatastore` interface.
 
 The `CDTConflictResolver` interface has one method:
 
+Objective-C:
+
 ```objc
 @protocol CDTConflictResolver
 
@@ -139,10 +160,23 @@ The `CDTConflictResolver` interface has one method:
 @end
 ```
 
+Swift:
+
+```swift
+public protocol CDTConflictResolver {
+
+    public func resolve(docId: String!, conflicts: [AnyObject]!)
+    -> CDTDocumentRevision!
+
+}
+```
+
 This method is passed the docId and the list of active revisions,
 including the current winning revision. A rather simplistic
 implementation which returns a revision from the list of conflicts
 would be:
+
+Objective-C:
 
 ```objc
 @implementation CDTPickFirstResolver
@@ -156,11 +190,24 @@ would be:
 @end
 ```
 
+Swift:
+
+```swift
+class CDTPickFirstResolver : NSObject, CDTConflictResolver {
+
+    func resolve(docId: String!, conflicts: [AnyObject]!) -> CDTDocumentRevision! {
+        return  conflicts.first! as! CDTDocumentRevision
+    }
+}
+```
+
 Clearly, in the general case this will discard the user's data(!),
 but it'll do for this example.
 
 It is also possible to return a `CDTDocumentRevision` from
 `resolve`, perhaps by merging data from the conflicts:
+
+Objective-C:
 
 ```objc
 @implementation CDTMergeResolver
@@ -172,6 +219,19 @@ It is also possible to return a `CDTDocumentRevision` from
     rev.body = /* ...update body, perhaps with data from the other conflicts */
     rev.attachments = /* ...you can also create/update/delete attachments */
     return rev;
+}
+```
+
+Swift:
+
+```swift
+class CDTMergeResolver : NSObject, CDTConflictResolver {
+    func resolve(docId: String!, conflicts: [AnyObject]!) -> CDTDocumentRevision! {
+        let rev = conflicts.first!
+        rev.body = /* ...update body, perhaps with data from the other conflicts */
+        rev.attachments = /* ...you can also create/update/delete attachments */
+        return rev as! CDTDocumentRevision
+    }
 }
 ```
 
@@ -217,6 +277,8 @@ the two databases into a consistent state.
 You could imagine an application running the following method
 via a timer to periodically fix up any conflicts:
 
+Objective-C:
+
 ```objc
 - (void)resolveConflictsInDatastore:(CDTDatastore*)datastore
 {
@@ -232,6 +294,23 @@ via a timer to periodically fix up any conflicts:
 }
 ```
 
+Swift:
+
+```swift
+public func resolveConflictsInDatastore(datastore:CDTDatastore)
+{
+    let pickFirst = CDTPickFirstResolver()
+    for docId in datastore.getConflictedDocumentIds() {
+        do {
+            try datastore.resolveConflictsForDocument(docId as! String,
+                resolver: pickFirst)
+        } catch {
+            //handle error
+        }
+    }
+}
+```
+
 How often this should run depends on your application, but you'd probably
 want to consider:
 
@@ -240,4 +319,3 @@ want to consider:
 
 We're always looking at ways to improve the experience around conflicts,
 so be sure to file an issue if you have suggestions or problems.
-

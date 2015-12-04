@@ -19,6 +19,8 @@
 
 #import "CDTDatastore.h"
 #import "CDTDatastore+Attachments.h"
+#import "CDTDatastore+Conflicts.h"
+#import "CDTConflictResolver.h"
 
 #import "CDTDatastore+Query.h"
 #import "CDTQResultSet.h"
