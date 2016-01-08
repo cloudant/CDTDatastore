@@ -15,6 +15,7 @@
 //
 
 #import "FMDatabase+EncryptionKey.h"
+#import <sqlite3.h>
 
 #import "TDMisc.h"
 #import "CDTLogging.h"

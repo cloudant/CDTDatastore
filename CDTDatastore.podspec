@@ -59,7 +59,7 @@ Pod::Spec.new do |s|
 
     sp.library = 'sqlite3', 'z'
 
-    sp.dependency 'FMDB', '= 2.3'
+    sp.dependency 'FMDB', '= 2.6'
   end
 
   s.subspec 'SQLCipher' do |sp|
@@ -89,7 +89,7 @@ Pod::Spec.new do |s|
 
     sp.library = 'z'
 
-    sp.dependency 'FMDB/SQLCipher', '= 2.3'
+    sp.dependency 'FMDB/SQLCipher', '= 2.6'
 
     # Some CDTDatastore classes use SQLite functions, therefore we have
     # to include 'SQLCipher' although 'FMDB/SQLCipher' also depends on it

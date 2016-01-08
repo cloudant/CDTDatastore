@@ -45,8 +45,8 @@
 		984775061AB886790024B64C /* ReplicationSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 984775041AB886790024B64C /* ReplicationSettings.m */; };
 		984775081AB888F40024B64C /* ReplicationSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = 984775071AB888F40024B64C /* ReplicationSettings.plist */; };
 		984775091AB888F40024B64C /* ReplicationSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = 984775071AB888F40024B64C /* ReplicationSettings.plist */; };
-		989242BC1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; settings = {ASSET_TAGS = (); }; };
-		989242BD1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; settings = {ASSET_TAGS = (); }; };
+		989242BC1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; };
+		989242BD1BA033F800FEE788 /* CDTRATestContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 989242BB1BA033F800FEE788 /* CDTRATestContext.m */; };
 		9F8CA2C71A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
 		9F8CA2C81A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
 		9F8CA2C91A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F8CA2C61A639AB000A0E91C /* ChangeTrackerNSURLProtocolTimedOut.m */; };
@@ -362,6 +362,7 @@
 				27A7E68718997412007FAF1C /* Resources */,
 				DA7978ED7F6244DC8D4D91B8 /* Copy Pods Resources */,
 				982BBD681ADD31FA00D2F9F1 /* Set Replication Settings */,
+				2D305AB58A79BD9C237DFF7F /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -382,6 +383,7 @@
 				BB7BC6BD2CC743AAAAC21269 /* Copy Pods Resources */,
 				27A7E69B1899741C007FAF1C /* Resources */,
 				9847750B1AB9CDE50024B64C /* Set replication settings */,
+				C596BD6DDB86D2C4EC48DA71 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -418,6 +420,7 @@
 				27ED1093192CF8DB00F75E95 /* Frameworks */,
 				27ED1094192CF8DB00F75E95 /* Resources */,
 				4204E69A031642919A587BB0 /* Copy Pods Resources */,
+				F03629E239D182AFB450F7E3 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -522,6 +525,21 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		2D305AB58A79BD9C237DFF7F /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		4204E69A031642919A587BB0 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -611,6 +629,21 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-osx/Pods-osx-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		C596BD6DDB86D2C4EC48DA71 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-osx/Pods-osx-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		DA7978ED7F6244DC8D4D91B8 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -624,6 +657,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F03629E239D182AFB450F7E3 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
