@@ -1490,15 +1490,13 @@
         XCTAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         XCTAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
         XCTAssertTrue([result intForColumn:@"parent"] == 1, @"Found %@", [result intForColumn:@"parent"]);
-        
-        //TD_Database+Insertion inserts an empty NSData object instead of NSNull on delete
-        XCTAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
-        error = nil;
-        jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                     options: TDJSONReadingMutableContainers
-                                       error: NULL];
-        XCTAssertNil(jsonDoc, @"Expected revs.json to be nil: %@",jsonDoc);
-        
+
+        // Although TD_Database+Insertion inserts an empty NSData object instead of NSNull on
+        // delete,
+        // FMDB 2.4+ returns NSNull for empty NSData when reading from the database.
+        XCTAssertEqual([result objectForColumnName:@"json"], [NSNull null], @"Found %@",
+                       [result objectForColumnName:@"json"]);
+
         //shouldn't be any more rows.
         XCTAssertFalse([result next], @"There are too many rows in revs");
         XCTAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);
@@ -1618,16 +1616,13 @@
         XCTAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         XCTAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
         XCTAssertTrue([result intForColumn:@"parent"] == 2, @"Found %d", [result intForColumn:@"parent"]);
-        
-        //TD_Database+Insertion inserts an empty NSData object instead of NSNull
-        XCTAssertEqualObjects([result objectForColumnName:@"json"], [NSData data], @"Found %@", [result objectForColumnName:@"json"]);
-        
-        error = nil;
-        jsonDoc = [TDJSON JSONObjectWithData: [result dataForColumn:@"json"]
-                                     options: TDJSONReadingMutableContainers
-                                       error: &error];
-        XCTAssertNil(jsonDoc, @"Expected json dictionary to be nil: %@. Error %@",jsonDoc, error);
-        
+
+        // Although TD_Database+Insertion inserts an empty NSData object instead of NSNull on
+        // delete,
+        // FMDB 2.4+ returns NSNull for empty NSData when reading from the database.
+        XCTAssertEqual([result objectForColumnName:@"json"], [NSNull null], @"Found %@",
+                       [result objectForColumnName:@"json"]);
+
         //should be done
         XCTAssertFalse([result next], @"There are too many rows in revs");
         XCTAssertNil([result stringForColumn:@"doc_id"], @"after [result next], doc_id is %@", [result stringForColumn:@"doc_id"]);

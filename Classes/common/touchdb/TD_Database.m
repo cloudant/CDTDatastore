@@ -18,6 +18,7 @@
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
 
+#import <sqlite3.h>
 #import "TD_Database.h"
 #import "TD_Database+Attachments.h"
 #import "TD_Database+BlobFilenames.h"

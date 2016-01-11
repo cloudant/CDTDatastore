@@ -13,6 +13,9 @@
 //  and limitations under the License.
 
 #import "DBQueryUtils.h"
+
+#import <sqlite3.h>
+
 #import "FMResultSet.h"
 #import "FMDatabaseQueue.h"
 #import "FMDatabase.h"

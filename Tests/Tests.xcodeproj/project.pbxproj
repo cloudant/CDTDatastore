@@ -32,8 +32,8 @@
 		8E82CAB11A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		8E82CAB21A83C3700046DA9D /* schema6to7upgrade.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 8E82CAB01A83C3670046DA9D /* schema6to7upgrade.touchdb */; };
 		9823C84B1B8B1ECD00154EC5 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9823C84A1B8B1ECD00154EC5 /* CDTURLSessionTests.m */; };
-		985849EE1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; settings = {ASSET_TAGS = (); }; };
-		985849EF1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; settings = {ASSET_TAGS = (); }; };
+		985849EE1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; };
+		985849EF1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 985849ED1BA07741009475C9 /* CDTSessionCookieInterceptorTests.m */; };
 		985A188719D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188819D2CC54000283E9 /* CDTDatastoreEvents.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188619D2CC54000283E9 /* CDTDatastoreEvents.m */; };
 		985A188A19D2CCEB000283E9 /* DatastoreConflicts.m in Sources */ = {isa = PBXBuildFile; fileRef = 985A188919D2CCEB000283E9 /* DatastoreConflicts.m */; };
@@ -606,6 +606,7 @@
 				27389E09185345FD0027A404 /* Frameworks */,
 				27389E0A185345FD0027A404 /* Resources */,
 				08B95EDB86F54BC99DEF0C13 /* Copy Pods Resources */,
+				E116515A7F29B065FB7EA2BD /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -625,6 +626,7 @@
 				27CCEDC3187AD64F006F3C66 /* Frameworks */,
 				27CCEDC4187AD64F006F3C66 /* Resources */,
 				E63BC4B0310E42E0AC6C6072 /* Copy Pods Resources */,
+				24372F24AC89AACDD67B1172 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -729,6 +731,21 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		24372F24AC89AACDD67B1172 /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-osx/Pods-osx-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		708AFFBE12E945969103B2AF /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -742,6 +759,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		E116515A7F29B065FB7EA2BD /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E63BC4B0310E42E0AC6C6072 /* Copy Pods Resources */ = {
