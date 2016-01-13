@@ -1,13 +1,14 @@
 
 language: objective-c
-osx_image: xcode6.4
+osx_image: xcode7.2
 
 before_install:
   - export LANG=en_US.UTF-8
-
 install:
-  - gem install cocoapods xcpretty --no-document
-  - rake podupdatetests
+  - gem install cocoapods --pre --no-document
+  - gem install xcpretty --no-document
+  - pod _1.0.0.beta.2_ install
+  - cd project && pod _1.0.0.beta.2_ install
 
 script:
   - rake travis

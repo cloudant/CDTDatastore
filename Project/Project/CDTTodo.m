@@ -16,7 +16,7 @@
 
 #import "CDTTodo.h"
 
-#import <CloudantSync.h>
+#import <CDTDatastore/CloudantSync.h>
 
 @implementation CDTTodo
 

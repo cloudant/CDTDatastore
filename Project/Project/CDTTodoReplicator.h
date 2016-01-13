@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import <CloudantSync.h>
+#import <CDTDatastore/CloudantSync.h>
 
 @interface CDTTodoReplicator : NSObject<CDTReplicatorDelegate>
 
