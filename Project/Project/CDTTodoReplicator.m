@@ -64,14 +64,26 @@
  out whether it's more efficient to run one or the other
  first.
  */
--(void)sync
+-(void)syncInBackgroundWithCompletionHandler:(void (^)())completionHandler
 {
-    [self pullReplication];
-    [self pushReplication];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_group_t backgroundTasks = dispatch_group_create();
+
+        UIBackgroundTaskIdentifier taskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:NULL];
+
+        [self pullReplication:backgroundTasks];
+        [self pushReplication:backgroundTasks];
+
+        dispatch_group_wait(backgroundTasks, dispatch_time(DISPATCH_TIME_NOW, 30000000000));
+        if (completionHandler) {
+            completionHandler();
+        }
+
+        [[UIApplication sharedApplication] endBackgroundTask:taskId];
+    });
 }
 
-
--(void)pullReplication
+-(void)pullReplication:(dispatch_group_t)taskGroup
 {
     [self log:@"Starting pull replication"];
 
@@ -83,15 +95,16 @@
                                                                                 target:delegate.datastore];
     NSError *error;
     CDTReplicator *aPullReplicator = [factory oneWay:replicationConfig error:&error];
+    aPullReplicator.sessionConfigDelegate = self;
     if (!aPullReplicator) {
         [self log:@"Error creating pull replicator: %@", error];
     }
     else {
-        [self startAndFollowReplicator:aPullReplicator label:@"pull"];
+        [self startAndFollowReplicator:aPullReplicator label:@"pull" taskGroup:taskGroup];
     }
 }
 
--(void)pushReplication
+-(void)pushReplication:(dispatch_group_t)taskGroup
 {
     [self log:@"Starting push replication"];
 
@@ -103,11 +116,12 @@
                                                                                target:url];
     NSError *error;
     CDTReplicator *aPushReplicator = [factory oneWay:replicationConfig error:&error];
+    aPushReplicator.sessionConfigDelegate = self;
     if (!aPushReplicator) {
         [self log:@"Error creating push replicator: %@", error];
     }
     else {
-        [self startAndFollowReplicator:aPushReplicator label:@"push"];
+        [self startAndFollowReplicator:aPushReplicator label:@"push" taskGroup:taskGroup];
     }
 }
 /**
@@ -116,7 +130,7 @@
  In real apps, you'd probably use the replicatorDidComplete: and replicatorDidError:
  callbacks to do something useful, updating the UI or showing an error for example.
  */
--(void)startAndFollowReplicator:(CDTReplicator*)replicator label:(NSString*)label {
+-(void)startAndFollowReplicator:(CDTReplicator*)replicator label:(NSString*)label taskGroup:(dispatch_group_t)taskGroup{
 
     NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
     [self log:@"%@ state: %@ (%d)", label, state, replicator.state];
@@ -124,7 +138,7 @@
     [replicator setDelegate:self];
 
     NSError *error;
-    if (![replicator startWithError:&error]) {
+    if (![replicator startWithError:&error taskGroup:taskGroup]) {
         [self log:@"error starting %@ replicator: %@", label, error];
         state = [CDTReplicator stringForReplicatorState:replicator.state];
         [self log:@"%@ state: %@ (%d)", label, state, replicator.state];
@@ -179,6 +193,12 @@
     NSString *state = [CDTReplicator stringForReplicatorState:replicator.state];
     [self log:@"%@ changes total %ld. changes processed %ld. state: %@ (%d)", replicator,
      replicator.changesTotal, replicator.changesProcessed, state, replicator.state];
+}
+
+- (NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config {
+    config.allowsCellularAccess = NO; // Wifi only.
+    config.sessionSendsLaunchEvents = YES;
+    return config;
 }
 
 @end
