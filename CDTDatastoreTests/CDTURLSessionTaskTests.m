@@ -17,6 +17,7 @@
 #import <XCTest/XCTest.h>
 #import <Foundation/Foundation.h>
 #import "CloudantSyncTests.h"
+#import "CDTURLSession.h"
 #import "CDTURLSessionTask.h"
 #import <OCMock/OCMock.h>
 
@@ -34,11 +35,14 @@
     OCMStub([(NSURLSessionDataTask *)mockedTask resume]).andDo(nil);
     OCMStub([mockedTask cancel]).andDo(nil);
 
-    NSURLSession *session = [NSURLSession
-        sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+    NSThread *thread = [[NSThread alloc] init];
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:thread
+                                                       requestInterceptors:nil
+                                                     sessionConfigDelegate:nil];
     id mockedSession = OCMPartialMock(session);
-    OCMStub([mockedSession dataTaskWithRequest:[OCMArg any] completionHandler:[OCMArg any]])
+    OCMStub([mockedSession createDataTaskWithRequest:[OCMArg any] associatedWithTask:[OCMArg any]])
         .andReturn(mockedTask);
+    OCMStub([mockedSession disassociateTask:[OCMArg any]]).andDo(nil);
 
     NSURLRequest *r = [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost"]];
 

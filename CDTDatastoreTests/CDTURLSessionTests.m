@@ -73,9 +73,9 @@
 
 - (instancetype)init
 {
-    return [self initWithNumberOfRetires:1];
+    return [self initWithNumberOfRetries:1];
 }
-- (instancetype)initWithNumberOfRetires:(int)retries
+- (instancetype)initWithNumberOfRetries:(int)retries
 {
     self = [super init];
     if (self) {
@@ -98,7 +98,7 @@
 
 @end
 
-@interface CDTURLSessionTests : CloudantSyncTests
+@interface CDTURLSessionTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
 
 @end
 
@@ -126,14 +126,14 @@
 {
     CDTCountingHTTPRequestInterceptor *countingInterceptor =
         [[CDTCountingHTTPRequestInterceptor alloc] init];
-    CDTURLSession *session = [[CDTURLSession alloc] initWithDelegate:nil
-                                                      callbackThread:[NSThread currentThread]
-                                                 requestInterceptors:@[ countingInterceptor ]];
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[ countingInterceptor ]
+                                                     sessionConfigDelegate:self];
 
     NSURLRequest *request =
         [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
 
-    CDTURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:nil];
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
     XCTAssertEqual(task.requestInterceptors.count, 1);
     XCTAssertEqual(task.requestInterceptors[0], countingInterceptor);
@@ -146,14 +146,14 @@
 {
     CDTCountingHTTPRequestInterceptor *countingInterceptor =
         [[CDTCountingHTTPRequestInterceptor alloc] init];
-    CDTURLSession *session = [[CDTURLSession alloc] initWithDelegate:nil
-                                                      callbackThread:[NSThread currentThread]
-                                                 requestInterceptors:@[ countingInterceptor ]];
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[ countingInterceptor ]
+                                                     sessionConfigDelegate:self];
 
     NSURLRequest *request =
         [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
 
-    CDTURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:nil];
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
     [task resume];
 
@@ -168,14 +168,14 @@
 - (void)testInterceptorsCanRetryRequests
 {
     CDTRetryingHTTPInterceptor *replayingInterceptor = [[CDTRetryingHTTPInterceptor alloc] init];
-    CDTURLSession *session = [[CDTURLSession alloc] initWithDelegate:nil
-                                                      callbackThread:[NSThread currentThread]
-                                                 requestInterceptors:@[ replayingInterceptor ]];
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[ replayingInterceptor ]
+                                                     sessionConfigDelegate:self];
 
     NSURLRequest *request =
         [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
 
-    CDTURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:nil];
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
     XCTAssertEqual(task.responseInterceptors.count, 1);
     XCTAssertEqual(task.responseInterceptors[0], replayingInterceptor);
@@ -191,15 +191,15 @@
 - (void)testMaxNumberOfRetriesEnforced
 {
     CDTRetryingHTTPInterceptor *replayingInterceptor =
-        [[CDTRetryingHTTPInterceptor alloc] initWithNumberOfRetires:1000000];
-    CDTURLSession *session = [[CDTURLSession alloc] initWithDelegate:nil
-                                                      callbackThread:[NSThread currentThread]
-                                                 requestInterceptors:@[ replayingInterceptor ]];
+        [[CDTRetryingHTTPInterceptor alloc] initWithNumberOfRetries:1000000];
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[ replayingInterceptor ]
+                                                     sessionConfigDelegate:self];
 
     NSURLRequest *request =
         [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
 
-    CDTURLSessionTask *task = [session dataTaskWithRequest:request completionHandler:nil];
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
     XCTAssertEqual(task.responseInterceptors.count, 1);
     XCTAssertEqual(task.responseInterceptors[0], replayingInterceptor);
@@ -211,6 +211,12 @@
     }
     // it should be called 11 times because we retry a request 10 times making 11 reqests in total
     XCTAssertEqual(replayingInterceptor.timesCalled, 11);
+}
+
+- (NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config
+{
+    config.timeoutIntervalForResource=1.0;
+    return config;
 }
 
 @end

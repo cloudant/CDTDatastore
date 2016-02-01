@@ -74,6 +74,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 - (id)initWithTDReplicatorManager:(TDReplicatorManager *)replicatorManager
                       replication:(CDTAbstractReplication *)replication
+            sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
                             error:(NSError *__autoreleasing *)error
 {
     if (replicatorManager == nil || replication == nil) {
@@ -94,6 +95,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
         _state = CDTReplicatorStatePending;
         _started = NO;
+        _sessionConfigDelegate = delegate;
     }
     return self;
 }
@@ -153,17 +155,21 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 
 #pragma mark Lifecycle
+- (BOOL)startWithError:(NSError *__autoreleasing *)error {
+    return [self startWithTaskGroup:nil error:error];
+}
 
-- (BOOL)startWithError:(NSError *__autoreleasing *)error;
+- (BOOL)startWithTaskGroup:(dispatch_group_t)taskGroup error:(NSError *__autoreleasing *)error;
 {
     @synchronized(self)
     {
         // check both self.started and self.state. While unlikely, it is possible for -stop to
-        // be called before -startWithError. If -stop is called first on a particular instance,
-        // the resulting state will 'stopped' and the object can no longer be started at that point.
+        // be called before -startWithTaskGroup:error:. If -stop is called first on a particular
+        // instance, the resulting state will 'stopped' and the object can no longer be started at
+        // that point.
         if (self.started || self.state != CDTReplicatorStatePending) {
             CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
-                       @"-startWithError: CDTReplicator can only be started "
+                       @"-startWithTaskGroup:error: CDTReplicator can only be started "
                        @"once and only from its initial state, CDTReplicatorStatePending. "
                        @"Current State: %@",
                        [CDTReplicator stringForReplicatorState:self.state]);
@@ -177,7 +183,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                          userInfo:userInfo];
             }
             // do not change self.state or set self.error here. This is a non-fatal error since
-            // the caller has previously called -startWithError.
+            // the caller has previously called -startWithTaskGroup:error:.
 
             return NO;
         }
@@ -189,6 +195,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         NSError *localError;
         self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
                                                                              error:&localError];
+
+        // Pass the CDTNSURLSessionConfigurationDelegate onto the TDReplicator so that the
+        // NSURLSession can be custom configured.
+        self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
 
         if (!self.tdReplicator) {
             self.state = CDTReplicatorStateError;
@@ -247,7 +257,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                                  name:TDReplicatorStartedNotification
                                                object:self.tdReplicator];
 
-    [self.tdReplicator start];
+    [self.tdReplicator startWithTaskGroup:taskGroup];
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: Replicator starting %@, sessionID %@",
           [self.tdReplicator class], self.tdReplicator.sessionID);
@@ -271,7 +281,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
             case CDTReplicatorStatePending:
 
                 if (self.started) {
-                    //-startWithError was called and self.tdReplicator was successfully
+                    //-startWithTaskGroup:error: was called and self.tdReplicator was successfully
                     //instantiated (otherwise state == 'error')
                     if ([self.tdReplicator cancelIfNotStarted]) {
                         self.state = CDTReplicatorStateStopped;

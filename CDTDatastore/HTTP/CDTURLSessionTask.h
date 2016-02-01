@@ -17,10 +17,17 @@
 #import <Foundation/Foundation.h>
 #import "CDTMacros.h"
 
+@class CDTURLSession;
+
+@protocol CDTURLSessionTaskDelegate
+- (void)receivedData:(nullable NSData *)data;
+- (void)receivedResponse:(nullable NSURLResponse *)response;
+- (void)requestDidError:(nullable NSError *)error;
+@end
+
 @interface CDTURLSessionTask : NSObject
 
-@property (nullable, nonatomic, copy) void (^completionHandler)
-    (NSData *__nullable data, NSURLResponse *__nullable response, NSError *__nullable error);
+@property (nullable, nonatomic, weak) NSObject<CDTURLSessionTaskDelegate> *delegate;
 
 /*
  * The current state of the task within the session.
@@ -37,7 +44,7 @@
  *
  *  @param task the NSURLSessionTask to be wrapped
  */
-- (nullable instancetype)initWithSession:(nonnull NSURLSession *)session
+- (nullable instancetype)initWithSession:(nonnull CDTURLSession *)session
                                  request:(nonnull NSURLRequest *)request
                             interceptors:(nullable NSArray *)interceptors NS_DESIGNATED_INITIALIZER;
 
@@ -51,5 +58,29 @@
  * URLSession:task:didCompleteWithError:
  */
 - (void)cancel;
+
+/**
+ * Process the given response. If the when we process the response with the interceptors
+ * the request does not need to be retried, we process the response on the given thread, otherwise
+ * we retry the request.
+ *
+ * @param response the response to process
+ * @param the thread on which to process the response if the interceptors do not indicate
+ *        that we need to retry the request.
+ */
+- (void)processResponse:(nonnull NSURLResponse *)response
+               onThread:(nonnull NSThread *)thread;
+
+/**
+ * Process the given error. If the when we process the error with the interceptors
+ * the request does not need to be retried, we process the error on the given thread, otherwise
+ * we retry the request.
+ *
+ * @param error the error to process
+ * @param the thread on which to process the error if the interceptors do not indicate
+ *        that we need to retry the request.
+ */
+- (void)processError:(nonnull NSError *)error
+            onThread:(nonnull NSThread *)thread;
 
 @end
