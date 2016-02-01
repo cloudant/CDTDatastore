@@ -16,6 +16,7 @@
 #import <Foundation/Foundation.h>
 
 #import "CDTReplicatorDelegate.h"
+#import "NSURLSessionConfigurationDelegate.h"
 
 @class CDTDatastore;
 @class TDReplicatorManager;
@@ -80,6 +81,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
     CDTReplicatorStateError
 };
 
+
 /**
  A CDTReplicator instance represents a replication job.
 
@@ -125,6 +127,19 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * @see CDTReplicatorDelegate
  */
 @property (nonatomic, weak) NSObject<CDTReplicatorDelegate> *delegate;
+
+/**
+ * Set the delegate for handling customisation of the NSURLSession
+ * used during replication.
+ *
+ * This allows the setting of specific options on the NSURLSessionConfiguration
+ * to control the replication - e.g. replication only when on Wifi would be
+ * achieved by setting the NSURLSessionConfiguration's allowsCellularAccess
+ * attribute to 'NO'.
+ *
+ * @see NSURLSessionConfigurationDelegate
+ */
+@property (nonatomic, weak) NSObject<NSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /**
  Returns true if the state is `CDTReplicatorStatePending`, `CDTReplicatorStateStarted` or
@@ -178,9 +193,20 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * return NO. Only when in `CDTReplicatorStatePending` will replication.
  *
  * @param error the error describing a failure.
+ * @param taskGroup an optional dispatch_group_t allowing clients to wait for the completion
+ *                  of all replication tasks in the taskGroup before proceeding.
  * @return YES or NO depending on success.
  *
  * @see CDTReplicatorState
+ */
+- (BOOL)startWithError:(NSError *__autoreleasing *)error taskGroup:(nullable dispatch_group_t)taskGroup;
+
+/**
+ * Starts a replication.
+ *
+ * Calling this is the same as calling startWithError:taskGroup: with a nil taskGroup.
+ *
+ * @see startWithError:taskGroup:
  */
 - (BOOL)startWithError:(NSError *__autoreleasing *)error;
 

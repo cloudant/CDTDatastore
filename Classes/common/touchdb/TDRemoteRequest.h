@@ -18,7 +18,7 @@ typedef void (^TDRemoteRequestCompletionBlock)(id result, NSError* error);
 
 /** Asynchronous HTTP request; a fairly simple wrapper around NSURLConnection that calls a
  * completion block when ready. */
-@interface TDRemoteRequest : NSObject {
+@interface TDRemoteRequest : NSObject <CDTURLSessionTaskDelegate> {
    @protected
     NSMutableURLRequest* _request;
     id<TDAuthorizer> _authorizer;

@@ -95,18 +95,7 @@
         }
     }
     
-    __weak TDURLConnectionChangeTracker *weakSelf = self;
-    self.task = [self.session dataTaskWithRequest:self.request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        TDURLConnectionChangeTracker *strongSelf = weakSelf;
-        if(error){
-            [strongSelf failedWithError:error];
-            return;
-        } else {
-            [strongSelf receivedResponse:response];
-            [strongSelf receivedData:data];
-            [strongSelf finishedLoading];
-        }
-    }];
+    self.task = [self.session dataTaskWithRequest:self.request taskDelegate:self];
 
     [self.task resume];
     
@@ -336,6 +325,22 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     }
     
     return match;
+}
+
+- (void)handleData:(NSData *)data {
+    [self receivedData:data];
+    [self finishedLoading];
+}
+
+- (void)handleResponse:(NSURLResponse *)response {
+    [self receivedResponse:response];
+    if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
+        [self finishedLoading];
+    }
+}
+
+- (void)handleError:(NSError *)error {
+    [self failedWithError:error];
 }
 
 @end

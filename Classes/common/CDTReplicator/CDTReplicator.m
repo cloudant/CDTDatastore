@@ -153,8 +153,11 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 
 #pragma mark Lifecycle
+- (BOOL)startWithError:(NSError *__autoreleasing *)error {
+    return [self startWithError:error taskGroup:nil];
+}
 
-- (BOOL)startWithError:(NSError *__autoreleasing *)error;
+- (BOOL)startWithError:(NSError *__autoreleasing *)error taskGroup:(dispatch_group_t)taskGroup;
 {
     @synchronized(self)
     {
@@ -189,6 +192,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         NSError *localError;
         self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
                                                                              error:&localError];
+
+        // Pass the NSURLSessionConfigurationDelegate onto the TDReplicator so that the
+        // NSURLSession can be custom configured.
+        self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
 
         if (!self.tdReplicator) {
             self.state = CDTReplicatorStateError;
@@ -247,7 +254,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                                                  name:TDReplicatorStartedNotification
                                                object:self.tdReplicator];
 
-    [self.tdReplicator start];
+    [self.tdReplicator startWithTaskGroup:taskGroup];
     
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"start: Replicator starting %@, sessionID %@",
           [self.tdReplicator class], self.tdReplicator.sessionID);

@@ -215,7 +215,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     }
 }
 
-- (void) start {
+- (void) startWithTaskGroup:(dispatch_group_t)taskGroup {
     
     if(_replicatorThread){
         return;
@@ -223,9 +223,12 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     
     self.running = YES;
     
+    if (taskGroup) {
+        dispatch_group_enter(taskGroup);
+    }
     _replicatorThread = [[NSThread alloc] initWithTarget: self
-                                            selector: @selector(runReplicatorThread)
-                                              object: nil];
+                                                selector: @selector(runReplicatorThread:)
+                                                  object: taskGroup];
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Starting TDReplicator thread %@ ...", _replicatorThread);
     [_replicatorThread start];
     
@@ -268,10 +271,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
  * Start a thread for each replicator
  * Taken from TDServer.m.
  */
-- (void) runReplicatorThread {
-    self.session = [[CDTURLSession alloc] initWithDelegate:nil
-                                            callbackThread:_replicatorThread
-                                       requestInterceptors:self.interceptors];
+- (void) runReplicatorThread:(dispatch_group_t)taskGroup {
+    self.session = [[CDTURLSession alloc] initWithCallbackThread:_replicatorThread
+                                             requestInterceptors:self.interceptors
+                                           sessionConfigDelegate:self.sessionConfigDelegate];
     @autoreleasepool {
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread starting...");
         
@@ -296,6 +299,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         _db = nil;
         
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread exiting");
+
+        if (taskGroup) {
+            dispatch_group_leave(taskGroup);
+        }
     }
 }
 

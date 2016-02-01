@@ -71,6 +71,7 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSArray* docIDs;
 @property (copy) NSDictionary* options;
 @property (nonatomic, strong,readonly) CDTURLSession *session;
+@property (nonatomic, weak) NSObject<NSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /** Access to the replicator's NSThread execution state.*/
 /** NSThread.executing*/
@@ -90,8 +91,11 @@ extern NSString* TDReplicatorStoppedNotification;
 
 /** Starts the replicator.
     Replicators run asynchronously so nothing will happen until later.
-    A replicator can only be started once; don't reuse it after it stops. */
-- (void)start;
+    A replicator can only be started once; don't reuse it after it stops.
+
+    @param taskGroup The dispatch_group_t to make the replicators part of.
+ */
+- (void)startWithTaskGroup:(dispatch_group_t)taskGroup;
 
 /** Request to stop the replicator.
     Any pending asynchronous operations will be canceled.

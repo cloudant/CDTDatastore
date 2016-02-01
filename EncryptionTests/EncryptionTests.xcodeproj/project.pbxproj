@@ -205,7 +205,6 @@
 				CD033AFD1A9BA2F600825DA9 /* Frameworks */,
 				CD033AFE1A9BA2F600825DA9 /* Resources */,
 				D6EDF3F8494B32D1818D2352 /* Copy Pods Resources */,
-				63834D71F7F4F13976360AE6 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -225,7 +224,6 @@
 				CD033B0B1A9BA30400825DA9 /* Frameworks */,
 				CD033B0C1A9BA30400825DA9 /* Resources */,
 				8DC801F6E57A17E5CC9B74AE /* Copy Pods Resources */,
-				98941AE2A6C3945CA69C7B67 /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -292,21 +290,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		63834D71F7F4F13976360AE6 /* Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ios/Pods-ios-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		8BBF044129B9EE453ADF202E /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -350,21 +333,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		98941AE2A6C3945CA69C7B67 /* Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-osx/Pods-osx-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D6EDF3F8494B32D1818D2352 /* Copy Pods Resources */ = {

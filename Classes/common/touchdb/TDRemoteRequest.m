@@ -105,21 +105,7 @@
     if (!_request) return;  // -clearConnection already called
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
 
-    __weak TDRemoteRequest *weakSelf = self;
-    self.task = [self.session dataTaskWithRequest:_request
-                                completionHandler:^(NSData *data,
-                                                    NSURLResponse *response,
-                                                    NSError *error) {
-        TDRemoteRequest * strongSelf = weakSelf;
-        if(error) {
-            [strongSelf requestDidError:error];
-        } else if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
-            [strongSelf receivedResponse:response];
-        }  else {
-            [strongSelf receivedResponse:response];
-            [strongSelf receivedData:data];
-        }
-    }];
+    self.task = [self.session dataTaskWithRequest:_request taskDelegate:self];
     [self.task resume];
 
 }
@@ -235,7 +221,7 @@
 }
 - (void) receivedResponse:(NSURLResponse *)response
 {
-    //if we hit an error we shouldn't retry, the Http interceptors should deal with retires.
+    //if we hit an error we shouldn't retry, the Http interceptors should deal with retries.
     _status = (int)((NSHTTPURLResponse *)response).statusCode;
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got response, status %d", self, _status);
 
@@ -265,6 +251,18 @@
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
     [self clearSession];
     [self respondWithResult:self error:nil];
+}
+
+- (void)handleData:(NSData *)data {
+    [self receivedData:data];
+}
+
+- (void)handleResponse:(NSURLResponse *)response {
+    [self receivedResponse:response];
+}
+
+- (void)handleError:(NSError *)error {
+    [self requestDidError:error];
 }
 
 @end
