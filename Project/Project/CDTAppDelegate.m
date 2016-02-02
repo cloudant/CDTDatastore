@@ -17,7 +17,7 @@
 
 #import "CDTTodoReplicator.h"
 #import "CDTLogging.h"
-#import <CloudantSync.h>
+#import <CDTDatastore/CloudantSync.h>
 
 @interface CDTAppDelegate()
 

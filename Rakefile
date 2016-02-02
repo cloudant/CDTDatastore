@@ -4,18 +4,19 @@
 
 # Workspaces
 CDTDATASTORE_WS = 'CDTDatastore.xcworkspace'
-ENCRYPTION_WS = 'EncryptionTests/EncryptionTests.xcworkspace'
-REPLICATION_ACCEPTANCE_WS = './ReplicationAcceptance/ReplicationAcceptance.xcworkspace'
+SAMPLE_APP_WS = 'Project/Project.xcworkspace'
 
 # Schemes
-TESTS_IOS = 'Tests iOS'
-TESTS_OSX = 'Tests OSX'
-ENCRYPTION_IOS = 'Encryption Tests'
-ENCRYPTION_OSX = 'Encryption Tests OSX'
-REPLICATION_ACCEPTANCE_IOS = 'RA_Tests'
-REPLICATION_ACCEPTANCE_OSX = 'RA_Tests_OSX'
-REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'RA_EncryptionTests'
-REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'RA_EncryptionTests_OSX'
+TESTS_IOS = 'CDTDatastoreTests'
+TESTS_OSX = 'CDTDatastoreTestsOSX'
+ENCRYPTION_IOS = 'CDTDatastoreEncryptionTests'
+ENCRYPTION_OSX = 'CDTDatastoreEncryptionTestsOSX'
+REPLICATION_ACCEPTANCE_IOS = 'CDTDatastoreReplicationAcceptanceTests'
+REPLICATION_ACCEPTANCE_OSX = 'CDTDatastoreReplicationAcceptanceTestsOSX'
+REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'CDTDatastoreEncryptedReplicationAcceptanceTests'
+REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'CDTDatastoreEncryptedReplicationAcceptanceTestsOSX'
+SAMPLE_IOS = "Project"
+
 
 # Destinations
 IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 4S'
@@ -26,11 +27,11 @@ OSX_DEST = 'platform=OS X'
 #
 
 desc "Run tests for all platforms"
-task :test => [:testosx, :testios, :testencryptionosx, :testencryptionios] do
+task :test => [:testios, :testosx, :testencryptionios, :testencryptionosx] do
 end
 
 desc "Task for travis"
-task :travis => [:test] do
+task :travis => [:test, :sample] do
   sh "pod lib lint --allow-warnings"
 end
 
@@ -38,14 +39,19 @@ end
 #  Update pods
 #
 
-desc "pod update all test projects"
+desc "pod update"
 task :podupdatetests do
-  sh "for i in Tests EncryptionTests\ndo\ncd $i ; pod update ; cd ..\ndone"
+  sh "pod update"
 end
 
-desc "pod update all included projects"
+desc "pod update"
 task :podupdate => [:podupdatetests] do
-  sh "for i in ReplicationAcceptance Project\ndo\ncd $i ; pod update ; cd ..\ndone"
+end
+
+# Sample build task
+desc "Build sample iOS application"
+task :sample do
+    run_build(SAMPLE_APP_WS,SAMPLE_IOS,IPHONE_DEST)
 end
 
 #
@@ -64,32 +70,32 @@ end
 
 desc "Run the CDTDatastore Encryption Tests for iOS"
 task :testencryptionios do
-  test(ENCRYPTION_WS, ENCRYPTION_IOS, IPHONE_DEST)
+  test(CDTDATASTORE_WS, ENCRYPTION_IOS, IPHONE_DEST)
 end
 
 desc "Run the CDTDatastore Encryption Tests for OS X"
 task :testencryptionosx do
-  test(ENCRYPTION_WS, ENCRYPTION_OSX, OSX_DEST)
+  test(CDTDATASTORE_WS, ENCRYPTION_OSX, OSX_DEST)
 end
 
 desc "Run the replication acceptance tests for OS X"
 task :replicationacceptanceosx do
-  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
 end
 
 desc "Run the replication acceptance tests for iOS"
 task :replicationacceptanceios do
-  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
 end
 
 desc "Run the replication acceptance tests for OS X with encrypted datastores"
 task :encryptionreplicationacceptanceosx do
-  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_OSX, OSX_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_OSX, OSX_DEST)
 end
 
 desc "Run the replication acceptance tests for iOS with encrypted datastores"
 task :encryptionreplicationacceptanceios do
-  test(REPLICATION_ACCEPTANCE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_IOS, IOS_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_IOS, IOS_DEST)
 end
 
 #
@@ -113,13 +119,10 @@ end
 
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
-  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test")
+  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test | xcpretty; exit ${PIPESTATUS[0]}")
 end
 
 def test(workspace, scheme, destination)
-  unless run_build(workspace, scheme, destination)
-    fail "[FAILED] Build #{workspace}, #{scheme}"
-  end
   unless run_tests(workspace, scheme, destination)
     fail "[FAILED] Tests #{workspace}, #{scheme}"
   end

@@ -19,7 +19,7 @@
 #import "CDTTodoReplicator.h"
 #import "CDTTodo.h"
 
-#import <CloudantSync.h>
+#import <CDTDatastore/CloudantSync.h>
 
 @interface CDTViewController ()
 
