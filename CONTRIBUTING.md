@@ -28,7 +28,7 @@ you'll need:
 
 * Xcode
 * Xcode command line tools
-* Cocoapods
+* Cocoapods (minimum version 1.0.0 beta 2)
 * Homebrew (optional, but useful)
 * xcpretty (optional)
 
@@ -43,6 +43,13 @@ xcode-select --install
 Install homebrew using the [guide on the homebrew site][homebrew].
 
 Install cocoapods using the [guide on their site][cpinstall].
+
+Note that we currently require a pre-release version of cocoapods, so
+your install options will look something like this:
+
+```bash
+sudo gem install cocoapods --pre
+```
 
 Finally, if you want to build from the command line, install [xcpretty][xcpretty],
 which makes the `xcodebuild` output more readable.
@@ -65,20 +72,14 @@ The house style is [documented](doc/style-guide.md). There's information there o
 
 ## Getting started with the project
 
-The main workspace is `CDTDatastore.xcworkspace` in the root of the checkout.
-There is also another workspace called `EncryptionTests.xcworkspace` in
-`EncryptionTests` folder. Before the projects inside will run, you need to use
-Cocoapods to get the dependencies set up correctly for each project. The `Podfiles`
-are actually inside the `Tests` and `EncryptionTests` folders:
+The main workspace is `CDTDatastore.xcworkspace` in the root of the
+checkout. This contains everything needed to develop and test the
+library - by changing the target it is possible to build different
+variants of the library or run various unit test suites.
 
 ```bash
 # Close the Xcode workspace before doing this!
-
-cd Tests
-pod install
-cd ../EncryptionTests
-pod install
-cd ..
+pod update
 ```
 
 Open up `CDTDatastore.xcworkspace`.
@@ -87,43 +88,54 @@ Open up `CDTDatastore.xcworkspace`.
 open CDTDatastore.xcworkspace
 ```
 
-This workspace is where you should do all your work. If you intend to work with
-database encryption, you will need to include test cases in
-`EncryptionTests.xcworkspace` (the only purpose of this workspace is to run
-tests, do not include anything else but test cases). `CDTDatastore.xcworkspace`
-contains:
+This workspace is where you should do all your work. `CDTDatastore.xcworkspace`
+contains the following groups (the order is not significant):
 
-* The CDTDatastore source code, following the folder structure in `Classes`.
-* The test project, `Tests`.
-* The example application, `Project`.
-* `Pods` where the test and example app dependencies are built (including
-  CDTDatastore itself).
+Firstly, under the `CDTDatastore` project:
 
-If things don't work, you probably skipped over the bit above where the
-dependencies are set up.
+* `CDTDatastore`: the source code for CDTDatastore. If you are
+  contributing to the library then this group will be of most
+  relevance.
+  
+* `CDTDatastoreTests`: unit and integration tests for CDTDatastore. If
+  you are contributing a new feature or making large modifications to
+  an existing one, you may need to add or modify tests here.
 
-As you edit the source code in the `CDTDatastore` group, the Pods project will
-be rebuilt when you run the tests as it references the code in `Classes`.
+* `CDTDatastoreReplicationAcceptanceTests`: longer-running regression
+  tests which are run to ensure correctness of the replication
+  implementation.
+
+* `CDTDatastoreEncryptionTests`: unit and integration tests for the
+  encryption-enabled build of CDTDatastore.
+
+Additionally, under the `Pods` project:
+
+* This project contains the various groups of source code files needed
+  to build the third-party dependencies used by CDTDatastore.
 
 At this point, run both the tests from the Tests project and the example app
 to make sure you're setup correctly. To run the tests, change the Scheme to
-either `Tests iOS` or `Tests OSX` using the dropdown in the top left. It'll
-probably be the `Project` scheme to start with. Once you've changed the
+either `CDTDatastoreTests` or `CDTDatastoreTestsOSX` using the dropdown in the top left. It'll
+probably be the `CDTDatastore` scheme to start with. Once you've changed the
 scheme, `cmd-u` should run the tests on your preferred platform.
+
+The sample app shows how an developer might use the library in their
+own application. The workspace for this is located in
+`Project/Project.xcworkspace/`. In order to build and run this app you
+will need to run `pod update` in the `Project` directory before
+opening the workspace.
 
 ### Adding and removing files
 
-First, make sure you add them to the right folder within the `Classes` structure:
+First, make sure you add them to the right group within the `CDTDatastore` group:
 
-* `common` for most new files.
-  * Use a subfolder of `common` for discrete subsystems.
 * `vendor` for any libraries that can't be brought in via cocoapods.
-
-**If you add or remove files, run `pod update` in `Tests` to get them into
-the build. Then add them to the workspace, under the CDTDatastore group.**
-
-_Note_: `rake podupdate` will update all projects' workspaces, which is a useful
-shortcut.
+* most files will be part of a discrete subsystem and will belong to a
+  group for that subsystem, eg `Attachments`.
+* some files are added directly to the top level of the
+  `CDTDatastore`, but this will be a small number of files
+  which are important or general-purpose in nature and do not belong
+  to a subsystem.
 
 When adding files to the workspace, make sure to keep the groups in the
 workspace up to date with the file locations on the file system.
@@ -135,32 +147,17 @@ encrypted databases. More exactly, `CDTDatastore` relies on [FMDB][FMDB] to
 access SQLite databases and FMDB is able to do that using the standard iOS
 library for SQLite or SQLCipher.
 
-If SQLCipher is not included but you try to create a `CDTDatastore` with a
-encryption key (providing an instance that conforms to protocol
-[CDTEncryptionKeyProvider][CDTEncryptionKeyProvider]), the operation will fail
-given that we lack the code to cipher the database. But it will succeed if the
-pod for SQLCipher is in the workspace.
+If SQLCipher is not included but a `CDTDatastore` is created with an
+encryption key (an instance that conforms to protocol
+[CDTEncryptionKeyProvider][CDTEncryptionKeyProvider]), the operation
+will fail.
 
-This is the reason why we need two different workspaces. The code does not
-change, however the behaviour is different depending of the libraries included.
-The `Podfile` in `EncryptionTests` is configured to import FMDB with SQLCipher
-while `CDTDatastore.xcworkspace` uses the default version of FMDB.
-`EncryptionTests.xcworkspace` has a sub-set of the tests in
-`CDTDatastore.xcworkspace`, the tests in the former are expected to succeed
-when a key is provided while the tests in the second have to fail.
+The `CDTDatastore` and `CDTDatastoreOSX` targets can be used to build
+the library with SQLCipher support.
 
-If you want CDTDatastore to cipher the databases, you do not need to include
-SQLCipher as a pod in your `Podfiles`, replace:
-
-```
-pod "CDTDatastore"
-```
-
-With:
-
-```
-pod "CDTDatastore/SQLCipher"
-```
+The `CDTDatastoreEncryptionTests` and `CDTDatastoreEncryptionTestsOSX`
+targets will build and run the sub-set of tests which take a key and
+exercise the database encryption functionality.
 
 [SQLCipher]: https://www.zetetic.net/sqlcipher/
 [FMDB]: https://github.com/ccgus/fmdb
@@ -182,20 +179,20 @@ As the `appledocs` docs themselves are down, here's a
 Run the following at the command line:
 
 ```
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' test | xcpretty -c
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests OSX' test | xcpretty -c
-xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests' test | xcpretty -c
-xcodebuild -workspace EncryptionTests/EncryptionTests.xcworkspace -scheme 'Encryption Tests OSX' test | xcpretty -c
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTests' test | xcpretty -c
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTestsOSX' test | xcpretty -c
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreEncryptionTests' test | xcpretty -c
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreEncryptionTestsOSX' test | xcpretty -c
 ```
 
 To test on a specific device you need to specify `-destination`:
 
 ```
 // iOS
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests iOS' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test | xcpretty
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTests' -destination 'platform=iOS Simulator,OS=latest,name=iPhone 4S' test | xcpretty -c
 
 // Mac OS X
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'Tests OSX' -destination 'platform=OS X' test | xcpretty
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTestsOSX' -destination 'platform=OS X' test | xcpretty
 ```
 
 Xcodebuild references:
@@ -206,7 +203,10 @@ Miss out the `| xcpretty` if you didn't install that.
 
 ### Configuring ReplicationAcceptance Tests
 
-ReplicationAcceptance are a set of tests which tests the replication function of CDTDatastore, the tests are found in the ReplicationAcceptance.xcworkspace in the ReplicationAcceptance directory in CDTDatastore. 
+These tests are executed via the various
+`CDTDatastoreReplicationAcceptanceTests` targets (these targets vary
+by platform - iOS and OSX and whether the database is encrypted with
+SQLCipher or not)
 
 The tests can be configured by using a series of environment variables. The environment variables are as follows:
 
