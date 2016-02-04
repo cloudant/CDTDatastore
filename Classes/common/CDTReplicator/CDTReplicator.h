@@ -161,6 +161,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  */
 -(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
                      replication:(CDTAbstractReplication*)replication
+           sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
                            error:(NSError * __autoreleasing*)error;
 
 /*

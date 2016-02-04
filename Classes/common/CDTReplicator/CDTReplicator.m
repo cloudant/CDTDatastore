@@ -74,6 +74,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 - (id)initWithTDReplicatorManager:(TDReplicatorManager *)replicatorManager
                       replication:(CDTAbstractReplication *)replication
+            sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
                             error:(NSError *__autoreleasing *)error
 {
     if (replicatorManager == nil || replication == nil) {
@@ -94,6 +95,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
         _state = CDTReplicatorStatePending;
         _started = NO;
+        _sessionConfigDelegate = delegate;
     }
     return self;
 }

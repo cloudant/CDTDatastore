@@ -78,10 +78,18 @@ static NSString *const CDTReplicatorFactoryErrorDomain = @"CDTReplicatorFactoryE
 - (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
                     error:(NSError *__autoreleasing *)error
 {
+    return [self oneWay:replication sessionConfigDelegate:nil error:error];
+}
+
+- (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
+    sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
+                    error:(NSError *__autoreleasing *)error
+{
     NSError *localError;
     CDTReplicator *replicator =
         [[CDTReplicator alloc] initWithTDReplicatorManager:self.replicatorManager
                                                replication:replication
+                                     sessionConfigDelegate:delegate
                                                      error:&localError];
 
     if (replicator == nil) {
