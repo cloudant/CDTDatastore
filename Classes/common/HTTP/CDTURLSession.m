@@ -123,6 +123,7 @@
 - (void) disassociateTask:(nonnull NSURLSessionDataTask *)task
 {
     [self.taskMap removeObjectForKey:[NSNumber numberWithInteger:task.taskIdentifier]];
+    [task cancel];
 }
 
 @end

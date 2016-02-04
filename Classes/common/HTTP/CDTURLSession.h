@@ -70,7 +70,9 @@
 /**
  * Disassociates an NSURLSessionDataTask from any CDTURLSessionTask it was previously associated
  * with via a call to NSURLSessionDataTask:createDataTaskWithRequest:associatedWithTask:
-  *
+ * The given task is also cancelled since once it is disassociated from the CDTURLSessionTask any
+ * response will not be processed.
+ *
  * @param task The NSURLSessionDataTask to be disassociated from any CDTURLSessionTask.
  */
 - (void) disassociateTask:(nonnull NSURLSessionDataTask *)task;
