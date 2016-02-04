@@ -185,28 +185,28 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * The replication will continue until the replication is caught up with the source database;
  * that is, until there are no current changes to replicate.
  *
- * -startWithError can be called from any thread and will immediately return. It queues its work
- * on a separate replication thread. The methods on the CDTReplicatorDelegate
+ * -startWithTaskGroup:error: can be called from any thread and will immediately return. It queues 
+ * its work on a separate replication thread. The methods on the CDTReplicatorDelegate
  * may be called from the background threads.
  *
  * A given CDTReplicator instance cannot be reused. Calling this method more than once will
  * return NO. Only when in `CDTReplicatorStatePending` will replication.
  *
- * @param error the error describing a failure.
  * @param taskGroup an optional dispatch_group_t allowing clients to wait for the completion
  *                  of all replication tasks in the taskGroup before proceeding.
+ * @param error the error describing a failure.
  * @return YES or NO depending on success.
  *
  * @see CDTReplicatorState
  */
-- (BOOL)startWithError:(NSError *__autoreleasing *)error taskGroup:(nullable dispatch_group_t)taskGroup;
+- (BOOL)startWithTaskGroup:(nullable dispatch_group_t)taskGroup error:(NSError *__autoreleasing *)error;
 
 /**
  * Starts a replication.
  *
- * Calling this is the same as calling startWithError:taskGroup: with a nil taskGroup.
+ * Calling this is the same as calling startWithTaskGroup:error: with a nil taskGroup.
  *
- * @see startWithError:taskGroup:
+ * @see startWithTaskGroup:error:
  */
 - (BOOL)startWithError:(NSError *__autoreleasing *)error;
 
@@ -239,7 +239,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * to stop the replication before it starts. If it cannot stop the replication, this method
  * will return NO and replication will start and progress as normal.
  *
- * If -startWithError was never called, this method will move the state from
+ * If -startWithTaskGroup:error: was never called, this method will move the state from
  * CDTRelicatorStatePending to CDTReplicatorStateStopped, inform the delegate and return YES.
  *
  *

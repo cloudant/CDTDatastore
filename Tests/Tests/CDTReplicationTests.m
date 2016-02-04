@@ -98,7 +98,7 @@
     OCMStub([mockedReplicator sessionConfigDelegate]).andReturn(self);
 
     dispatch_group_t taskGroup = dispatch_group_create();
-    [replicator startWithError:&error taskGroup:taskGroup];
+    [replicator startWithTaskGroup:taskGroup error:&error];
 
     dispatch_group_wait(taskGroup, DISPATCH_TIME_FOREVER);
 
