@@ -90,7 +90,7 @@
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    __strong CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
     data = [NSData dataWithData:data];
     MYOnThread(self.thread, ^{
         [cdtURLSessionTask.delegate handleData:data];
@@ -100,7 +100,7 @@
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
-    __strong CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:task.taskIdentifier];
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:task.taskIdentifier];
     if (error && cdtURLSessionTask) {
         [cdtURLSessionTask processError:error onThread:self.thread];
     }
@@ -108,7 +108,7 @@
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
 {
-    __strong CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
     if (cdtURLSessionTask) {
         [cdtURLSessionTask processResponse:response onThread:self.thread];
     }
