@@ -93,7 +93,7 @@
     CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
     data = [NSData dataWithData:data];
     MYOnThread(self.thread, ^{
-        [cdtURLSessionTask.delegate handleData:data];
+        [cdtURLSessionTask.delegate receivedData:data];
     });
 
 }

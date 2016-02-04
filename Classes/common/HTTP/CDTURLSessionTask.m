@@ -179,7 +179,7 @@
         [self.inProgressTask resume];
     } else {
         MYOnThread(thread, ^{
-            [self.delegate handleResponse:response];
+            [self.delegate receivedResponse:response];
         });
         _finished = YES;
     }
@@ -201,7 +201,7 @@
         [self.inProgressTask resume];
     } else {
         MYOnThread(thread, ^{
-            [self.delegate handleError:error];
+            [self.delegate requestDidError:error];
         });
         _finished = YES;
     }

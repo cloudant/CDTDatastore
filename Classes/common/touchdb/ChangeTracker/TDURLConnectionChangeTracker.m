@@ -229,7 +229,10 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
         //otherwise, retryOrError will set the error and stop.
         [self retryOrError:TDStatusToNSErrorWithInfo(status, self.changesFeedURL, errorInfo)];
     }
-    
+
+    if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
+        [self finishedLoading];
+    }
 }
 
 -(void)receivedData:(NSData *)data
@@ -238,6 +241,7 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
                   [self class], (unsigned long)[data length]);
     
     [self.inputBuffer appendData:data];
+    [self finishedLoading];
 }
 
 -(void) finishedLoading
@@ -286,7 +290,7 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     
 }
 
--(void) failedWithError:(NSError *)error
+-(void) requestDidError:(NSError *)error
 {
     [self retryOrError:error];
 }
@@ -325,22 +329,6 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     }
     
     return match;
-}
-
-- (void)handleData:(NSData *)data {
-    [self receivedData:data];
-    [self finishedLoading];
-}
-
-- (void)handleResponse:(NSURLResponse *)response {
-    [self receivedResponse:response];
-    if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
-        [self finishedLoading];
-    }
-}
-
-- (void)handleError:(NSError *)error {
-    [self failedWithError:error];
 }
 
 @end

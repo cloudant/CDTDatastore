@@ -20,9 +20,9 @@
 @class CDTURLSession;
 
 @protocol CDTURLSessionTaskDelegate
-- (void)handleData:(nullable NSData *)data;
-- (void)handleResponse:(nullable NSURLResponse *)response;
-- (void)handleError:(nullable NSError *)error;
+- (void)receivedData:(nullable NSData *)data;
+- (void)receivedResponse:(nullable NSURLResponse *)response;
+- (void)requestDidError:(nullable NSError *)error;
 @end
 
 @interface CDTURLSessionTask : NSObject

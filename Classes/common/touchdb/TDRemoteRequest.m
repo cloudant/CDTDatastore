@@ -219,7 +219,7 @@
         return NO;
     }
 }
-- (void) receivedResponse:(NSURLResponse *)response
+- (void)receivedResponse:(NSURLResponse *)response
 {
     //if we hit an error we shouldn't retry, the Http interceptors should deal with retries.
     _status = (int)((NSHTTPURLResponse *)response).statusCode;
@@ -228,7 +228,7 @@
     if (TDStatusIsError(_status)) [self cancelWithStatus:_status];
 }
 
--(void) receivedData:(NSData *)data
+- (void)receivedData:(NSData *)data
 {
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got %lu bytes", self, (unsigned long)data.length);
 }
@@ -251,18 +251,6 @@
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Finished loading", self);
     [self clearSession];
     [self respondWithResult:self error:nil];
-}
-
-- (void)handleData:(NSData *)data {
-    [self receivedData:data];
-}
-
-- (void)handleResponse:(NSURLResponse *)response {
-    [self receivedResponse:response];
-}
-
-- (void)handleError:(NSError *)error {
-    [self requestDidError:error];
 }
 
 @end
