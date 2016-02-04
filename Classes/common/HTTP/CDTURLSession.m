@@ -40,7 +40,7 @@
 
 - (instancetype)initWithCallbackThread:(NSThread *)thread
                    requestInterceptors:(NSArray *)requestInterceptors
-                 sessionConfigDelegate:(NSObject<NSURLSessionConfigurationDelegate> *)sessionConfigDelegate
+                 sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate
 {
     NSParameterAssert(thread);
     self = [super init];

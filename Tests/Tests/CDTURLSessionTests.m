@@ -98,7 +98,7 @@
 
 @end
 
-@interface CDTURLSessionTests : CloudantSyncTests <NSURLSessionConfigurationDelegate>
+@interface CDTURLSessionTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
 
 @end
 

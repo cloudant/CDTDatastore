@@ -1,5 +1,5 @@
 //
-//  NSURLSessionConfigurationDelegate.h
+//  CDTNSURLSessionConfigurationDelegate.h
 //
 //
 //  Created by Bryn Harding.
@@ -21,7 +21,7 @@
  E.g. to enable replication only over wifi, the user could set the allowsCellularAccess attribute
  to NO.
  */
-@protocol NSURLSessionConfigurationDelegate
+@protocol CDTNSURLSessionConfigurationDelegate
 @optional
 - (nonnull NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config;
 @end

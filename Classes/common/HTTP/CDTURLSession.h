@@ -15,7 +15,7 @@
 #import <Foundation/Foundation.h>
 #import "CDTURLSessionTask.h"
 #import "CDTMacros.h"
-#import "NSURLSessionConfigurationDelegate.h"
+#import "CDTNSURLSessionConfigurationDelegate.h"
 
 @class CDTHTTPInterceptorContext;
 
@@ -41,7 +41,7 @@
  **/
 - (nullable instancetype)initWithCallbackThread:(nonnull NSThread *)thread
                             requestInterceptors:(nullable NSArray *)requestInterceptors
-                          sessionConfigDelegate:(nullable NSObject<NSURLSessionConfigurationDelegate> *)sessionConfigDelegate  NS_DESIGNATED_INITIALIZER;
+                          sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate  NS_DESIGNATED_INITIALIZER;
 
 /**
  * Performs a data task for a request.

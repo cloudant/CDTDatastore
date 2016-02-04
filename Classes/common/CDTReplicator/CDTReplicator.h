@@ -16,7 +16,7 @@
 #import <Foundation/Foundation.h>
 
 #import "CDTReplicatorDelegate.h"
-#import "NSURLSessionConfigurationDelegate.h"
+#import "CDTNSURLSessionConfigurationDelegate.h"
 
 @class CDTDatastore;
 @class TDReplicatorManager;
@@ -137,9 +137,9 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  * achieved by setting the NSURLSessionConfiguration's allowsCellularAccess
  * attribute to 'NO'.
  *
- * @see NSURLSessionConfigurationDelegate
+ * @see CDTNSURLSessionConfigurationDelegate
  */
-@property (nonatomic, weak) NSObject<NSURLSessionConfigurationDelegate> *sessionConfigDelegate;
+@property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /**
  Returns true if the state is `CDTReplicatorStatePending`, `CDTReplicatorStateStarted` or

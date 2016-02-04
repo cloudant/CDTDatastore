@@ -71,7 +71,7 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSArray* docIDs;
 @property (copy) NSDictionary* options;
 @property (nonatomic, strong,readonly) CDTURLSession *session;
-@property (nonatomic, weak) NSObject<NSURLSessionConfigurationDelegate> *sessionConfigDelegate;
+@property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /** Access to the replicator's NSThread execution state.*/
 /** NSThread.executing*/

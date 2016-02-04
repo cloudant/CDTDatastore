@@ -193,7 +193,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         self.tdReplicator = [self.replicatorManager createReplicatorWithProperties:self.replConfig
                                                                              error:&localError];
 
-        // Pass the NSURLSessionConfigurationDelegate onto the TDReplicator so that the
+        // Pass the CDTNSURLSessionConfigurationDelegate onto the TDReplicator so that the
         // NSURLSession can be custom configured.
         self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
 

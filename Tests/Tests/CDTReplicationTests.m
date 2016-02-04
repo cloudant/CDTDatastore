@@ -61,7 +61,7 @@
 
 @end
 
-@interface CDTReplicationTests : CloudantSyncTests <NSURLSessionConfigurationDelegate>
+@interface CDTReplicationTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
 
 @end
 
