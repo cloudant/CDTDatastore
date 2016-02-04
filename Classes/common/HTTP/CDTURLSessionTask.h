@@ -26,11 +26,8 @@
 @end
 
 @interface CDTURLSessionTask : NSObject
-{
-    id <CDTURLSessionTaskDelegate> _delegate;
-}
 
-@property (nullable, nonatomic, strong) id delegate;
+@property (nullable, nonatomic, weak) NSObject<CDTURLSessionTaskDelegate> *delegate;
 
 /*
  * The current state of the task within the session.
