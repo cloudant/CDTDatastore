@@ -7,7 +7,7 @@ before_install:
 install:
   - gem install cocoapods -v 1.0.0.beta.2 --no-document
   - gem install xcpretty --no-document
-  - pod _1.0.0.beta.3_ install
+  - pod _1.0.0.beta.2_ install
   - cd project && pod _1.0.0.beta.2_ install
 
 script:
