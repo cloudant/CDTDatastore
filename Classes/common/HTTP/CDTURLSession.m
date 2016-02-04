@@ -84,7 +84,7 @@
 
 {
     NSURLSessionDataTask *nsURLSessionTask = [self.session dataTaskWithRequest:request];
-    [_taskMap setObject:task forKey:[NSNumber numberWithInteger:nsURLSessionTask.taskIdentifier]];
+    [self.taskMap setObject:task forKey:[NSNumber numberWithInteger:nsURLSessionTask.taskIdentifier]];
     return nsURLSessionTask;
 }
 
@@ -117,12 +117,12 @@
 
 - (CDTURLSessionTask *)getSessionTaskForId:(NSUInteger)identifier
 {
-    return [_taskMap objectForKey:[NSNumber numberWithInteger:identifier]];
+    return [self.taskMap objectForKey:[NSNumber numberWithInteger:identifier]];
 }
 
 - (void) disassociateTask:(nonnull NSURLSessionDataTask *)task
 {
-    [_taskMap removeObjectForKey:[NSNumber numberWithInteger:task.taskIdentifier]];
+    [self.taskMap removeObjectForKey:[NSNumber numberWithInteger:task.taskIdentifier]];
 }
 
 @end
