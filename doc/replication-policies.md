@@ -51,7 +51,7 @@ On the `Capabilities` tab of your Xcode project turn on `Background Modes` and s
 
 Configure your replications following the guidance in the [Replication guide](replication.md).
 
-Note however, that in the following example we'll use the `startWithError:taskGroup:` method of
+Note however, that in the following example we'll use the `startWithTaskGroup:error:` method of
 `CDTReplicator` instead of `startWithError:` so that we can batch the replication tasks and wait
 for the completion of all of them.
 
@@ -83,20 +83,22 @@ For example:
                                                                              target:datastore];
 
     NSError *pushError;
-    CDTReplicator *pushReplicator = [replicatorFactory oneWay:pushReplication error:&error];
-    pushReplicator.sessionConfigDelegate = self;
+    CDTReplicator *pushReplicator = [replicatorFactory oneWay:pushReplication
+                                        sessionConfigDelegate:self
+                                                        error:&error];
 
     NSError *pullError;
-    CDTReplicator *pullReplicator = [replicatorFactory oneWay:pullReplication error:&error];
-    pullReplicator.sessionConfigDelegate = self;
+    CDTReplicator *pullReplicator = [replicatorFactory oneWay:pullReplication
+                                        sessionConfigDelegate:self
+                                                        error:&error];
 
     // Start the push replication
-    if (![pushReplicator startWithError:&error taskGroup:taskGroup]){
+    if (![pushReplicator startWithTaskGroup:taskGroup error:&error]){
         //handle error
     }
 
     // Start the pull replication
-    if (![pullReplicator startWithError:&error taskGroup:taskGroup]){
+    if (![pullReplicator startWithTaskGroup:taskGroup error:&error]){
         //handle error
     }
 }
