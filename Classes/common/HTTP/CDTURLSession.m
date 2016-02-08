@@ -66,6 +66,9 @@
                                                  delegate:self
                                             delegateQueue:nil];
 
+        // Configure taskMap to hold weak references to the underlying NSURLSessionDataTask objects
+        // so we don't unnecessarily hold on to objects and that values are removed from
+        // the taskMap when the NSURLSessionDataTasks are deallocated.
         _taskMap = [NSMapTable strongToWeakObjectsMapTable];
     }
     return self;
