@@ -63,9 +63,9 @@ For example:
  */
 - (void)startReplications:(dispatch_group_t)taskGroup
 {
-    // Create and start the replicator -- -start is essential!
+    // Create the replicator factory
     CDTReplicatorFactory *replicatorFactory =
-    [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
+       [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
 
     // username/password can be Cloudant API keys
     NSString *s = @"https://username:password@username.cloudant.com/my_database";
