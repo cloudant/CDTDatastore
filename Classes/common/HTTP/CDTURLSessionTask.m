@@ -92,15 +92,15 @@
     if (t) {
         [t cancel];
     }
-    _finished = YES;
+    self.finished = YES;
 }
 
 - (NSURLSessionTaskState)state
 {
     NSURLSessionTask *t = self.inProgressTask;
-    // Check _finished as we use that to guard against returning the
+    // Check finished as we use that to guard against returning the
     // NSURLSessionTask's state if we're about to retry the request.
-    if (_finished && t) {
+    if (self.finished && t) {
         return t.state;
     } else {
         return NSURLSessionTaskStateSuspended;  // essentially we're in this state until resumed.
@@ -111,7 +111,7 @@
 
 - (nonnull NSURLSessionDataTask *)makeRequest
 {
-    _finished = NO;
+    self.finished = NO;
     __block CDTHTTPInterceptorContext *ctx =
         [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
 
@@ -181,7 +181,7 @@
         MYOnThread(thread, ^{
             [self.delegate receivedResponse:response];
         });
-        _finished = YES;
+        self.finished = YES;
     }
 }
 
@@ -203,7 +203,7 @@
         MYOnThread(thread, ^{
             [self.delegate requestDidError:error];
         });
-        _finished = YES;
+        self.finished = YES;
     }
 }
 
