@@ -44,7 +44,7 @@
 
 @property (nonatomic) int remainingRetries;
 
-@property BOOL finished;
+@property (atomic) BOOL finished;
 
 @end
 
