@@ -116,7 +116,7 @@ Create a method to start replications and wait for their completion (on a backgr
 
         [self startReplications:backgroundTasks];
 
-        dispatch_group_wait(backgroundTasks, dispatch_time(DISPATCH_TIME_NOW, 30000000000));
+        dispatch_group_wait(backgroundTasks, dispatch_time(DISPATCH_TIME_NOW, 30 * NSEC_PER_SEC));
 
         if (completionHandler) {
             completionHandler();
