@@ -51,6 +51,10 @@
         NSURLSessionConfiguration *config;
         // Create a unique session id using the address of self.
         NSString *sessionId = [NSString stringWithFormat:@"com.cloudant.sync.sessionid.%p", self];
+
+        // NSURLSessionConfiguration:backgroundSessionConfigurationWithIdentifier was introduced in iOS 8.0
+        // to replace backgroundSessionConfiguration which was deprecated in iOS 8.0, so use the new version if
+        // available.
         if ([[NSURLSessionConfiguration class] respondsToSelector:@selector(backgroundSessionConfigurationWithIdentifier:)]) {
             config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessionId];
         } else {
