@@ -71,6 +71,12 @@
 /**
  * Create a CDTReplicator object. This is the equivalent of calling
  * oneWay:sessionConfigDelegate:error: with a nil sessionConfigDelegate.
+ *
+ * @param replication a CDTPullReplication or CDTPushReplication
+ * @param error report error information
+ *
+ * @return a CDTReplicator instance which can be used to start and
+ *  stop the replication itself.
  */
 - (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
                     error:(NSError *__autoreleasing *)error;
