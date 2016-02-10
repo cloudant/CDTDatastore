@@ -167,8 +167,10 @@
 -(IBAction)replicateTapped:(id)sender {
     NSLog(@"Replicate");
 
+    __weak CDTViewController *weakSelf = self;
     [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
-        [self toggleCompletedShown:nil];
+        __strong CDTViewController *strongSelf = weakSelf;
+        [strongSelf toggleCompletedShown:nil];
     }];
 }
 
@@ -356,8 +358,10 @@
 
 - (void)periodicReplication:(NSTimer *)timer
 {
+    __weak CDTViewController *weakSelf = self;
     [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
-        [self performSelectorOnMainThread:@selector(refresh) withObject:nil waitUntilDone:false];
+        __strong CDTViewController *strongSelf = weakSelf;
+        [strongSelf performSelectorOnMainThread:@selector(refresh) withObject:nil waitUntilDone:false];
     }];
 }
 
