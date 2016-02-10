@@ -152,9 +152,10 @@ Implement the `application:performFetchWithCompletionHandler:` method - e.g.:
 {
     [self.myReplicator syncInBackgroundWithCompletionHandler:^{
         // Do whatever you want when replication is complete (e.g. refresh the UI)
-    }];
 
-    completionHandler(UIBackgroundFetchResultNewData);
+        // Call the completion handler once the sync has finished.
+        completionHandler(UIBackgroundFetchResultNewData);
+    }];
 }
 ```
 
