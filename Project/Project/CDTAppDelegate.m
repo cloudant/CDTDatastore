@@ -144,9 +144,9 @@
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
 {
-    [self.todoReplicator syncInBackgroundWithCompletionHandler:nil];
-
-    completionHandler(UIBackgroundFetchResultNewData);
+    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
+        completionHandler(UIBackgroundFetchResultNewData);
+    }];
 }
 
 @end
