@@ -31,7 +31,7 @@ of other apps.
 
 ### Example
 
-Lets assume we wish to configure a replication policy as follows:
+Let's assume we wish to configure a replication policy as follows:
 
 * We only ever want replications to occur when the device is connected to a WiFi network.
 * We want to do sync replications (pull and push).
