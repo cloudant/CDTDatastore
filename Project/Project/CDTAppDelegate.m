@@ -50,6 +50,9 @@
 
     self.todoReplicator = [[CDTTodoReplicator alloc] init];
     
+    int backgroundInterval24hrs = 24*60*60;
+    [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:backgroundInterval24hrs];
+
     return YES;
 }
 							
@@ -137,6 +140,13 @@
 
     return datastore;
 
+}
+
+- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
+{
+    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
+        completionHandler(UIBackgroundFetchResultNewData);
+    }];
 }
 
 @end

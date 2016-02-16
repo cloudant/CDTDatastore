@@ -27,6 +27,7 @@
 @property (readonly) CDTTodoReplicator *todoReplicator;
 @property (nonatomic, strong) NSArray *todoList;
 @property (nonatomic,readonly) BOOL showOnlyCompleted;
+@property (nonatomic, strong) NSTimer *timer;
 
 @property (nonatomic,weak) UISegmentedControl *showCompletedSegmentedControl;
 
@@ -43,6 +44,12 @@
 
     [self reloadTasks];
     [self.tableView reloadData];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopTimer:) name:UIApplicationWillResignActiveNotification object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startTimer:) name:UIApplicationWillEnterForegroundNotification object:nil];
+
+    [self startTimer:self];
 }
 
 #pragma mark Data managment
@@ -160,13 +167,11 @@
 -(IBAction)replicateTapped:(id)sender {
     NSLog(@"Replicate");
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [self.todoReplicator sync];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self reloadTasks];
-            [self.tableView reloadData];
-        });
-    });
+    __weak CDTViewController *weakSelf = self;
+    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
+        __strong CDTViewController *strongSelf = weakSelf;
+        [strongSelf toggleCompletedShown:nil];
+    }];
 }
 
 /**
@@ -349,6 +354,33 @@
     }
     
     [self.tableView endUpdates];
+}
+
+- (void)periodicReplication:(NSTimer *)timer
+{
+    __weak CDTViewController *weakSelf = self;
+    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
+        __strong CDTViewController *strongSelf = weakSelf;
+        [strongSelf performSelectorOnMainThread:@selector(refresh) withObject:nil waitUntilDone:false];
+    }];
+}
+
+- (void)startTimer:(id)sender {
+    _timer = [NSTimer scheduledTimerWithTimeInterval:5*60
+                                              target:self
+                                            selector:@selector(periodicReplication:)
+                                            userInfo:nil
+                                             repeats:YES];
+}
+
+- (void)stopTimer:(id)sender {
+    [_timer invalidate];
+    _timer = nil;
+}
+
+- (void)refresh {
+    [self reloadTasks];
+    [self.tableView reloadData];
 }
 
 
