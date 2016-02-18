@@ -96,18 +96,7 @@
         }
     }
     
-    __weak TDURLConnectionChangeTracker *weakSelf = self;
-    self.task = [self.session dataTaskWithRequest:self.request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        TDURLConnectionChangeTracker *strongSelf = weakSelf;
-        if(error){
-            [strongSelf failedWithError:error];
-            return;
-        } else {
-            [strongSelf receivedResponse:response];
-            [strongSelf receivedData:data];
-            [strongSelf finishedLoading];
-        }
-    }];
+    self.task = [self.session dataTaskWithRequest:self.request taskDelegate:self];
 
     [self.task resume];
     
@@ -241,7 +230,10 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
         //otherwise, retryOrError will set the error and stop.
         [self retryOrError:TDStatusToNSErrorWithInfo(status, self.changesFeedURL, errorInfo)];
     }
-    
+
+    if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
+        [self finishedLoading];
+    }
 }
 
 -(void)receivedData:(NSData *)data
@@ -250,6 +242,7 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
                   [self class], (unsigned long)[data length]);
     
     [self.inputBuffer appendData:data];
+    [self finishedLoading];
 }
 
 -(void) finishedLoading
@@ -298,7 +291,7 @@ didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge
     
 }
 
--(void) failedWithError:(NSError *)error
+-(void) requestDidError:(NSError *)error
 {
     [self retryOrError:error];
 }

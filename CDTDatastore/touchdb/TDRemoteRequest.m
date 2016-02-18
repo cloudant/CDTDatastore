@@ -105,21 +105,7 @@
     if (!_request) return;  // -clearConnection already called
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Starting...", self);
 
-    __weak TDRemoteRequest *weakSelf = self;
-    self.task = [self.session dataTaskWithRequest:_request
-                                completionHandler:^(NSData *data,
-                                                    NSURLResponse *response,
-                                                    NSError *error) {
-        TDRemoteRequest * strongSelf = weakSelf;
-        if(error) {
-            [strongSelf requestDidError:error];
-        } else if (TDStatusIsError(((NSHTTPURLResponse *)response).statusCode)) {
-            [strongSelf receivedResponse:response];
-        }  else {
-            [strongSelf receivedResponse:response];
-            [strongSelf receivedData:data];
-        }
-    }];
+    self.task = [self.session dataTaskWithRequest:_request taskDelegate:self];
     [self.task resume];
 
 }
@@ -233,16 +219,16 @@
         return NO;
     }
 }
-- (void) receivedResponse:(NSURLResponse *)response
+- (void)receivedResponse:(NSURLResponse *)response
 {
-    //if we hit an error we shouldn't retry, the Http interceptors should deal with retires.
+    //if we hit an error we shouldn't retry, the Http interceptors should deal with retries.
     _status = (int)((NSHTTPURLResponse *)response).statusCode;
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got response, status %d", self, _status);
 
     if (TDStatusIsError(_status)) [self cancelWithStatus:_status];
 }
 
--(void) receivedData:(NSData *)data
+- (void)receivedData:(NSData *)data
 {
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"%@: Got %lu bytes", self, (unsigned long)data.length);
 }

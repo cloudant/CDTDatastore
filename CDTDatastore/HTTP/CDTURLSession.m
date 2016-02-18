@@ -15,12 +15,15 @@
 #import "CDTURLSession.h"
 #import "MYBlockUtils.h"
 #import "CDTLogging.h"
+#import "CDTHTTPInterceptorContext.h"
+#import "CDTHTTPInterceptor.h"
 
 @interface CDTURLSession ()
 
 @property (nonatomic, strong) NSURLSession *session;
 @property (nonatomic, strong) NSThread *thread;
 @property (nonatomic, strong) NSArray *interceptors;
+@property (nonatomic, strong) NSMapTable *taskMap;
 
 @end
 
@@ -30,14 +33,14 @@
 
 - (instancetype)init
 {
-    return [self initWithDelegate:nil
-                   callbackThread:[NSThread currentThread]
-              requestInterceptors:@[]];
+    return [self initWithCallbackThread:[NSThread currentThread]
+                    requestInterceptors:@[]
+                  sessionConfigDelegate:nil];
 }
 
-- (instancetype)initWithDelegate:(NSObject<NSURLSessionDelegate> *)delegate
-                  callbackThread:(NSThread *)thread
-             requestInterceptors:(NSArray *)requestInterceptors;
+- (instancetype)initWithCallbackThread:(NSThread *)thread
+                   requestInterceptors:(NSArray *)requestInterceptors
+                 sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate
 {
     NSParameterAssert(thread);
     self = [super init];
@@ -45,10 +48,35 @@
         _thread = thread;
         _interceptors = [NSArray arrayWithArray:requestInterceptors];
 
-        NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        NSURLSessionConfiguration *config;
+        // Create a unique session id using the address of self.
+        NSString *sessionId = [NSString stringWithFormat:@"com.cloudant.sync.sessionid.%p", self];
+
+// Only compile this for iOS8.0 and above or OSX 10.10 and above
+#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000) \
+ || (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 101000)
+        // NSURLSessionConfiguration:backgroundSessionConfigurationWithIdentifier was introduced in iOS 8.0
+        // to replace backgroundSessionConfiguration which was deprecated in iOS 8.0, so use the new version if
+        // available.
+        if ([[NSURLSessionConfiguration class] respondsToSelector:@selector(backgroundSessionConfigurationWithIdentifier:)]) {
+            config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessionId];
+        } else {
+            config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
+        }
+#else
+        config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
+#endif
+
+        config = [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
+
         _session = [NSURLSession sessionWithConfiguration:config
-                                                 delegate:delegate
+                                                 delegate:self
                                             delegateQueue:nil];
+
+        // Configure taskMap to hold weak references to the underlying NSURLSessionDataTask objects
+        // so we don't unnecessarily hold on to objects and that values are removed from
+        // the taskMap when the NSURLSessionDataTasks are deallocated.
+        _taskMap = [NSMapTable strongToWeakObjectsMapTable];
     }
     return self;
 }
@@ -56,22 +84,60 @@
 - (void)dealloc { [self.session finishTasksAndInvalidate]; }
 
 - (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
-                         completionHandler:(void (^)(NSData *data,
-                                                        NSURLResponse *response,
-                                                        NSError *error))completionHandler
+                              taskDelegate:(NSObject<CDTURLSessionTaskDelegate> *)taskDelegate
 {
-    CDTURLSessionTask *task = [[CDTURLSessionTask alloc] initWithSession:self.session
+    CDTURLSessionTask *task = [[CDTURLSessionTask alloc] initWithSession:self
                                                                  request:request
                                                             interceptors:self.interceptors];
-    __weak CDTURLSession *weakSelf = self;
-    task.completionHandler = ^void(NSData *data, NSURLResponse *response, NSError *error) {
-        __strong CDTURLSession *strongSelf = weakSelf;
-        if (strongSelf && completionHandler) {
-            data = [NSData dataWithData:data];
-            MYOnThread(strongSelf.thread, ^{ completionHandler(data, response, error); });
-        }
-    };
+    task.delegate = taskDelegate;
     return task;
+}
+
+- (NSURLSessionDataTask *)createDataTaskWithRequest:(NSURLRequest *)request
+                                 associatedWithTask:(CDTURLSessionTask *)task
+
+{
+    NSURLSessionDataTask *nsURLSessionTask = [self.session dataTaskWithRequest:request];
+    [self.taskMap setObject:task forKey:[NSNumber numberWithInteger:nsURLSessionTask.taskIdentifier]];
+    return nsURLSessionTask;
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
+{
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
+    data = [NSData dataWithData:data];
+    MYOnThread(self.thread, ^{
+        [cdtURLSessionTask.delegate receivedData:data];
+    });
+
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
+{
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:task.taskIdentifier];
+    if (error && cdtURLSessionTask) {
+        [cdtURLSessionTask processError:error onThread:self.thread];
+    }
+}
+
+- (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
+{
+    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
+    if (cdtURLSessionTask) {
+        [cdtURLSessionTask processResponse:response onThread:self.thread];
+    }
+    completionHandler(NSURLSessionResponseAllow);
+}
+
+- (CDTURLSessionTask *)getSessionTaskForId:(NSUInteger)identifier
+{
+    return [self.taskMap objectForKey:[NSNumber numberWithInteger:identifier]];
+}
+
+- (void) disassociateTask:(nonnull NSURLSessionDataTask *)task
+{
+    [self.taskMap removeObjectForKey:[NSNumber numberWithInteger:task.taskIdentifier]];
+    [task cancel];
 }
 
 @end

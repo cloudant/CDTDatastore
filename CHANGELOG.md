@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+
+- [NEW] Added replication policies, allowing users to easily create policies such as "Replicate
+   every 2 hours, only when on Wifi". See the [Replication Policies User Guide](doc/replication-policies.md).
+
 ## 1.0.0 (2015-11-6)
 
 - [BREAKING] CDTMutableDocumentRevision removed. CDTDocumentRevision objects

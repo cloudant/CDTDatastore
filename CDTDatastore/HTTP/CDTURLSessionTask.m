@@ -18,6 +18,8 @@
 #import "CDTHTTPInterceptorContext.h"
 #import "CDTHTTPInterceptor.h"
 #import "CDTLogging.h"
+#import "CDTURLSession.h"
+#import "MYBlockUtils.h"
 
 @interface CDTURLSessionTask ()
 
@@ -31,7 +33,7 @@
  */
 @property (nonnull, nonatomic, strong) NSURLSessionDataTask *inProgressTask;
 
-@property NSURLSession *session;
+@property CDTURLSession *session;
 
 /**
  Request interceptors. -init... filters to only valid request interceptors
@@ -41,6 +43,8 @@
 @property (nonnull, nonatomic, strong) NSArray *responseInterceptors;
 
 @property (nonatomic) int remainingRetries;
+
+@property (atomic) BOOL finished;
 
 @end
 
@@ -52,9 +56,13 @@
     return nil;
 }
 
-- (nullable instancetype)initWithSession:(NSURLSession *)session
-                                 request:(NSURLRequest *)request
-                            interceptors:(NSArray *)interceptors
+- (void) dealloc {
+    [self.session disassociateTask:self.inProgressTask];
+}
+
+- (instancetype)initWithSession:(CDTURLSession *)session
+                        request:(NSURLRequest *)request
+                   interceptors:(NSArray *)interceptors
 {
     NSParameterAssert(session);
     NSParameterAssert(request);
@@ -84,12 +92,15 @@
     if (t) {
         [t cancel];
     }
+    self.finished = YES;
 }
 
 - (NSURLSessionTaskState)state
 {
     NSURLSessionTask *t = self.inProgressTask;
-    if (t) {
+    // Check finished as we use that to guard against returning the
+    // NSURLSessionTask's state if we're about to retry the request.
+    if (self.finished && t) {
         return t.state;
     } else {
         return NSURLSessionTaskStateSuspended;  // essentially we're in this state until resumed.
@@ -100,6 +111,7 @@
 
 - (nonnull NSURLSessionDataTask *)makeRequest
 {
+    self.finished = NO;
     __block CDTHTTPInterceptorContext *ctx =
         [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
 
@@ -108,27 +120,8 @@
         ctx = [obj interceptRequestInContext:ctx];
     }
 
-    __weak CDTURLSessionTask *weakSelf = self;
-    return [self.session
-        dataTaskWithRequest:ctx.request
-          completionHandler:^void(NSData *data, NSURLResponse *response, NSError *error) {
-            __strong CDTURLSessionTask *strongSelf = weakSelf;
-            if (strongSelf) {
-                ctx.response = (NSHTTPURLResponse*)response;
-                for (NSObject<CDTHTTPInterceptor> *obj in strongSelf.responseInterceptors) {
-                    ctx = [obj interceptResponseInContext:ctx];
-                }
-
-                if (ctx.shouldRetry && strongSelf.remainingRetries > 0) {
-                    // retry
-                    strongSelf.remainingRetries--;
-                    strongSelf.inProgressTask = [strongSelf makeRequest];
-                    [strongSelf.inProgressTask resume];
-                } else if (strongSelf.completionHandler) {
-                    strongSelf.completionHandler(data, response, error);
-                }
-            }
-          }];
+    return [self.session createDataTaskWithRequest:ctx.request
+                                associatedWithTask:self];
 }
 
 /**
@@ -167,6 +160,51 @@
     }
 
     return [NSArray arrayWithArray:responseInterceptors];
+}
+
+- (void)processResponse:(NSURLResponse *)response onThread:(NSThread *)thread
+{
+    __block CDTHTTPInterceptorContext *ctx =
+    [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
+
+    ctx.response = (NSHTTPURLResponse*)response;
+    for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
+        ctx = [obj interceptResponseInContext:ctx];
+    }
+
+    if (ctx.shouldRetry && self.remainingRetries > 0) {
+        // retry
+        self.remainingRetries--;
+        self.inProgressTask = [self makeRequest];
+        [self.inProgressTask resume];
+    } else {
+        MYOnThread(thread, ^{
+            [self.delegate receivedResponse:response];
+        });
+        self.finished = YES;
+    }
+}
+
+- (void)processError:(NSError *)error onThread:(NSThread *)thread
+{
+    __block CDTHTTPInterceptorContext *ctx =
+    [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
+
+    for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
+        ctx = [obj interceptResponseInContext:ctx];
+    }
+
+    if (ctx.shouldRetry && self.remainingRetries > 0) {
+        // retry
+        self.remainingRetries--;
+        self.inProgressTask = [self makeRequest];
+        [self.inProgressTask resume];
+    } else {
+        MYOnThread(thread, ^{
+            [self.delegate requestDidError:error];
+        });
+        self.finished = YES;
+    }
 }
 
 @end

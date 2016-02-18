@@ -28,6 +28,8 @@
 #import "TDPusher.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
+#import <OCMock/OCMock.h>
+
 @interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
 
 @property (nonatomic) BOOL changesFeedRequestMade;
@@ -59,7 +61,7 @@
 
 @end
 
-@interface CDTReplicationTests : CloudantSyncTests
+@interface CDTReplicationTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
 
 @end
 
@@ -68,11 +70,11 @@
 - (void)testFiltersWithChangesFeed
 {
     [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {
-      return YES;
+        return YES;
     }
-        withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
-          return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:404 headers:@{}];
-        }];
+    withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:404 headers:@{}];
+    }];
 
     NSError *error;
     // we need a real live remote here, so the reachability test before the replication starts
@@ -90,13 +92,15 @@
 
     CDTReplicator *replicator = [replicatorFactory oneWay:pull error:&error];
 
-    [replicator startWithError:&error];
+    // OHHTTPStubs doesn't work with background sessions, so for the purposes
+    // of this test we'll make this a foreground session.
+    id mockedReplicator = OCMPartialMock(replicator);
+    OCMStub([mockedReplicator sessionConfigDelegate]).andReturn(self);
 
-    while (replicator.state != CDTReplicatorStateComplete &&
-           replicator.state != CDTReplicatorStateError) {
-        NSLog(@"Replicating......");
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-    }
+    dispatch_group_t taskGroup = dispatch_group_create();
+    [replicator startWithTaskGroup:taskGroup error:&error];
+
+    dispatch_group_wait(taskGroup, DISPATCH_TIME_FOREVER);
 
     XCTAssertTrue(interceptor.changesFeedRequestMade);
     [OHHTTPStubs removeAllStubs];
@@ -433,6 +437,12 @@
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %@", error.code);
     }
+}
+
+- (NSURLSessionConfiguration*) customiseNSURLSessionConfiguration:(NSURLSessionConfiguration *)config
+{
+    config = [NSURLSessionConfiguration defaultSessionConfiguration];
+    return config;
 }
 
 @end

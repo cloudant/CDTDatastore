@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTNSURLSessionConfigurationDelegate.h"
 
 @class CDTDatastore;
 @class CDTReplicator;
@@ -68,11 +69,8 @@
  */
 
 /**
- * Create a CDTReplicator object set up to replicate changes from the
- * local datastore to a remote database.
- *
- * CDTPullReplication and CDTPushReplication (subclasses of CDTAbstractReplication)
- * provide configuration parameters for the construction of the CDTReplicator.
+ * Create a CDTReplicator object. This is the equivalent of calling
+ * oneWay:sessionConfigDelegate:error: with a nil sessionConfigDelegate.
  *
  * @param replication a CDTPullReplication or CDTPushReplication
  * @param error report error information
@@ -82,6 +80,26 @@
  */
 - (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
                     error:(NSError *__autoreleasing *)error;
+
+/**
+ * Create a CDTReplicator object set up to replicate changes from the
+ * local datastore to a remote database.
+ *
+ * CDTPullReplication and CDTPushReplication (subclasses of CDTAbstractReplication)
+ * provide configuration parameters for the construction of the CDTReplicator.
+ *
+ * @param replication a CDTPullReplication or CDTPushReplication
+ * @param error report error information
+ * @param delegate the delegate for handling customisation of the NSURLSession used during
+ *        replication.
+ *
+ * @return a CDTReplicator instance which can be used to start and
+ *  stop the replication itself.
+ */
+- (CDTReplicator *)oneWay:(CDTAbstractReplication *)replication
+    sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
+                    error:(NSError *__autoreleasing *)error;
+
 
 /**
  @name Deprecated

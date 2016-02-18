@@ -1141,6 +1141,10 @@
 		98F786ED1C4658E800515CC3 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 98F786EC1C4658E800515CC3 /* emptyencrypteddb.touchdb */; };
 		98F786EF1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 98F786EE1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb */; };
 		98F786F11C465BC500515CC3 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 98F786F01C465BC500515CC3 /* lorem.txt */; };
+		C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
+		C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
+		C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
+		C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
 		CF4251BDAE41A5387FBB4E4D /* Pods_CDTDatastoreTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8B6B8BECA622CF4B5161C9F /* Pods_CDTDatastoreTests.framework */; };
 		D502D42852153AB8FF29062F /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 847F58C050F0CE82D7DDA804 /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.framework */; };
 /* End PBXBuildFile section */
@@ -1638,6 +1642,7 @@
 		BB9291137C84942C8C031D3B /* Pods-CDTDatastoreEncryptionTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptionTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptionTests/Pods-CDTDatastoreEncryptionTests.debug.xcconfig"; sourceTree = "<group>"; };
 		BC7093DFD397FCFAE59C4821 /* Pods-CDTDatastoreOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreOSX/Pods-CDTDatastoreOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		BFAF32A65C2FFA689AE448B6 /* Pods-CDTDatastoreEncryptionTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptionTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptionTestsOSX/Pods-CDTDatastoreEncryptionTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
+		C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTNSURLSessionConfigurationDelegate.h; sourceTree = "<group>"; };
 		C63FB1B38CDCADCE96686E73 /* Pods_CDTDatastoreTestsOSX.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDTDatastoreTestsOSX.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C966C1819F047772D89D8C4D /* Pods-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		CB25E9F32B15A788AB7B2A5B /* Pods-CDTDatastoreEncryptionTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptionTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptionTests/Pods-CDTDatastoreEncryptionTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -1961,6 +1966,7 @@
 		98F77B6A1C43FCEE00515CC3 /* CDTReplicator */ = {
 			isa = PBXGroup;
 			children = (
+				C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */,
 				98F77B6B1C43FCEE00515CC3 /* CDTAbstractReplication.h */,
 				98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */,
 				98F77B6D1C43FCEE00515CC3 /* CDTPullReplication.h */,
@@ -2606,6 +2612,7 @@
 				987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */,
 				987383D11C47B38800937212 /* CollectionUtils.h in Headers */,
 				987383D21C47B38800937212 /* MYErrorUtils.h in Headers */,
+				C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				987383D31C47B38800937212 /* MYDynamicObject.h in Headers */,
 				987383D41C47B38800937212 /* Target.h in Headers */,
 				987383D51C47B38800937212 /* Test.h in Headers */,
@@ -2737,6 +2744,7 @@
 				987384BD1C47B3C400937212 /* MYUtilities_Prefix.pch in Headers */,
 				987384BE1C47B3C400937212 /* CollectionUtils.h in Headers */,
 				987384BF1C47B3C400937212 /* MYErrorUtils.h in Headers */,
+				C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				987384C01C47B3C400937212 /* MYDynamicObject.h in Headers */,
 				987384C11C47B3C400937212 /* Target.h in Headers */,
 				987384C21C47B3C400937212 /* Test.h in Headers */,
@@ -2868,6 +2876,7 @@
 				98F77D211C43FDA700515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */,
 				98F77D151C43FDA700515CC3 /* MYErrorUtils.h in Headers */,
+				C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				98F77D131C43FDA700515CC3 /* MYDynamicObject.h in Headers */,
 				98F77D241C43FDA700515CC3 /* Target.h in Headers */,
 				98F77D261C43FDA700515CC3 /* Test.h in Headers */,
@@ -2999,6 +3008,7 @@
 				98F786A11C456B1300515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F786A21C456B1300515CC3 /* CollectionUtils.h in Headers */,
 				98F786A31C456B1300515CC3 /* MYErrorUtils.h in Headers */,
+				C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				98F786A41C456B1300515CC3 /* MYDynamicObject.h in Headers */,
 				98F786A51C456B1300515CC3 /* Target.h in Headers */,
 				98F786A61C456B1300515CC3 /* Test.h in Headers */,
@@ -3248,7 +3258,6 @@
 				98F77EF11C44047600515CC3 /* Resources */,
 				8ADFC52EE8715FEFD644EDCE /* Embed Pods Frameworks */,
 				C7F72B7CBA2A186F3CB6A3DC /* Copy Pods Resources */,
-				9888EC081C512CBF00E58783 /* Set Replication Settings */,
 			);
 			buildRules = (
 			);
@@ -3801,20 +3810,6 @@
 			shellScript = "\"${SRCROOT}/buildplist.sh\"";
 		};
 		9888EC061C512CA500E58783 /* Set Replication Settings */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Set Replication Settings";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/buildplist.sh\"";
-		};
-		9888EC081C512CBF00E58783 /* Set Replication Settings */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

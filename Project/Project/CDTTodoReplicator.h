@@ -18,8 +18,8 @@
 
 #import <CDTDatastore/CloudantSync.h>
 
-@interface CDTTodoReplicator : NSObject<CDTReplicatorDelegate>
+@interface CDTTodoReplicator : NSObject<CDTReplicatorDelegate, CDTNSURLSessionConfigurationDelegate>
 
--(void)sync;
+- (void)syncInBackgroundWithCompletionHandler:(void (^)())completionHandler;
 
 @end
