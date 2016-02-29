@@ -23,7 +23,7 @@
  *
  * @return an array of NSString* document ids.
  */
-- (NSArray *)getConflictedDocumentIds;
+- (nonnull NSArray *)getConflictedDocumentIds;
 
 /**
  Resolve conflicts for a specific document using an object that conforms to the
@@ -57,8 +57,8 @@
 
  @see CDTConflictResolver
  */
-- (BOOL)resolveConflictsForDocument:(NSString *)docId
-                           resolver:(NSObject<CDTConflictResolver> *)resolver
-                              error:(NSError *__autoreleasing *)error;
+- (BOOL)resolveConflictsForDocument:(nonnull NSString *)docId
+                           resolver:(nonnull NSObject<CDTConflictResolver> *)resolver
+                              error:(NSError *__autoreleasing __nullable * __nullable)error;
 
 @end

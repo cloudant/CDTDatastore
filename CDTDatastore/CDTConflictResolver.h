@@ -61,6 +61,6 @@
  + *         currently is (i.e., leave the database unchanged).
  *
  */
-- (CDTDocumentRevision *)resolve:(NSString *)docId conflicts:(NSArray *)conflicts;
+- (nullable CDTDocumentRevision *)resolve:(nonnull NSString *)docId conflicts:(nonnull NSArray<CDTDocumentRevision*> *)conflicts;
 
 @end

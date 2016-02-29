@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see CDTReplicatorDelegate
  */
-@property (nonatomic, weak) NSObject<CDTReplicatorDelegate> *delegate;
+@property (nullable, nonatomic, weak) NSObject<CDTReplicatorDelegate> *delegate;
 
 /**
  * Set the delegate for handling customisation of the NSURLSession
@@ -139,7 +139,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see CDTNSURLSessionConfigurationDelegate
  */
-@property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
+@property (nullable, nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /**
  Returns true if the state is `CDTReplicatorStatePending`, `CDTReplicatorStateStarted` or
@@ -154,15 +154,15 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 
  @param state state to return string representation
  */
-+ (NSString *)stringForReplicatorState:(CDTReplicatorState)state;
++ (nonnull NSString *)stringForReplicatorState:(CDTReplicatorState)state;
 
 /*
  Private so no docs
  */
--(id)initWithTDReplicatorManager:(TDReplicatorManager*)replicatorManager
-                     replication:(CDTAbstractReplication*)replication
-           sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
-                           error:(NSError * __autoreleasing*)error;
+-(instancetype)initWithTDReplicatorManager:(nonnull TDReplicatorManager*)replicatorManager
+                     replication:(nonnull CDTAbstractReplication*)replication
+           sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
+                           error:(NSError * __autoreleasing __nullable * __nullable )error;
 
 /*
  Access the underlying NSThread execution state.
@@ -200,7 +200,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see CDTReplicatorState
  */
-- (BOOL)startWithTaskGroup:(nullable dispatch_group_t)taskGroup error:(NSError *__autoreleasing *)error;
+- (BOOL)startWithTaskGroup:(nullable dispatch_group_t)taskGroup error:(NSError *__autoreleasing __nullable * __nullable)error;
 
 /**
  * Starts a replication.
@@ -209,7 +209,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  *
  * @see startWithTaskGroup:error:
  */
-- (BOOL)startWithError:(NSError *__autoreleasing *)error;
+- (BOOL)startWithError:(NSError *__autoreleasing __nullable * __nullable)error;
 
 /**
  * Stop an in-progress replication or attempt to stop a replication that has not yet started.
@@ -255,6 +255,6 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  If -state is equal to CDTReplicatorStateError, this will contain the error message.
  This error information is also sent to the delegate object.
  */
-@property (nonatomic, readonly) NSError *error;
+@property (nullable, nonatomic, readonly) NSError *error;
 
 @end

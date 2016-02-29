@@ -43,10 +43,10 @@
  
  @warning If data.length is not CDTENCRYPTIONKEY_KEYSIZE, init will return nil
  */
-- (instancetype)initWithData:(NSData *)data NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(nonnull NSData *)data NS_DESIGNATED_INITIALIZER;
 
-- (BOOL)isEqualToEncryptionKey:(CDTEncryptionKey *)encryptionKey;
+- (BOOL)isEqualToEncryptionKey:(nonnull CDTEncryptionKey *)encryptionKey;
 
-+ (instancetype)encryptionKeyWithData:(NSData *)data;
++ (nullable instancetype)encryptionKeyWithData:(nonnull NSData *)data;
 
 @end

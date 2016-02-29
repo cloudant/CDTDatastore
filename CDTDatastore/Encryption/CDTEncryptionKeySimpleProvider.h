@@ -29,10 +29,10 @@
  */
 @interface CDTEncryptionKeySimpleProvider : NSObject <CDTEncryptionKeyProvider>
 
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithKey:(nonnull NSData *)key NS_DESIGNATED_INITIALIZER;
 
-+ (instancetype)providerWithKey:(NSData *)key;
++ (nullable instancetype)providerWithKey:(nonnull NSData *)key;
 
 @end
