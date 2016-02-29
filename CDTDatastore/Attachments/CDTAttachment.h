@@ -43,19 +43,19 @@
 @interface CDTAttachment : NSObject
 
 // common
-@property (nonatomic, strong, readonly) NSString *name;
+@property (nonnull, nonatomic, strong, readonly) NSString *name;
 
 /** Mimetype string */
-@property (nonatomic, strong, readonly) NSString *type;
+@property (nonnull, nonatomic, strong, readonly) NSString *type;
 
 /* Size in bytes, may be -1 if not known (e.g., HTTP URL for new attachment) */
 @property (nonatomic, readonly) NSInteger size;
 
 /** Subclasses should call this to initialise instance vars */
-- (instancetype)initWithName:(NSString *)name type:(NSString *)type size:(NSInteger)size;
+- (nullable instancetype)initWithName:(nonnull NSString *)name type:(nonnull NSString *)type size:(NSInteger)size;
 
 /** Get unopened input stream for this attachment */
-- (NSData *)dataFromAttachmentContent;
+- (nullable NSData *)dataFromAttachmentContent;
 
 @end
 
@@ -72,15 +72,15 @@
 @property (nonatomic, readonly) TDAttachmentEncoding encoding;
 
 /** sha of file, used for file path on disk. */
-@property (nonatomic, readonly) NSData *key;
+@property (nonnull, nonatomic, readonly) NSData *key;
 
-- (instancetype)initWithBlob:(id<CDTBlobReader>)blob
-                        name:(NSString *)name
-                        type:(NSString *)type
+- (nullable instancetype)initWithBlob:(nonnull id<CDTBlobReader>)blob
+                        name:(nonnull NSString *)name
+                        type:(nonnull NSString *)type
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
                     sequence:(SequenceNumber)sequence
-                         key:(NSData *)keyData
+                         key:(nonnull NSData *)keyData
                     encoding:(TDAttachmentEncoding)encoding;
 
 @end
@@ -95,7 +95,7 @@
  Create a new unsaved attachment using an NSData instance
  as the source of attachment data.
  */
-- (instancetype)initWithData:(NSData *)data name:(NSString *)name type:(NSString *)type;
+- (nullable instancetype)initWithData:(nonnull NSData *)data name:(nonnull NSString *)name type:(nonnull NSString *)type;
 
 @end
 
@@ -105,7 +105,7 @@
  */
 @interface CDTUnsavedFileAttachment : CDTAttachment
 
-- (instancetype)initWithPath:(NSString *)filePath name:(NSString *)name type:(NSString *)type;
+- (nullable instancetype)initWithPath:(nonnull NSString *)filePath name:(nonnull NSString *)name type:(nonnull NSString *)type;
 
 @end
 
@@ -122,10 +122,10 @@
  @param error will point to an NSError object in case of error
 
  */
-+ (CDTSavedHTTPAttachment *)createAttachmentWithName:(NSString *)name
-                                            JSONData:(NSDictionary *)jsonData
-                                       attachmentURL:(NSURL *)attachmentURL
-                                               error:(NSError *__autoreleasing *)error;
++ (nullable CDTSavedHTTPAttachment *)createAttachmentWithName:(nonnull NSString *)name
+                                            JSONData:(nonnull NSDictionary *)jsonData
+                                       attachmentURL:(nonnull NSURL *)attachmentURL
+                                               error:(NSError *__autoreleasing __nullable  * __nullable )error;
 /**
 
  Creates an attachment that represents a remote HTTP accessed attachment
@@ -137,11 +137,11 @@
  @param data attschment data if it has already been downloaded
 
  */
-- (id)initWithDocumentURL:(NSURL *)attachmentURL
-                     name:(NSString *)name
-                     type:(NSString *)type
+- (nullable instancetype)initWithDocumentURL:(nonnull NSURL *)attachmentURL
+                     name:(nonnull NSString *)name
+                     type:(nonnull NSString *)type
                      size:(NSInteger)size
-                     data:(NSData *)data;
+                     data:(nullable NSData *)data;
 
 /**
 
@@ -153,5 +153,5 @@
  @return the attachments data
 
  */
-- (NSData *)dataFromAttachmentContent;
+- (nullable NSData *)dataFromAttachmentContent;
 @end

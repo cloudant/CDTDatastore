@@ -26,17 +26,17 @@
 @interface CDTDocumentRevision : NSObject <CDTChangedObserver>
 
 /** Document ID for this document revision. */
-@property (nonatomic, strong, readonly) NSString *docId;
+@property (nullable, nonatomic, strong, readonly) NSString *docId;
 /** Revision ID for this document revision. */
-@property (nonatomic, strong, readonly) NSString *revId;
+@property (nullable, nonatomic, strong, readonly) NSString *revId;
 
 /** `YES` if this document revision is deleted. */
 @property (nonatomic, readonly) BOOL deleted;
 
 @property (nonatomic, readonly) SequenceNumber sequence;
 
-@property (nonatomic, strong) NSMutableDictionary *body;
-@property (nonatomic, strong) NSMutableDictionary *attachments;
+@property (nonnull, nonatomic, strong) NSMutableDictionary *body;
+@property (nonnull, nonatomic, strong) NSMutableDictionary *attachments;
 
 @property (nonatomic, getter=isChanged) bool changed;
 
@@ -49,16 +49,16 @@
  */
 - (BOOL)isFullRevision;
 
-- (id)initWithDocId:(NSString *)docId
-         revisionId:(NSString *)revId
-               body:(NSDictionary *)body
-        attachments:(NSDictionary *)attachments;
+- (nullable instancetype)initWithDocId:(nullable NSString *)docId
+         revisionId:(nullable NSString *)revId
+               body:(nullable NSDictionary *)body
+        attachments:(nullable NSDictionary *)attachments;
 
-- (id)initWithDocId:(NSString *)docId
-         revisionId:(NSString *)revId
-               body:(NSDictionary *)body
+- (nullable instancetype)initWithDocId:(nullable NSString *)docId
+         revisionId:(nullable NSString *)revId
+               body:(nullable NSDictionary *)body
             deleted:(BOOL)deleted
-        attachments:(NSDictionary *)attachments
+        attachments:(nullable NSDictionary *)attachments
            sequence:(SequenceNumber)sequence;
 
 /**
@@ -72,19 +72,19 @@
 
  @return new CDTDocumentRevision instance
 */
-+ (CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
-                                    forDocument:(NSURL *)documentURL
-                                          error:(NSError *__autoreleasing *)error;
++ (nullable CDTDocumentRevision *)createRevisionFromJson:(nonnull NSDictionary *)jsonDict
+                                    forDocument:(nonnull NSURL *)documentURL
+                                          error:(NSError *__autoreleasing __nullable * __nullable)error;
 
 /**
  Create a new, blank revision which will have an ID generated on saving.
  */
-+ (CDTDocumentRevision *)revision;
++ (nullable CDTDocumentRevision *)revision;
 
 /**
  Create a new, blank revision with an assigned ID.
  */
-+ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId;
++ (nullable CDTDocumentRevision *)revisionWithDocId:(nonnull NSString *)docId;
 
 /**
  Create a blank revision with a rev ID, which will be treated as an update when saving.
@@ -95,7 +95,7 @@
  Useful during testing and when it's not necessary to start with an existing revision's
  content.
  */
-+ (CDTDocumentRevision *)revisionWithDocId:(NSString *)docId revId:(NSString *)revId;
++ (nullable CDTDocumentRevision *)revisionWithDocId:(nonnull NSString *)docId revId:(nonnull NSString *)revId;
 
 /**
  Return document content as an NSData object.
@@ -106,7 +106,7 @@
 
  @return document content as an NSData object.
  */
-- (NSData *)documentAsDataError:(NSError *__autoreleasing *)error;
+- (nullable NSData *)documentAsDataError:(NSError *__autoreleasing __nullable * __nullable)error;
 
 /**
  Return a copy of this document.
@@ -117,6 +117,6 @@
 
  @return copy of this document
  */
-- (CDTDocumentRevision *)copy;
+- (nullable CDTDocumentRevision *)copy;
 
 @end

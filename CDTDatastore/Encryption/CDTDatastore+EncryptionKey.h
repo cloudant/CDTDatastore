@@ -29,13 +29,13 @@
  *
  * @return an initialized datastore, or nil if an object could not be created
  */
-- (instancetype)initWithManager:(CDTDatastoreManager *)manager
-                       database:(TD_Database *)database
-          encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider;
+- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager
+                       database:(nonnull TD_Database *)database
+          encryptionKeyProvider:(nullable id<CDTEncryptionKeyProvider>)provider;
 
 /**
  * Return the key provider used to encrypt the datastore
  */
-- (id<CDTEncryptionKeyProvider>)encryptionKeyProvider;
+- (nullable id<CDTEncryptionKeyProvider>)encryptionKeyProvider;
 
 @end

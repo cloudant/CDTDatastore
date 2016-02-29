@@ -18,7 +18,7 @@
 
 @class CDTDatastore;
 
-extern NSString* const CDTReplicationErrorDomain;
+extern NSString* __nonnull const CDTReplicationErrorDomain;
 
 /**
  * Replication errors.
@@ -126,11 +126,11 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 
 
 */
-@property (nonatomic, copy) NSDictionary* optionalHeaders;
+@property (nullable, nonatomic, copy) NSDictionary<NSString*,NSString*>* optionalHeaders;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@property (nonnull, nonatomic, readonly, strong) NSArray* httpInterceptors;
+@property (nonnull, nonatomic, readonly, strong) NSArray<NSObject<CDTHTTPInterceptor>*> * httpInterceptors;
 
 - (void)addInterceptor:(nonnull NSObject<CDTHTTPInterceptor>*)interceptor;
 - (void)addInterceptors:(nonnull NSArray*)interceptors;
@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_END
 /**
  Returns the default "User-Agent" header value used in HTTP requests made during replication.
 */
-+ (NSString*)defaultUserAgentHTTPHeader;
++ (nonnull NSString*)defaultUserAgentHTTPHeader;
 
 /*
  ---------------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ NS_ASSUME_NONNULL_END
      classes override this method.
 
  */
-- (NSDictionary*)dictionaryForReplicatorDocument:(NSError* __autoreleasing*)error;
+- (nullable NSDictionary*)dictionaryForReplicatorDocument:(NSError* __autoreleasing __nullable * __nullable)error;
 
 /** Checks the content and format of the remoteDatastore URL to ensure that it uses a proper
  protocol (http or https) and has both a username and password (or neither).
@@ -173,6 +173,6 @@ NS_ASSUME_NONNULL_END
  @return YES on valid URL.
 
  */
-- (BOOL)validateRemoteDatastoreURL:(NSURL*)url error:(NSError* __autoreleasing*)error;
+- (BOOL)validateRemoteDatastoreURL:(nonnull NSURL*)url error:(NSError* __autoreleasing __nullable * __nullable)error;
 
 @end

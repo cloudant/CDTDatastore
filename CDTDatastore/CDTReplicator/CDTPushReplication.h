@@ -57,7 +57,7 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
  @return a CDTPushReplication object.
 
  */
-+ (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target;
++ (nullable instancetype)replicationWithSource:(nonnull CDTDatastore *)source target:(nonnull NSURL *)target;
 
 /**
  @name Accessing the replication source and target
@@ -73,12 +73,12 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
 
  @see CDTAbstractReplication.
  */
-@property (nonatomic, strong, readonly) NSURL *target;
+@property (nonnull, nonatomic, strong, readonly) NSURL *target;
 
 /**
  The CDTDatastore from which the data is replicated.
  */
-@property (nonatomic, strong, readonly) CDTDatastore *source;
+@property (nonnull, nonatomic, strong, readonly) CDTDatastore *source;
 
 /**
  @name Filtered push replication
@@ -135,12 +135,12 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
     [myrep start];
 
  */
-@property (nonatomic, copy) CDTFilterBlock filter;
+@property (nullable, nonatomic, copy) CDTFilterBlock filter;
 
 /** The filter function query parameters
 
  @see -filter
  */
-@property (nonatomic, copy) NSDictionary *filterParams;
+@property (nullable, nonatomic, copy) NSDictionary *filterParams;
 
 @end

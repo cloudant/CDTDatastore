@@ -32,6 +32,6 @@
  *
  * @return A key provider
  */
-+ (instancetype)provider;
++ (nullable instancetype)provider;
 
 @end

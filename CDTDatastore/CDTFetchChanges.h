@@ -51,7 +51,7 @@
 
  Typically this is set with the initialiser.
  */
-@property (nonatomic, strong) CDTDatastore *datastore;
+@property (nonnull, nonatomic, strong) CDTDatastore *datastore;
 
 /**
  The sequence value identifying the starting point for reading changes.
@@ -65,7 +65,7 @@
 
  Typically this is set with the initialiser.
  */
-@property (nonatomic, copy) NSString *startSequenceValue;
+@property (nullable, nonatomic, copy) NSString *startSequenceValue;
 
 /**
  Use this property to limit the total number of results you want to get.
@@ -109,7 +109,7 @@
  If you intend to use this block to process results, set it before executing the
  operation or submitting it to a queue.
  */
-@property (nonatomic, copy) void (^documentChangedBlock)(CDTDocumentRevision *revision);
+@property (nullable, nonatomic, copy) void (^documentChangedBlock)(CDTDocumentRevision * __nonnull revision);
 
 /**
  The block to execute for each deleted document.
@@ -129,7 +129,7 @@
  If you intend to use this block to process results, set it before executing the
  operation or submitting it to a queue.
  */
-@property (nonatomic, copy) void (^documentWithIDWasDeletedBlock)(NSString *docId);
+@property (nullable, nonatomic, copy) void (^documentWithIDWasDeletedBlock)(NSString * __nonnull docId);
 
 /**
  The block to execute when all changes have been reported.
@@ -158,8 +158,8 @@
  If you intend to use this block to process results, set it before executing the operation or
  submitting the operation object to a queue.
  */
-@property (nonatomic, copy) void (^fetchRecordChangesCompletionBlock)
-    (NSString *newSequenceValue, NSString *startSequenceValue, NSError *fetchError);
+@property (nullable, nonatomic, copy) void (^fetchRecordChangesCompletionBlock)
+    (NSString * __nonnull newSequenceValue, NSString * __nonnull startSequenceValue, NSError * __nullable fetchError);
 
 #pragma mark Initialisers
 
@@ -180,8 +180,8 @@
 
  @return An initialised fetch operation.
  */
-- (instancetype)initWithDatastore:(CDTDatastore *)datastore
-               startSequenceValue:(NSString *)startSequenceValue;
+- (nullable instancetype)initWithDatastore:(nonnull CDTDatastore *)datastore
+               startSequenceValue:(nullable NSString *)startSequenceValue;
 
 
 @end
