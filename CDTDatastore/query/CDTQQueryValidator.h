@@ -21,6 +21,6 @@
 /**
  Expand implicit operators in a query, and validate
  */
-+ (NSDictionary *)normaliseAndValidateQuery:(NSDictionary *)query;
++ (nullable NSDictionary *)normaliseAndValidateQuery:(nonnull NSDictionary *)query;
 
 @end

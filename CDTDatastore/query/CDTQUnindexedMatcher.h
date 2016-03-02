@@ -17,6 +17,8 @@
 
 #import "CDTQQuerySqlTranslator.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDocumentRevision;
 
 @interface CDTQOperatorExpressionNode : CDTQQueryNode
@@ -90,7 +92,7 @@
  Assumes selector is valid as we're calling this late in
  the query processing.
  */
-+ (CDTQUnindexedMatcher *)matcherWithSelector:(NSDictionary *)selector;
++ (nullable CDTQUnindexedMatcher *)matcherWithSelector:(NSDictionary *)selector;
 
 /**
  Returns YES if a document matches this matcher's selector.
@@ -98,3 +100,5 @@
 - (BOOL)matches:(CDTDocumentRevision *)rev;
 
 @end
+
+NS_ASSUME_NONNULL_END

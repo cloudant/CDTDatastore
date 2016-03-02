@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDatastore;
 @class CDTQResultSetBuilder;
 @class CDTDocumentRevision;
@@ -26,12 +28,12 @@ typedef void (^CDTQResultSetBuilderBlock)(CDTQResultSetBuilder *configuration);
  */
 @interface CDTQResultSetBuilder : NSObject
 
-@property (nonatomic, strong) NSArray *docIds;
-@property (nonatomic, strong) CDTDatastore *datastore;
-@property (nonatomic, strong) NSArray *fields;
+@property (nullable, nonatomic, strong) NSArray *docIds;
+@property (nullable, nonatomic, strong) CDTDatastore *datastore;
+@property (nullable, nonatomic, strong) NSArray *fields;
 @property (nonatomic) NSUInteger skip;
 @property (nonatomic) NSUInteger limit;
-@property (nonatomic, strong) CDTQUnindexedMatcher *matcher;
+@property (nullable, nonatomic, strong) CDTQUnindexedMatcher *matcher;
 
 @end
 
@@ -58,6 +60,8 @@ typedef void (^CDTQResultSetBuilderBlock)(CDTQResultSetBuilder *configuration);
 - (void)enumerateObjectsUsingBlock:(void (^)(CDTDocumentRevision *rev, NSUInteger idx,
                                              BOOL *stop))block;
 
-@property (nonatomic, strong, readonly) NSArray *documentIds;  // of type NSString*
+@property (nonatomic, strong, readonly) NSArray<NSString *> *documentIds;
 
 @end
+
+NS_ASSUME_NONNULL_END

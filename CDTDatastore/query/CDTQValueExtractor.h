@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDocumentRevision;
 
 /**
@@ -21,9 +23,12 @@
  */
 @interface CDTQValueExtractor : NSObject
 
-+ (NSObject *)extractValueForFieldName:(NSString *)possiblyDottedField
-                          fromRevision:(CDTDocumentRevision *)rev;
++ (nullable NSObject *)extractValueForFieldName:(NSString *)possiblyDottedField
+                                   fromRevision:(CDTDocumentRevision *)rev;
 
-+ (NSObject *)extractValueForFieldName:(NSString *)fieldName fromDictionary:(NSDictionary *)body;
++ (nullable NSObject *)extractValueForFieldName:(NSString *)fieldName
+                                 fromDictionary:(NSDictionary *)body;
 
 @end
+
+NS_ASSUME_NONNULL_END

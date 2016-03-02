@@ -19,6 +19,8 @@
 @class CDTDatastore;
 @class CDTQSqlParts;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CDTQIndexCreator : NSObject
 
 /**
@@ -28,28 +30,32 @@
  @param indexName Name of index to create.
  @returns name of created index
  */
-+ (NSString *)ensureIndexed:(CDTQIndex *)index
-                 inDatabase:(FMDatabaseQueue *)database
-              fromDatastore:(CDTDatastore *)datastore;
++ (nullable NSString *)ensureIndexed:(CDTQIndex *)index
+                          inDatabase:(FMDatabaseQueue *)database
+                       fromDatastore:(CDTDatastore *)datastore;
 
 + (NSArray /*NSDictionary or NSString*/ *)removeDirectionsFromFields:(NSArray *)fieldNames;
 
 + (BOOL)validFieldName:(NSString *)fieldName;
 
-+ (NSArray /*CDTQSqlParts*/ *)insertMetadataStatementsForIndexName:(NSString *)indexName
-                                                              type:(NSString *)indexType
-                                                          settings:(NSString *)indexSettings
-                                                        fieldNames:
-                                                            (NSArray /*NSString*/ *)fieldNames;
++ (nullable NSArray<CDTQSqlParts *> *)
+insertMetadataStatementsForIndexName:(NSString *)indexName
+                                type:(NSString *)indexType
+                            settings:(nullable NSString *)indexSettings
+                          fieldNames:(NSArray<NSString *> *)fieldNames;
 
-+ (CDTQSqlParts *)createIndexTableStatementForIndexName:(NSString *)indexName
-                                             fieldNames:(NSArray /*NSString*/ *)fieldNames;
++ (nullable CDTQSqlParts *)createIndexTableStatementForIndexName:(NSString *)indexName
+                                                      fieldNames:(NSArray<NSString *> *)fieldNames;
 
-+ (CDTQSqlParts *)createIndexIndexStatementForIndexName:(NSString *)indexName
-                                             fieldNames:(NSArray /*NSString*/ *)fieldNames;
++ (nullable CDTQSqlParts *)createIndexIndexStatementForIndexName:(NSString *)indexName
+                                                      fieldNames:(NSArray<NSString *> *)fieldNames;
 
-+ (CDTQSqlParts *)createVirtualTableStatementForIndexName:(NSString *)indexName
-                                               fieldNames:(NSArray /*NSString*/ *)fieldNames
-                                                 settings:(NSDictionary *)indexSettings;
++ (nullable CDTQSqlParts *)
+createVirtualTableStatementForIndexName:(NSString *)indexName
+                             fieldNames:(NSArray<NSString *> *)fieldNames
+                               settings:
+                                   (nullable NSDictionary<NSString *, NSString *> *)indexSettings;
 
 @end
+
+NS_ASSUME_NONNULL_END
