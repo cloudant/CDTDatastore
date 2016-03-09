@@ -46,6 +46,13 @@
 
 @property (atomic) BOOL finished;
 
+
+
+#pragma mark properties for the currentl request
+@property (nullable, nonatomic, strong) NSHTTPURLResponse *response;
+@property (nullable, nonatomic, strong) NSError * requestError;
+@property (nullable, nonatomic, strong) NSData * requestData;
+
 @end
 
 @implementation CDTURLSessionTask
@@ -112,6 +119,10 @@
 - (nonnull NSURLSessionDataTask *)makeRequest
 {
     self.finished = NO;
+    self.response = nil;
+    self.requestError = nil;
+    self.requestData = nil;
+    
     __block CDTHTTPInterceptorContext *ctx =
         [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
 
@@ -162,49 +173,49 @@
     return [NSArray arrayWithArray:responseInterceptors];
 }
 
+- (void)processData:(NSData*)data {
+    self.requestData = data;
+}
+
 - (void)processResponse:(NSURLResponse *)response onThread:(NSThread *)thread
 {
-    __block CDTHTTPInterceptorContext *ctx =
-    [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
-
-    ctx.response = (NSHTTPURLResponse*)response;
-    for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
-        ctx = [obj interceptResponseInContext:ctx];
-    }
-
-    if (ctx.shouldRetry && self.remainingRetries > 0) {
-        // retry
-        self.remainingRetries--;
-        self.inProgressTask = [self makeRequest];
-        [self.inProgressTask resume];
-    } else {
-        MYOnThread(thread, ^{
-            [self.delegate receivedResponse:response];
-        });
-        self.finished = YES;
-    }
+    self.response = (NSHTTPURLResponse*)response;
 }
 
 - (void)processError:(NSError *)error onThread:(NSThread *)thread
 {
+    self.requestError = error;
+}
+
+- (void) completedThread:(NSThread *)thread {
     __block CDTHTTPInterceptorContext *ctx =
     [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
-
+    ctx.response = self.response;
+    
     for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
         ctx = [obj interceptResponseInContext:ctx];
     }
-
+    
     if (ctx.shouldRetry && self.remainingRetries > 0) {
         // retry
         self.remainingRetries--;
         self.inProgressTask = [self makeRequest];
         [self.inProgressTask resume];
     } else {
-        MYOnThread(thread, ^{
-            [self.delegate requestDidError:error];
-        });
+        if( self.requestError){
+            MYOnThread(thread, ^{
+                [self.delegate requestDidError:self.requestError];
+            });
+        } else {
+            MYOnThread(thread, ^{
+                [self.delegate receivedResponse:self.response];
+                [self.delegate receivedData:self.requestData];
+            });
+            
+        }
         self.finished = YES;
     }
+
 }
 
 @end

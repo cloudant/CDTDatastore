@@ -24,6 +24,7 @@
 @property (nonatomic, strong) NSThread *thread;
 @property (nonatomic, strong) NSArray *interceptors;
 @property (nonatomic, strong) NSMapTable *taskMap;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber*,NSMutableData*> *dataMap;
 
 @end
 
@@ -61,7 +62,12 @@
         if ([[NSURLSessionConfiguration class] respondsToSelector:@selector(backgroundSessionConfigurationWithIdentifier:)]) {
             config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessionId];
         } else {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+            // since the method is only called on platforms where its replacement is missing
+            // we supress the warning
             config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
+#pragma GCC pop
         }
 #else
         config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
@@ -77,6 +83,9 @@
         // so we don't unnecessarily hold on to objects and that values are removed from
         // the taskMap when the NSURLSessionDataTasks are deallocated.
         _taskMap = [NSMapTable strongToWeakObjectsMapTable];
+        
+        // Strong map table to handle the queueing of data.
+        _dataMap = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -104,20 +113,28 @@
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data
 {
-    CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:dataTask.taskIdentifier];
-    data = [NSData dataWithData:data];
-    MYOnThread(self.thread, ^{
-        [cdtURLSessionTask.delegate receivedData:data];
-    });
-
+    // Unless we provide a queue from which to run the delegate this method will on be called in serial
+    // see: https://developer.apple.com/library/ios/documentation/Foundation/Reference/NSURLSession_class/#//apple_ref/occ/clm/NSURLSession/sessionWithConfiguration:delegate:delegateQueue:
+    NSMutableData * storedData = [self.dataMap objectForKey:@(dataTask.taskIdentifier)];
+    if (!storedData) {
+        storedData = [NSMutableData data];
+        [self.dataMap setObject:storedData forKey:@(dataTask.taskIdentifier)];
+    }
+    
+    [storedData appendData:data];
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error
 {
     CDTURLSessionTask *cdtURLSessionTask = [self getSessionTaskForId:task.taskIdentifier];
-    if (error && cdtURLSessionTask) {
-        [cdtURLSessionTask processError:error onThread:self.thread];
-    }
+    NSData * data = [self.dataMap objectForKey:@(task.taskIdentifier)];
+    //remove from map so it can be deallocated.
+    [self.dataMap removeObjectForKey:@(task.taskIdentifier)];
+    
+    [cdtURLSessionTask processError:error onThread:self.thread];
+    [cdtURLSessionTask processData:data];
+    [cdtURLSessionTask completedThread:self.thread];
+    
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler

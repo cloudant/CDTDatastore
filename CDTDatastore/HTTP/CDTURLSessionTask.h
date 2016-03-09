@@ -83,4 +83,8 @@
 - (void)processError:(nonnull NSError *)error
             onThread:(nonnull NSThread *)thread;
 
+- (void) completedThread:(nonnull NSThread *)thread;
+
+- (void)processData:(nullable NSData*)data;
+
 @end
