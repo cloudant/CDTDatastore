@@ -14,6 +14,7 @@
 //  and limitations under the License.
 
 #import "CDTPullReplication.h"
+#import "CDTSessionCookieInterceptor.h"
 #import "CDTDatastore.h"
 #import "CDTLogging.h"
 #import "TDMisc.h"
@@ -33,7 +34,16 @@
 - (instancetype)initWithSource:(NSURL *)source target:(CDTDatastore *)target
 {
     if (self = [super init]) {
-        _source = source;
+        
+        NSURLComponents * sourceComponents = [NSURLComponents componentsWithURL:source resolvingAgainstBaseURL:NO];
+        if(sourceComponents.user && sourceComponents.password){
+            CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:sourceComponents.user password:sourceComponents.password];
+            sourceComponents.user = nil;
+            sourceComponents.password = nil;
+            [self addInterceptor:cookieInterceptor];
+        }
+        
+        _source = sourceComponents.URL;
         _target = target;
     }
     return self;

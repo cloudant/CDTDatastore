@@ -26,6 +26,7 @@
 #import "TD_Revision.h"
 #import "TDPuller.h"
 #import "TDPusher.h"
+#import "CDTSessionCookieInterceptor.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OCMock/OCMock.h>
@@ -110,6 +111,36 @@
 - (void)stopSimpleHttp404Server {
     close(self.listenSocketFd);
 }
+- (void)testURLCredsReplacedWithCookieInterceptorPull
+{
+    NSError *error;
+    //Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL * remoteUrl = [[NSURL alloc] initWithString:@"http://user:pass@example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull =
+    [CDTPullReplication replicationWithSource:remoteUrl target:tmp];
+
+    // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", pull.source.absoluteString);
+    XCTAssertEqual(pull.httpInterceptors.count, 1);
+    XCTAssertEqualObjects([pull.httpInterceptors[0] class], [CDTSessionCookieInterceptor class]);
+}
+
+- (void)testURLCredsReplacedWithCookieInterceptorPush
+{
+    NSError *error;
+    //Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL * remoteUrl = [[NSURL alloc] initWithString:@"http://user:pass@example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp target:remoteUrl];
+
+    // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", push.target.absoluteString);
+    XCTAssertEqual(push.httpInterceptors.count, 1);
+    XCTAssertEqualObjects([push.httpInterceptors[0] class], [CDTSessionCookieInterceptor class]);
+}
 
 - (void)testFiltersWithChangesFeed
 {
@@ -151,7 +182,7 @@
 
 -(void)testDictionaryForPullReplicationDocument
 {
-    NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
+    NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
     NSDictionary *expectedDictionary = @{
         @"target" : @"test_database",
         @"source" : remoteUrl,
@@ -186,7 +217,7 @@
 
 -(void)testDictionaryForPushReplicationDocument
 {
-    NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
+    NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
     NSDictionary *expectedDictionary =
         @{ @"source" : @"test_database",
            @"target" : remoteUrl,
@@ -360,26 +391,6 @@
     [self urlTestExpectFalse:prClass
                          url:[NSURL URLWithString:@"https://:password@myaccount.cloudant.com/foo"]
                withErrorCode:CDTReplicationErrorIncompleteCredentials];
-    
-}
-
--(void)testRemoteURL
-{
-
-    //tests for the pull replication class
-    [self runUrlTestFor:[CDTPullReplication class]];
-    
-    [self urlTestExpectFalse:[CDTPullReplication class]
-                         url:nil
-               withErrorCode:CDTReplicationErrorUndefinedSource];
-
-    
-    //tests for the push replication class
-    [self runUrlTestFor:[CDTPushReplication class]];
-
-    [self urlTestExpectFalse:[CDTPushReplication class]
-                         url:nil
-               withErrorCode:CDTReplicationErrorUndefinedTarget];
     
 }
 

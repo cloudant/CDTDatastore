@@ -15,6 +15,7 @@
 
 #import "CDTPushReplication.h"
 #import "CDTDatastore.h"
+#import "CDTSessionCookieInterceptor.h"
 #import "TDMisc.h"
 #import "CDTLogging.h"
 
@@ -33,8 +34,17 @@
 - (instancetype)initWithSource:(CDTDatastore *)source target:(NSURL *)target
 {
     if (self = [super init]) {
+        
+        NSURLComponents * targetComponents = [NSURLComponents componentsWithURL:target resolvingAgainstBaseURL:NO];
+        if(targetComponents.user && targetComponents.password){
+            CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:targetComponents.user password:targetComponents.password];
+            targetComponents.user = nil;
+            targetComponents.password = nil;
+            [self addInterceptor:cookieInterceptor];
+        }
+        
         _source = source;
-        _target = target;
+        _target = targetComponents.URL;
     }
     return self;
 }
