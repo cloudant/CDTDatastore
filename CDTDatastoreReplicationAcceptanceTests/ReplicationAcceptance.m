@@ -1761,9 +1761,6 @@ static NSUInteger largeRevTreeSize = 1500;
     }
     
     XCTAssertFalse(changeTrackerGotChanges);
-    XCTAssertNotNil(changeTracker.authorizer, @"Authorizer object should be not nil. "
-                    @"The change tracker should build one when attempting to complete an "
-                    @"authentication challenge.");
 }
 
 @end
