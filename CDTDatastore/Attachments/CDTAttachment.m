@@ -191,7 +191,9 @@
         decodedData = [TDBase64 decode:data];
 
         if (!decodedData) {
-            *error = TDStatusToNSError(kTDStatusAttachmentError, nil);
+            if (error) {
+                *error = TDStatusToNSError(kTDStatusAttachmentError, nil);
+            }
             return nil;
         }
     }

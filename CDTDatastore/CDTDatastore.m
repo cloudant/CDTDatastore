@@ -183,7 +183,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                      error:(NSError *__autoreleasing *)error
 {
     if (![self ensureDatabaseOpen]) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
         return nil;
     }
 
@@ -479,7 +481,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     // first lets check to see if we can save the document
     if (!revision.body) {
         TDStatus status = kTDStatusBadRequest;
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         return nil;
     }
 
@@ -488,7 +492,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     if (![self ensureDatabaseOpen]) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
         return nil;
     }
 
@@ -635,7 +641,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     if (![self ensureDatabaseOpen]) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
         return nil;
     }
 
@@ -736,7 +744,10 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                 error:(NSError *__autoreleasing *)error
 {
     if (![self ensureDatabaseOpen]) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if  (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
+
         return nil;
     }
 
@@ -747,7 +758,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     TD_Revision *new = [self.database putRevision : revision prevRevisionID : prevRev allowConflict
                         : NO status : &status database : db];
     if (TDStatusIsError(status)) {
-        *error = TDStatusToNSError(status, nil);
+        if (error) {
+            *error = TDStatusToNSError(status, nil);
+        }
         *rollback = YES;
         return nil;
     }
@@ -764,7 +777,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                               error:(NSError *__autoreleasing *)error
 {
     if (![self ensureDatabaseOpen]) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
         return nil;
     }
 

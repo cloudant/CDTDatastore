@@ -43,7 +43,9 @@
                               error:(NSError *__autoreleasing *)error
 {
     if (!self.database) {
-        *error = TDStatusToNSError(kTDStatusException, nil);
+        if (error) {
+            *error = TDStatusToNSError(kTDStatusException, nil);
+        }
         return NO;
     }
 
@@ -182,7 +184,9 @@
         return kTDStatusOK;
     }];
 
-    *error = localError;
+    if (error) {
+        *error = localError;
+    }
     return retStatus == kTDStatusOK;
 }
 
