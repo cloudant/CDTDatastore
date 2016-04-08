@@ -109,6 +109,11 @@
 
 @end
 
+__attribute__((deprecated))
+/**
+ * @deprecated Class wasn't designed for use outside specific internal use-case, it is now 
+               deprecated and will be removed in the next major version.
+ */
 @interface CDTSavedHTTPAttachment : CDTAttachment
 
 /**
