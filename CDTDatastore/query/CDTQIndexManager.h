@@ -89,16 +89,16 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 /** Internal */
 + (NSDictionary /* NSString -> NSArray[NSString]*/ *)listIndexesInDatabase:(FMDatabase *)db;
 
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames withName:(NSString *)indexName;
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames withName:(NSString *)indexName __attribute__((deprecated));
 
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
-                       type:(NSString *)type;
+                       type:(NSString *)type __attribute__((deprecated));
 
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
                        type:(NSString *)type
-                   settings:(NSDictionary *)indexSettings;
+                   settings:(NSDictionary *)indexSettings __attribute__((deprecated));
 
 - (BOOL)deleteIndexNamed:(NSString *)indexName;
 

@@ -64,7 +64,7 @@
  @return The name of the index if it's created successfully.
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName;
+                   withName:(NSString *)indexName __attribute__((deprecated));
 /**
  Create a new index based on an index type over a set of fields.
  
@@ -73,7 +73,7 @@
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
-                       type:(NSString *)type;
+                       type:(NSString *)type __attribute__((deprecated));
 
 /**
  Create a new index based on an index type with specific index 
@@ -97,7 +97,7 @@
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
                        type:(NSString *)type
-                   settings:(NSDictionary *)indexSettings;
+                   settings:(NSDictionary *)indexSettings __attribute__((deprecated));
 
 /**
  Delete an index.
