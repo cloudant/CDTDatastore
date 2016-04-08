@@ -69,36 +69,76 @@ NS_ASSUME_NONNULL_BEGIN
                             withName:(NSString *)indexName;
 /**
  Create a new index based on an index type over a set of fields.
- 
+
  Index type can be either "json" or "text".  A TEXT index provides
  the ability to perform text searches.
+
+ @deprecated This method has been deprecated, use -ensureIndexed:withName:ofType instead.
  */
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                             withName:(NSString *)indexName
-                                type:(NSString *)type;
+                                type:(NSString *)type __attribute__((deprecated));
 
 /**
- Create a new index based on an index type with specific index 
+ Create a new index based on an index type with specific index
  settings over a set of fields.
- 
+
  Index settings currenly only apply to a TEXT index.
- 
+
  An example:
- 
+
  Where ds is your datastore and fields is an array of fieldnames...
- 
- [ds ensureIndexed: fields 
+
+ [ds ensureIndexed: fields
           withName: @"text_idx"
-              type: @"text" 
+              type: @"text"
           settings: @{ @"tokenize": @"porter" }]
- 
+
  This will create a TEXT index named text_idx and override the
  default tokenizer used to construct the TEXT index with the
  "porter" algorithm tokenizer.
+
+ @deprecated This method has been deprecated, use -ensureIndexed:withName:ofType:settings instead.
  */
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                             withName:(NSString *)indexName
                                 type:(NSString *)type
+                            settings:(NSDictionary *)indexSettings __attribute__((deprecated));
+
+/**
+ Create a new index based on an index type over a set of fields.
+
+ Index type can be either CDTQIndexTypeJSON or CDTQIndexTypeText.  A CDTQIndexTypeText index
+ provides
+ the ability to perform text searches.
+ */
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName
+                              ofType:(CDTQIndexType)type;
+
+/**
+ Create a new index based on an index type with specific index
+ settings over a set of fields.
+
+ Index settings currenly only apply to a TEXT index.
+
+ An example:
+
+ Where ds is your datastore and fields is an array of fieldnames...
+
+ [ds ensureIndexed: fields
+ withName: @"text_idx"
+ ofType: CDTQIndexTypeText
+ settings: @{ @"tokenize": @"porter" }]
+
+ This will create a TEXT index named text_idx and override the
+ default tokenizer used to construct the TEXT index with the
+ "porter" algorithm tokenizer.
+
+ */
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName
+                              ofType:(CDTQIndexType)type
                             settings:(NSDictionary *)indexSettings;
 
 /**

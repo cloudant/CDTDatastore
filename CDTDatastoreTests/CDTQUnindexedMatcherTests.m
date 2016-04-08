@@ -5,15 +5,16 @@
 //  Created by Michael Rhodes on 31/10/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
-
-#import <CloudantSync.h>
-#import <CDTQIndexManager.h>
-#import <CDTQIndexUpdater.h>
-#import <CDTQIndexCreator.h>
-#import <CDTQResultSet.h>
-#import <CDTQQueryExecutor.h>
-#import <CDTQUnindexedMatcher.h>
-#import <CDTQQueryValidator.h>
+#import <CDTDatastore/CDTQIndexCreator.h>
+#import <CDTDatastore/CDTQIndexManager.h>
+#import <CDTDatastore/CDTQIndexUpdater.h>
+#import <CDTDatastore/CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQQueryValidator.h>
+#import <CDTDatastore/CDTQResultSet.h>
+#import <CDTDatastore/CDTQUnindexedMatcher.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
 
 SpecBegin(CDTQUnindexedMatcher) describe(@"matcherWithSelector", ^{
 

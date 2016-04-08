@@ -6,15 +6,15 @@
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
 //
 
+#import <CDTDatastore/CDTQIndexCreator.h>
+#import <CDTDatastore/CDTQIndexManager.h>
+#import <CDTDatastore/CDTQIndexUpdater.h>
+#import <CDTDatastore/CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQResultSet.h>
+#import <CDTDatastore/CloudantSync.h>
 #import <Foundation/Foundation.h>
-#import "Specta.h"
 #import "Expecta.h"
-#import <CloudantSync.h>
-#import <CDTQIndexManager.h>
-#import <CDTQIndexUpdater.h>
-#import <CDTQIndexCreator.h>
-#import <CDTQResultSet.h>
-#import <CDTQQueryExecutor.h>
+#import "Specta.h"
 
 SpecBegin(CDTQFilterFieldsTest)
 

@@ -52,22 +52,24 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
 
 - (instancetype)initWithFields:(NSArray *)fieldNames
                      indexName:(NSString *)indexName
-                     indexType:(NSString *)indexType
+                     indexType:(CDTQIndexType)indexType
                  indexSettings:(NSDictionary *)indexSettings
 {
     self = [super init];
     if (self) {
         _fieldNames = fieldNames;
         _indexName = indexName;
-        _indexType = indexType;
+        _type = indexType;
         _indexSettings = indexSettings;
     }
     return self;
 }
 
+#pragma mark Deprecated creator methods
+
 + (instancetype)index:(NSString *)indexName withFields:(NSArray *)fieldNames
 {
-    return [[self class] index:indexName withFields:fieldNames ofType:kCDTQJsonType];
+    return [[self class] index:indexName withFields:fieldNames type:CDTQIndexTypeJSON];
 }
 
 + (instancetype)index:(NSString *)indexName
@@ -82,6 +84,27 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
                ofType:(NSString *)indexType
          withSettings:(NSDictionary *)indexSettings
 {
+    CDTQIndexType typeAsEnum = [CDTQIndexManager indexTypeForString:indexType];
+    return [[self class] index:indexName
+                    withFields:fieldNames
+                          type:typeAsEnum
+                  withSettings:indexSettings];
+}
+
+#pragma mark Enum index type creator methods
+
++ (instancetype)index:(NSString *)indexName
+           withFields:(NSArray<NSString *> *)fieldNames
+                 type:(CDTQIndexType)type
+{
+    return [[self class] index:indexName withFields:fieldNames type:type withSettings:nil];
+}
+
++ (instancetype)index:(NSString *)indexName
+           withFields:(NSArray *)fieldNames
+                 type:(CDTQIndexType)indexType
+         withSettings:(NSDictionary *)indexSettings
+{
     if (fieldNames.count == 0) {
         CDTLogError(CDTQ_LOG_CONTEXT, @"No field names provided.");
         return nil;
@@ -91,26 +114,16 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
         CDTLogError(CDTQ_LOG_CONTEXT, @"No index name provided.");
         return nil;
     }
-    
-    if (indexType.length == 0) {
-        CDTLogError(CDTQ_LOG_CONTEXT, @"No index type provided.");
-        return nil;
-    }
-    
-    if (![[CDTQIndex validTypes] containsObject:indexType.lowercaseString]) {
-        CDTLogError(CDTQ_LOG_CONTEXT, @"Invalid index type %@.", indexType);
-        return nil;
-    }
-    
-    if ([indexType.lowercaseString isEqualToString:kCDTQJsonType] && indexSettings) {
-        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Index type is %@, index settings %@ ignored.", indexType,
+
+    if (indexType == CDTQIndexTypeJSON && indexSettings) {
+        CDTLogWarn(CDTQ_LOG_CONTEXT, @"Index type is JSON, index settings %@ ignored.",
                    indexSettings);
         indexSettings = nil;
-    } else if ([indexType.lowercaseString isEqualToString:kCDTQTextType]) {
+    } else if (indexType == CDTQIndexTypeText) {
         if (!indexSettings) {
             indexSettings = @{ kCDTQTextTokenize: kCDTQTextDefaultTokenizer };
-            CDTLogDebug(CDTQ_LOG_CONTEXT, @"Index type is %@, defaulting settings to %@.",
-                        indexType, indexSettings);
+            CDTLogDebug(CDTQ_LOG_CONTEXT, @"Index type is text, defaulting settings to %@.",
+                        indexSettings);
         } else {
             for (NSString *parameter in [indexSettings allKeys]) {
                 if (![[CDTQIndex validSettings] containsObject:parameter.lowercaseString]) {
@@ -130,7 +143,13 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
 
 -(BOOL) compareIndexTypeTo:(NSString *)indexType withIndexSettings:(NSString *)indexSettings
 {
-    if (![self.indexType.lowercaseString isEqualToString:indexType.lowercaseString]) {
+    return [self compareToIndexType:[CDTQIndexManager indexTypeForString:indexType]
+                  withIndexSettings:indexSettings];
+}
+
+- (BOOL)compareToIndexType:(CDTQIndexType)indexType withIndexSettings:(NSString *)indexSettings
+{
+    if (self.type != indexType) {
         return NO;
     }
     
@@ -170,4 +189,15 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     return [[NSString alloc] initWithData:settingsData encoding:NSUTF8StringEncoding];
 }
 
+#pragma property overrides
+/*
+ These overrides are needed to ensure both the string and  enum versions of the index type are
+ equivalent values.
+ */
+- (void)setIndexType:(NSString *)indexType
+{
+    self.type = [CDTQIndexManager indexTypeForString:indexType];
+}
+
+- (NSString *)indexType { return [CDTQIndexManager stringForIndexType:self.type]; }
 @end

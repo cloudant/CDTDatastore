@@ -5,9 +5,10 @@
 //  Created by Michael Rhodes on 09/27/2014.
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
 //
-
-#import <CloudantSync.h>
-#import <CDTQValueExtractor.h>
+#import <CDTDatastore/CDTQValueExtractor.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
 
 SpecBegin(CDTQValueExtractor)
 

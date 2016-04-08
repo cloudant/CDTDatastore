@@ -9,12 +9,15 @@
 #import "CDTQMatcherIndexManager.h"
 #import "CDTQSQLOnlyIndexManager.h"
 
-#import <CloudantSync.h>
-#import <CDTQIndexManager.h>
-#import <CDTQIndexUpdater.h>
-#import <CDTQIndexCreator.h>
-#import <CDTQResultSet.h>
-#import <CDTQQueryExecutor.h>
+#import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
+
+#import <CDTDatastore/CDTQIndexCreator.h>
+#import <CDTDatastore/CDTQIndexManager.h>
+#import <CDTDatastore/CDTQIndexUpdater.h>
+#import <CDTDatastore/CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQResultSet.h>
+#import <CDTDatastore/CloudantSync.h>
 #import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 #import "Matchers/CDTQEitherMatcher.h"
 
