@@ -13,6 +13,7 @@
 //  and limitations under the License.
 
 #import <Foundation/Foundation.h>
+#import "CDTQIndexManager.h"
 
 extern NSString *const kCDTQJsonType;
 extern NSString *const kCDTQTextType;
@@ -24,7 +25,8 @@ extern NSString *const kCDTQTextType;
 
 @property (nonatomic, strong) NSArray *fieldNames;
 @property (nonatomic, strong) NSString *indexName;
-@property (nonatomic, strong) NSString *indexType;
+@property (nonatomic, strong) NSString *indexType __deprecated;
+@property (nonatomic) CDTQIndexType type;
 @property (nonatomic, strong) NSDictionary *indexSettings;
 
 /**
@@ -38,11 +40,17 @@ extern NSString *const kCDTQTextType;
 
 + (instancetype)index:(NSString *)indexName
            withFields:(NSArray *)fieldNames
-               ofType:(NSString *)indexType;
+               ofType:(NSString *)indexType __deprecated;
+
++ (instancetype)index:(NSString *)indexName
+           withFields:(NSArray<NSString *> *)fields
+                 type:(CDTQIndexType)type;
 
 /**
  * This function handles index specific validation and ensures that the constructed
  * Index object is valid.
+ *
+ *
  *
  * @param indexName the index name
  * @param fieldNames the field names in the index
@@ -54,6 +62,11 @@ extern NSString *const kCDTQTextType;
 + (instancetype)index:(NSString *)indexName
            withFields:(NSArray *)fieldNames
                ofType:(NSString *)indexType
+         withSettings:(NSDictionary *)indexSettings __deprecated;
+
++ (instancetype)index:(NSString *)indexName
+           withFields:(NSArray *)fieldNames
+                 type:(CDTQIndexType)indexType
          withSettings:(NSDictionary *)indexSettings;
 
 /**
@@ -63,7 +76,10 @@ extern NSString *const kCDTQTextType;
  * @param indexSettings the indexSettings to compare to as an NSString
  * @return YES/NO - whether there is a match
  */
-- (BOOL)compareIndexTypeTo:(NSString *)indexType withIndexSettings:(NSString *)indexSettings;
+- (BOOL)compareIndexTypeTo:(NSString *)indexType
+         withIndexSettings:(NSString *)indexSettings __deprecated;
+
+- (BOOL)compareToIndexType:(CDTQIndexType)indexType withIndexSettings:(NSString *)indexSettings;
 
 /**
  * Converts the index settings to a JSON string
