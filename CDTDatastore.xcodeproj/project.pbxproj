@@ -16,6 +16,40 @@
 		444F22564A61FE341E679D1E /* Pods_CDTDatastore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 661443AD245B12F70D33C303 /* Pods_CDTDatastore.framework */; };
 		6400126AA8043B4CE33B19DA /* Pods_CDTDatastoreReplicationAcceptanceTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BEFE677789AF6FA5E2CDCFF /* Pods_CDTDatastoreReplicationAcceptanceTests.framework */; };
 		672DDDA1A88D83963155710B /* Pods_CDTDatastoreEncryptionTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A15735F4EFD5449302A3D38A /* Pods_CDTDatastoreEncryptionTests.framework */; };
+		980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */; };
+		980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */; };
+		980F22731CB818260075A843 /* CDTQIndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0D1C44044000515CC3 /* CDTQIndexManagerTests.m */; };
+		980F22741CB818260075A843 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0E1C44044000515CC3 /* CDTQIndexTests.m */; };
+		980F22751CB818260075A843 /* CDTQIndexUpdaterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0F1C44044000515CC3 /* CDTQIndexUpdaterTests.m */; };
+		980F22761CB818260075A843 /* CDTQInvalidQuerySyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E101C44044000515CC3 /* CDTQInvalidQuerySyntax.m */; };
+		980F22771CB818260075A843 /* CDTQPerformanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E111C44044000515CC3 /* CDTQPerformanceTests.m */; };
+		980F22781CB818260075A843 /* CDTQQueryExecutorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E121C44044000515CC3 /* CDTQQueryExecutorTests.m */; };
+		980F22791CB818260075A843 /* CDTQQuerySortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E131C44044000515CC3 /* CDTQQuerySortTests.m */; };
+		980F227A1CB818260075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E141C44044000515CC3 /* CDTQQuerySqlTranslatorTests.m */; };
+		980F227B1CB818260075A843 /* CDTQTextSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E151C44044000515CC3 /* CDTQTextSearchTests.m */; };
+		980F227C1CB818260075A843 /* CDTQUnindexedMatcherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E161C44044000515CC3 /* CDTQUnindexedMatcherTests.m */; };
+		980F227D1CB818260075A843 /* CDTQValueExtractorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E171C44044000515CC3 /* CDTQValueExtractorTests.m */; };
+		980F227E1CB818260075A843 /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E181C44044000515CC3 /* CDTReplicationTests.m */; };
+		980F227F1CB818260075A843 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E191C44044000515CC3 /* CDTSessionCookieInterceptorTests.m */; };
+		980F22801CB818260075A843 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E1A1C44044000515CC3 /* CDTURLSessionTaskTests.m */; };
+		980F22811CB818260075A843 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E1B1C44044000515CC3 /* CDTURLSessionTests.m */; };
+		980F22861CB818530075A843 /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */; };
+		980F22871CB818530075A843 /* CDTQIndexCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */; };
+		980F22881CB818530075A843 /* CDTQIndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0D1C44044000515CC3 /* CDTQIndexManagerTests.m */; };
+		980F22891CB818530075A843 /* CDTQIndexTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0E1C44044000515CC3 /* CDTQIndexTests.m */; };
+		980F228A1CB818530075A843 /* CDTQIndexUpdaterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0F1C44044000515CC3 /* CDTQIndexUpdaterTests.m */; };
+		980F228B1CB818530075A843 /* CDTQInvalidQuerySyntax.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E101C44044000515CC3 /* CDTQInvalidQuerySyntax.m */; };
+		980F228C1CB818530075A843 /* CDTQPerformanceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E111C44044000515CC3 /* CDTQPerformanceTests.m */; };
+		980F228D1CB818530075A843 /* CDTQQueryExecutorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E121C44044000515CC3 /* CDTQQueryExecutorTests.m */; };
+		980F228E1CB818530075A843 /* CDTQQuerySortTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E131C44044000515CC3 /* CDTQQuerySortTests.m */; };
+		980F228F1CB818530075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E141C44044000515CC3 /* CDTQQuerySqlTranslatorTests.m */; };
+		980F22901CB818530075A843 /* CDTQTextSearchTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E151C44044000515CC3 /* CDTQTextSearchTests.m */; };
+		980F22911CB818530075A843 /* CDTQUnindexedMatcherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E161C44044000515CC3 /* CDTQUnindexedMatcherTests.m */; };
+		980F22921CB818530075A843 /* CDTQValueExtractorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E171C44044000515CC3 /* CDTQValueExtractorTests.m */; };
+		980F22931CB818530075A843 /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E181C44044000515CC3 /* CDTReplicationTests.m */; };
+		980F22941CB818530075A843 /* CDTSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E191C44044000515CC3 /* CDTSessionCookieInterceptorTests.m */; };
+		980F22951CB818530075A843 /* CDTURLSessionTaskTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E1A1C44044000515CC3 /* CDTURLSessionTaskTests.m */; };
+		980F22961CB818530075A843 /* CDTURLSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E1B1C44044000515CC3 /* CDTURLSessionTests.m */; };
 		987344B5C0516C4D1F3EA7CD /* Pods_CDTDatastoreEncryptionTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5FF88F2E1F1461DA4E6D01 /* Pods_CDTDatastoreEncryptionTestsOSX.framework */; };
 		987382F91C47ADD300937212 /* CDTFetchChanges.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B641C43FCEE00515CC3 /* CDTFetchChanges.m */; };
 		987382FF1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 987382FC1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m */; };
@@ -4268,6 +4302,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				980F22861CB818530075A843 /* CDTQFilterFieldsTest.m in Sources */,
+				980F22871CB818530075A843 /* CDTQIndexCreatorTests.m in Sources */,
+				980F22881CB818530075A843 /* CDTQIndexManagerTests.m in Sources */,
+				980F22891CB818530075A843 /* CDTQIndexTests.m in Sources */,
+				980F228A1CB818530075A843 /* CDTQIndexUpdaterTests.m in Sources */,
+				980F228B1CB818530075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
+				980F228C1CB818530075A843 /* CDTQPerformanceTests.m in Sources */,
+				980F228D1CB818530075A843 /* CDTQQueryExecutorTests.m in Sources */,
+				980F228E1CB818530075A843 /* CDTQQuerySortTests.m in Sources */,
+				980F228F1CB818530075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */,
+				980F22901CB818530075A843 /* CDTQTextSearchTests.m in Sources */,
+				980F22911CB818530075A843 /* CDTQUnindexedMatcherTests.m in Sources */,
+				980F22921CB818530075A843 /* CDTQValueExtractorTests.m in Sources */,
+				980F22931CB818530075A843 /* CDTReplicationTests.m in Sources */,
+				980F22941CB818530075A843 /* CDTSessionCookieInterceptorTests.m in Sources */,
+				980F22951CB818530075A843 /* CDTURLSessionTaskTests.m in Sources */,
+				980F22961CB818530075A843 /* CDTURLSessionTests.m in Sources */,
 				987385271C47B45600937212 /* DatastoreActions.m in Sources */,
 				987385291C47B45600937212 /* CDTHelperOneUseKeyProvider.m in Sources */,
 				9873852A1C47B45600937212 /* CDTBlobDataTests.m in Sources */,
@@ -4463,6 +4514,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */,
+				980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */,
+				980F22731CB818260075A843 /* CDTQIndexManagerTests.m in Sources */,
+				980F22741CB818260075A843 /* CDTQIndexTests.m in Sources */,
+				980F22751CB818260075A843 /* CDTQIndexUpdaterTests.m in Sources */,
+				980F22761CB818260075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
+				980F22771CB818260075A843 /* CDTQPerformanceTests.m in Sources */,
+				980F22781CB818260075A843 /* CDTQQueryExecutorTests.m in Sources */,
+				980F22791CB818260075A843 /* CDTQQuerySortTests.m in Sources */,
+				980F227A1CB818260075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */,
+				980F227B1CB818260075A843 /* CDTQTextSearchTests.m in Sources */,
+				980F227C1CB818260075A843 /* CDTQUnindexedMatcherTests.m in Sources */,
+				980F227D1CB818260075A843 /* CDTQValueExtractorTests.m in Sources */,
+				980F227E1CB818260075A843 /* CDTReplicationTests.m in Sources */,
+				980F227F1CB818260075A843 /* CDTSessionCookieInterceptorTests.m in Sources */,
+				980F22801CB818260075A843 /* CDTURLSessionTaskTests.m in Sources */,
+				980F22811CB818260075A843 /* CDTURLSessionTests.m in Sources */,
 				98F77E8D1C44044000515CC3 /* DatastoreActions.m in Sources */,
 				987383001C47B1DD00937212 /* CDTHelperOneUseKeyProvider.m in Sources */,
 				98F77E771C44044000515CC3 /* CDTBlobDataTests.m in Sources */,

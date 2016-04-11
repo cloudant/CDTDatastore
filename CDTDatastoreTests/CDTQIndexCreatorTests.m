@@ -5,13 +5,13 @@
 //  Created by Michael Rhodes on 09/27/2014.
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
 //
-
-#import <CloudantSync.h>
-#import <CDTQIndexManager.h>
-#import <CDTQIndexUpdater.h>
-#import <CDTQIndexCreator.h>
-#import <CDTQResultSet.h>
-#import <CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQIndexCreator.h>
+#import <CDTDatastore/CDTQIndexManager.h>
+#import <CDTDatastore/CDTQIndexUpdater.h>
+#import <CDTDatastore/CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQResultSet.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Specta/Specta.h>
 #import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQIndexCreator)
@@ -275,24 +275,6 @@ SpecBegin(CDTQIndexCreator)
                 name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
                                 withName:@"anotherTextIndex"
                                     type:@"text"];
-                expect(name).to.beNil();
-            });
-
-            it(@"doesn't support using the geo type", ^{
-                NSString *name =
-                    [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{
-                        @"age" : @"desc"
-                    } ] withName:@"basic"
-                                 type:@"geo"];
-                expect(name).to.beNil();
-            });
-
-            it(@"doesn't support using the unplanned type", ^{
-                NSString *name =
-                    [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{
-                        @"age" : @"desc"
-                    } ] withName:@"basic"
-                                 type:@"frog"];
                 expect(name).to.beNil();
             });
 

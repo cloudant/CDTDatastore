@@ -14,9 +14,9 @@
 //  and limitations under the License.
 //
 
-#import <CloudantSync.h>
-#import <Specta.h>
-#import <Expecta.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
 #import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
