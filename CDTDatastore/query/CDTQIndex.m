@@ -70,10 +70,7 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
 
 + (instancetype)index:(NSString *)indexName withFields:(NSArray *)fieldNames
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    return [[self class] index:indexName withFields:fieldNames ofType:kCDTQJsonType];
-#pragma clang diagnostic pop
+    return [[self class] index:indexName withFields:fieldNames type:CDTQIndexTypeJSON];
 }
 
 + (instancetype)index:(NSString *)indexName
@@ -123,7 +120,7 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
         CDTLogWarn(CDTQ_LOG_CONTEXT, @"Index type is JSON, index settings %@ ignored.",
                    indexSettings);
         indexSettings = nil;
-    } else {
+    } else if (indexType == CDTQIndexTypeText) {
         if (!indexSettings) {
             indexSettings = @{ kCDTQTextTokenize: kCDTQTextDefaultTokenizer };
             CDTLogDebug(CDTQ_LOG_CONTEXT, @"Index type is text, defaulting settings to %@.",

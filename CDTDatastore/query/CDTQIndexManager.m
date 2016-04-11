@@ -232,6 +232,7 @@ static const int VERSION = 2;
                              fromDatastore:_datastore];
 }
 
+#pragma mark Deprecated methods
 /**
  Add a single, possibly compound, index for the given field names.
 
@@ -262,12 +263,59 @@ static const int VERSION = 2;
                        type:(NSString *)type
                    settings:(NSDictionary *)indexSettings
 {
+    CDTQIndexType indexType = [CDTQIndexManager indexTypeForString:type];
+    return
+        [self ensureIndexed:fieldNames withName:indexName ofType:indexType settings:indexSettings];
+}
+
+#pragma mark New methods
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+{
+    return [self ensureIndexed:fieldNames withName:indexName ofType:type settings:nil];
+}
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+                   settings:(NSDictionary *)indexSettings
+{
     return [CDTQIndexCreator ensureIndexed:[CDTQIndex index:indexName
                                                  withFields:fieldNames
-                                                     ofType:type
+                                                       type:type
                                                withSettings:indexSettings]
                                 inDatabase:_database
                              fromDatastore:_datastore];
+}
+
++ (CDTQIndexType)indexTypeForString:(NSString *)string
+{
+    if ([string isEqualToString:@"text"]) {
+        return CDTQIndexTypeText;
+    } else if ([string isEqualToString:@"json"]) {
+        return CDTQIndexTypeJSON;
+    } else {
+        @throw [NSException exceptionWithName:@"InvalidIndexException"
+                                       reason:@"Index type provided is not a valid index type."
+                                     userInfo:@{
+                                         @"Expected" : @"text or json",
+                                         @"Actual" : string
+                                     }];
+    }
+}
+
++ (NSString *)stringForIndexType:(CDTQIndexType)indexType /* __attribute__((const))*/
+{
+    switch (indexType) {
+        case CDTQIndexTypeText:
+            return @"text";
+            break;
+        case CDTQIndexTypeJSON:
+            return @"json";
+            break;
+    }
 }
 
 #pragma mark Delete Indexes

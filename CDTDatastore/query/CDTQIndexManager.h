@@ -24,6 +24,21 @@ extern NSString *const kCDTQIndexMetadataTableName;
 @class FMDatabaseQueue;
 @class FMDatabase;
 
+/**
+ * Query Index types
+ */
+typedef NS_ENUM(NSUInteger, CDTQIndexType) {
+    /**
+     * Denotes the index is of type text
+     */
+    CDTQIndexTypeText,
+    /**
+     * Denotes the index of type JSON.
+     */
+    CDTQIndexTypeJSON,
+
+};
+
 @interface CDTQSqlParts : NSObject
 
 @property (nonatomic, strong) NSString *sqlWithPlaceholders;
@@ -89,7 +104,7 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 /** Internal */
 + (NSDictionary /* NSString -> NSArray[NSString]*/ *)listIndexesInDatabase:(FMDatabase *)db;
 
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames withName:(NSString *)indexName __attribute__((deprecated));
+- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames withName:(NSString *)indexName;
 
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
                    withName:(NSString *)indexName
@@ -99,6 +114,15 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
                    withName:(NSString *)indexName
                        type:(NSString *)type
                    settings:(NSDictionary *)indexSettings __attribute__((deprecated));
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type;
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+                   settings:(NSDictionary *)indexSettings;
 
 - (BOOL)deleteIndexNamed:(NSString *)indexName;
 
@@ -114,7 +138,8 @@ typedef NS_ENUM(NSInteger, CDTQQueryError) {
 
 /** Internal */
 + (NSString *)tableNameForIndex:(NSString *)indexName;
-
++ (CDTQIndexType)indexTypeForString:(NSString *)string;
++ (NSString *)stringForIndexType:(CDTQIndexType)indexType;
 /** Internal */
 + (BOOL)ftsAvailableInDatabase:(FMDatabaseQueue *)db;
 
