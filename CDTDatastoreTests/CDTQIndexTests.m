@@ -12,9 +12,9 @@
 //  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
-
-#import <CloudantSync.h>
-#import <CDTQIndex.h>
+#import <CDTDatastore/CDTQIndex.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Specta/Specta.h>
 #import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
 SpecBegin(CDTQIndex)
@@ -58,16 +58,6 @@ describe(@"When creating an instance of index", ^{
         expect([CDTQIndex index:nil withFields:fieldNames]).to.beNil();
         
         expect([CDTQIndex index:@"" withFields:fieldNames]).to.beNil();
-    });
-    
-    it(@"returns nil when index type is specifically nil or blank", ^{
-        expect([CDTQIndex index:indexName withFields:fieldNames ofType:nil]).to.beNil();
-        
-        expect([CDTQIndex index:indexName withFields:fieldNames ofType:@""]).to.beNil();
-    });
-    
-    it(@"returns nil when index type is invalid", ^{
-        expect([CDTQIndex index:indexName withFields:fieldNames ofType:@"blah"]).to.beNil();
     });
     
     it(@"returns nil when index settings are invalid", ^{
