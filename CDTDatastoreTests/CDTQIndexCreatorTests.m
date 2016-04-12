@@ -285,7 +285,7 @@ SpecBegin(CDTQIndexCreator)
                                        @{ @"age" : @"desc" } ]
                            withName:@"basic"
                                type:@"geo"];
-                  expect(nil).to.not.beNil();
+                  expect(nil).toNot.beNil();
               } @catch (NSException *e) {
                   expect(nil).to.beNil();
               }
@@ -297,7 +297,7 @@ SpecBegin(CDTQIndexCreator)
                                        @{ @"age" : @"desc" } ]
                            withName:@"basic"
                                type:@"frog"];
-                  expect(nil).to.not.beNil();
+                  expect(nil).toNot.beNil();
               } @catch (NSException *e) {
                   expect(nil).to.beNil();
               }
