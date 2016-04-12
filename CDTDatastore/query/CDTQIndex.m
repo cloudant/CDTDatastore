@@ -190,21 +190,15 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     return [[NSString alloc] initWithData:settingsData encoding:NSUTF8StringEncoding];
 }
 
-#pragma Setter overrides
+#pragma property overrides
 /*
  These overrides are needed to ensure both the string and  enum versions of the index type are
  eqivulent values.
  */
-- (void)setType:(CDTQIndexType)type
-{
-    _type = type;
-    _indexType = [CDTQIndexManager stringForIndexType:type];
-}
-
 - (void)setIndexType:(NSString *)indexType
 {
-    _indexType = indexType;
-    _type = [CDTQIndexManager indexTypeForString:indexType];
+    self.type = [CDTQIndexManager indexTypeForString:indexType];
 }
 
+- (NSString *)getIndexType { return [CDTQIndexManager stringForIndexType:type]; }
 @end
