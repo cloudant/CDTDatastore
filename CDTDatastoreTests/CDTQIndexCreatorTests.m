@@ -278,6 +278,31 @@ SpecBegin(CDTQIndexCreator)
                 expect(name).to.beNil();
             });
 
+            it(@"doesn't support using the geo type", ^{
+
+              @try {
+                  [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                       @{ @"age" : @"desc" } ]
+                           withName:@"basic"
+                               type:@"geo"];
+                  expect(nil).to.not.beNil();
+              } @catch (NSException *e) {
+                  expect(nil).to.beNil();
+              }
+            });
+
+            it(@"doesn't support using the unplanned type", ^{
+              @try {
+                  [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                       @{ @"age" : @"desc" } ]
+                           withName:@"basic"
+                               type:@"frog"];
+                  expect(nil).to.not.beNil();
+              } @catch (NSException *e) {
+                  expect(nil).to.beNil();
+              }
+            });
+
         });
 
         describe(@"when using non-ascii text", ^{
