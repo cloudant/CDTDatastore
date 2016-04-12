@@ -78,7 +78,12 @@ describe(@"When creating an instance of index", ^{
     });
 
     it(@"returns nil when index type is invalid", ^{
-      expect([CDTQIndex index:indexName withFields:fieldNames ofType:@"blah"]).to.beNil();
+      @try {
+          [CDTQIndex index:indexName withFields:fieldNames ofType:@"blah"];
+          expect(nil).toNot.beNil();
+      } @catch (NSException *exception) {
+          expect(nil).to.beNil();
+      }
     });
 
     it(@"returns nil when index settings are invalid", ^{
