@@ -15,8 +15,8 @@
 #import <Foundation/Foundation.h>
 #import "CDTQIndexManager.h"
 
-extern NSString *const kCDTQJsonType;
-extern NSString *const kCDTQTextType;
+extern NSString *const kCDTQJsonType __deprecated;
+extern NSString *const kCDTQTextType __deprecated;
 
 /**
  * This class provides functionality to manage an index
@@ -50,7 +50,7 @@ extern NSString *const kCDTQTextType;
  * This function handles index specific validation and ensures that the constructed
  * Index object is valid.
  *
- *
+ * @deprecated This has been deprecated us +index:withFields:type:withSettings instead
  *
  * @param indexName the index name
  * @param fieldNames the field names in the index
