@@ -200,5 +200,5 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     self.type = [CDTQIndexManager indexTypeForString:indexType];
 }
 
-- (NSString *)getIndexType { return [CDTQIndexManager stringForIndexType:type]; }
+- (NSString *)getIndexType { return [CDTQIndexManager stringForIndexType:self.type]; }
 @end
