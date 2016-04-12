@@ -311,10 +311,8 @@ static const int VERSION = 2;
     switch (indexType) {
         case CDTQIndexTypeText:
             return @"text";
-            break;
         case CDTQIndexTypeJSON:
             return @"json";
-            break;
     }
 }
 
