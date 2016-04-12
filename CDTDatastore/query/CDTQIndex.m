@@ -60,7 +60,6 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
         _fieldNames = fieldNames;
         _indexName = indexName;
         _indexType = [CDTQIndexManager stringForIndexType:indexType];
-        _type = indexType;
         _indexSettings = indexSettings;
     }
     return self;
