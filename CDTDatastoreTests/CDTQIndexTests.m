@@ -59,7 +59,17 @@ describe(@"When creating an instance of index", ^{
         
         expect([CDTQIndex index:@"" withFields:fieldNames]).to.beNil();
     });
-    
+
+    it(@"returns nil when index type is specifically nil or blank", ^{
+      expect([CDTQIndex index:indexName withFields:fieldNames ofType:nil]).to.beNil();
+
+      expect([CDTQIndex index:indexName withFields:fieldNames ofType:@""]).to.beNil();
+    });
+
+    it(@"returns nil when index type is invalid", ^{
+      expect([CDTQIndex index:indexName withFields:fieldNames ofType:@"blah"]).to.beNil();
+    });
+
     it(@"returns nil when index settings are invalid", ^{
         expect([CDTQIndex index:indexName
                      withFields:fieldNames
