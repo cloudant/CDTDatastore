@@ -29,7 +29,7 @@ extern NSString *const kCDTQIndexMetadataTableName;
  */
 typedef NS_ENUM(NSUInteger, CDTQIndexType) {
     /**
-     * Denotes the index is of type text
+     * Denotes the index is of type text.
      */
     CDTQIndexTypeText,
     /**
