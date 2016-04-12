@@ -59,7 +59,7 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     if (self) {
         _fieldNames = fieldNames;
         _indexName = indexName;
-        _indexType = [CDTQIndexManager stringForIndexType:indexType];
+        _type = indexType;
         _indexSettings = indexSettings;
     }
     return self;
@@ -199,5 +199,5 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     self.type = [CDTQIndexManager indexTypeForString:indexType];
 }
 
-- (NSString *)getIndexType { return [CDTQIndexManager stringForIndexType:self.type]; }
+- (NSString *)indexType { return [CDTQIndexManager stringForIndexType:self.type]; }
 @end
