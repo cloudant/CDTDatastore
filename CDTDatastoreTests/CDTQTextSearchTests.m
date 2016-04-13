@@ -114,54 +114,52 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
         });
 
         it(@"can perform a search consisting of a single text clause", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"lives in Bristol"} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"fred12" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"lives in Bristol"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"fred12" ]);
         });
-        
+
         it(@"can perform a phrase search", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"lives in Bristol\""} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"lives in Bristol\""} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
-        
+
         it(@"can perform a search containing an apostrophe", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"he's retired"} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"he's retired"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
-        
+
         it(@"can perform a search consisting of a single text clause with a sort", ^{
-            expect([im ensureIndexed:@[ @"name", @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"best friend"} };
-            NSArray *order = @[ @{ @"name" : @"asc" } ];
-            CDTQResultSet* result = [im find:query skip:0 limit:0 fields:nil sort: order];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
-            expect(result.documentIds[0]).to.equal(@"fred12");
-            expect(result.documentIds[1]).to.equal(@"mike12");
+          expect([im ensureIndexed:@[ @"name", @"comment" ]
+                          withName:@"basic_text"
+                            ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"best friend"} };
+          NSArray* order = @[ @{ @"name" : @"asc" } ];
+          CDTQResultSet* result = [im find:query skip:0 limit:0 fields:nil sort:order];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
+          expect(result.documentIds[0]).to.equal(@"fred12");
+          expect(result.documentIds[1]).to.equal(@"mike12");
         });
-        
+
         it(@"can perform a compound AND query search containing a text clause", ^{
             expect([im ensureIndexed:@[ @"name" ] withName:@"basic"]).toNot.beNil();
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
+            expect(
+                [im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+                .toNot.beNil();
+
             NSDictionary* query = @{ @"name" : @"mike",
                                      @"$text" : @{@"$search" : @"best friend"} };
             CDTQResultSet* result = [im find:query];
@@ -170,10 +168,10 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
         
         it(@"can perform a compound OR query search containing a text clause", ^{
             expect([im ensureIndexed:@[ @"name" ] withName:@"basic"]).toNot.beNil();
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
+            expect(
+                [im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+                .toNot.beNil();
+
             NSDictionary* query = @{ @"$or" : @[ @{ @"name" : @"mike" },
                                                  @{ @"$text" : @{@"$search" : @"best friend"} } ] };
             CDTQResultSet* result = [im find:query];
@@ -199,202 +197,202 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             // indexes.
             expect([im ensureIndexed:@[ @"name", @"comment" ]
                             withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
+                              ofType:CDTQIndexTypeText])
+                .toNot.beNil();
+
             NSDictionary* query = @{ @"$or" : @[ @{ @"name" : @"mike" },
                                                  @{ @"$text" : @{@"$search" : @"best friend"} } ] };
             expect([im find:query]).to.beNil();
         });
-        
+
         it(@"can perform a text search containing non-ascii values", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"صديق له هو\""} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"john34" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"صديق له هو\""} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"john34" ]);
         });
-        
+
         it(@"returns empty result set for unmatched phrase search", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"remus romulus\""} };
-            CDTQResultSet* result = [im find:query];
-            expect(result).toNot.beNil();
-            expect(result.documentIds.count).to.equal(0);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"remus romulus\""} };
+          CDTQResultSet* result = [im find:query];
+          expect(result).toNot.beNil();
+          expect(result.documentIds.count).to.equal(0);
         });
-        
+
         it(@"returns correct result set for non-contiguous word search", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // The search predicate "Remus Romulus" normalizes to "Remus AND Romulus" in SQLite
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"remus romulus"} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // The search predicate "Remus Romulus" normalizes to "Remus AND Romulus" in SQLite
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"remus romulus"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
-        
+
         it(@"can perform text search using enhanced query syntax OR operator", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Enhanced Query Syntax - logical operators must be uppercase otherwise they will
-            // be treated as a search token
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus OR Romulus"} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34", @"mike72" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Enhanced Query Syntax - logical operators must be uppercase otherwise they will
+          // be treated as a search token
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus OR Romulus"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34", @"mike72" ]);
         });
-        
+
         it(@"can perform text search using enhanced query syntax NOT operator", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Enhanced Query Syntax - logical operators must be uppercase otherwise they will
-            // be treated as a search token
-            // - NOT operator only works between tokens as in (token1 NOT token2)
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus NOT Romulus"} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Enhanced Query Syntax - logical operators must be uppercase otherwise they will
+          // be treated as a search token
+          // - NOT operator only works between tokens as in (token1 NOT token2)
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"Remus NOT Romulus"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
-        
+
         it(@"can perform text search using enhanced query syntax with parentheses", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Parentheses are used to override SQLite enhanced query syntax operator precedence
-            // - Operator precedence is NOT -> AND -> OR
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"(Remus OR Romulus) "
-                                                               @"AND \"lives next door\""} };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Parentheses are used to override SQLite enhanced query syntax operator precedence
+          // - Operator precedence is NOT -> AND -> OR
+          NSDictionary* query = @{
+              @"$text" : @{
+                  @"$search" : @"(Remus OR Romulus) "
+                               @"AND \"lives next door\""
+              }
+          };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
-        
+
         it(@"can perform text search using NEAR operator", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // NEAR provides the ability to search for terms/phrases in proximity to each other
-            // - By specifying a value for NEAR as in NEAR/2 you can define the range of proximity.
-            //   If left out it defaults to 10
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"he lives\" NEAR/2 Bristol" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // NEAR provides the ability to search for terms/phrases in proximity to each other
+          // - By specifying a value for NEAR as in NEAR/2 you can define the range of proximity.
+          //   If left out it defaults to 10
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"\"he lives\" NEAR/2 Bristol"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
-        
+
         it(@"is case insensitive when using the default tokenizer", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Search is generally case-insensitive unless a custom tokenizer is provided
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"rEmUs RoMuLuS" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Search is generally case-insensitive unless a custom tokenizer is provided
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"rEmUs RoMuLuS"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"fred34" ]);
         });
-        
+
         it(@"treats non-string field as a string when performing a text search", ^{
-            expect([im ensureIndexed:@[ @"age" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"12" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
+          expect([im ensureIndexed:@[ @"age" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"12"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12" ]);
         });
-        
+
         it(@"returns nil when text search criteria is not a string", ^{
-            expect([im ensureIndexed:@[ @"age" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @12 } };
-            expect([im find:query]).to.beNil();
+          expect([im ensureIndexed:@[ @"age" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @12} };
+          expect([im find:query]).to.beNil();
         });
-        
+
         it(@"can perform a text search across multiple fields", ^{
-            expect([im ensureIndexed:@[ @"name", @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Will find fred12 and fred34 as well as mike12 since Fred is also mentioned
-            // in mike12's comment
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"Fred" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12", @"fred34" ]);
+          expect([im ensureIndexed:@[ @"name", @"comment" ]
+                          withName:@"basic_text"
+                            ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Will find fred12 and fred34 as well as mike12 since Fred is also mentioned
+          // in mike12's comment
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"Fred"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred12", @"fred34" ]);
         });
-        
+
         it(@"can perform a text search targeting specific fields", ^{
-            expect([im ensureIndexed:@[ @"name", @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            // Will only find fred12 since he is the only named fred who's comment
-            // states that he "lives in Bristol"
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"name:fred "
-                                                               @"comment:lives in Bristol" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"fred12" ]);
+          expect([im ensureIndexed:@[ @"name", @"comment" ]
+                          withName:@"basic_text"
+                            ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          // Will only find fred12 since he is the only named fred who's comment
+          // states that he "lives in Bristol"
+          NSDictionary* query = @{
+              @"$text" : @{
+                  @"$search" : @"name:fred "
+                               @"comment:lives in Bristol"
+              }
+          };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"fred12" ]);
         });
-        
+
         it(@"can perform a text search using prefix searches", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"liv* riv*" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike34" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"liv* riv*"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike34" ]);
         });
-        
+
         it(@"retuns empty result set when missing wildcards in prefix searches", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"liv riv" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result).toNot.beNil();
-            expect(result.documentIds.count).to.equal(0);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"liv riv"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result).toNot.beNil();
+          expect(result.documentIds.count).to.equal(0);
         });
-        
+
         it(@"can perform a text search using ID", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"_id:mike*" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"mike72" ]);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"_id:mike*"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"mike72" ]);
         });
-        
+
         it(@"can perform a text search using the Porter tokenizer stemmer", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"
-                            settings:@{ @"tokenize" : @"porter" }]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"retire memory" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
+          expect([im ensureIndexed:@[ @"comment" ]
+                          withName:@"basic_text"
+                            ofType:CDTQIndexTypeText
+                          settings:@{
+                              @"tokenize" : @"porter"
+                          }])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"retire memory"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result.documentIds).to.containsInAnyOrder(@[ @"mike72" ]);
         });
-        
+
         it(@"returns empty result set when using default tokenizer stemmer", ^{
-            expect([im ensureIndexed:@[ @"comment" ]
-                            withName:@"basic_text"
-                                type:@"text"]).toNot.beNil();
-            
-            NSDictionary* query = @{ @"$text" : @{@"$search" : @"retire memory" } };
-            CDTQResultSet* result = [im find:query];
-            expect(result).toNot.beNil();
-            expect(result.documentIds.count).to.equal(0);
+          expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])
+              .toNot.beNil();
+
+          NSDictionary* query = @{ @"$text" : @{@"$search" : @"retire memory"} };
+          CDTQResultSet* result = [im find:query];
+          expect(result).toNot.beNil();
+          expect(result.documentIds.count).to.equal(0);
         });
 
     });

@@ -192,10 +192,9 @@ SpecBegin(CDTQIndexManager)
                          @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
                          };
             [ds createDocumentFromRevision:rev error:nil];
-            
-            expect([im ensureIndexed:@[ @"name" ]
-                            withName:@"basic"
-                                type:@"text"]).to.equal(@"basic");
+
+            expect([im ensureIndexed:@[ @"name" ] withName:@"basic" ofType:CDTQIndexTypeText])
+                .to.equal(@"basic");
             expect([im listIndexes][@"basic"]).toNot.beNil();
             
             expect([im deleteIndexNamed:@"basic"]).to.equal(@YES);
