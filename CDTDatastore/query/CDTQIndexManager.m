@@ -313,6 +313,14 @@ static const int VERSION = 2;
             return @"text";
         case CDTQIndexTypeJSON:
             return @"json";
+        default:
+            @throw [NSException exceptionWithName:@"InvalidIndexException"
+                                           reason:@"Index type provided is not a valid index type."
+                                         userInfo:@{
+                                             @"Expected" : @"CDTQIndexTypeText (int value 0) or "
+                                                           @"CDTQIndexTypeJSON (int value 1)",
+                                             @"Actual" : @(indexType)
+                                         }];
     }
 }
 
