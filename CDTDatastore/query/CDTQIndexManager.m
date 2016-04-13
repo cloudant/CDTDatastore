@@ -306,7 +306,7 @@ static const int VERSION = 2;
     }
 }
 
-+ (NSString *)stringForIndexType:(CDTQIndexType)indexType /* __attribute__((const))*/
++ (NSString *)stringForIndexType:(CDTQIndexType)indexType
 {
     switch (indexType) {
         case CDTQIndexTypeText:
