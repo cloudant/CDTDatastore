@@ -91,7 +91,7 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
                   withSettings:indexSettings];
 }
 
-#pragma mark New creator methods
+#pragma mark Enum index tyoe creator methods
 
 + (instancetype)index:(NSString *)indexName
            withFields:(NSArray<NSString *> *)fields
