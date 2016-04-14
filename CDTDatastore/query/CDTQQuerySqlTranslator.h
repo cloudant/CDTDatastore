@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTQSqlParts;
 
 @interface CDTQQueryNode : NSObject
@@ -110,9 +112,9 @@
  */
 @interface CDTQQuerySqlTranslator : NSObject
 
-+ (CDTQQueryNode *)translateQuery:(NSDictionary *)query
-                     toUseIndexes:(NSDictionary *)indexes
-                indexesCoverQuery:(BOOL *)indexesCoverQuery;
++ (nullable CDTQQueryNode *)translateQuery:(NSDictionary *)query
+                              toUseIndexes:(NSDictionary *)indexes
+                         indexesCoverQuery:(BOOL *)indexesCoverQuery;
 
 /**
  Expand implicit operators in a query.
@@ -128,12 +130,12 @@
  @[@{@"fieldName": @"mike"}, ...]
  ```
  */
-+ (NSArray *)fieldsForAndClause:(NSArray *)clause;
++ (nullable NSArray *)fieldsForAndClause:(NSArray *)clause;
 
 /**
  Checks for the existence of an operator in a query clause array
 */
-+ (BOOL)isOperator:(NSString *)operator inClause:(NSArray *)clause;
++ (BOOL)isOperator:(NSString *) operator inClause:(NSArray *)clause;
 
 /**
  Selects an index to use for a given query from the set provided.
@@ -144,17 +146,20 @@
  @param indexes index list of the form @{indexName: @[fieldName1, fieldName2]}
  @return name of index from `indexes` to ues for `query`, or `nil` if none found.
  */
-+ (NSString *)chooseIndexForAndClause:(NSArray *)clause fromIndexes:(NSDictionary *)indexes;
++ (nullable NSString *)chooseIndexForAndClause:(NSArray *)clause
+                                   fromIndexes:(NSDictionary *)indexes;
 
 /**
  Selects an index to use for a set of fields.
  */
-+ (NSString *)chooseIndexForFields:(NSSet *)neededFields fromIndexes:(NSDictionary *)indexes;
++ (nullable NSString *)chooseIndexForFields:(NSSet *)neededFields
+                                fromIndexes:(NSDictionary *)indexes;
 
 /**
  Returns the SQL WHERE clause for a query.
  */
-+ (CDTQSqlParts *)wherePartsForAndClause:(NSArray *)clause usingIndex:(NSString *)indexName;
++ (nullable CDTQSqlParts *)wherePartsForAndClause:(NSArray *)clause
+                                       usingIndex:(NSString *)indexName;
 
 /**
  Returns the SQL statement to find document IDs matching query.
@@ -162,6 +167,9 @@
  @param query the query being executed.
  @param indexName the index selected for use in this query
  */
-+ (CDTQSqlParts *)selectStatementForAndClause:(NSArray *)clause usingIndex:(NSString *)indexName;
++ (nullable CDTQSqlParts *)selectStatementForAndClause:(NSArray *)clause
+                                            usingIndex:(NSString *)indexName;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDatastore;
 @class CDTQResultSet;
 @class CDTQSqlParts;
@@ -28,7 +30,8 @@
  Constructs a new CDTQQueryExecutor using the indexes in `database` to find documents from
  `datastore`.
  */
-- (instancetype)initWithDatabase:(FMDatabaseQueue *)database datastore:(CDTDatastore *)datastore;
+- (instancetype)initWithDatabase:(FMDatabaseQueue *)database
+                       datastore:(CDTDatastore *)datastore;
 
 /**
  Execute the query passed using the selection of index definition provided.
@@ -43,12 +46,13 @@
  @param fields fields to project from the result documents
  @param sortDocument document specifying the order to return results, nil to have no sorting
  */
-- (CDTQResultSet *)find:(NSDictionary *)query
-           usingIndexes:(NSDictionary *)indexes
-                   skip:(NSUInteger)skip
-                  limit:(NSUInteger)limit
-                 fields:(NSArray *)fields
-                   sort:(NSArray *)sortDocument;
+- (nullable CDTQResultSet *)find:(NSDictionary<NSString *, NSObject *> *)query
+                    usingIndexes:(NSDictionary *)indexes
+                            skip:(NSUInteger)skip
+                           limit:(NSUInteger)limit
+                          fields:(NSArray<NSString *> *)fields
+                            sort:(nullable NSArray<NSDictionary<NSString *, NSString *> *> *)
+                                     sortDocument;
 
 /**
  Return SQL to get ordered list of docIds.
@@ -57,8 +61,11 @@
  @"asc"} ]`
  @param indexes dictionary of indexes
  */
-+ (CDTQSqlParts *)sqlToSortIds:(NSSet /*NSString*/ *)docIdSet
-                    usingOrder:(NSArray /*NSDictionary*/ *)sortDocument
-                       indexes:(NSDictionary *)indexes;
++ (nullable CDTQSqlParts *)sqlToSortIds:(NSSet<NSString *> *)docIdSet
+                             usingOrder:
+                                 (NSArray<NSDictionary<NSString *, NSString *> *> *)sortDocument
+                                indexes:(NSDictionary<NSString *, NSString *> *)indexes;
 
 @end
+
+NS_ASSUME_NONNULL_END

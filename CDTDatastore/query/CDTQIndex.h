@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString *const kCDTQJsonType;
 extern NSString *const kCDTQTextType;
 
@@ -22,10 +24,10 @@ extern NSString *const kCDTQTextType;
  */
 @interface CDTQIndex : NSObject
 
-@property (nonatomic, strong) NSArray *fieldNames;
+@property (nullable, nonatomic, strong) NSArray<NSString *> *fieldNames;
 @property (nonatomic, strong) NSString *indexName;
 @property (nonatomic, strong) NSString *indexType;
-@property (nonatomic, strong) NSDictionary *indexSettings;
+@property (nullable, nonatomic, strong) NSDictionary *indexSettings;
 
 /**
  * This function sets the index type to the default setting of "json"
@@ -34,11 +36,11 @@ extern NSString *const kCDTQTextType;
  * @param fieldNames the field names in the index
  * @return the Index object or nil if arguments passed in were invalid.
  */
-+ (instancetype)index:(NSString *)indexName withFields:(NSArray *)fieldNames;
++ (nullable instancetype)index:(NSString *)indexName withFields:(NSArray<NSString *> *)fieldNames;
 
-+ (instancetype)index:(NSString *)indexName
-           withFields:(NSArray *)fieldNames
-               ofType:(NSString *)indexType;
++ (nullable instancetype)index:(NSString *)indexName
+                    withFields:(NSArray<NSString *> *)fieldNames
+                        ofType:(NSString *)indexType;
 
 /**
  * This function handles index specific validation and ensures that the constructed
@@ -51,10 +53,10 @@ extern NSString *const kCDTQTextType;
  *                      Only supported parameter is 'tokenize' for text indexes only.
  * @return the Index object or nil if arguments passed in were invalid.
  */
-+ (instancetype)index:(NSString *)indexName
-           withFields:(NSArray *)fieldNames
-               ofType:(NSString *)indexType
-         withSettings:(NSDictionary *)indexSettings;
++ (nullable instancetype)index:(NSString *)indexName
+                    withFields:(NSArray<NSString *> *)fieldNames
+                        ofType:(NSString *)indexType
+                  withSettings:(nullable NSDictionary<NSString *, NSString *> *)indexSettings;
 
 /**
  * Compares the index type and accompanying settings with the passed in arguments.
@@ -73,3 +75,5 @@ extern NSString *const kCDTQTextType;
 - (NSString *)settingsAsJSON;
 
 @end
+
+NS_ASSUME_NONNULL_END

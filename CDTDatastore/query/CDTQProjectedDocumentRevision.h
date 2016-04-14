@@ -14,6 +14,8 @@
 
 #import "CDTDocumentRevision.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDatastore;
 
 /**
@@ -28,12 +30,14 @@
 /**
  Initialise with a datastore so mutableCopy can return a full document.
  */
-- (id)initWithDocId:(NSString *)docId
-         revisionId:(NSString *)revId
-               body:(NSDictionary *)body
-            deleted:(BOOL)deleted
-        attachments:(NSDictionary *)attachments
-           sequence:(SequenceNumber)sequence
-          datastore:(CDTDatastore *)datastore;
+- (instancetype)initWithDocId:(NSString *)docId
+                   revisionId:(NSString *)revId
+                         body:(NSDictionary *)body
+                      deleted:(BOOL)deleted
+                  attachments:(NSDictionary *)attachments
+                     sequence:(SequenceNumber)sequence
+                    datastore:(CDTDatastore *)datastore;
 
 @end
+
+NS_ASSUME_NONNULL_END

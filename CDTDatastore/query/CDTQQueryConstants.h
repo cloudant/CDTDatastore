@@ -14,6 +14,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString *const AND;
 
 extern NSString *const OR;
@@ -45,3 +47,5 @@ extern NSString *const SEARCH;
 extern NSString *const MOD;
 
 extern NSString *const SIZE;
+
+NS_ASSUME_NONNULL_END

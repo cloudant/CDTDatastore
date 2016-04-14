@@ -16,6 +16,8 @@
 
 #import "CDTDefines.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTDocumentRevision;
 @class CDTDatastore;
 
@@ -32,7 +34,7 @@
 
  The indexes are assumed to already exist.
  */
-+ (BOOL)updateAllIndexes:(NSDictionary /*NSString -> NSArray[NSString]*/ *)indexes
++ (BOOL)updateAllIndexes:(NSDictionary<NSString *, NSArray<NSString *> *> *)indexes
               inDatabase:(FMDatabaseQueue *)database
            fromDatastore:(CDTDatastore *)datastore;
 
@@ -42,23 +44,24 @@
  The index is assumed to already exist.
  */
 + (BOOL)updateIndex:(NSString *)indexName
-         withFields:(NSArray /* NSString */ *)fieldNames
+         withFields:(NSArray<NSString *> *)fieldNames
          inDatabase:(FMDatabaseQueue *)database
       fromDatastore:(CDTDatastore *)datastore
-              error:(NSError *__autoreleasing *)error;
+              error:(NSError *__nullable __autoreleasing *__nullable)error;
 
 /**
  Constructs a new CDTQQueryExecutor using the indexes in `database` to index documents from
  `datastore`.
  */
-- (instancetype)initWithDatabase:(FMDatabaseQueue *)database datastore:(CDTDatastore *)datastore;
+- (instancetype)initWithDatabase:(FMDatabaseQueue *)database
+                       datastore:(CDTDatastore *)datastore;
 
 /**
  Update all the indexes in a set.
 
  The indexes are assumed to already exist.
  */
-- (BOOL)updateAllIndexes:(NSDictionary /*NSString -> NSArray[NSString]*/ *)indexes;
+- (BOOL)updateAllIndexes:(NSDictionary<NSString *, NSArray<NSString *> *> *)indexes;
 
 /**
  Update a single index.
@@ -66,8 +69,8 @@
  The index is assumed to already exist.
  */
 - (BOOL)updateIndex:(NSString *)indexName
-         withFields:(NSArray /* NSString */ *)fieldNames
-              error:(NSError *__autoreleasing *)error;
+         withFields:(NSArray<NSString *> *)fieldNames
+              error:(NSError *__autoreleasing __nullable *__nullable)error;
 
 /**
  Generate the DELETE statement to remove a documents entries from an index.
@@ -78,9 +81,9 @@
 /**
  Generate the INSERT statement to add a document to an index.
  */
-+ (NSArray /*CDTQSqlParts*/ *)partsToIndexRevision:(CDTDocumentRevision *)rev
-                                           inIndex:(NSString *)indexName
-                                    withFieldNames:(NSArray *)fieldNames;
++ (NSArray<CDTQSqlParts *> *)partsToIndexRevision:(CDTDocumentRevision *)rev
+                                          inIndex:(NSString *)indexName
+                                   withFieldNames:(NSArray<NSString *> *)fieldNames;
 
 /**
  Return the sequence number for the given index
@@ -91,3 +94,4 @@
 - (SequenceNumber)sequenceNumberForIndex:(NSString *)indexName;
 
 @end
+NS_ASSUME_NONNULL_END

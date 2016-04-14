@@ -17,6 +17,8 @@
 #import "CDTDatastore.h"
 #import "CDTQIndexManager.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  This category adds query capabilities to CDTDatastore.
  
@@ -44,7 +46,7 @@
        ...
      }
  */
-- (NSDictionary * /* NSString -> NSArray[NSString]*/)listIndexes;
+- (NSDictionary<NSString *, NSArray<NSString *> *> *)listIndexes;
 
 /**
  Create a new index over a set of fields.
@@ -63,17 +65,17 @@
  
  @return The name of the index if it's created successfully.
  */
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName;
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName;
 /**
  Create a new index based on an index type over a set of fields.
  
  Index type can be either "json" or "text".  A TEXT index provides
  the ability to perform text searches.
  */
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName
-                       type:(NSString *)type;
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName
+                                type:(NSString *)type;
 
 /**
  Create a new index based on an index type with specific index 
@@ -94,10 +96,10 @@
  default tokenizer used to construct the TEXT index with the
  "porter" algorithm tokenizer.
  */
-- (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
-                   withName:(NSString *)indexName
-                       type:(NSString *)type
-                   settings:(NSDictionary *)indexSettings;
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName
+                                type:(NSString *)type
+                            settings:(NSDictionary *)indexSettings;
 
 /**
  Delete an index.
@@ -124,7 +126,7 @@
  
  @return Set of documents, or `nil` if there was an error.
  */
-- (CDTQResultSet *)find:(NSDictionary *)query;
+- (nullable CDTQResultSet *)find:(NSDictionary *)query;
 
 /**
  Find document matching a query.
@@ -137,10 +139,12 @@
  
  @return Set of documents, or `nil` if there was an error.
  */
-- (CDTQResultSet *)find:(NSDictionary *)query
-                   skip:(NSUInteger)skip
-                  limit:(NSUInteger)limit
-                 fields:(NSArray *)fields
-                   sort:(NSArray *)sortDocument;
+- (nullable CDTQResultSet *)find:(NSDictionary *)query
+                            skip:(NSUInteger)skip
+                           limit:(NSUInteger)limit
+                          fields:(nullable NSArray *)fields
+                            sort:(nullable NSArray *)sortDocument;
 
 @end
+
+NS_ASSUME_NONNULL_END
