@@ -374,14 +374,16 @@ SpecBegin(CDTQIndexUpdater)
                 expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
 
             });
-            
-            describe(@"when using a text index", ^{
-                it(@"sets correct sequence number", ^{
-                    
+
+            describe(
+                @"when using a text index", ^{
+                  it(@"sets correct sequence number", ^{
+
                     expect([im ensureIndexed:@[ @"pet", @"name" ]
                                     withName:@"basic"
-                                        type:@"text"]).toNot.beNil();
-                    
+                                      ofType:CDTQIndexTypeText])
+                        .toNot.beNil();
+
                     FMDatabaseQueue *queue =
                         (FMDatabaseQueue *)[im performSelector:@selector(database)];
                     
@@ -392,13 +394,14 @@ SpecBegin(CDTQIndexUpdater)
                     expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
                     
                     expect([updater sequenceNumberForIndex:@"basic"]).to.equal(6);
-                    
-                });
-                
-                it(@"sets correct sequence number after update", ^{
+
+                  });
+
+                  it(@"sets correct sequence number after update", ^{
                     expect([im ensureIndexed:@[ @"pet", @"name" ]
                                     withName:@"basic"
-                                        type:@"text"]).toNot.beNil();
+                                      ofType:CDTQIndexTypeText])
+                        .toNot.beNil();
                     FMDatabaseQueue *queue =
                         (FMDatabaseQueue *)[im performSelector:@selector(database)];
                     CDTQIndexUpdater *updater =
@@ -412,9 +415,9 @@ SpecBegin(CDTQIndexUpdater)
                     expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
                     
                     expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
-                    
+
+                  });
                 });
-            });
 
         });
     });

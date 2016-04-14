@@ -447,8 +447,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
             
             [im ensureIndexed:@[ @"name", @"age", @"pet" ] withName:@"basic"];
-            [im ensureIndexed:@[ @"comments" ] withName:@"basic_text" type:@"text"];
-            
+            [im ensureIndexed:@[ @"comments" ] withName:@"basic_text" ofType:CDTQIndexTypeText];
+
             expect([[im listIndexes] count]).to.equal(2);
         });
         

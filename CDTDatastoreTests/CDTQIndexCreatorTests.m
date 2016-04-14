@@ -219,63 +219,68 @@ SpecBegin(CDTQIndexCreator)
             });
 
             it(@"supports using the json type", ^{
-                NSString *name =
-                    [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{
-                        @"age" : @"desc"
-                    } ] withName:@"basic"
-                                 type:@"json"];
-                expect(name).to.equal(@"basic");
+              NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                                    @{ @"age" : @"desc" } ]
+                                        withName:@"basic"
+                                          ofType:CDTQIndexTypeJSON];
+              expect(name).to.equal(@"basic");
             });
 
             it(@"supports using the text type", ^{
-                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                          withName:@"basic"
-                                              type:@"text"];
-                expect(name).to.equal(@"basic");
-                NSDictionary *indexes = im.listIndexes;
-                expect(indexes.count).to.equal(1);
-                NSDictionary *index = indexes[@"basic"];
-                expect(index[@"type"]).to.equal(@"text");
-                expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"simple\"}");
+              NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                                    @{ @"age" : @"desc" } ]
+                                        withName:@"basic"
+                                          ofType:CDTQIndexTypeText];
+              expect(name).to.equal(@"basic");
+              NSDictionary *indexes = im.listIndexes;
+              expect(indexes.count).to.equal(1);
+              NSDictionary *index = indexes[@"basic"];
+              expect(index[@"type"]).to.equal(@"text");
+              expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"simple\"}");
             });
-            
+
             it(@"supports using the text type with a tokenize setting", ^{
-                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                          withName:@"basic"
-                                              type:@"text"
-                                          settings:@{ @"tokenize" : @"porter" }];
-                expect(name).to.equal(@"basic");
-                NSDictionary *indexes = im.listIndexes;
-                expect(indexes.count).to.equal(1);
-                NSDictionary *index = indexes[@"basic"];
-                expect(index[@"type"]).to.equal(@"text");
-                expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"porter\"}");
+              NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                                    @{ @"age" : @"desc" } ]
+                                        withName:@"basic"
+                                          ofType:CDTQIndexTypeText
+                                        settings:@{
+                                            @"tokenize" : @"porter"
+                                        }];
+              expect(name).to.equal(@"basic");
+              NSDictionary *indexes = im.listIndexes;
+              expect(indexes.count).to.equal(1);
+              NSDictionary *index = indexes[@"basic"];
+              expect(index[@"type"]).to.equal(@"text");
+              expect(index[@"settings"]).to.equal(@"{\"tokenize\":\"porter\"}");
             });
-            
+
             it(@"supports coexistence of text and json indexes", ^{
-                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                          withName:@"textIndex"
-                                              type:@"text"];
-                expect(name).to.equal(@"textIndex");
-                name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                withName:@"jsonIndex"
-                                    type:@"json"];
-                expect(name).to.equal(@"jsonIndex");
-                expect(im.listIndexes.allKeys).to.containsInAnyOrder(@[ @"textIndex",
-                                                                        @"jsonIndex" ]);
-                
+              NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                                    @{ @"age" : @"desc" } ]
+                                        withName:@"textIndex"
+                                          ofType:CDTQIndexTypeText];
+              expect(name).to.equal(@"textIndex");
+              name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                          @{ @"age" : @"desc" } ]
+                              withName:@"jsonIndex"
+                                ofType:CDTQIndexTypeJSON];
+              expect(name).to.equal(@"jsonIndex");
+              expect(im.listIndexes.allKeys).to.containsInAnyOrder(@[ @"textIndex", @"jsonIndex" ]);
+
             });
-            
-            
+
             it(@"correctly limits text index creation to one", ^{
-                NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                          withName:@"basic"
-                                              type:@"text"];
-                expect(name).to.equal(@"basic");
-                name = [im ensureIndexed:@[ @{ @"name" : @"asc" }, @{ @"age" : @"desc"} ]
-                                withName:@"anotherTextIndex"
-                                    type:@"text"];
-                expect(name).to.beNil();
+              NSString *name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                                    @{ @"age" : @"desc" } ]
+                                        withName:@"basic"
+                                          ofType:CDTQIndexTypeText];
+              expect(name).to.equal(@"basic");
+              name = [im ensureIndexed:@[ @{ @"name" : @"asc" },
+                                          @{ @"age" : @"desc" } ]
+                              withName:@"anotherTextIndex"
+                                ofType:CDTQIndexTypeText];
+              expect(name).to.beNil();
             });
 
             it(@"doesn't support using the geo type", ^{
