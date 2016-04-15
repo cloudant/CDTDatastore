@@ -213,10 +213,9 @@
     XCTAssertEqual(replayingInterceptor.timesCalled, 11);
 }
 
-- (NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config
+- (void)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config
 {
     config.timeoutIntervalForResource=1.0;
-    return config;
 }
 
 @end

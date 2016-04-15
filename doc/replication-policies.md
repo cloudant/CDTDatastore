@@ -130,10 +130,9 @@ Create a method to start replications and wait for their completion (on a backgr
 Setup an NSURLSessionConfigurationDelegate to customise the NSURLSession as you require:
 
 ```objc
-- (NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config {
+- (void)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config {
     config.allowsCellularAccess = NO; // Wifi only.
     config.sessionSendsLaunchEvents = YES;
-    return config;
 }
 ```
 

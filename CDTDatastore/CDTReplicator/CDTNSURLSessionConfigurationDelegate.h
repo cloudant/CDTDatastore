@@ -22,8 +22,7 @@
  to NO.
  */
 @protocol CDTNSURLSessionConfigurationDelegate
-@optional
-- (nonnull NSURLSessionConfiguration*)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config;
+- (void)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config;
 @end
 
 

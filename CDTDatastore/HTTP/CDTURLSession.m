@@ -73,7 +73,7 @@
         config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
 #endif
 
-        config = [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
+        [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
 
         _session = [NSURLSession sessionWithConfiguration:config
                                                  delegate:self
