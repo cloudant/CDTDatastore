@@ -29,6 +29,7 @@
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OCMock/OCMock.h>
+#import <netinet/in.h>
 
 @interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
 
@@ -61,25 +62,65 @@
 
 @end
 
-@interface CDTReplicationTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
+@interface CDTReplicationTests : CloudantSyncTests
+
+@property int listenSocketFd;
 
 @end
 
 @implementation CDTReplicationTests
 
+// Start a simple HTTP server on localhost that responds to any message with a "404 Not Found".
+- (void)startSimpleHttp404Server {
+    self.listenSocketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    const int buf_size = 1024;
+
+    struct sockaddr_in serv_addr;
+    memset(&serv_addr, '0', sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(8080);
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    bind(self.listenSocketFd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    listen(self.listenSocketFd, 10);
+
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        bool stopped = false;
+        while (!stopped)
+        {
+            __block int connfd = accept(self.listenSocketFd, (struct sockaddr*)NULL, NULL);
+            if (connfd > 0) {
+                char buffer[buf_size];
+                bzero(buffer, buf_size);
+
+                // Receive a message.
+                recv(connfd, buffer, buf_size, 0);
+
+                // We don't care what the message was (or if we read it all), just send back a 404.
+                char* header = "HTTP/1.0 404 Not Found\n";
+                write(connfd, header, strlen(header));
+                close(connfd);
+            } else {
+                stopped = true;
+            }
+        }
+    });
+}
+
+- (void)stopSimpleHttp404Server {
+    close(self.listenSocketFd);
+}
+
 - (void)testFiltersWithChangesFeed
 {
-    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {
-        return YES;
-    }
-    withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:404 headers:@{}];
-    }];
-
     NSError *error;
-    // we need a real live remote here, so the reachability test before the replication starts
+    // We need a real remote here, so the reachability test before the replication starts
     // passes, it doesn't need a couch server, since the NSURLProtocol will 404 any request.
-    NSString *remoteUrl = @"https://example.com";
+    // We can't use OHHTTPStubs to stub the server as that doesn't work with background
+    // requests, so we just start a simple local server that returns 404 to anything it receives
+    // and use that for our remote.
+    [self startSimpleHttp404Server];
+    NSString *remoteUrl = @"http://127.0.0.1:8080";
 
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     CDTPullReplication *pull =
@@ -92,18 +133,14 @@
 
     CDTReplicator *replicator = [replicatorFactory oneWay:pull error:&error];
 
-    // OHHTTPStubs doesn't work with background sessions, so for the purposes
-    // of this test we'll make this a foreground session.
-    id mockedReplicator = OCMPartialMock(replicator);
-    OCMStub([mockedReplicator sessionConfigDelegate]).andReturn(self);
-
     dispatch_group_t taskGroup = dispatch_group_create();
     [replicator startWithTaskGroup:taskGroup error:&error];
 
     dispatch_group_wait(taskGroup, DISPATCH_TIME_FOREVER);
 
     XCTAssertTrue(interceptor.changesFeedRequestMade);
-    [OHHTTPStubs removeAllStubs];
+
+    [self stopSimpleHttp404Server];
 }
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
@@ -437,12 +474,6 @@
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %@", error.code);
     }
-}
-
-- (NSURLSessionConfiguration*) customiseNSURLSessionConfiguration:(NSURLSessionConfiguration *)config
-{
-    config = [NSURLSessionConfiguration defaultSessionConfiguration];
-    return config;
 }
 
 @end
