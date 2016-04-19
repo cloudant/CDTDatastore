@@ -26,6 +26,21 @@ extern NSString *const kCDTQIndexMetadataTableName;
 @class FMDatabaseQueue;
 @class FMDatabase;
 
+/**
+ * Query Index types
+ */
+typedef NS_ENUM(NSUInteger, CDTQIndexType) {
+    /**
+     * Denotes the index is of type text.
+     */
+    CDTQIndexTypeText,
+    /**
+     * Denotes the index of type JSON.
+     */
+    CDTQIndexTypeJSON,
+
+};
+
 @interface CDTQSqlParts : NSObject
 
 @property (nonatomic, strong) NSString *sqlWithPlaceholders;
@@ -92,16 +107,26 @@ managerUsingDatastore:(CDTDatastore *)datastore
 /** Internal */
 + (NSDictionary<NSString *, NSArray<NSString *> *> *)listIndexesInDatabase:(FMDatabase *)db;
 
-- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames withName:(NSString *)indexName;
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                            withName:(NSString *)indexName;
 
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                             withName:(NSString *)indexName
-                                type:(NSString *)type;
+                                type:(NSString *)type __attribute__((deprecated));
 
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                             withName:(NSString *)indexName
                                 type:(NSString *)type
-                            settings:(nullable NSDictionary *)indexSettings;
+                            settings:(nullable NSDictionary *)indexSettings __attribute__((deprecated));
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type;
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+                   settings:(NSDictionary *)indexSettings;
 
 - (BOOL)deleteIndexNamed:(NSString *)indexName;
 
@@ -117,7 +142,8 @@ managerUsingDatastore:(CDTDatastore *)datastore
 
 /** Internal */
 + (NSString *)tableNameForIndex:(NSString *)indexName;
-
++ (CDTQIndexType)indexTypeForString:(NSString *)string;
++ (NSString *)stringForIndexType:(CDTQIndexType)indexType;
 /** Internal */
 + (BOOL)ftsAvailableInDatabase:(FMDatabaseQueue *)db;
 

@@ -5,13 +5,14 @@
 //  Created by Michael Rhodes on 09/27/2014.
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
 //
-
-#import <CloudantSync.h>
-#import <CDTQIndexManager.h>
-#import <CDTQIndexUpdater.h>
-#import <CDTQIndexCreator.h>
-#import <CDTQResultSet.h>
-#import <CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQIndexCreator.h>
+#import <CDTDatastore/CDTQIndexManager.h>
+#import <CDTDatastore/CDTQIndexUpdater.h>
+#import <CDTDatastore/CDTQQueryExecutor.h>
+#import <CDTDatastore/CDTQResultSet.h>
+#import <CDTDatastore/CloudantSync.h>
+#import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
 
 SpecBegin(CDTQIndexUpdater)
 
@@ -373,14 +374,16 @@ SpecBegin(CDTQIndexUpdater)
                 expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
 
             });
-            
-            describe(@"when using a text index", ^{
-                it(@"sets correct sequence number", ^{
-                    
+
+            describe(
+                @"when using a text index", ^{
+                  it(@"sets correct sequence number", ^{
+
                     expect([im ensureIndexed:@[ @"pet", @"name" ]
                                     withName:@"basic"
-                                        type:@"text"]).toNot.beNil();
-                    
+                                      ofType:CDTQIndexTypeText])
+                        .toNot.beNil();
+
                     FMDatabaseQueue *queue =
                         (FMDatabaseQueue *)[im performSelector:@selector(database)];
                     
@@ -391,13 +394,14 @@ SpecBegin(CDTQIndexUpdater)
                     expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
                     
                     expect([updater sequenceNumberForIndex:@"basic"]).to.equal(6);
-                    
-                });
-                
-                it(@"sets correct sequence number after update", ^{
+
+                  });
+
+                  it(@"sets correct sequence number after update", ^{
                     expect([im ensureIndexed:@[ @"pet", @"name" ]
                                     withName:@"basic"
-                                        type:@"text"]).toNot.beNil();
+                                      ofType:CDTQIndexTypeText])
+                        .toNot.beNil();
                     FMDatabaseQueue *queue =
                         (FMDatabaseQueue *)[im performSelector:@selector(database)];
                     CDTQIndexUpdater *updater =
@@ -411,9 +415,9 @@ SpecBegin(CDTQIndexUpdater)
                     expect([updater updateAllIndexes:[im listIndexes]]).to.beTruthy();
                     
                     expect([updater sequenceNumberForIndex:@"basic"]).to.equal(7);
-                    
+
+                  });
                 });
-            });
 
         });
     });

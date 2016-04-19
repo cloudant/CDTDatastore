@@ -20,14 +20,12 @@
 
 - (CDTQIndexManager *)CDTQManager
 {
-    if (objc_getAssociatedObject(self, @selector(CDTQManager)) == nil) {
-        @synchronized(self)
-        {
-            if (objc_getAssociatedObject(self, @selector(CDTQManager)) == nil) {
-                CDTQIndexManager *m = [CDTQIndexManager managerUsingDatastore:self error:nil];
-                objc_setAssociatedObject(self, @selector(CDTQManager), m,
-                                         OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            }
+    @synchronized(self)
+    {
+        if (objc_getAssociatedObject(self, @selector(CDTQManager)) == nil) {
+            CDTQIndexManager *m = [CDTQIndexManager managerUsingDatastore:self error:nil];
+            objc_setAssociatedObject(self, @selector(CDTQManager), m,
+                                     OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         }
     }
 
@@ -65,6 +63,24 @@
                                   withName:indexName
                                       type:type
                                   settings:indexSettings];
+}
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+                   settings:(NSDictionary *)indexSettings
+{
+    return [self.CDTQManager ensureIndexed:fieldNames
+                                  withName:indexName
+                                    ofType:type
+                                  settings:indexSettings];
+}
+
+- (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+                   withName:(NSString *)indexName
+                     ofType:(CDTQIndexType)type
+{
+    return [self.CDTQManager ensureIndexed:fieldNames withName:indexName ofType:type];
 }
 
 - (CDTQResultSet *)find:(NSDictionary *)query
