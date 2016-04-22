@@ -18,6 +18,8 @@
 #import <Foundation/Foundation.h>
 #import "CDTMacros.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CDTHTTPInterceptorContext : NSObject
 
 @property (nonnull, readwrite, nonatomic, strong) NSMutableURLRequest *request;
@@ -30,16 +32,15 @@
  *  Calling this method from your code will result in
  *  an exception being thrown.
  **/
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**
  *  Initalizes a CDTURLSessionInterceptorContext
  *
  *  @param request the request this context should represent
  **/
-- (nullable instancetype)initWithRequest:(nonnull NSMutableURLRequest *)request
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithRequest:(nonnull NSMutableURLRequest *)request NS_DESIGNATED_INITIALIZER;
 
 @end
 
-
+NS_ASSUME_NONNULL_END

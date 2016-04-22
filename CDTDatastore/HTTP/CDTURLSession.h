@@ -39,9 +39,11 @@
  * @param requestInterceptors array of interceptors that should be run before each request is made.
  * @param sessionConfigDelegate the delegate used to customise the NSURLSessionConfiguration.
  **/
-- (nullable instancetype)initWithCallbackThread:(nonnull NSThread *)thread
-                            requestInterceptors:(nullable NSArray *)requestInterceptors
-                          sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate  NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithCallbackThread:(nonnull NSThread *)thread
+                           requestInterceptors:(nullable NSArray *)requestInterceptors
+                         sessionConfigDelegate:
+                             (nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)
+                                 sessionConfigDelegate NS_DESIGNATED_INITIALIZER;
 
 /**
  * Performs a data task for a request.
