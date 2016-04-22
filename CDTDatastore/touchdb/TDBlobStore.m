@@ -255,13 +255,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
         _tempDir = [NSTemporaryDirectory() copy];
 #else
         NSError* error;
-        NSURL* parentURL = [NSURL fileURLWithPath:_path isDirectory:YES];
-        NSURL* tempDirURL =
-            [[NSFileManager defaultManager] URLForDirectory:NSItemReplacementDirectory
-                                                   inDomain:NSUserDomainMask
-                                          appropriateForURL:parentURL
-                                                     create:YES
-                                                      error:&error];
+        NSURL *tempDirURL = [NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES];
+
         _tempDir = [tempDirURL.path copy];
         CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"TDBlobStore %@ created tempDir %@", _path, _tempDir);
         if (!_tempDir)
