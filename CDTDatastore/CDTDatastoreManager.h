@@ -15,7 +15,7 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString *const CDTDatastoreErrorDomain;
+extern NSString *__nonnull const CDTDatastoreErrorDomain;
 
 @class CDTDatastore;
 @class TD_DatabaseManager;

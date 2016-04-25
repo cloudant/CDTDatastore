@@ -32,7 +32,7 @@
 /**
  CDTENCRYPTIONKEY_KEYSIZE bytes buffer with the DPK
  */
-@property (strong, nonatomic, readonly) NSData *data;
+@property (nonnull, strong, nonatomic, readonly) NSData *data;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
