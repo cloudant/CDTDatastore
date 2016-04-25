@@ -136,7 +136,6 @@
 		987383541C47B38800937212 /* TDChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */; };
 		987383551C47B38800937212 /* TDJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF71C43FCEE00515CC3 /* TDJSON.m */; };
 		987383561C47B38800937212 /* TDReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0B1C43FCEE00515CC3 /* TDReachability.m */; };
-		987383571C47B38800937212 /* TDSocketChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */; };
 		987383581C47B38800937212 /* CDTDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B5A1C43FCEE00515CC3 /* CDTDatastore.m */; };
 		987383591C47B38800937212 /* ExceptionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		9873835A1C47B38800937212 /* ConcurrentOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE91C43FDA700515CC3 /* ConcurrentOperation.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -198,7 +197,6 @@
 		987383951C47B38800937212 /* CDTConflictResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B591C43FCEE00515CC3 /* CDTConflictResolver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383961C47B38800937212 /* CDTHTTPInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA31C43FCEE00515CC3 /* CDTHTTPInterceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383971C47B38800937212 /* CDTDatastoreManager+EncryptionKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B821C43FCEE00515CC3 /* CDTDatastoreManager+EncryptionKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383981C47B38800937212 /* TDSocketChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383991C47B38800937212 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839A1C47B38800937212 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839B1C47B38800937212 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -359,7 +357,6 @@
 		987384421C47B3C400937212 /* TDChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */; };
 		987384431C47B3C400937212 /* TDJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF71C43FCEE00515CC3 /* TDJSON.m */; };
 		987384441C47B3C400937212 /* TDReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0B1C43FCEE00515CC3 /* TDReachability.m */; };
-		987384451C47B3C400937212 /* TDSocketChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */; };
 		987384461C47B3C400937212 /* CDTDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B5A1C43FCEE00515CC3 /* CDTDatastore.m */; };
 		987384471C47B3C400937212 /* ExceptionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		987384481C47B3C400937212 /* ConcurrentOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE91C43FDA700515CC3 /* ConcurrentOperation.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -420,7 +417,6 @@
 		987384821C47B3C400937212 /* CDTConflictResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B591C43FCEE00515CC3 /* CDTConflictResolver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384831C47B3C400937212 /* CDTHTTPInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA31C43FCEE00515CC3 /* CDTHTTPInterceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384841C47B3C400937212 /* CDTDatastoreManager+EncryptionKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B821C43FCEE00515CC3 /* CDTDatastoreManager+EncryptionKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987384851C47B3C400937212 /* TDSocketChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384861C47B3C400937212 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384871C47B3C400937212 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384881C47B3C400937212 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -747,8 +743,6 @@
 		98F77C8C1C43FCEE00515CC3 /* CDTQValueExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC71C43FCEE00515CC3 /* CDTQValueExtractor.m */; };
 		98F77C8D1C43FCEE00515CC3 /* TDChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCA1C43FCEE00515CC3 /* TDChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77C8E1C43FCEE00515CC3 /* TDChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */; };
-		98F77C8F1C43FCEE00515CC3 /* TDSocketChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77C901C43FCEE00515CC3 /* TDSocketChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */; };
 		98F77C911C43FCEE00515CC3 /* TDURLConnectionChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCE1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77C921C43FCEE00515CC3 /* TDURLConnectionChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCF1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.m */; };
 		98F77C931C43FCEE00515CC3 /* TD_Attachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BD01C43FCEE00515CC3 /* TD_Attachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1008,7 +1002,6 @@
 		98F786251C456B1300515CC3 /* TDChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */; };
 		98F786261C456B1300515CC3 /* TDJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF71C43FCEE00515CC3 /* TDJSON.m */; };
 		98F786271C456B1300515CC3 /* TDReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0B1C43FCEE00515CC3 /* TDReachability.m */; };
-		98F786281C456B1300515CC3 /* TDSocketChangeTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */; };
 		98F786291C456B1300515CC3 /* CDTDatastore.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B5A1C43FCEE00515CC3 /* CDTDatastore.m */; };
 		98F7862A1C456B1300515CC3 /* ExceptionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F7862B1C456B1300515CC3 /* ConcurrentOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE91C43FDA700515CC3 /* ConcurrentOperation.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -1069,7 +1062,6 @@
 		98F786661C456B1300515CC3 /* CDTConflictResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B591C43FCEE00515CC3 /* CDTConflictResolver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786671C456B1300515CC3 /* CDTHTTPInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA31C43FCEE00515CC3 /* CDTHTTPInterceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786681C456B1300515CC3 /* CDTDatastoreManager+EncryptionKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B821C43FCEE00515CC3 /* CDTDatastoreManager+EncryptionKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F786691C456B1300515CC3 /* TDSocketChangeTracker.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866A1C456B1300515CC3 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866B1C456B1300515CC3 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866C1C456B1300515CC3 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1406,8 +1398,6 @@
 		98F77BC71C43FCEE00515CC3 /* CDTQValueExtractor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTQValueExtractor.m; sourceTree = "<group>"; };
 		98F77BCA1C43FCEE00515CC3 /* TDChangeTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDChangeTracker.h; sourceTree = "<group>"; };
 		98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDChangeTracker.m; sourceTree = "<group>"; };
-		98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDSocketChangeTracker.h; sourceTree = "<group>"; };
-		98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDSocketChangeTracker.m; sourceTree = "<group>"; };
 		98F77BCE1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDURLConnectionChangeTracker.h; sourceTree = "<group>"; };
 		98F77BCF1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDURLConnectionChangeTracker.m; sourceTree = "<group>"; };
 		98F77BD01C43FCEE00515CC3 /* TD_Attachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TD_Attachment.h; sourceTree = "<group>"; };
@@ -2206,8 +2196,6 @@
 			children = (
 				98F77BCA1C43FCEE00515CC3 /* TDChangeTracker.h */,
 				98F77BCB1C43FCEE00515CC3 /* TDChangeTracker.m */,
-				98F77BCC1C43FCEE00515CC3 /* TDSocketChangeTracker.h */,
-				98F77BCD1C43FCEE00515CC3 /* TDSocketChangeTracker.m */,
 				98F77BCE1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.h */,
 				98F77BCF1C43FCEE00515CC3 /* TDURLConnectionChangeTracker.m */,
 			);
@@ -2575,7 +2563,6 @@
 				987383951C47B38800937212 /* CDTConflictResolver.h in Headers */,
 				987383961C47B38800937212 /* CDTHTTPInterceptor.h in Headers */,
 				987383971C47B38800937212 /* CDTDatastoreManager+EncryptionKey.h in Headers */,
-				987383981C47B38800937212 /* TDSocketChangeTracker.h in Headers */,
 				987383991C47B38800937212 /* TDPuller.h in Headers */,
 				9873839A1C47B38800937212 /* CDTChangedDictionary.h in Headers */,
 				9873839B1C47B38800937212 /* TDBatcher.h in Headers */,
@@ -2705,7 +2692,6 @@
 				987384821C47B3C400937212 /* CDTConflictResolver.h in Headers */,
 				987384831C47B3C400937212 /* CDTHTTPInterceptor.h in Headers */,
 				987384841C47B3C400937212 /* CDTDatastoreManager+EncryptionKey.h in Headers */,
-				987384851C47B3C400937212 /* TDSocketChangeTracker.h in Headers */,
 				987384861C47B3C400937212 /* TDPuller.h in Headers */,
 				987384871C47B3C400937212 /* CDTChangedDictionary.h in Headers */,
 				987384881C47B3C400937212 /* TDBatcher.h in Headers */,
@@ -2836,7 +2822,6 @@
 				98F77C251C43FCEE00515CC3 /* CDTConflictResolver.h in Headers */,
 				98F77C691C43FCEE00515CC3 /* CDTHTTPInterceptor.h in Headers */,
 				98F77C4B1C43FCEE00515CC3 /* CDTDatastoreManager+EncryptionKey.h in Headers */,
-				98F77C8F1C43FCEE00515CC3 /* TDSocketChangeTracker.h in Headers */,
 				98F77CC91C43FCEE00515CC3 /* TDPuller.h in Headers */,
 				98F77CDB1C43FCEE00515CC3 /* CDTChangedDictionary.h in Headers */,
 				98F77CAF1C43FCEE00515CC3 /* TDBatcher.h in Headers */,
@@ -2967,7 +2952,6 @@
 				98F786661C456B1300515CC3 /* CDTConflictResolver.h in Headers */,
 				98F786671C456B1300515CC3 /* CDTHTTPInterceptor.h in Headers */,
 				98F786681C456B1300515CC3 /* CDTDatastoreManager+EncryptionKey.h in Headers */,
-				98F786691C456B1300515CC3 /* TDSocketChangeTracker.h in Headers */,
 				98F7866A1C456B1300515CC3 /* TDPuller.h in Headers */,
 				98F7866B1C456B1300515CC3 /* CDTChangedDictionary.h in Headers */,
 				98F7866C1C456B1300515CC3 /* TDBatcher.h in Headers */,
@@ -4109,7 +4093,6 @@
 				987383541C47B38800937212 /* TDChangeTracker.m in Sources */,
 				987383551C47B38800937212 /* TDJSON.m in Sources */,
 				987383561C47B38800937212 /* TDReachability.m in Sources */,
-				987383571C47B38800937212 /* TDSocketChangeTracker.m in Sources */,
 				987383581C47B38800937212 /* CDTDatastore.m in Sources */,
 				987383591C47B38800937212 /* ExceptionUtils.m in Sources */,
 				9873835A1C47B38800937212 /* ConcurrentOperation.m in Sources */,
@@ -4215,7 +4198,6 @@
 				987384421C47B3C400937212 /* TDChangeTracker.m in Sources */,
 				987384431C47B3C400937212 /* TDJSON.m in Sources */,
 				987384441C47B3C400937212 /* TDReachability.m in Sources */,
-				987384451C47B3C400937212 /* TDSocketChangeTracker.m in Sources */,
 				987384461C47B3C400937212 /* CDTDatastore.m in Sources */,
 				987384471C47B3C400937212 /* ExceptionUtils.m in Sources */,
 				987384481C47B3C400937212 /* ConcurrentOperation.m in Sources */,
@@ -4471,7 +4453,6 @@
 				98F77C8E1C43FCEE00515CC3 /* TDChangeTracker.m in Sources */,
 				98F77CBA1C43FCEE00515CC3 /* TDJSON.m in Sources */,
 				98F77CCE1C43FCEE00515CC3 /* TDReachability.m in Sources */,
-				98F77C901C43FCEE00515CC3 /* TDSocketChangeTracker.m in Sources */,
 				98F77C261C43FCEE00515CC3 /* CDTDatastore.m in Sources */,
 				98F77D0E1C43FDA700515CC3 /* ExceptionUtils.m in Sources */,
 				98F77D0C1C43FDA700515CC3 /* ConcurrentOperation.m in Sources */,
@@ -4689,7 +4670,6 @@
 				98F786251C456B1300515CC3 /* TDChangeTracker.m in Sources */,
 				98F786261C456B1300515CC3 /* TDJSON.m in Sources */,
 				98F786271C456B1300515CC3 /* TDReachability.m in Sources */,
-				98F786281C456B1300515CC3 /* TDSocketChangeTracker.m in Sources */,
 				98F786291C456B1300515CC3 /* CDTDatastore.m in Sources */,
 				98F7862A1C456B1300515CC3 /* ExceptionUtils.m in Sources */,
 				98F7862B1C456B1300515CC3 /* ConcurrentOperation.m in Sources */,
