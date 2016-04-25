@@ -159,10 +159,11 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
 /*
  Private so no docs
  */
--(instancetype)initWithTDReplicatorManager:(nonnull TDReplicatorManager*)replicatorManager
-                     replication:(nonnull CDTAbstractReplication*)replication
-           sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
-                           error:(NSError * __autoreleasing __nullable * __nullable )error;
+- (nullable instancetype)
+initWithTDReplicatorManager:(nonnull TDReplicatorManager *)replicatorManager
+                replication:(nonnull CDTAbstractReplication *)replication
+      sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
+                      error:(NSError *__autoreleasing __nullable *__nullable)error;
 
 /*
  Access the underlying NSThread execution state.

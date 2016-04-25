@@ -83,7 +83,6 @@
 		9873831E1C47B38800937212 /* TDReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */; };
 		9873831F1C47B38800937212 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		987383201C47B38800937212 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
-		987383211C47B38800937212 /* MYBlockUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		987383221C47B38800937212 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
 		987383231C47B38800937212 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		987383241C47B38800937212 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
@@ -262,7 +261,6 @@
 		987383D41C47B38800937212 /* Target.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D011C43FDA700515CC3 /* Target.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D51C47B38800937212 /* Test.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D031C43FDA700515CC3 /* Test.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383D71C47B38800937212 /* MYBlockUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D81C47B38800937212 /* MYURLUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFA1C43FDA700515CC3 /* MYURLUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B9B1C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -308,7 +306,6 @@
 		9873840C1C47B3C400937212 /* TDReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */; };
 		9873840D1C47B3C400937212 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		9873840E1C47B3C400937212 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
-		9873840F1C47B3C400937212 /* MYBlockUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		987384101C47B3C400937212 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
 		987384111C47B3C400937212 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		987384121C47B3C400937212 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
@@ -486,7 +483,6 @@
 		987384C11C47B3C400937212 /* Target.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D011C43FDA700515CC3 /* Target.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384C21C47B3C400937212 /* Test.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D031C43FDA700515CC3 /* Test.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384C31C47B3C400937212 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987384C41C47B3C400937212 /* MYBlockUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384C51C47B3C400937212 /* MYURLUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFA1C43FDA700515CC3 /* MYURLUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384C61C47B3C400937212 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384C71C47B3C400937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B9B1C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -842,8 +838,6 @@
 		98F77D0E1C43FDA700515CC3 /* ExceptionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F77D0F1C43FDA700515CC3 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEC1C43FDA700515CC3 /* Logging.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77D101C43FDA700515CC3 /* Logging.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CED1C43FDA700515CC3 /* Logging.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		98F77D111C43FDA700515CC3 /* MYBlockUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D121C43FDA700515CC3 /* MYBlockUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F77D131C43FDA700515CC3 /* MYDynamicObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF01C43FDA700515CC3 /* MYDynamicObject.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77D141C43FDA700515CC3 /* MYDynamicObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CF11C43FDA700515CC3 /* MYDynamicObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F77D151C43FDA700515CC3 /* MYErrorUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF21C43FDA700515CC3 /* MYErrorUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -961,7 +955,6 @@
 		98F785EF1C456B1300515CC3 /* TDReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */; };
 		98F785F01C456B1300515CC3 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		98F785F11C456B1300515CC3 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
-		98F785F21C456B1300515CC3 /* MYBlockUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F785F31C456B1300515CC3 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
 		98F785F41C456B1300515CC3 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		98F785F51C456B1300515CC3 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
@@ -1139,7 +1132,6 @@
 		98F786A51C456B1300515CC3 /* Target.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D011C43FDA700515CC3 /* Target.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786A61C456B1300515CC3 /* Test.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D031C43FDA700515CC3 /* Test.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786A71C456B1300515CC3 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F786A81C456B1300515CC3 /* MYBlockUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786A91C456B1300515CC3 /* MYURLUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFA1C43FDA700515CC3 /* MYURLUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786AA1C456B1300515CC3 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786AB1C456B1300515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B9B1C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1506,8 +1498,6 @@
 		98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExceptionUtils.m; sourceTree = "<group>"; };
 		98F77CEC1C43FDA700515CC3 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
 		98F77CED1C43FDA700515CC3 /* Logging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Logging.m; sourceTree = "<group>"; };
-		98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYBlockUtils.h; sourceTree = "<group>"; };
-		98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYBlockUtils.m; sourceTree = "<group>"; };
 		98F77CF01C43FDA700515CC3 /* MYDynamicObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYDynamicObject.h; sourceTree = "<group>"; };
 		98F77CF11C43FDA700515CC3 /* MYDynamicObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MYDynamicObject.m; sourceTree = "<group>"; };
 		98F77CF21C43FDA700515CC3 /* MYErrorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MYErrorUtils.h; sourceTree = "<group>"; };
@@ -2267,8 +2257,6 @@
 				98F77CEB1C43FDA700515CC3 /* ExceptionUtils.m */,
 				98F77CEC1C43FDA700515CC3 /* Logging.h */,
 				98F77CED1C43FDA700515CC3 /* Logging.m */,
-				98F77CEE1C43FDA700515CC3 /* MYBlockUtils.h */,
-				98F77CEF1C43FDA700515CC3 /* MYBlockUtils.m */,
 				98F77CF01C43FDA700515CC3 /* MYDynamicObject.h */,
 				98F77CF11C43FDA700515CC3 /* MYDynamicObject.m */,
 				98F77CF21C43FDA700515CC3 /* MYErrorUtils.h */,
@@ -2651,7 +2639,6 @@
 				987383D41C47B38800937212 /* Target.h in Headers */,
 				987383D51C47B38800937212 /* Test.h in Headers */,
 				987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */,
-				987383D71C47B38800937212 /* MYBlockUtils.h in Headers */,
 				987383D81C47B38800937212 /* MYURLUtils.h in Headers */,
 				987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */,
 				987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
@@ -2783,7 +2770,6 @@
 				987384C11C47B3C400937212 /* Target.h in Headers */,
 				987384C21C47B3C400937212 /* Test.h in Headers */,
 				987384C31C47B3C400937212 /* ConcurrentOperation.h in Headers */,
-				987384C41C47B3C400937212 /* MYBlockUtils.h in Headers */,
 				987384C51C47B3C400937212 /* MYURLUtils.h in Headers */,
 				987384C61C47B3C400937212 /* GTMNSData+zlib.h in Headers */,
 				987384C71C47B3C400937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
@@ -2915,7 +2901,6 @@
 				98F77D241C43FDA700515CC3 /* Target.h in Headers */,
 				98F77D261C43FDA700515CC3 /* Test.h in Headers */,
 				98F77D0B1C43FDA700515CC3 /* ConcurrentOperation.h in Headers */,
-				98F77D111C43FDA700515CC3 /* MYBlockUtils.h in Headers */,
 				98F77D1D1C43FDA700515CC3 /* MYURLUtils.h in Headers */,
 				98F77D061C43FDA700515CC3 /* GTMNSData+zlib.h in Headers */,
 				98F77C631C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
@@ -3047,7 +3032,6 @@
 				98F786A51C456B1300515CC3 /* Target.h in Headers */,
 				98F786A61C456B1300515CC3 /* Test.h in Headers */,
 				98F786A71C456B1300515CC3 /* ConcurrentOperation.h in Headers */,
-				98F786A81C456B1300515CC3 /* MYBlockUtils.h in Headers */,
 				98F786A91C456B1300515CC3 /* MYURLUtils.h in Headers */,
 				98F786AA1C456B1300515CC3 /* GTMNSData+zlib.h in Headers */,
 				98F786AB1C456B1300515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
@@ -4072,7 +4056,6 @@
 				9873831E1C47B38800937212 /* TDReplicator.m in Sources */,
 				9873831F1C47B38800937212 /* CDTAbstractReplication.m in Sources */,
 				987383201C47B38800937212 /* TD_Database+Insertion.m in Sources */,
-				987383211C47B38800937212 /* MYBlockUtils.m in Sources */,
 				987383221C47B38800937212 /* CDTQQueryValidator.m in Sources */,
 				987383231C47B38800937212 /* TDReplicatorManager.m in Sources */,
 				987383241C47B38800937212 /* TD_Database.m in Sources */,
@@ -4179,7 +4162,6 @@
 				9873840C1C47B3C400937212 /* TDReplicator.m in Sources */,
 				9873840D1C47B3C400937212 /* CDTAbstractReplication.m in Sources */,
 				9873840E1C47B3C400937212 /* TD_Database+Insertion.m in Sources */,
-				9873840F1C47B3C400937212 /* MYBlockUtils.m in Sources */,
 				987384101C47B3C400937212 /* CDTQQueryValidator.m in Sources */,
 				987384111C47B3C400937212 /* TDReplicatorManager.m in Sources */,
 				987384121C47B3C400937212 /* TD_Database.m in Sources */,
@@ -4436,7 +4418,6 @@
 				98F77CD21C43FCEE00515CC3 /* TDReplicator.m in Sources */,
 				98F77C371C43FCEE00515CC3 /* CDTAbstractReplication.m in Sources */,
 				98F77C9E1C43FCEE00515CC3 /* TD_Database+Insertion.m in Sources */,
-				98F77D121C43FDA700515CC3 /* MYBlockUtils.m in Sources */,
 				98F77C861C43FCEE00515CC3 /* CDTQQueryValidator.m in Sources */,
 				98F77CD41C43FCEE00515CC3 /* TDReplicatorManager.m in Sources */,
 				98F77CA41C43FCEE00515CC3 /* TD_Database.m in Sources */,
@@ -4655,7 +4636,6 @@
 				98F785EF1C456B1300515CC3 /* TDReplicator.m in Sources */,
 				98F785F01C456B1300515CC3 /* CDTAbstractReplication.m in Sources */,
 				98F785F11C456B1300515CC3 /* TD_Database+Insertion.m in Sources */,
-				98F785F21C456B1300515CC3 /* MYBlockUtils.m in Sources */,
 				98F785F31C456B1300515CC3 /* CDTQQueryValidator.m in Sources */,
 				98F785F41C456B1300515CC3 /* TDReplicatorManager.m in Sources */,
 				98F785F51C456B1300515CC3 /* TD_Database.m in Sources */,

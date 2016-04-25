@@ -34,7 +34,7 @@
  */
 @property (nonnull, strong, nonatomic, readonly) NSData *data;
 
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**
  Initialise an encryption key with a buffer.

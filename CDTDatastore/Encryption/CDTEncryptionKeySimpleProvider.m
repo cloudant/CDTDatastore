@@ -26,7 +26,13 @@
 
 @implementation CDTEncryptionKeySimpleProvider
 
-- (instancetype)init { return [self initWithKey:nil]; }
+- (instancetype)init
+{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    return [self initWithKey:nil];
+#pragma clang diagnostic pop
+}
 
 - (instancetype)initWithKey:(NSData *)key
 {

@@ -23,7 +23,6 @@
 #import "TDAuthorizer.h"
 #import "TDStatus.h"
 #import "TDBase64.h"
-#import "MYBlockUtils.h"
 #import "MYURLUtils.h"
 #import "TDMisc.h"
 #import <string.h>
@@ -384,25 +383,31 @@
             }
             [parsedChanges addObject:change];
         }
-        MYOnThread(resultThread, ^{
-            // Process change lines on original thread:
-            Assert(_parsing);
-            _parsing = false;
-            if (!_trackingInput) return;
-            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Notifying %u changes...", self,
-                    (unsigned)parsedChanges.count);
-            if (![self receivedChanges:parsedChanges errorMessage:NULL]) {
-                [self setUpstreamError:@"Unparseable change line"];
-                [self stop];
-            }
-
-            // Read more data if there is any, or stop if stream's at EOF:
-            if (_inputAvailable)
-                [self readFromInput];
-            else if (_atEOF)
-                [self stop];
-        });
+        [self performSelector:@selector(processChanges:)
+                     onThread:resultThread
+                   withObject:parsedChanges
+                waitUntilDone:NO];
     }];
+}
+// This is called from asyncParseChangeLines via performSelector: method.
+- (void)processChanges:(NSArray*)changes
+{
+    // Process change lines on original thread:
+    Assert(_parsing);
+    _parsing = false;
+    if (!_trackingInput) return;
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Notifying %u changes...", self,
+               (unsigned)changes.count);
+    if (![self receivedChanges:changes errorMessage:NULL]) {
+        [self setUpstreamError:@"Unparseable change line"];
+        [self stop];
+    }
+
+    // Read more data if there is any, or stop if stream's at EOF:
+    if (_inputAvailable)
+        [self readFromInput];
+    else if (_atEOF)
+        [self stop];
 }
 
 - (BOOL)failUnparseable:(NSString*)line
