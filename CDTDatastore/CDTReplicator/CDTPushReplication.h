@@ -53,7 +53,8 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
 /** All CDTPushReplication objects must have a source and target.
 
  @param source the local datastore from which the data is replicated.
- @param target the remote server URL to which the data is replicated.
+ @param target the remote server URL to which the data is replicated, if this contains user info
+        it will be removed from the URL and replaced with CDTSessionCookieInterceptor
  @return a CDTPushReplication object.
 
  */
@@ -65,7 +66,7 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *para
 
 /** The NSURL for the target remote datastore
 
-     protocol://[user:password@]host[:port]/remoteDatabaseName
+     protocol://host[:port]/remoteDatabaseName
 
  Only _http_ and _https_ are valid protocols.
 

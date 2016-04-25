@@ -26,6 +26,7 @@ def import_RA_pods
 end
 
 def import_encrypted_test_pods
+    import_test_pods
     pod 'OCMock'
 end
 

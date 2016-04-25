@@ -130,10 +130,28 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The interceptors that will be executed for this replication.
+ */
 @property (nonnull, nonatomic, readonly, strong) NSArray<NSObject<CDTHTTPInterceptor>*> * httpInterceptors;
+ 
 
+/**
+  Adds an interceptor to the interceptors array.
+ @param interceptor the interceptor to append to the interceptors array.
+ */
 - (void)addInterceptor:(nonnull NSObject<CDTHTTPInterceptor>*)interceptor;
-- (void)addInterceptors:(nonnull NSArray*)interceptors;
+/**
+  Appends the contents of the array to the interceptors array.
+ @param interceptors to append to the interceptors array.
+ */
+- (void)addInterceptors:(nonnull NSArray<NSObject<CDTHTTPInterceptor>*>*)interceptors;
+/**
+ Clears the interceptor array.
+ 
+ Note: Calling this when a URL with user info has been specified will result in the 
+ CDTSessionCookie interceptor being removed from the interceptors array causing replications to fail.
+ */
 - (void)clearInterceptors;
 
 NS_ASSUME_NONNULL_END
