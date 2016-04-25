@@ -121,7 +121,7 @@
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"DPK doc not found in keychain");
         } else {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                       @"Error getting DPK doc from keychain, value returned: %d", err);
+                       @"Error getting DPK doc from keychain, value returned: %d", (int)err);
         }
 
         data = nil;
@@ -138,7 +138,7 @@
     BOOL success = ((status == errSecSuccess) || (status == errSecItemNotFound));
     if (!success) {
         CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                   @"Error getting DPK doc from keychain, value returned: %d", status);
+                   @"Error getting DPK doc from keychain, value returned: %d", (int)status);
     }
 
     return success;
@@ -157,7 +157,7 @@
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"Doc already exists in keychain");
         } else {
             CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                       @"Unable to store Doc in keychain, value returned: %d", err);
+                       @"Unable to store Doc in keychain, value returned: %d", (int)err);
         }
     }
     
