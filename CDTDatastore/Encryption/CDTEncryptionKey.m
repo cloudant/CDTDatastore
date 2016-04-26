@@ -34,10 +34,7 @@
 #pragma mark - Init object
 - (instancetype)init
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    return [self initWithData:nil];
-#pragma clang diagnostic pop
+    return nil;
 }
 
 - (instancetype)initWithData:(NSData *)data

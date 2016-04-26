@@ -28,10 +28,7 @@
 
 - (instancetype)init
 {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    return [self initWithKey:nil];
-#pragma clang diagnostic pop
+    return nil;
 }
 
 - (instancetype)initWithKey:(NSData *)key
