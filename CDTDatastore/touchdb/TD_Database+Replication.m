@@ -19,7 +19,6 @@
 #import "TDInternal.h"
 #import "TDPuller.h"
 #import "TDJSON.h"
-#import "MYBlockUtils.h"
 #import "CollectionUtils.h"
 
 #import <FMDB/FMDatabase.h>
@@ -62,8 +61,9 @@
 {
     TDReplicator *repl = n.object;
     if (repl.error)  // Leave it around a while so clients can see the error
-        MYAfterDelay(kActiveReplicatorCleanupDelay,
-                     ^{ [_activeReplicators removeObjectIdenticalTo:repl]; });
+        [_activeReplicators performSelector:@selector(removeObjectIdenticalTo:)
+                                 withObject:repl
+                                 afterDelay:kActiveReplicatorCleanupDelay];
     else
         [_activeReplicators removeObjectIdenticalTo:repl];
 }

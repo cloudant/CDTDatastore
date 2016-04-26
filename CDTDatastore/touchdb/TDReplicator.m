@@ -26,7 +26,6 @@
 #import "TDMisc.h"
 #import "TDBase64.h"
 #import "TDCanonicalJSON.h"
-#import "MYBlockUtils.h"
 #import "TDReachability.h"
 #import "MYURLUtils.h"
 #import "CDTLogging.h"
@@ -524,11 +523,9 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 #if TARGET_OS_IPHONE
 - (void)appBackgrounding:(NSNotification*)n
 {
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: App going into background", self);
     // Danger: This is called on the main thread!
-    MYOnThread(_thread, ^{
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: App going into background", self);
-        [self stop];
-    });
+    [self performSelector:@selector(stop) onThread:_thread withObject:nil waitUntilDone:NO];
 }
 #endif
 

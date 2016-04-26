@@ -21,6 +21,7 @@
 #import "TDMisc.h"
 #import "CDTMisc.h"
 
+#import <CommonCrypto/CommonDigest.h>
 #import "CDTLogging.h"
 
 #define TDDATABASE_MAX_NUMBER_OF_TRIES_TO_GENERATE_AVAILABLE_FILENAME 200
@@ -117,7 +118,7 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
             NSData *keyData = dataFromHexadecimalString(hexKey);
 
             TDBlobKey key;
-            [keyData getBytes:key.bytes];
+            [keyData getBytes:key.bytes length:SHA_DIGEST_LENGTH];
 
             NSString *blobFilename = [r stringForColumn:TDDatabaseBlobFilenamesColumnFilename];
 

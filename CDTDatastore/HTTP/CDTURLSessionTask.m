@@ -19,7 +19,6 @@
 #import "CDTHTTPInterceptor.h"
 #import "CDTLogging.h"
 #import "CDTURLSession.h"
-#import "MYBlockUtils.h"
 
 @interface CDTURLSessionTask ()
 
@@ -203,19 +202,25 @@
         [self.inProgressTask resume];
     } else {
         if( self.requestError){
-            MYOnThread(thread, ^{
-                [self.delegate requestDidError:self.requestError];
-            });
+            [self.delegate performSelector:@selector(requestDidError:)
+                                  onThread:thread
+                                withObject:self.requestError
+                             waitUntilDone:NO];
         } else {
-            MYOnThread(thread, ^{
-                [self.delegate receivedResponse:self.response];
-                [self.delegate receivedData:self.requestData];
-            });
-            
+            [self performSelector:@selector(callDelegateWithResponseAndData)
+                         onThread:thread
+                       withObject:nil
+                    waitUntilDone:NO];
         }
         self.finished = YES;
     }
 
+}
+
+- (void)callDelegateWithResponseAndData
+{
+    [self.delegate receivedResponse:self.response];
+    [self.delegate receivedData:self.requestData];
 }
 
 @end

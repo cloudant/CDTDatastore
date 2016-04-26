@@ -26,7 +26,10 @@
 
 @implementation CDTEncryptionKeySimpleProvider
 
-- (instancetype)init { return [self initWithKey:nil]; }
+- (instancetype)init
+{
+    return nil;
+}
 
 - (instancetype)initWithKey:(NSData *)key
 {

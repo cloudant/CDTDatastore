@@ -34,7 +34,10 @@ static NSString *const kCDTQTextDefaultTokenizer = @"simple";
     static NSArray *validTypesArray = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         validTypesArray = @[ kCDTQJsonType, kCDTQTextType ];
+#pragma clang diagnostic pop
     });
     return validTypesArray;
 }

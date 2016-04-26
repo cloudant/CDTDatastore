@@ -32,7 +32,10 @@
 }
 
 #pragma mark - Init object
-- (instancetype)init { return [self initWithData:nil]; }
+- (instancetype)init
+{
+    return nil;
+}
 
 - (instancetype)initWithData:(NSData *)data
 {

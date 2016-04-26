@@ -18,7 +18,6 @@
 // <http://wiki.apache.org/couchdb/HTTP_database_API#Changes>
 
 #import "TDChangeTracker.h"
-#import "TDSocketChangeTracker.h"
 #import "TDURLConnectionChangeTracker.h"
 #import "TDAuthorizer.h"
 #import "TDMisc.h"

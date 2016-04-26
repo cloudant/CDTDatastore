@@ -16,7 +16,8 @@
 #import "CDTAbstractReplication.h"
 @class CDTDocumentRevision;
 
-typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *revision, NSDictionary *params);
+typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
+                               NSDictionary *__nonnull params);
 
 /**
  CDTPushReplication objects are used to configure a replication of a local

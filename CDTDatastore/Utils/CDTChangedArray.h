@@ -48,17 +48,17 @@
 /**
  Create an empty array.
  */
-+ (CDTChangedArray *)emptyArray;
++ (nonnull CDTChangedArray *)emptyArray;
 
 /**
  Will be notified if this object is changed.
  */
-@property (nonatomic, weak) NSObject<CDTChangedObserver> *delegate;
+@property (nullable, nonatomic, weak) NSObject<CDTChangedObserver> *delegate;
 
 /**
  Init with array. This constructor must be used.
  */
-- (instancetype)initWithMutableArray:(nonnull NSMutableArray *)array;
+- (nonnull instancetype)initWithMutableArray:(nonnull NSMutableArray *)array;
 
 /**
  Set to YES if this dictionary has been modified.
