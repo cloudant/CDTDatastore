@@ -107,6 +107,8 @@ managerUsingDatastore:(CDTDatastore *)datastore
 /** Internal */
 + (NSDictionary<NSString *, NSArray<NSString *> *> *)listIndexesInDatabase:(FMDatabase *)db;
 
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames;
+
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                             withName:(NSString *)indexName;
 

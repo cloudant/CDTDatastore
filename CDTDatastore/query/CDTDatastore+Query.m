@@ -41,6 +41,10 @@
 {
     return [self.CDTQManager listIndexes];
 }
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
+{
+    return [self.CDTQManager ensureIndexed:fieldNames];
+}
 
 - (NSString *)ensureIndexed:(NSArray *)fieldNames withName:(NSString *)indexName
 {
