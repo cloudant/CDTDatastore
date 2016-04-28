@@ -99,7 +99,7 @@
 
         if (allDocsIndex.length > 0) {
             NSString *tableName = [CDTQIndexManager tableNameForIndex:allDocsIndex];
-            NSString *sql = [NSString stringWithFormat:@"SELECT _id FROM %@;", tableName];
+            NSString *sql = [NSString stringWithFormat:@"SELECT _id FROM \"%@\";", tableName];
             sqlNode.sql = [CDTQSqlParts partsForSql:sql parameters:@[]];
         }
 
@@ -545,10 +545,9 @@
                                    fieldName,
                                    sqlOperator,
                                    operand];
-    NSString *subSelect = [NSString stringWithFormat:@"SELECT _id FROM %@ WHERE %@",
-                           tableName,
-                           whereForSubSelect];
-    
+    NSString *subSelect = [NSString
+        stringWithFormat:@"SELECT _id FROM \"%@\" WHERE %@", tableName, whereForSubSelect];
+
     return [NSString stringWithFormat:@"_id NOT IN (%@)", subSelect];
 }
 
@@ -584,7 +583,7 @@
 
     NSString *tableName = [CDTQIndexManager tableNameForIndex:indexName];
 
-    NSString *sql = @"SELECT _id FROM %@ WHERE %@;";
+    NSString *sql = @"SELECT _id FROM \"%@\" WHERE %@;";
     sql = [NSString stringWithFormat:sql, tableName, where.sqlWithPlaceholders];
 
     CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:where.placeholderValues];
@@ -604,8 +603,8 @@
     
     NSString *tableName = [CDTQIndexManager tableNameForIndex:indexName];
     NSString *search = textClause[TEXT][SEARCH];
-    
-    NSString *sql = @"SELECT _id FROM %@ WHERE %@ MATCH ?;";
+
+    NSString *sql = @"SELECT _id FROM \"%@\" WHERE \"%@\" MATCH ?;";
     sql = [NSString stringWithFormat:sql, tableName, tableName];
     
     CDTQSqlParts *parts = [CDTQSqlParts partsForSql:sql parameters:@[ search ]];

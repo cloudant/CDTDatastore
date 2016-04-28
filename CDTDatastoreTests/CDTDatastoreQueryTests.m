@@ -6,12 +6,13 @@
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
 //
 
-#import <CDTDatastore/CloudantSync.h>
 #import <CDTDatastore/CDTDatastore+Query.h>
+#import <CDTDatastore/CDTLogging.h>
 #import <CDTDatastore/CDTQResultSet.h>
-#import <objc/runtime.h>
-#import <Specta/Specta.h>
+#import <CDTDatastore/CloudantSync.h>
 #import <Expecta/Expecta.h>
+#import <Specta/Specta.h>
+#import <objc/runtime.h>
 
 SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
 
@@ -58,7 +59,7 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
         [ds createDocumentFromRevision:rev error:nil];
 
-        [ds ensureIndexed:@[ @"name" ] withName:@"name"];
+        [ds ensureIndexed:@[ @"name" ] withName:@"index name"];
     });
 
     afterEach(^{
@@ -127,6 +128,12 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
       NSString *indexName =
           [ds ensureIndexed:@[ @"name" ] withName:@"text_idx" ofType:CDTQIndexTypeText];
       expect(indexName).to.equal(@"text_idx");
+    });
+
+    it(@"can create an index with a space in it's name", ^{
+      NSString *indexName =
+          [ds ensureIndexed:@[ @"name" ] withName:@"my index" ofType:CDTQIndexTypeJSON];
+      expect(indexName).to.equal(@"my index");
     });
 
     it(@"can create a text index with defined settings", ^{

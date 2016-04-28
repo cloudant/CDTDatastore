@@ -272,7 +272,7 @@
 
     NSString *tableName = [CDTQIndexManager tableNameForIndex:indexName];
 
-    NSString *sqlDelete = @"DELETE FROM %@ WHERE _id = ?;";
+    NSString *sqlDelete = @"DELETE FROM \"%@\" WHERE _id = ?;";
     sqlDelete = [NSString stringWithFormat:sqlDelete, tableName];
 
     return [CDTQSqlParts partsForSql:sqlDelete parameters:@[ docId ]];
@@ -406,7 +406,7 @@
 
     // If there are no fields, we just index blank for the doc ID
     NSString *sql;
-    sql = @"INSERT INTO %@ ( %@ ) VALUES ( %@ );";
+    sql = @"INSERT INTO \"%@\" ( %@ ) VALUES ( %@ );";
     sql = [NSString stringWithFormat:sql, [CDTQIndexManager tableNameForIndex:indexName],
                                      [sqlSafeFieldNames componentsJoinedByString:@", "],
                                      [placeholders componentsJoinedByString:@", "]];

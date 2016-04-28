@@ -319,7 +319,7 @@
         [clauses addObject:clause];
     }
 
-    NSString *sql = [NSString stringWithFormat:@"CREATE TABLE %@ ( %@ );", tableName,
+    NSString *sql = [NSString stringWithFormat:@"CREATE TABLE \"%@\" ( %@ );", tableName,
                                                [clauses componentsJoinedByString:@", "]];
     return [CDTQSqlParts partsForSql:sql parameters:@[]];
 }
@@ -343,8 +343,9 @@
         [clauses addObject:[NSString stringWithFormat:@"\"%@\"", fieldName]];
     }
 
-    NSString *sql = [NSString stringWithFormat:@"CREATE INDEX %@ ON %@ ( %@ );", sqlIndexName,
-                                               tableName, [clauses componentsJoinedByString:@", "]];
+    NSString *sql =
+        [NSString stringWithFormat:@"CREATE INDEX \"%@\" ON \"%@\" ( %@ );", sqlIndexName,
+                                   tableName, [clauses componentsJoinedByString:@", "]];
     return [CDTQSqlParts partsForSql:sql parameters:@[]];
 }
 
@@ -383,11 +384,11 @@
                                     parameter,
                                     indexSettings[parameter]]];
     }
-    
-    NSString *sql = [NSString stringWithFormat:@"CREATE VIRTUAL TABLE %@ USING FTS4 ( %@, %@ );",
-                     tableName,
-                     [clauses componentsJoinedByString:@", "],
-                     [settingsClauses componentsJoinedByString:@", "]];
+
+    NSString *sql =
+        [NSString stringWithFormat:@"CREATE VIRTUAL TABLE \"%@\" USING FTS4 ( %@, %@ );", tableName,
+                                   [clauses componentsJoinedByString:@", "],
+                                   [settingsClauses componentsJoinedByString:@", "]];
     return [CDTQSqlParts partsForSql:sql parameters:@[]];
 }
 

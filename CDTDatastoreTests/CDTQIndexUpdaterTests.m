@@ -73,7 +73,8 @@ SpecBegin(CDTQIndexUpdater)
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:@"123"
                                                               fromIndex:@"anIndex"];
-                NSString *sql = @"DELETE FROM _t_cloudant_sync_query_index_anIndex WHERE _id = ?;";
+                NSString *sql =
+                    @"DELETE FROM \"_t_cloudant_sync_query_index_anIndex\" WHERE _id = ?;";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
                 expect(parts.placeholderValues).to.equal(@[ @"123" ]);
             });
@@ -91,7 +92,7 @@ SpecBegin(CDTQIndexUpdater)
                                                                      inIndex:@"anIndex"
                                                               withFieldNames:@[ @"name" ]][0];
 
-                NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                  "( \"_id\", \"_rev\", \"name\" ) VALUES ( ?, ?, ? );";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
                 expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
@@ -107,7 +108,7 @@ SpecBegin(CDTQIndexUpdater)
                                                    inIndex:@"anIndex"
                                             withFieldNames:@[ @"age", @"name" ]][0];
 
-                NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                  "( \"_id\", \"_rev\", \"age\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
                 expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @12, @"mike" ]);
@@ -129,7 +130,7 @@ SpecBegin(CDTQIndexUpdater)
                                                    inIndex:@"anIndex"
                                             withFieldNames:@[ @"age", @"name", @"pet", @"car" ]][0];
 
-                NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                  "( \"_id\", \"_rev\", \"age\", \"name\", \"pet\", \"car\" ) "
                                  "VALUES ( ?, ?, ?, ?, ?, ? );";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
@@ -147,7 +148,7 @@ SpecBegin(CDTQIndexUpdater)
                                                    inIndex:@"anIndex"
                                             withFieldNames:@[ @"age", @"name", @"pet", @"car" ]][0];
 
-                NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                  "( \"_id\", \"_rev\", \"name\", \"pet\" ) VALUES ( ?, ?, ?, ? );";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
                 expect(parts.placeholderValues)
@@ -163,7 +164,7 @@ SpecBegin(CDTQIndexUpdater)
                     [CDTQIndexUpdater partsToIndexRevision:saved
                                                    inIndex:@"anIndex"
                                             withFieldNames:@[ @"car", @"van" ]][0];
-                NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                  "( \"_id\", \"_rev\" ) VALUES ( ?, ? );";
                 expect(parts.sqlWithPlaceholders).to.equal(sql);
                 expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId ]);
@@ -186,21 +187,21 @@ SpecBegin(CDTQIndexUpdater)
                     NSString *sql;
 
                     parts = statements[0];
-                    sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                    sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                            "( \"_id\", \"_rev\", \"pet\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues)
                         .to.equal(@[ @"id123", saved.revId, @"cat", @"mike" ]);
 
                     parts = statements[1];
-                    sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                    sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                            "( \"_id\", \"_rev\", \"pet\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues)
                         .to.equal(@[ @"id123", saved.revId, @"dog", @"mike" ]);
 
                     parts = statements[2];
-                    sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                    sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                            "( \"_id\", \"_rev\", \"pet\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues)
@@ -223,7 +224,7 @@ SpecBegin(CDTQIndexUpdater)
 
                     parts = statements[0];
                     sql =
-                        @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                        @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                          "( \"_id\", \"_rev\", \"pet.species\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues)
@@ -231,7 +232,7 @@ SpecBegin(CDTQIndexUpdater)
 
                     parts = statements[1];
                     sql =
-                        @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+                        @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                          "( \"_id\", \"_rev\", \"pet.species\", \"name\" ) VALUES ( ?, ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues)
@@ -268,8 +269,8 @@ SpecBegin(CDTQIndexUpdater)
                                                                                     @"pet" ] ];
                     expect(statements.count).to.equal(1);
                     CDTQSqlParts *parts = statements[0];
-                    
-                    NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+
+                    NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                      "( \"_id\", \"_rev\", \"name\" ) VALUES ( ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);
@@ -287,8 +288,8 @@ SpecBegin(CDTQIndexUpdater)
                                                                                    @"pet.species"]];
                     expect(statements.count).to.equal(1);
                     CDTQSqlParts *parts = statements[0];
-                    
-                    NSString *sql = @"INSERT INTO _t_cloudant_sync_query_index_anIndex "
+
+                    NSString *sql = @"INSERT INTO \"_t_cloudant_sync_query_index_anIndex\" "
                                      "( \"_id\", \"_rev\", \"name\" ) VALUES ( ?, ?, ? );";
                     expect(parts.sqlWithPlaceholders).to.equal(sql);
                     expect(parts.placeholderValues).to.equal(@[ @"id123", saved.revId, @"mike" ]);

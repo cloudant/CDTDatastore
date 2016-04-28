@@ -119,8 +119,21 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
 
           NSDictionary* query = @{ @"$text" : @{@"$search" : @"lives in Bristol"} };
           CDTQResultSet* result = [im find:query];
+
           expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"fred12" ]);
         });
+
+        it(@"can perform a search consisting of a single text clause with a index name including a "
+           @"space",
+           ^{
+             expect(
+                 [im ensureIndexed:@[ @"comment" ] withName:@"basic text" ofType:CDTQIndexTypeText])
+                 .toNot.beNil();
+
+             NSDictionary* query = @{ @"$text" : @{@"$search" : @"lives in Bristol"} };
+             CDTQResultSet* result = [im find:query];
+             expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"mike34", @"fred12" ]);
+           });
 
         it(@"can perform a phrase search", ^{
           expect([im ensureIndexed:@[ @"comment" ] withName:@"basic_text" ofType:CDTQIndexTypeText])

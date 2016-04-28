@@ -11,6 +11,7 @@
 #import <CDTDatastore/CDTQQueryExecutor.h>
 #import <CDTDatastore/CDTQResultSet.h>
 #import <CDTDatastore/CloudantSync.h>
+#import <Expecta/Expecta.h>
 #import <Specta/Specta.h>
 #import "Matchers/CDTQContainsInAnyOrderMatcher.h"
 
@@ -482,7 +483,7 @@ SpecBegin(CDTQIndexCreator)
                     [CDTQIndexCreator createIndexTableStatementForIndexName:@"anIndex"
                                                                  fieldNames:fieldNames];
                 expect(parts.sqlWithPlaceholders)
-                    .to.equal(@"CREATE TABLE _t_cloudant_sync_query_index_anIndex"
+                    .to.equal(@"CREATE TABLE \"_t_cloudant_sync_query_index_anIndex\""
                                " ( \"_id\" NONE, \"name\" NONE );");
                 expect(parts.placeholderValues).to.equal(@[]);
             });
@@ -493,7 +494,7 @@ SpecBegin(CDTQIndexCreator)
                     [CDTQIndexCreator createIndexTableStatementForIndexName:@"anIndex"
                                                                  fieldNames:fieldNames];
                 expect(parts.sqlWithPlaceholders)
-                    .to.equal(@"CREATE TABLE _t_cloudant_sync_query_index_anIndex"
+                    .to.equal(@"CREATE TABLE \"_t_cloudant_sync_query_index_anIndex\""
                                " ( \"_id\" NONE, \"name\" NONE, \"age\" NONE, \"pet\" NONE );");
                 expect(parts.placeholderValues).to.equal(@[]);
             });
@@ -514,8 +515,8 @@ SpecBegin(CDTQIndexCreator)
                     [CDTQIndexCreator createIndexIndexStatementForIndexName:@"anIndex"
                                                                  fieldNames:fieldNames];
                 expect(parts.sqlWithPlaceholders)
-                    .to.equal(@"CREATE INDEX _t_cloudant_sync_query_index_anIndex_index "
-                               "ON _t_cloudant_sync_query_index_anIndex"
+                    .to.equal(@"CREATE INDEX \"_t_cloudant_sync_query_index_anIndex_index\" "
+                               "ON \"_t_cloudant_sync_query_index_anIndex\""
                                " ( \"_id\", \"name\" );");
                 expect(parts.placeholderValues).to.equal(@[]);
             });
@@ -526,8 +527,8 @@ SpecBegin(CDTQIndexCreator)
                     [CDTQIndexCreator createIndexIndexStatementForIndexName:@"anIndex"
                                                                  fieldNames:fieldNames];
                 expect(parts.sqlWithPlaceholders)
-                    .to.equal(@"CREATE INDEX _t_cloudant_sync_query_index_anIndex_index "
-                               "ON _t_cloudant_sync_query_index_anIndex"
+                    .to.equal(@"CREATE INDEX \"_t_cloudant_sync_query_index_anIndex_index\" "
+                               "ON \"_t_cloudant_sync_query_index_anIndex\""
                                " ( \"_id\", \"name\", \"age\", \"pet\" );");
                 expect(parts.placeholderValues).to.equal(@[]);
             });
