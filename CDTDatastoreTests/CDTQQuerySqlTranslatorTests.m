@@ -83,7 +83,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(and.children.count).to.equal(1);
 
             CDTQSqlQueryNode *sqlNode = and.children[0];
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                              "WHERE \"name\" = ?;";
             expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sql);
             expect(sqlNode.sql.placeholderValues).to.equal(@[ @"mike" ]);
@@ -105,10 +105,10 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(and.children.count).to.equal(1);
 
             CDTQSqlQueryNode *sqlNode = and.children[0];
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                              "WHERE \"pet\" = ? AND \"name\" = ?;";
-            NSString *otherSql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
-            "WHERE \"name\" = ? AND \"pet\" = ?;";
+            NSString *otherSql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
+                                  "WHERE \"name\" = ? AND \"pet\" = ?;";
             expect(sqlNode.sql.sqlWithPlaceholders).to.isEqualToEither(sql,otherSql);
             expect(sqlNode.sql.placeholderValues).to.containsInAnyOrder(@[ @"cat", @"mike" ]);
         });
@@ -128,7 +128,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(and.children.count).to.equal(1);
 
             CDTQSqlQueryNode *sqlNode = and.children[0];
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                              "WHERE \"name\" = ? AND \"pet\" = ?;";
             expect(sqlNode.sql.sqlWithPlaceholders).to.equal(sql);
             expect(sqlNode.sql.placeholderValues).to.equal(@[ @"mike", @"cat" ]);
@@ -158,7 +158,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
             expect(and.children.count).to.equal(2);
 
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                              "WHERE \"name\" = ? AND \"pet\" = ?;";
 
             // As the embedded AND is the same as the top-level AND, both
@@ -197,7 +197,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
             expect(and.children.count).to.equal(2);
 
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                              "WHERE \"name\" = ? AND \"pet\" = ?;";
 
             // As the embedded AND is the same as the top-level AND, both
@@ -230,10 +230,10 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQOrQueryNode * or = (CDTQOrQueryNode *)node;
             expect(or .children.count).to.equal(2);
 
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
 
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                   "WHERE \"pet\" = ?;";
 
             CDTQSqlQueryNode *sqlNode;
@@ -271,10 +271,10 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQOrQueryNode * or = (CDTQOrQueryNode *)node;
             expect(or .children.count).to.equal(3);
 
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
 
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                   "WHERE \"pet\" = ?;";
 
             CDTQSqlQueryNode *sqlNode;
@@ -324,13 +324,13 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQOrQueryNode * or = (CDTQOrQueryNode *)node;
             expect(or .children.count).to.equal(4);
 
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
 
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                   "WHERE \"pet\" = ?;";
 
-            NSString *sqlAnd = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlAnd = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                 "WHERE \"name\" = ? AND \"pet\" = ?;";
 
             CDTQSqlQueryNode *sqlNode;
@@ -396,13 +396,13 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQOrQueryNode * or = (CDTQOrQueryNode *)node;
             expect(or .children.count).to.equal(3);
 
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
 
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                   "WHERE \"pet\" = ?;";
 
-            NSString *sqlAnd = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+            NSString *sqlAnd = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                 "WHERE \"name\" = ? AND \"pet\" = ?;";
 
             CDTQSqlQueryNode *sqlNode;
@@ -468,10 +468,10 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             
             CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
             expect(and.children.count).to.equal(1);
-            
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
-                             "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
-            
+
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic_text\" "
+                             "WHERE \"_t_cloudant_sync_query_index_basic_text\" MATCH ?;";
+
             CDTQSqlQueryNode *sqlNode;
             
             sqlNode = and.children[0];
@@ -496,12 +496,12 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             
             CDTQAndQueryNode *and = (CDTQAndQueryNode *)node;
             expect(and.children.count).to.equal(2);
-            
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
-                                  "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
-            
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic_text\" "
+                                  "WHERE \"_t_cloudant_sync_query_index_basic_text\" MATCH ?;";
+
             CDTQSqlQueryNode *sqlNode;
             
             sqlNode = and.children[0];
@@ -532,12 +532,12 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             
             CDTQOrQueryNode *or = (CDTQOrQueryNode *)node;
             expect(or.children.count).to.equal(2);
-            
-            NSString *sqlLeft = @"SELECT _id FROM _t_cloudant_sync_query_index_basic "
+
+            NSString *sqlLeft = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic\" "
                                  "WHERE \"name\" = ?;";
-            NSString *sqlRight = @"SELECT _id FROM _t_cloudant_sync_query_index_basic_text "
-                                  "WHERE _t_cloudant_sync_query_index_basic_text MATCH ?;";
-            
+            NSString *sqlRight = @"SELECT _id FROM \"_t_cloudant_sync_query_index_basic_text\" "
+                                  "WHERE \"_t_cloudant_sync_query_index_basic_text\" MATCH ?;";
+
             CDTQSqlQueryNode *sqlNode;
             
             sqlNode = or.children[0];
@@ -861,8 +861,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                               @{ @"name" : @{@"$not" : @{@"$eq" : @"mike"}} }
                                            ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" = ?)";
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" = ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
             });
@@ -876,15 +876,15 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                 CDTQSqlParts *parts = [CDTQQuerySqlTranslator wherePartsForAndClause:query
                                                                           usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" = ?) "
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" = ?) "
                                      @"AND "
                                      @"\"age\" = ? "
                                      @"AND "
                                      @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"pet\" = ?)";
-                
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"pet\" = ?)";
+
                 expect(parts.sqlWithPlaceholders)
                     .to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike", @12, @"cat" ]);
@@ -898,8 +898,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                               @{ @"name" : @{@"$not" : @{@"$gt" : @"mike"}} }
                                            ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" > ?)";
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" > ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
             });
@@ -912,8 +912,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                               @{ @"name" : @{@"$not" : @{@"$gte" : @"mike"}} }
                                            ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" >= ?)";
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" >= ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
             });
@@ -926,8 +926,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                               @{ @"name" : @{@"$not" : @{@"$lt" : @"mike"}} }
                                            ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" < ?)";
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" < ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
             });
@@ -940,8 +940,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                               @{ @"name" : @{@"$not" : @{@"$lte" : @"mike"}} }
                                            ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"name\" <= ?)";
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                     @"WHERE \"name\" <= ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
             });
@@ -954,7 +954,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                  @{ @"name" : @{ @"$not" : @{ @"$in" : @[ @"mike", @"fred" ]} } }
                                             ] usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                     @"FROM _t_cloudant_sync_query_index_named "
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
                                      @"WHERE \"name\" IN ( ?, ? ))";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @"mike", @"fred" ]);
@@ -972,7 +972,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                                                  ]
                                                     usingIndex:@"named"];
                 NSString *expected = @"_id NOT IN (SELECT _id "
-                                     @"FROM _t_cloudant_sync_query_index_named "
+                                     @"FROM \"_t_cloudant_sync_query_index_named\" "
                                      @"WHERE \"age\" % ? = ?)";
                 expect(parts.sqlWithPlaceholders).to.equal(expected);
                 expect(parts.placeholderValues).to.equal(@[ @2, @1 ]);
@@ -991,8 +991,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             CDTQSqlParts *parts = [CDTQQuerySqlTranslator wherePartsForAndClause:clause
                                                                       usingIndex:@"named"];
             NSString *expected = @"_id NOT IN (SELECT _id "
-                                             @"FROM _t_cloudant_sync_query_index_named "
-                                             @"WHERE \"name\" = ?) "
+                                 @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                 @"WHERE \"name\" = ?) "
                                  @"AND \"name\" = ?";
             expect(parts.sqlWithPlaceholders).to.equal(expected);
             expect(parts.placeholderValues).to.equal(@[ @"mike", @"john" ]);
@@ -1012,8 +1012,8 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                  @"AND \"age\" <= ? "
                                  @"AND \"name\" = ? "
                                  @"AND _id NOT IN (SELECT _id "
-                                                 @"FROM _t_cloudant_sync_query_index_named "
-                                                 @"WHERE \"age\" = ?) "
+                                 @"FROM \"_t_cloudant_sync_query_index_named\" "
+                                 @"WHERE \"age\" = ?) "
                                  @"AND \"age\" = ?";
             expect(parts.sqlWithPlaceholders).to.equal(expected);
             expect(parts.placeholderValues).to.equal(@[ @12, @54, @"mike", @30, @42 ]);
@@ -1043,7 +1043,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                                                @{ @"name" : @{@"$eq" : @"mike"} }
                                             ]
                                  usingIndex:@"anIndex"];
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_anIndex "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_anIndex\" "
                              "WHERE \"name\" = ?;";
             expect(parts.sqlWithPlaceholders).to.equal(sql);
             expect(parts.placeholderValues).to.equal(@[ @"mike" ]);
@@ -1057,7 +1057,7 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             ];
             CDTQSqlParts *parts = [CDTQQuerySqlTranslator selectStatementForAndClause:andClause
                                                                            usingIndex:@"anIndex"];
-            NSString *sql = @"SELECT _id FROM _t_cloudant_sync_query_index_anIndex "
+            NSString *sql = @"SELECT _id FROM \"_t_cloudant_sync_query_index_anIndex\" "
                              "WHERE \"name\" = ? AND \"age\" = ? AND \"pet\" = ?;";
             expect(parts.sqlWithPlaceholders).to.equal(sql);
             expect(parts.placeholderValues).to.equal(@[ @"mike", @12, @"cat" ]);
