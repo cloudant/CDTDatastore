@@ -65,6 +65,15 @@ SpecBegin(CDTQIndexCreator)
                 expect(im).toNot.beNil();
             });
 
+            it(@"can create an index without providing an index name", ^{
+              NSString *name = [im ensureIndexed:@[ @"foo", @"bar" ]];
+              expect(name).notTo.beNil();
+              NSDictionary *indexes = [im listIndexes];
+              expect(indexes.allKeys.count).to.equal(1);
+              expect(indexes.allKeys).to.contain(name);
+
+            });
+
             it(@"doesn't create an index on no fields", ^{
                 NSString *name = [im ensureIndexed:@[] withName:@"basic"];
                 expect(name).to.equal(nil);

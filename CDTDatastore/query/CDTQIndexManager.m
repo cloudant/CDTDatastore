@@ -214,8 +214,10 @@ static const int VERSION = 2;
  */
 - (NSString *)ensureIndexed:(NSArray * /* NSString */)fieldNames
 {
-    CDTLogError(CDTQ_LOG_CONTEXT, @"-ensureIndexed: not implemented");
-    return nil;
+    uint8_t randBytes[20];
+    arc4random_buf(randBytes, sizeof(randBytes));
+    NSString *indexName = TDHexFromBytes(randBytes, sizeof(randBytes));
+    return [self ensureIndexed:fieldNames withName:indexName];
 }
 
 /**

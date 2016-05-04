@@ -4,6 +4,8 @@
 
 - [NEW] Added replication policies, allowing users to easily create policies such as "Replicate
    every 2 hours, only when on Wifi". See the [Replication Policies User Guide](doc/replication-policies.md).
+- [NEW] Added new Indexing API `ensureIndexed:`. This API will attempt to
+   generate index names.
 - [IMPROVED] Replications will use session cookies to authenticate rather than
    using Basic Auth for every request.
 

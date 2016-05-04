@@ -49,20 +49,30 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSDictionary<NSString *, NSArray<NSString *> *> *)listIndexes;
 
 /**
+ Add a single, possibly compound, index for the given field names.
+
+ This function generates a name for the new index.
+
+ @param fieldNames List of fieldnames in the sort format
+ @returns name of created index
+ */
+- (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames;
+
+/**
  Create a new index over a set of fields.
- 
+
  Fields in sub-documents can be specified using dotted notation.
- 
+
  An example:
- 
+
      { "name": "mike", "address": { "street": "Any Road" } }
- 
+
  The field name "name" would index "mike", while the field name
  "address.street" would index "Any Road".
- 
+
  Indexing an array will add each value in the array to the index.
  There may only be one array field per index.
- 
+
  @return The name of the index if it's created successfully.
  */
 - (nullable NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
