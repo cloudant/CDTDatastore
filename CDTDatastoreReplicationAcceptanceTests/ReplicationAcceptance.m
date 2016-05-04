@@ -824,8 +824,10 @@ static NSUInteger largeRevTreeSize = 1500;
     NSDictionary *jsonResponse = response.body.object;
 
     // default couchdb revs_limit is 1000
-    XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)1000, @"Wrong number of revs");
-    XCTAssertTrue([jsonResponse[@"_rev"] hasPrefix:@"1500"], @"Not all revs seem to be replicated");
+    XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)MIN(1000, largeRevTreeSize), @"Wrong number of revs");
+    
+    NSString *expectedRev = [NSString stringWithFormat:@"%lu", largeRevTreeSize];
+    XCTAssertTrue([jsonResponse[@"_rev"] hasPrefix:expectedRev], @"Not all revs seem to be replicated");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
@@ -850,7 +852,8 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertNil(error, @"Error getting replicated doc: %@", error);
     XCTAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
 
-    XCTAssertTrue([rev.revId hasPrefix:@"1500"], @"Unexpected current rev in local document");
+    NSString *expectedRev = [NSString stringWithFormat:@"%lu", largeRevTreeSize];
+    XCTAssertTrue([rev.revId hasPrefix:expectedRev], @"Unexpected current rev in local document");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
