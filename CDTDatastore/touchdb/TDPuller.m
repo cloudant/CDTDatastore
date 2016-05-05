@@ -55,10 +55,62 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 @implementation TDPuller
 
+
+- (instancetype)initWithDB:(TD_Database*)db
+                    remote:(NSURL*)remote
+                      push:(BOOL)push
+                continuous:(BOOL)continuous
+              interceptors:(NSArray*)interceptors
+{
+    if (self = [super initWithDB:db remote:remote push:push continuous:continuous interceptors:interceptors])
+    {
+        NSUInteger initialRevsCapacity = 100;
+        _deletedRevsToPull = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
+        _revsToPull = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
+        _bulkGetRevs = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
+        _bulkRevsToPull = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
+    }
+    return self;
+}
+
 - (void)dealloc { [_changeTracker stop]; }
+
 
 - (void)beginReplicating
 {
+    // _bulk_get check starts an async task
+    [self asyncTaskStarted];
+
+    __weak TDPuller* weakSelf = self;
+    // check to see if _bulk_get endpoint is supported and then start replication
+    [self sendAsyncRequest:@"GET"
+                      path:@"_bulk_get"
+                      body:nil
+              onCompletion:^(id result, NSError* error) {
+
+                  __strong TDPuller* strongSelf = weakSelf;
+
+                  switch(error.code) {
+                      case 404:
+                          // not found: _bulk_get not supported
+                          [strongSelf setBulkGetSupported:false];
+                          CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ Remote database does not support _bulk_get", self);
+                          break;
+                      case 405:
+                          // method not allowed: this endpoint exists, we called with the wrong method
+                          [strongSelf setBulkGetSupported:true];
+                          CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ Remote database supports _bulk_get", self);
+                          break;
+                  }
+                  
+                  // on completion...start the actual replication
+                  [strongSelf beginReplicatingInternal];
+              }];
+}
+
+- (void)beginReplicatingInternal
+{
+    
     if (!_downloadsToInsert) {
         // Note: This is a ref cycle, because the block has a (retained) reference to 'self',
         // and _downloadsToInsert retains the block, and of course I retain _downloadsToInsert.
@@ -78,7 +130,6 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     }
 
     _caughtUp = NO;
-    [self asyncTaskStarted];  // task: waiting to catch up
     [self startChangeTracker];
 }
 
@@ -139,9 +190,10 @@ static NSString* joinQuotedEscaped(NSArray* strings);
             [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -beginReplicating
     }
     _changeTracker = nil;
-    _revsToPull = nil;
-    _deletedRevsToPull = nil;
-    _bulkRevsToPull = nil;
+    [_revsToPull removeAllObjects];
+    [_deletedRevsToPull removeAllObjects];
+    [_bulkRevsToPull removeAllObjects];
+    [_bulkGetRevs removeAllObjects];
     [super stop];
 
     [_downloadsToInsert flushAll];
@@ -282,9 +334,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // Dump the revs into the queues of revs to pull from the remote db:
     unsigned numBulked = 0;
     for (TDPulledRevision* rev in inbox.allRevisions) {
-        if (rev.generation == 1 && !rev.deleted && !rev.conflicted) {
+        if (!_bulkGetSupported && rev.generation == 1 && !rev.deleted && !rev.conflicted) {
             // Optimistically pull 1st-gen revs in bulk:
-            if (!_bulkRevsToPull) _bulkRevsToPull = [[NSMutableArray alloc] initWithCapacity:100];
             [_bulkRevsToPull addObject:rev];
             ++numBulked;
         } else {
@@ -303,14 +354,14 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 // Add a revision to the appropriate queue of revs to individually GET
 - (void)queueRemoteRevision:(TD_Revision*)rev
 {
-    if (rev.deleted) {
-        if (!_deletedRevsToPull) _deletedRevsToPull = [[NSMutableArray alloc] initWithCapacity:100];
-
-        [_deletedRevsToPull addObject:rev];
+    if (_bulkGetSupported) {
+        [_bulkGetRevs addObject:rev];
     } else {
-        if (!_revsToPull) _revsToPull = [[NSMutableArray alloc] initWithCapacity:100];
-
-        [_revsToPull addObject:rev];
+        if (rev.deleted) {
+            [_deletedRevsToPull addObject:rev];
+        } else {
+            [_revsToPull addObject:rev];
+        }
     }
 }
 
@@ -318,27 +369,38 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void)pullRemoteRevisions
 {
     while (_db && _httpConnectionCount < kMaxOpenHTTPConnections) {
-        NSUInteger nBulk = MIN(_bulkRevsToPull.count, kMaxRevsToGetInBulk);
-        if (nBulk == 1) {
-            // Rather than pulling a single revision in 'bulk', just pull it normally:
-            [self queueRemoteRevision:_bulkRevsToPull[0]];
-            [_bulkRevsToPull removeObjectAtIndex:0];
-            nBulk = 0;
-        }
-        if (nBulk > 0) {
-            // Prefer to pull bulk revisions:
+        
+        if (_bulkGetSupported) {
+            NSUInteger nBulk = MIN(_bulkGetRevs.count, kMaxRevsToGetInBulk);
+            
             NSRange r = NSMakeRange(0, nBulk);
-            [self pullBulkRevisions:[_bulkRevsToPull subarrayWithRange:r]];
-            [_bulkRevsToPull removeObjectsInRange:r];
+            [self pullBulkRevisionsBulkGet:[_bulkGetRevs subarrayWithRange:r]];
+            [_bulkGetRevs removeObjectsInRange:r];
+            
         } else {
-            // Prefer to pull an existing revision over a deleted one:
-            NSMutableArray* queue = _revsToPull;
-            if (queue.count == 0) {
-                queue = _deletedRevsToPull;
-                if (queue.count == 0) break;  // both queues are empty
+            NSUInteger nBulk = MIN(_bulkRevsToPull.count, kMaxRevsToGetInBulk);
+            
+            if (nBulk == 1) {
+                // Rather than pulling a single revision in 'bulk', just pull it normally:
+                [self queueRemoteRevision:_bulkRevsToPull[0]];
+                [_bulkRevsToPull removeObjectAtIndex:0];
+                nBulk = 0;
             }
-            [self pullRemoteRevision:queue[0]];
-            [queue removeObjectAtIndex:0];
+            if (nBulk > 0) {
+                // Prefer to pull bulk revisions:
+                NSRange r = NSMakeRange(0, nBulk);
+                [self pullBulkRevisionsWithAllDocs:[_bulkRevsToPull subarrayWithRange:r]];
+                [_bulkRevsToPull removeObjectsInRange:r];
+            } else {
+                // Prefer to pull an existing revision over a deleted one:
+                NSMutableArray* queue = _revsToPull;
+                if (queue.count == 0) {
+                    queue = _deletedRevsToPull;
+                    if (queue.count == 0) break;  // both queues are empty
+                }
+                [self pullRemoteRevision:queue[0]];
+                [queue removeObjectAtIndex:0];
+            }
         }
     }
 }
@@ -366,18 +428,18 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     __weak TDPuller* weakSelf = self;
     TDMultipartDownloader* dl;
     dl = [[TDMultipartDownloader alloc] initWithSession:self.session URL:TDAppendToURL(_remote, path)
-                                           database:_db
-                                     requestHeaders:self.requestHeaders
-                                       onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
-                                           __strong TDPuller* strongSelf = weakSelf;
-                                           // OK, now we've got the response revision:
-                                           if (error) {
-                                               strongSelf.error = error;
-                                               [strongSelf revisionFailed];
-                                               strongSelf.changesProcessed++;
-                                           } else {
-                                               TD_Revision* gotRev =
-                                                   [TD_Revision revisionWithProperties:dl.document];
+                                               database:_db
+                                         requestHeaders:self.requestHeaders
+                                           onCompletion:^(TDMultipartDownloader* dl, NSError* error) {
+                                               __strong TDPuller* strongSelf = weakSelf;
+                                               // OK, now we've got the response revision:
+                                               if (error) {
+                                                   strongSelf.error = error;
+                                                   [strongSelf revisionFailed];
+                                                   strongSelf.changesProcessed++;
+                                               } else {
+                                                   TD_Revision* gotRev =
+                                                       [TD_Revision revisionWithProperties:dl.document];
                                                    gotRev.sequence = rev.sequence;
                                                    // Add to batcher ... eventually it will be fed to
                                                    // -insertRevisions:.
@@ -398,15 +460,91 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     [dl start];
 }
 
-// Get a bunch of revisions in one bulk request.
-- (void)pullBulkRevisions:(NSArray*)bulkRevs
+- (void)pullBulkRevisionsBulkGet:(NSArray*)bulkRevs
 {
     // http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API
     NSUInteger nRevs = bulkRevs.count;
     if (nRevs == 0) return;
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching %u remote revisions...", self,
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching (via _bulk_get) %u remote revisions...", self,
+               (unsigned)nRevs);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching (via _bulk_get) remote revisions: %@", self, bulkRevs);
+    
+    [self asyncTaskStarted];
+    ++_httpConnectionCount;
+    
+    // body needs to be in form:
+    // {"docs":[{"id":"1-foo","rev":"rev123","atts_since":["1-foo,...]}]}
+    NSArray* keys = [bulkRevs my_map:^(TD_Revision* rev) {
+        NSArray* knownRevs = [_db getPossibleAncestorRevisionIDs:rev limit:kMaxNumberOfAttsSince];
+        return @{@"id": rev.docID,
+                 @"rev": rev.revID,
+                 @"atts_since": knownRevs != nil ? knownRevs : @[]};
+    }];
+    
+    NSDictionary *requestBody = @{@"docs": keys};    
+    NSMutableArray* remainingRevs = [bulkRevs mutableCopy];
+    __weak TDPuller* weakSelf = self;
+
+    [self sendAsyncRequest:@"POST"
+                      path:@"_bulk_get?revs=true&attachments=true"
+                      body:requestBody
+              onCompletion:^(id result, NSError* error) {
+                  __strong TDPuller* strongSelf = weakSelf;
+                  if (error) {
+                      strongSelf.error = error;
+                      [strongSelf revisionFailed];
+                      strongSelf.changesProcessed+=bulkRevs.count;
+                  } else if ($castIf(NSDictionary, result) != nil) {
+                      // unpack revisions and queue them in _downloadsToInsert
+                      NSArray *results = $castIf(NSArray, result[@"results"]);
+                      for (NSDictionary *docResult in results) {
+                          // skip if it's not a dictionary
+                          if (![docResult isKindOfClass:[NSDictionary class]]) {
+                              break;
+                          }
+                          NSArray *docs = $castIf(NSArray, docResult[@"docs"]);
+                          for (NSDictionary *doc in docs) {
+                              // skip if it's not a dictionary
+                              if (![doc isKindOfClass:[NSDictionary class]]) {
+                                  break;
+                              }
+                              NSDictionary *okRevision = $castIf(NSDictionary, doc[@"ok"]);
+                              if (okRevision != nil) {
+                                  TD_Revision* rev = [TD_Revision revisionWithProperties:okRevision];
+                                  NSUInteger pos = [remainingRevs indexOfObject:rev];
+                                  if (pos != NSNotFound) {
+                                      rev.sequence = [remainingRevs[pos] sequence];
+                                      [remainingRevs removeObjectAtIndex:pos];
+                                      [_downloadsToInsert queueObject:rev];
+                                      [self asyncTaskStarted];
+                                  }
+                              } else {
+                                  CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                                             @"%@ no \"ok\" revision found in _bulk_get response for docid=%@, revid=%@",
+                                             self,
+                                             doc[@"_id"],
+                                             doc[@"_rev"]);
+                              }
+                          }
+                      }
+                  }
+                  
+                  [self asyncTasksFinished:1];
+                  --_httpConnectionCount;
+                  // Start another task if there are still revisions waiting to be pulled:
+                  [self pullRemoteRevisions];
+              }];
+}
+
+// Get a bunch of revisions in one bulk request.
+- (void)pullBulkRevisionsWithAllDocs:(NSArray*)bulkRevs
+{
+    // http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API
+    NSUInteger nRevs = bulkRevs.count;
+    if (nRevs == 0) return;
+    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching (via _all_docs) %u remote revisions...", self,
             (unsigned)nRevs);
-    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching remote revisions: %@", self, bulkRevs);
+    CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ bulk-fetching (via _all_docs) remote revisions: %@", self, bulkRevs);
 
     [self asyncTaskStarted];
     ++_httpConnectionCount;
