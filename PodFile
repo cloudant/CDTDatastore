@@ -26,10 +26,11 @@ def import_RA_pods
 end
 
 def import_encrypted_test_pods
-    import_test_pods
+    pod 'Specta'
+    pod 'Expecta'
     pod 'OCMock'
+    pod 'OHHTTPStubs'
 end
-
 
 target :CDTDatastore do
     platform :ios, '7.0'
