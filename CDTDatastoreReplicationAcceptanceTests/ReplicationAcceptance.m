@@ -946,14 +946,18 @@
     [self pullFromRemote];
     XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
 
+    BOOL errorDeleting = NO;
     // Modify all the docs -- we know they're going to be doc-1 to doc-<self.n_docs+1>
     for (int i = 1; i < self.n_docs+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
 
         [self.datastore deleteDocumentFromRevision:rev error:&error];
-        XCTAssertNil(error, @"Couldn't delete document");
+        if (error) {
+            errorDeleting = YES;
+        }
     }
+    XCTAssertFalse(errorDeleting, @"Couldn't delete document(s)");
 
     // Replicate the changes
     [self pushToRemote];
