@@ -79,4 +79,6 @@
  */
 - (void) disassociateTask:(nonnull NSURLSessionDataTask *)task;
 
+- (void) waitForFreeSlot;
+
 @end
