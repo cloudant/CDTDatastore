@@ -54,6 +54,18 @@
     return self.replicationSettings[@"TEST_COUCH_PASSWORD"];
 }
 
+-(NSNumber *) nDocs {
+    return self.replicationSettings[@"TEST_COUCH_N_DOCS"];
+}
+
+-(NSNumber *) largeRevTreeSize {
+    return self.replicationSettings[@"TEST_COUCH_LARGE_REV_TREE_SIZE"];
+}
+
+-(NSNumber *) loggingLevel {
+    return self.replicationSettings[@"TEST_COUCH_LOGGING_LEVEL"];
+}
+
 -(NSString *) serverURI {
 
     NSString * server;

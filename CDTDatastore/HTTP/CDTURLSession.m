@@ -71,7 +71,7 @@
 #else
         config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
 #endif
-
+        [config setTimeoutIntervalForRequest:300];
         [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
 
         _session = [NSURLSession sessionWithConfiguration:config
