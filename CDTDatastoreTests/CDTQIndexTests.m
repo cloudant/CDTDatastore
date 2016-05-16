@@ -51,13 +51,19 @@ describe(@"When creating an instance of index", ^{
     });
 
     it(@"returns nil when no fields are provided", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
         expect([CDTQIndex index:indexName withFields:nil]).to.beNil();
+#pragma clang diagnostic pop
         
         expect([CDTQIndex index:indexName withFields:@[]]).to.beNil();
     });
     
     it(@"returns nil when no index name is provided", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
         expect([CDTQIndex index:nil withFields:fieldNames]).to.beNil();
+#pragma clang diagnostic pop
         
         expect([CDTQIndex index:@"" withFields:fieldNames]).to.beNil();
     });

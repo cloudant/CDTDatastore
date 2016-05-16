@@ -58,14 +58,20 @@ SpecBegin(CDTQIndexUpdater)
         describe(@"when generating DELETE index entries statements", ^{
 
             it(@"returns nil for no _id", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:nil fromIndex:@"anIndex"];
+#pragma clang diagnostic pop
                 expect(parts).to.beNil();
             });
 
             it(@"returns nil for no index name", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 CDTQSqlParts *parts =
                     [CDTQIndexUpdater partsToDeleteIndexEntriesForDocId:@"123" fromIndex:nil];
+#pragma clang diagnostic pop
                 expect(parts).to.beNil();
             });
 

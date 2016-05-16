@@ -106,7 +106,10 @@ SharedExamplesBegin(QueryExecution)
             });
 
             it(@"returns nil for no query", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 CDTQResultSet* result = [im find:nil];
+#pragma clang diagnostic pop
                 expect(result).to.beNil();
             });
 

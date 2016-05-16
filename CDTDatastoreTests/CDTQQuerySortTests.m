@@ -315,7 +315,10 @@ SpecBegin(CDTQQueryExecutorSorting)
                     [CDTQQueryExecutor sqlToSortIds:smallDocIdSet usingOrder:@[] indexes:indexes];
                 expect(parts).to.beNil();
                 parts =
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                     [CDTQQueryExecutor sqlToSortIds:smallDocIdSet usingOrder:nil indexes:indexes];
+#pragma clang diagnostic pop
                 expect(parts).to.beNil();
             });
 
@@ -324,7 +327,10 @@ SpecBegin(CDTQQueryExecutorSorting)
                 NSArray *order = @[ @{ @"y" : @"desc" } ];
                 parts = [CDTQQueryExecutor sqlToSortIds:smallDocIdSet usingOrder:order indexes:@{}];
                 expect(parts).to.beNil();
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 parts = [CDTQQueryExecutor sqlToSortIds:smallDocIdSet usingOrder:order indexes:nil];
+#pragma clang diagnostic pop
                 expect(parts).to.beNil();
             });
 

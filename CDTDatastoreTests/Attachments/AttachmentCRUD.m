@@ -785,7 +785,7 @@
     // Delete the attachment we added
     //
     document = [rev2 copy];
-    document.attachments = nil;
+    document.attachments = [[NSMutableDictionary alloc] init];
     CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
                                                                      error:&error];
 
@@ -894,10 +894,13 @@
 
 - (void) testNilDataPreventsInitAttachment
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc]
                                  initWithData:nil
                                          name:@"test_attachment"
                                          type:@"image/jpg"];
+#pragma clang diagnostic pop
     XCTAssertNil(attachment, @"Shouldn't be able to create attachment with nil data");
 }
 
