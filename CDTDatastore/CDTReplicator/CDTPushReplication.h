@@ -59,7 +59,8 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
  @return a CDTPushReplication object.
 
  */
-+ (nullable instancetype)replicationWithSource:(nonnull CDTDatastore *)source target:(nonnull NSURL *)target;
++ (nonnull instancetype)replicationWithSource:(nonnull CDTDatastore *)source
+                                       target:(nonnull NSURL *)target;
 
 /**
  @name Accessing the replication source and target

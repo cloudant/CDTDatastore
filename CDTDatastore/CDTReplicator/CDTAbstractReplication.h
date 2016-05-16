@@ -18,7 +18,9 @@
 
 @class CDTDatastore;
 
-extern NSString* __nonnull const CDTReplicationErrorDomain;
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSString* const CDTReplicationErrorDomain;
 
 /**
  * Replication errors.
@@ -128,24 +130,21 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 */
 @property (nullable, nonatomic, copy) NSDictionary<NSString*,NSString*>* optionalHeaders;
 
-NS_ASSUME_NONNULL_BEGIN
-
 /**
  The interceptors that will be executed for this replication.
  */
-@property (nonnull, nonatomic, readonly, strong) NSArray<NSObject<CDTHTTPInterceptor>*> * httpInterceptors;
- 
+@property (nonatomic, readonly, strong) NSArray<NSObject<CDTHTTPInterceptor>*>* httpInterceptors;
 
 /**
   Adds an interceptor to the interceptors array.
  @param interceptor the interceptor to append to the interceptors array.
  */
-- (void)addInterceptor:(nonnull NSObject<CDTHTTPInterceptor>*)interceptor;
+- (void)addInterceptor:(NSObject<CDTHTTPInterceptor>*)interceptor;
 /**
   Appends the contents of the array to the interceptors array.
  @param interceptors to append to the interceptors array.
  */
-- (void)addInterceptors:(nonnull NSArray<NSObject<CDTHTTPInterceptor>*>*)interceptors;
+- (void)addInterceptors:(NSArray<NSObject<CDTHTTPInterceptor>*>*)interceptors;
 /**
  Clears the interceptor array.
  
@@ -154,12 +153,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)clearInterceptors;
 
-NS_ASSUME_NONNULL_END
-
 /**
  Returns the default "User-Agent" header value used in HTTP requests made during replication.
 */
-+ (nonnull NSString*)defaultUserAgentHTTPHeader;
++ (NSString*)defaultUserAgentHTTPHeader;
 
 /*
  ---------------------------------------------------------------------------------------
@@ -191,6 +188,9 @@ NS_ASSUME_NONNULL_END
  @return YES on valid URL.
 
  */
-- (BOOL)validateRemoteDatastoreURL:(nonnull NSURL*)url error:(NSError* __autoreleasing __nullable * __nullable)error;
+- (BOOL)validateRemoteDatastoreURL:(NSURL*)url
+                             error:(NSError* __autoreleasing __nullable* __nullable)error;
 
 @end
+
+NS_ASSUME_NONNULL_END

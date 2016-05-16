@@ -128,7 +128,7 @@ managerUsingDatastore:(CDTDatastore *)datastore
 - (NSString *)ensureIndexed:(NSArray<NSString *> *)fieldNames
                    withName:(NSString *)indexName
                      ofType:(CDTQIndexType)type
-                   settings:(NSDictionary *)indexSettings;
+                   settings:(nullable NSDictionary *)indexSettings;
 
 - (BOOL)deleteIndexNamed:(NSString *)indexName;
 

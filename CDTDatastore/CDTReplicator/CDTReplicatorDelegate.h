@@ -70,9 +70,10 @@
  *
  * <p>May be called from any worker thread.</p>
  *
- * @param replicator the replicator issuing the event.
+ * @param replicator the replicator issuing the event, or nil if the replicator is in the
+ *        process of being deallocated when the error occurs.
  * @param info information about the error that occurred.
  */
-- (void)replicatorDidError:(nonnull CDTReplicator *)replicator info:(nonnull NSError *)info;
+- (void)replicatorDidError:(nullable CDTReplicator *)replicator info:(nonnull NSError *)info;
 
 @end

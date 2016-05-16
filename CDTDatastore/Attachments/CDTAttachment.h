@@ -20,6 +20,8 @@
 
 #import "CDTBlobReader.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  Base class for attachments in the datastore.
 
@@ -43,16 +45,18 @@
 @interface CDTAttachment : NSObject
 
 // common
-@property (nonnull, nonatomic, strong, readonly) NSString *name;
+@property (nonatomic, strong, readonly) NSString *name;
 
 /** Mimetype string */
-@property (nonnull, nonatomic, strong, readonly) NSString *type;
+@property (nonatomic, strong, readonly) NSString *type;
 
 /* Size in bytes, may be -1 if not known (e.g., HTTP URL for new attachment) */
 @property (nonatomic, readonly) NSInteger size;
 
 /** Subclasses should call this to initialise instance vars */
-- (nullable instancetype)initWithName:(nonnull NSString *)name type:(nonnull NSString *)type size:(NSInteger)size;
+- (instancetype)initWithName:(NSString *)name
+                        type:(NSString *)type
+                        size:(NSInteger)size;
 
 /** Get unopened input stream for this attachment */
 - (nullable NSData *)dataFromAttachmentContent;
@@ -72,15 +76,15 @@
 @property (nonatomic, readonly) TDAttachmentEncoding encoding;
 
 /** sha of file, used for file path on disk. */
-@property (nonnull, nonatomic, readonly) NSData *key;
+@property (nonatomic, readonly) NSData *key;
 
-- (nullable instancetype)initWithBlob:(nonnull id<CDTBlobReader>)blob
-                        name:(nonnull NSString *)name
-                        type:(nonnull NSString *)type
+- (instancetype)initWithBlob:(id<CDTBlobReader>)blob
+                        name:(NSString *)name
+                        type:(NSString *)type
                         size:(NSInteger)size
                       revpos:(NSInteger)revpos
                     sequence:(SequenceNumber)sequence
-                         key:(nonnull NSData *)keyData
+                         key:(NSData *)keyData
                     encoding:(TDAttachmentEncoding)encoding;
 
 @end
@@ -95,7 +99,9 @@
  Create a new unsaved attachment using an NSData instance
  as the source of attachment data.
  */
-- (nullable instancetype)initWithData:(nonnull NSData *)data name:(nonnull NSString *)name type:(nonnull NSString *)type;
+- (instancetype)initWithData:(NSData *)data
+                        name:(NSString *)name
+                        type:(NSString *)type;
 
 @end
 
@@ -105,7 +111,9 @@
  */
 @interface CDTUnsavedFileAttachment : CDTAttachment
 
-- (nullable instancetype)initWithPath:(nonnull NSString *)filePath name:(nonnull NSString *)name type:(nonnull NSString *)type;
+- (nullable instancetype)initWithPath:(NSString *)filePath
+                                 name:(NSString *)name
+                                 type:(NSString *)type;
 
 @end
 
@@ -122,15 +130,15 @@ __attribute__((deprecated))
  the _attachments object in a couch get request
 
  @param name The name of the attachment eg example.txt
- @param jsonData The decoded jsonData reccived from couchdb / cloudant
+ @param jsonData The decoded jsonData received from couchdb / cloudant
  @param document the URL of the document this attachment is attached to
  @param error will point to an NSError object in case of error
 
  */
-+ (nullable CDTSavedHTTPAttachment *)createAttachmentWithName:(nonnull NSString *)name
-                                            JSONData:(nonnull NSDictionary *)jsonData
-                                       attachmentURL:(nonnull NSURL *)attachmentURL
-                                               error:(NSError *__autoreleasing __nullable  * __nullable )error;
++ (nullable CDTSavedHTTPAttachment *)createAttachmentWithName:(NSString *)name
+                                                     JSONData:(NSDictionary *)jsonData
+                                                attachmentURL:(NSURL *)attachmentURL
+                                                        error:(NSError *__autoreleasing __nullable  * __nullable)error;
 /**
 
  Creates an attachment that represents a remote HTTP accessed attachment
@@ -139,18 +147,18 @@ __attribute__((deprecated))
  @param name the name of the attachment
  @param type the mime type of the attachment eg image/jpeg
  @param size the size of the file in bytes (-1 if unkown)
- @param data attschment data if it has already been downloaded
+ @param data attachment data if it has already been downloaded
 
  */
-- (nullable instancetype)initWithDocumentURL:(nonnull NSURL *)attachmentURL
-                     name:(nonnull NSString *)name
-                     type:(nonnull NSString *)type
-                     size:(NSInteger)size
-                     data:(nullable NSData *)data;
+- (instancetype)initWithDocumentURL:(NSURL *)attachmentURL
+                               name:(NSString *)name
+                               type:(NSString *)type
+                               size:(NSInteger)size
+                               data:(nullable NSData *)data;
 
 /**
 
- Returns the data for an attachment. If attachment data requries downloading, (ie it was not
+ Returns the data for an attachment. If attachment data requires downloading, (ie it was not
  provided
  in the JSON with the document download) it will block while downloading the data from the remote
  server
@@ -160,3 +168,4 @@ __attribute__((deprecated))
  */
 - (nullable NSData *)dataFromAttachmentContent;
 @end
+NS_ASSUME_NONNULL_END
