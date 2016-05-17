@@ -60,23 +60,23 @@ SpecBegin(CDTQQueryExecutorInvalidSyntax) describe(@"cloudant query using invali
             CDTDocumentRevision *rev;
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
-            rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
-            rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
-            rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
-            rev.body = @{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" };
+            rev.body = [@{ @"name" : @"fred", @"age" : @34, @"pet" : @"cat" } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
-            rev.body = @{ @"name" : @"fred", @"age" : @12 };
+            rev.body = [@{ @"name" : @"fred", @"age" : @12 } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             im = [CDTQIndexManager managerUsingDatastore:ds error:nil];
