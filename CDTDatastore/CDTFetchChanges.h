@@ -180,8 +180,7 @@
 
  @return An initialised fetch operation.
  */
-- (nullable instancetype)initWithDatastore:(nonnull CDTDatastore *)datastore
-               startSequenceValue:(nullable NSString *)startSequenceValue;
-
+- (nonnull instancetype)initWithDatastore:(nonnull CDTDatastore *)datastore
+                       startSequenceValue:(nullable NSString *)startSequenceValue;
 
 @end

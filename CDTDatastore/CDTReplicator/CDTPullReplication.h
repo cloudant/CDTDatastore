@@ -54,7 +54,8 @@
  @return a CDTPullReplication object.
 
  */
-+ (nullable instancetype)replicationWithSource:(nonnull NSURL *)source target:(nonnull CDTDatastore *)target;
++ (nonnull instancetype)replicationWithSource:(nonnull NSURL *)source
+                                       target:(nonnull CDTDatastore *)target;
 
 /**
  @name Accessing the replication source and target

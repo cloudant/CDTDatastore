@@ -24,13 +24,15 @@
  the thread which created the object.
  */
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface CDTURLSession : NSObject <NSURLSessionDataDelegate>
 
 /**
  * Initalises a CDTURLSession without a delegate and an empty array of interceptors. Calling this 
  * method will result in completionHandlers being called on the thread which called this method.
  **/
-- (nonnull instancetype)init;
+- (instancetype)init;
 
 /**
  * Initalise a CDTURLSession.
@@ -39,11 +41,10 @@
  * @param requestInterceptors array of interceptors that should be run before each request is made.
  * @param sessionConfigDelegate the delegate used to customise the NSURLSessionConfiguration.
  **/
-- (nonnull instancetype)initWithCallbackThread:(nonnull NSThread *)thread
-                           requestInterceptors:(nullable NSArray *)requestInterceptors
-                         sessionConfigDelegate:
-                             (nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)
-                                 sessionConfigDelegate NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCallbackThread:(NSThread *)thread
+                   requestInterceptors:(nullable NSArray *)requestInterceptors
+                 sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)
+                                           sessionConfigDelegate NS_DESIGNATED_INITIALIZER;
 
 /**
  * Performs a data task for a request.
@@ -54,8 +55,9 @@
  * @return returns a task to used the make the request. `resume` needs to be called
  * in order for the task to start making the request.
  */
-- (nonnull CDTURLSessionTask *)dataTaskWithRequest:(nonnull NSURLRequest *)request
-                                      taskDelegate:(nullable NSObject<CDTURLSessionTaskDelegate> *)taskDelegate;
+- (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
+                              taskDelegate:
+                                  (nullable NSObject<CDTURLSessionTaskDelegate> *)taskDelegate;
 
 /**
  * Creates a NSURLSessionDataTask for the given request and associates the given CDTURLSessionTask
@@ -66,8 +68,8 @@
  *
  * @return returns an NSURLSessionDataTask.
  */
-- (nonnull NSURLSessionDataTask *)createDataTaskWithRequest:(nonnull NSURLRequest *)request
-                                         associatedWithTask:(nonnull CDTURLSessionTask *)task;
+- (NSURLSessionDataTask *)createDataTaskWithRequest:(NSURLRequest *)request
+                                 associatedWithTask:(CDTURLSessionTask *)task;
 
 /**
  * Disassociates an NSURLSessionDataTask from any CDTURLSessionTask it was previously associated
@@ -77,6 +79,8 @@
  *
  * @param task The NSURLSessionDataTask to be disassociated from any CDTURLSessionTask.
  */
-- (void) disassociateTask:(nonnull NSURLSessionDataTask *)task;
+- (void)disassociateTask:(NSURLSessionDataTask *)task;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -63,12 +63,11 @@ SpecBegin(CDTQPerformance)
                 @autoreleasepool {
                     rev = [CDTDocumentRevision
                         revisionWithDocId:[NSString stringWithFormat:@"doc-%d", i]];
-                rev.body = @{
-                    @"name" : @"mike",
-                    @"age" : @34,
-                    @"docNumber" : @(i),
-                    @"pet" : @"cat"
-                };
+                    rev.body =
+                        [@{ @"name" : @"mike",
+                            @"age" : @34,
+                            @"docNumber" : @(i),
+                            @"pet" : @"cat" } mutableCopy];
 
                 if (i < 1000) {
                     [ds1k createDocumentFromRevision:rev error:nil];

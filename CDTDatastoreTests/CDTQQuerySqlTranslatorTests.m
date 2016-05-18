@@ -1029,11 +1029,14 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
         });
 
         it(@"returns nil for no index name", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
             CDTQSqlParts *parts = [CDTQQuerySqlTranslator
                 selectStatementForAndClause:@[
                                                @{ @"name" : @{@"$eq" : @"mike"} }
                                             ]
                                  usingIndex:nil];
+#pragma clang diagnostic pop
             expect(parts).to.beNil();
         });
 

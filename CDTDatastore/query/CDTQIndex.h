@@ -89,7 +89,7 @@ extern NSString *const kCDTQTextType __deprecated;
 + (nullable instancetype)index:(NSString *)indexName
                     withFields:(NSArray *)fieldNames
                           type:(CDTQIndexType)indexType
-                  withSettings:(NSDictionary *)indexSettings;
+                  withSettings:(nullable NSDictionary *)indexSettings;
 
 /**
  * Compares the index type and accompanying settings with the passed in arguments.

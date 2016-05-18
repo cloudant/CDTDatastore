@@ -74,8 +74,8 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  *
  * Creates a CDTDatastore instance.
  *
- * @param manager this datastore's maanger, must not be nil.
- * @param database the database where this datastore should save documents
+ * @param manager this datastore's manager, must not be nil.
+ * @param database the database where this datastore should save documents.
  *
  */
 - (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;

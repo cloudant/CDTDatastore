@@ -60,8 +60,7 @@
 
  @param dsManager the manager of the datastores that this factory will replicate to and from.
  */
-- (nullable instancetype)initWithDatastoreManager:(nonnull CDTDatastoreManager *)dsManager;
-
+- (nonnull instancetype)initWithDatastoreManager:(nonnull CDTDatastoreManager *)dsManager;
 
 /**---------------------------------------------------------------------------------------
  * @name Creating replication jobs

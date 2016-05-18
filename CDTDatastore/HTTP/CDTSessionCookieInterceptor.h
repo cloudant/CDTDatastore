@@ -20,9 +20,9 @@
 
 @interface CDTSessionCookieInterceptor : NSObject <CDTHTTPInterceptor>
 
-- (nullable instancetype)init NS_UNAVAILABLE;
+- (nonnull instancetype)init NS_UNAVAILABLE;
 
-- (nullable instancetype)initWithUsername:(nonnull NSString*)username
-                                 password:(nonnull NSString*)password NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithUsername:(nonnull NSString *)username
+                                password:(nonnull NSString *)password NS_DESIGNATED_INITIALIZER;
 
 @end

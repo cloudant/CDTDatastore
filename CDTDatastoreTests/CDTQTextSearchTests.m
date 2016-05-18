@@ -65,48 +65,59 @@ SpecBegin(CDTQQueryExecutorTextSearch) describe(@"cdtq", ^{
             CDTDocumentRevision *rev;
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
-            rev.body = @{ @"name" : @"mike",
-                          @"age" : @12,
-                          @"pet" : @"cat",
-                          @"comment" : @"He lives in Bristol, UK and his best friend is Fred."};
+            rev.body = [@{
+                @"name" : @"mike",
+                @"age" : @12,
+                @"pet" : @"cat",
+                @"comment" : @"He lives in Bristol, UK and his best friend is Fred."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
-            rev.body = @{ @"name" : @"mike",
-                          @"age" : @34,
-                          @"pet" : @"dog",
-                          @"comment" : @"He lives in a van down by the river in Bristol."};
+            rev.body = [@{
+                @"name" : @"mike",
+                @"age" : @34,
+                @"pet" : @"dog",
+                @"comment" : @"He lives in a van down by the river in Bristol."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
-            rev.body = @{ @"name" : @"mike",
-                          @"age" : @72,
-                          @"pet" : @"cat",
-                          @"comment" : @"He's retired and has memories of spending time "
-                                       @"with his cat Remus."};
+            rev.body = [@{
+                @"name" : @"mike",
+                @"age" : @72,
+                @"pet" : @"cat",
+                @"comment" : @"He's retired and has memories of spending time "
+                             @"with his cat Remus."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"fred34"];
-            rev.body = @{ @"name" : @"fred",
-                          @"age" : @34,
-                          @"pet" : @"cat",
-                          @"comment" : @"He lives next door to Mike and his cat Romulus "
-                                       @"is brother to Remus."};
+            rev.body = [@{
+                @"name" : @"fred",
+                @"age" : @34,
+                @"pet" : @"cat",
+                @"comment" : @"He lives next door to Mike and his cat Romulus "
+                             @"is brother to Remus."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"fred12"];
-            rev.body = @{ @"name" : @"fred",
-                          @"age" : @12,
-                          @"pet" : @"cat",
-                          @"comment" : @"He lives in Bristol, UK and his best friend is Mike."};
+            rev.body = [@{
+                @"name" : @"fred",
+                @"age" : @12,
+                @"pet" : @"cat",
+                @"comment" : @"He lives in Bristol, UK and his best friend is Mike."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             rev = [CDTDocumentRevision revisionWithDocId:@"john34"];
-            rev.body =
-                @{ @"name" : @"john",
-                   @"age" : @34,
-                   @"pet" : @"cat",
-                   @"comment" : @"وهو يعيش في بريستول، المملكة المتحدة، وأفضل صديق له هو مايك."};
+            rev.body = [@{
+                @"name" : @"john",
+                @"age" : @34,
+                @"pet" : @"cat",
+                @"comment" : @"وهو يعيش في بريستول، المملكة المتحدة، وأفضل صديق له هو مايك."
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
             
             im = [CDTQIndexManager managerUsingDatastore:ds error:nil];

@@ -29,7 +29,7 @@
  Resolve conflicts for a specific document using an object that conforms to the
  CDTConflictResolver protocol
 
- This method creates an NSArry of CDTDocumentRevision objects representing each of the conflicting
+ This method creates an NSArray of CDTDocumentRevision objects representing each of the conflicting
  revisions in a particular document tree and passes that array to the given
  [CDTConflictResolver resolve:conflicts:]. The [CDTConflictResolver resolve:conflicts:] method
  must return the winning revision either chosen from the array or a new document revision defined

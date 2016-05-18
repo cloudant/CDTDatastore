@@ -175,9 +175,10 @@
 }
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
-    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     XCTAssertNil([[CDTReplicatorFactory alloc] initWithDatastoreManager:nil], @"Replication factory should be nil");
-    
+#pragma clang diagnostic pop
 }
 
 -(void)testDictionaryForPullReplicationDocument

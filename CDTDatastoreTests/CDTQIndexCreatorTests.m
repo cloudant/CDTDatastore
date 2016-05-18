@@ -91,7 +91,10 @@ SpecBegin(CDTQIndexCreator)
             });
 
             it(@"doesn't create an index on nil fields", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 NSString *name = [im ensureIndexed:nil withName:@"basic"];
+#pragma clang diagnostic pop
                 expect(name).to.equal(nil);
 
                 NSDictionary *indexes = [im listIndexes];
@@ -99,7 +102,10 @@ SpecBegin(CDTQIndexCreator)
             });
 
             it(@"doesn't create an index without a name", ^{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
                 NSString *name = [im ensureIndexed:@[ @"name" ] withName:nil];
+#pragma clang diagnostic pop
                 expect(name).to.equal(nil);
 
                 NSDictionary *indexes = [im listIndexes];

@@ -17,6 +17,8 @@
 #import <Foundation/Foundation.h>
 #import "CDTMacros.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class CDTURLSession;
 
 @protocol CDTURLSessionTaskDelegate
@@ -44,9 +46,9 @@
  *
  *  @param task the NSURLSessionTask to be wrapped
  */
-- (nullable instancetype)initWithSession:(nonnull CDTURLSession *)session
-                                 request:(nonnull NSURLRequest *)request
-                            interceptors:(nullable NSArray *)interceptors NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithSession:(CDTURLSession *)session
+                        request:(NSURLRequest *)request
+                   interceptors:(nullable NSArray *)interceptors NS_DESIGNATED_INITIALIZER;
 
 /*
  * Resumes the execution of this task
@@ -68,8 +70,7 @@
  * @param the thread on which to process the response if the interceptors do not indicate
  *        that we need to retry the request.
  */
-- (void)processResponse:(nonnull NSURLResponse *)response
-               onThread:(nonnull NSThread *)thread;
+- (void)processResponse:(NSURLResponse *)response onThread:(NSThread *)thread;
 
 /**
  * Process the given error. If the when we process the error with the interceptors
@@ -80,11 +81,12 @@
  * @param the thread on which to process the error if the interceptors do not indicate
  *        that we need to retry the request.
  */
-- (void)processError:(nonnull NSError *)error
-            onThread:(nonnull NSThread *)thread;
+- (void)processError:(NSError *)error onThread:(NSThread *)thread;
 
-- (void) completedThread:(nonnull NSThread *)thread;
+- (void)completedThread:(NSThread *)thread;
 
 - (void)processData:(nullable NSData*)data;
 
 @end
+
+NS_ASSUME_NONNULL_END

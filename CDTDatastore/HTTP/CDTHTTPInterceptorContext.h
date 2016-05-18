@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CDTHTTPInterceptorContext : NSObject
 
-@property (nonnull, readwrite, nonatomic, strong) NSMutableURLRequest *request;
+@property (readwrite, nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic) BOOL shouldRetry;
 @property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
 
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @param request the request this context should represent
  **/
-- (instancetype)initWithRequest:(nonnull NSMutableURLRequest *)request NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithRequest:(NSMutableURLRequest *)request NS_DESIGNATED_INITIALIZER;
 
 @end
 
