@@ -88,39 +88,39 @@ SpecBegin(CDTQIndexManager)
 
             CDTDocumentRevision *rev = [CDTDocumentRevision revision];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             [im ensureIndexed:@[ @"name", @"address" ] withName:@"basic"];
@@ -135,39 +135,39 @@ SpecBegin(CDTQIndexManager)
 
             CDTDocumentRevision *rev = [CDTDocumentRevision revision];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
-            rev.body = @{
+            rev.body = [@{
                 @"name" : @"mike",
                 @"age" : @12,
                 @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-            };
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             [im ensureIndexed:@[ @"name", @"address" ] withName:@"basic"];
@@ -186,11 +186,11 @@ SpecBegin(CDTQIndexManager)
 
             CDTDocumentRevision *rev = [CDTDocumentRevision revision];
 
-            rev.body = @{
-                         @"name" : @"mike",
-                         @"age" : @12,
-                         @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
-                         };
+            rev.body = [@{
+                @"name" : @"mike",
+                @"age" : @12,
+                @"pet" : @{@"species" : @"cat", @"name" : @"mike"}
+            } mutableCopy];
             [ds createDocumentFromRevision:rev error:nil];
 
             expect([im ensureIndexed:@[ @"name" ] withName:@"basic" ofType:CDTQIndexTypeText])

@@ -48,15 +48,15 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         CDTDocumentRevision *rev;
 
         rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
-        rev.body = @{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
-        rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
-        rev.body = @{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
 
         [ds ensureIndexed:@[ @"name" ] withName:@"index name"];
@@ -73,8 +73,8 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         CDTDatastore *ds2 = [factory datastoreNamed:@"test2" error:nil];
         expect([ds2 ensureIndexed:@[ @"name", @"age" ] withName:@"pet"]).toNot.beNil();
 
-        CDTQIndexManager *im = objc_getAssociatedObject(ds, @selector(CDTQManager));
-        CDTQIndexManager *im2 = objc_getAssociatedObject(ds2, @selector(CDTQManager));
+        CDTQIndexManager *im = objc_getAssociatedObject(ds, NSSelectorFromString(@"CDTQManager"));
+        CDTQIndexManager *im2 = objc_getAssociatedObject(ds2, NSSelectorFromString(@"CDTQManager"));
 
         expect([im listIndexes]).toNot.equal([im2 listIndexes]);
     });
@@ -119,7 +119,7 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
         CDTQResultSet *results = [ds find:query];
         expect(results).toNot.beNil();
         CDTDocumentRevision *rev = [CDTDocumentRevision revision];
-        rev.body = @{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" };
+        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" } mutableCopy];
         [ds createDocumentFromRevision:rev error:nil];
         expect([ds updateAllIndexes]).to.beTruthy();
     });

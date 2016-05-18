@@ -27,7 +27,6 @@
 #import "CDTConflictResolver.h"
 #import "CDTHelperOneUseKeyProvider.h"
 
-#import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
 #import "TDJSON.h"
 #import "FMResultSet.h"
@@ -97,7 +96,7 @@
     
     NSError *error;
     CDTDocumentRevision *mutableRevision = [CDTDocumentRevision revisionWithDocId:anId];
-    mutableRevision.body = @{ @"foo1.a" : @"bar1.a" };
+    mutableRevision.body = [@{ @"foo1.a" : @"bar1.a" } mutableCopy];
     CDTDocumentRevision *rev1;
     rev1 = [datastore createDocumentFromRevision:mutableRevision error:&error];
     
@@ -113,20 +112,20 @@
                                                                               name:@"bonsai-boston"
                                                                               type:@"image/jpg"];
         mutableRevision = [rev1 copy];
-        mutableRevision.attachments = @{attachment.name:attachment};
-        mutableRevision.body = @{@"foo2.a":@"bar2.a"};
+        mutableRevision.attachments = [@{ attachment.name : attachment } mutableCopy];
+        mutableRevision.body = [@{ @"foo2.a" : @"bar2.a" } mutableCopy];
         rev2a = [self.datastore updateDocumentFromRevision:mutableRevision error:&error];
         
     }
     else{
         mutableRevision = [rev1 copy];
-        mutableRevision.body = @{@"foo2.a":@"bar2.a"};
+        mutableRevision.body = [@{ @"foo2.a" : @"bar2.a" } mutableCopy];
         rev2a = [datastore updateDocumentFromRevision:mutableRevision error:&error];
     }
     
     error = nil;
     mutableRevision = [rev2a copy];
-    mutableRevision.body = @{@"foo3.a":@"bar3.a"};
+    mutableRevision.body = [@{ @"foo3.a" : @"bar3.a" } mutableCopy];
     [datastore updateDocumentFromRevision:mutableRevision error:&error];
     
     error = nil;
@@ -208,8 +207,8 @@
 {
     NSError *error;
     CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
-    mutableRev.body = body;
-    
+    mutableRev.body = [body mutableCopy];
+
     CDTDocumentRevision *rev = [self.datastore createDocumentFromRevision:mutableRev error:&error];
     
     XCTAssertNil(error, @"Error creating document");

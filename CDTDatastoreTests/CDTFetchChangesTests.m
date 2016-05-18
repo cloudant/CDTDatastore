@@ -244,7 +244,8 @@
     for (NSUInteger i = 0; i < counter; i++) {
         CDTDocumentRevision *rev =
             [CDTDocumentRevision revisionWithDocId:[CDTFetchChangesTests docIdWithIndex:i]];
-        rev.body = @{ [NSString stringWithFormat:@"hello-%lu", (unsigned long)i] : @"world" };
+        rev.body = [
+            @{ [NSString stringWithFormat:@"hello-%lu", (unsigned long)i] : @"world" } mutableCopy];
 
         [datastore createDocumentFromRevision:rev error:nil];
     }

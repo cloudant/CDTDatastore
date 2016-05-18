@@ -89,8 +89,8 @@
 - (void)testEventFiredOnCreate
 {
     CDTDocumentRevision *rev = [CDTDocumentRevision revision];
-    rev.body = @{@"hello": @"world"};
-    
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
+
     XCTAssertNotNil([self.datastore createDocumentFromRevision:rev error:nil],
                    @"Document wasn't created");
     
@@ -104,7 +104,7 @@
 - (void)testEventFiredOnUpdate
 {
     CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
-    mutableRev.body = @{@"hello": @"world"};
+    mutableRev.body = [@{ @"hello" : @"world" } mutableCopy];
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
     XCTAssertNotNil(rev1, @"Document wasn't created");
@@ -116,7 +116,7 @@
     XCTAssertEqual(self.otherWatcher.counter, (NSInteger)0, @"Event incorrectly fired");
 
     mutableRev = [rev1 copy];
-    mutableRev.body = @{@"hello2": @"world2"};
+    mutableRev.body = [@{ @"hello2" : @"world2" } mutableCopy];
     XCTAssertNotNil([self.datastore updateDocumentFromRevision:mutableRev error:nil],
                    @"Document wasn't updated");
     
@@ -128,7 +128,7 @@
 - (void)testEventFiredOnDelete
 {
     CDTDocumentRevision *mutableRev = [CDTDocumentRevision revision];
-    mutableRev.body = @{@"hello": @"world"};
+    mutableRev.body = [@{ @"hello" : @"world" } mutableCopy];
     CDTDocumentRevision *rev1 = [self.datastore createDocumentFromRevision:mutableRev error:nil];
     
     XCTAssertNotNil(rev1, @"Document wasn't created");
@@ -151,7 +151,7 @@
 {
     NSError * error;
     CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"aTestDocId"];
-    rev.body = @{ @"hello" : @"world" };
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
 
     rev = [self.datastore createDocumentFromRevision:rev error:&error];
 

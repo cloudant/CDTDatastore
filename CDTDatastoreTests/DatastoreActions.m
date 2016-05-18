@@ -98,11 +98,11 @@
     NSError *error;
     CDTDatastore *datastore = [self.factory datastoreNamed:@"test_database" error:&error];
     CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"myDocId"];
-    rev.body = @{ @"hello" : @"world" };
-    
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
+
     CDTDocumentRevision *revision = [datastore createDocumentFromRevision:rev error:&error];
     rev = [revision copy];
-    rev.body = @{ @"hello" : @"world", @"test" : @"testy" };
+    rev.body = [@{ @"hello" : @"world", @"test" : @"testy" } mutableCopy];
     revision = [datastore updateDocumentFromRevision:rev error:&error];
     
     XCTAssertTrue([datastore compactWithError:&error],@"Compaction failed");
