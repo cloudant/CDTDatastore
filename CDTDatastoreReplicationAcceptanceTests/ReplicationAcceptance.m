@@ -575,8 +575,9 @@
     //store before the replicators pull/push all of the remote/local docs
     //If this test fails because the replicators complete their job, then
     //increase increase the number of docs.
-    [self createLocalDocs:2000];
-    [self createRemoteDocs:2000 suffixFrom:2000];
+    int nDocs = 3000;
+    [self createLocalDocs:nDocs];
+    [self createRemoteDocs:nDocs suffixFrom:nDocs];
 
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
