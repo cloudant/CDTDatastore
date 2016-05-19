@@ -181,10 +181,10 @@ NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
             expectCount += [modifiedRowCount[table] integerValue];  //we expect there to be one new row in the modifiedTables
         
         NSInteger foundCount = [self rowCountForTable:table];
-        XCTAssertTrue( foundCount == expectCount,
-                     @"For table %@: row count mismatch. initial number of rows %d expected %d found %d.",
-                     table, initCount, expectCount, foundCount);
-        
+        XCTAssertTrue(
+            foundCount == expectCount,
+            @"For table %@: row count mismatch. initial number of rows %ld expected %ld found %ld.",
+            table, (long)initCount, (long)expectCount, (long)foundCount);
     }
 }
 

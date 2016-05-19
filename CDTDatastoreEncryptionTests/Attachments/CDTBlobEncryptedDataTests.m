@@ -199,7 +199,7 @@
     XCTAssertTrue(error && [error.domain isEqualToString:CDTBlobEncryptedDataErrorDomain] &&
                       (error.code == CDTBlobEncryptedDataErrorFileTooSmall),
                   @"In this situation the expected error is: (%@, %li)",
-                  CDTBlobEncryptedDataErrorDomain, CDTBlobEncryptedDataErrorFileTooSmall);
+                  CDTBlobEncryptedDataErrorDomain, (long)CDTBlobEncryptedDataErrorFileTooSmall);
 }
 
 - (void)testDataWithErrorFailsIfFileStartsWithVersion0
@@ -218,9 +218,9 @@
     
     XCTAssertNil(data, @"Data is not encrypted, is corrupted or the version is wrong");
     XCTAssertTrue(error && [error.domain isEqualToString:CDTBlobEncryptedDataErrorDomain] &&
-                  (error.code == CDTBlobEncryptedDataErrorWrongVersion),
+                      (error.code == CDTBlobEncryptedDataErrorWrongVersion),
                   @"In this situation the expected error is: (%@, %li)",
-                  CDTBlobEncryptedDataErrorDomain, CDTBlobEncryptedDataErrorWrongVersion);
+                  CDTBlobEncryptedDataErrorDomain, (long)CDTBlobEncryptedDataErrorWrongVersion);
 }
 
 - (void)testDataWithErrorFailsIfFileDoesNotStartWithCorrectVersion
@@ -241,7 +241,7 @@
     XCTAssertTrue(error && [error.domain isEqualToString:CDTBlobEncryptedDataErrorDomain] &&
                       (error.code == CDTBlobEncryptedDataErrorWrongVersion),
                   @"In this situation the expected error is: (%@, %li)",
-                  CDTBlobEncryptedDataErrorDomain, CDTBlobEncryptedDataErrorWrongVersion);
+                  CDTBlobEncryptedDataErrorDomain, (long)CDTBlobEncryptedDataErrorWrongVersion);
 }
 
 - (void)testDataWithErrorReturnsEmptyIfThereIsNotEncryptedData

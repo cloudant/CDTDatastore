@@ -772,10 +772,9 @@
     XCTAssertTrue([rev.body isEqualToDictionary:myResolver.resolvedDocumentAsDictionary],
                  @"Unexpected document: %@", rev.body);
     XCTAssertTrue([rev.attachments count] == 1,
-                 @"Unexpected number of attachments. expected %d, actual %d",
-                 1,
-                 [rev.attachments count]);
-    
+                  @"Unexpected number of attachments. expected %d, actual %lu", 1,
+                  (unsigned long)[rev.attachments count]);
+
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSString *imagePath = [bundle pathForResource:@"bonsai-boston" ofType:@"jpg"];
     NSData *imageData = [NSData dataWithContentsOfFile:imagePath];

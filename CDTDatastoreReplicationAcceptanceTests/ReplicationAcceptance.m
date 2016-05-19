@@ -714,7 +714,8 @@
     
     NSArray *localDocs = [self.datastore getDocumentsWithIds:docids];
     XCTAssertNotNil(localDocs, @"nil");
-    XCTAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %@",localDocs.count);
+    XCTAssertTrue(localDocs.count == totalReplicated, @"unexpected number of docs: %lu",
+                  (unsigned long)localDocs.count);
     XCTAssertTrue(self.datastore.documentCount == totalReplicated,
                  @"Incorrect number of documents created %lu", self.datastore.documentCount);
     
@@ -795,9 +796,10 @@
         [NSThread sleepForTimeInterval:1.0f];
     }
 
-    XCTAssertEqual(replicator.state, CDTReplicatorStateStopped, @"expected a different state: %d (%@)",
-                   replicator.state, [CDTReplicator stringForReplicatorState:replicator.state]);
-    
+    XCTAssertEqual(replicator.state, CDTReplicatorStateStopped,
+                   @"expected a different state: %ld (%@)", (long)replicator.state,
+                   [CDTReplicator stringForReplicatorState:replicator.state]);
+
     BOOL docComparison = [self compareDocCount:self.datastore
       expectFewerDocsInRemoteDatabase:self.primaryRemoteDatabaseURL];
     
@@ -1467,8 +1469,8 @@
     TD_Database *tdb = self.datastore.database;
     
     NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
-    NSString *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
-    
+    NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+
     //make sure the remote database has the appropriate document
     NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:remoteCheckpointPath];
@@ -1512,8 +1514,8 @@
     TD_Database *tdb = self.datastore.database;
     
     NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
-    NSString *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
-    
+    NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+
     //make sure the remote database has the appropriate document
     NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:remoteCheckpointPath];

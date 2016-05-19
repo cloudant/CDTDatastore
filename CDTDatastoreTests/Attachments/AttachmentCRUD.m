@@ -127,12 +127,15 @@
     
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere",
@@ -146,8 +149,9 @@
     
     XCTAssertEqualObjects(body, rev.body, @"Body was different");
     XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
-    XCTAssertEqual([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
-    
+    XCTAssertEqual([rev.attachments count], (NSUInteger)1,
+                   @"Attachment count is wrong, expected 1 actual %lu",
+                   (unsigned long)[rev.attachments count]);
 }
 
 -(void)testDocumentRevisionFactoryWithAttachmentDataExcluded
@@ -181,11 +185,14 @@
     
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:attachmentDir
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere",
@@ -199,7 +206,9 @@
     
     XCTAssertEqualObjects(body, rev.body, @"Body was different");
     XCTAssertFalse(rev.deleted, @"Document is not marked as deleted");
-    XCTAssertEqual([rev.attachments count], (NSUInteger) 1, @"Attachment count is wrong, expected 1 actual %d", [rev.attachments count]);
+    XCTAssertEqual([rev.attachments count], (NSUInteger)1,
+                   @"Attachment count is wrong, expected 1 actual %lu",
+                   (unsigned long)[rev.attachments count]);
     XCTAssertEqualObjects(data, [[rev.attachments objectForKey:@"bonsai-boston.jpg"]dataFromAttachmentContent],@"data was not the same");
     
 }
@@ -251,8 +260,8 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -323,8 +332,8 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -383,8 +392,8 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -485,14 +494,14 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
-        
-        [data getBytes:key.bytes];
-        
+
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -583,14 +592,14 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
-        
-        [data getBytes:key.bytes];
-        
+
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -718,14 +727,14 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
-        
-        [data getBytes:key.bytes];
-        
+
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -807,8 +816,8 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -882,8 +891,8 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes];
-        
+        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
     
@@ -1142,16 +1151,16 @@
 
     document = [rev2 copy];
     document.attachments = [@{attachment.name:attachment} mutableCopy];
-    
-    CDTDocumentRevision *rev3 = [self.datastore updateDocumentFromRevision:document
-                                                                     error:&error];
-    
+
+    [self.datastore updateDocumentFromRevision:document error:&error];
+
     //attachments have been completed inerted, now attempt to get them via all docs
     
     NSArray * allDocuuments = [self.datastore getAllDocuments];
     
     for(CDTDocumentRevision * revision in allDocuuments){
-        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %lu not 1",
+                      (unsigned long)[revision.attachments count]);
     }
 }
 
@@ -1191,13 +1200,13 @@
     //attachments have been completed inerted, now attempt to get them via all docs
     
     NSArray * allDocuuments = [self.datastore getDocumentsWithIds:@[rev.docId]];
-    
-    XCTAssertTrue([allDocuuments count] == 1,
-                 @"Unexpected number of documents 1 expected got %d",
-                 [allDocuuments count]);
-    
+
+    XCTAssertTrue([allDocuuments count] == 1, @"Unexpected number of documents 1 expected got %lu",
+                  (unsigned long)[allDocuuments count]);
+
     for(CDTDocumentRevision * revision in allDocuuments){
-        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %d not 1", [revision.attachments count]);
+        XCTAssertTrue([revision.attachments count] == 1, @"Attachment count is %lu not 1",
+                      (unsigned long)[revision.attachments count]);
     }
 }
 

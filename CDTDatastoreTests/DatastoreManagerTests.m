@@ -31,9 +31,9 @@
     
     NSArray * datastores = [self.factory allDatastores];
     XCTAssertEqual((NSUInteger)5, [datastores count],
-                   @"Wrong number of datastores returned, expected 5 got %d",
-                   [datastores count]);
-    
+                   @"Wrong number of datastores returned, expected 5 got %lu",
+                   (unsigned long)[datastores count]);
+
     for(NSString * dsname in array){
         XCTAssertTrue([datastores containsObject:dsname], @"Object missing from datastores list");
     }
@@ -44,10 +44,9 @@
     
     [self.factory datastoreNamed:@"adatabase/withaslash" error:nil];
     NSArray * datastores = [self.factory allDatastores];
-    XCTAssertEqual((NSUInteger)1,
-                   [datastores count],
-                   @"Wrong number of datastores returned, expected 1 got %d",
-                   [datastores count]);
+    XCTAssertEqual((NSUInteger)1, [datastores count],
+                   @"Wrong number of datastores returned, expected 1 got %lu",
+                   (unsigned long)[datastores count]);
     XCTAssertEqualObjects(@"adatabase/withaslash",
                          [datastores objectAtIndex:0],
                          @"Datastore names do not match");
@@ -57,9 +56,8 @@
 -(void) testListEmptyDatastores {
     NSArray * datastores = [self.factory allDatastores];
     XCTAssertEqual((NSUInteger)0, [datastores count],
-                   @"Wrong number of datastores returned, expected 0 got %d",
-                   [datastores count]);
-
+                   @"Wrong number of datastores returned, expected 0 got %lu",
+                   (unsigned long)[datastores count]);
 }
 
 -(void) testSchema6ToSchema100Upgrade {

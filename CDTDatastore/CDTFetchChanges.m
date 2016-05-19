@@ -15,10 +15,10 @@
 
 #import "CDTFetchChanges.h"
 
-#import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
 
 #import "TD_Database.h"
+#import "CDTDatastore.h"
 
 #define CDTFETCHCHANGES_DEFAULT_OPTION_LIMIT 500
 

@@ -209,9 +209,12 @@
                   @"Local and remote database attachment comparison failed");
     
     NSDictionary *responseDict = response.body.JSONObject;
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision *remoteRevision = [CDTDocumentRevision createRevisionFromJson:responseDict forDocument:docURL error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNotNil(remoteRevision,@"Remote Revision was nil");
     XCTAssertEqual(remoteRevision.attachments.count, 1,@"Remote attachments were not equal to 1");
 

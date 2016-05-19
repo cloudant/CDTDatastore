@@ -119,14 +119,10 @@ NSString* TDEscapeID(NSString* docOrRevID)
     docOrRevID = [docOrRevID stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
     return docOrRevID;
 #else
-    CFStringRef escaped = CFURLCreateStringByAddingPercentEscapes(
-        NULL, (CFStringRef)docOrRevID, NULL, (CFStringRef) @"?&/", kCFStringEncodingUTF8);
-#ifdef __OBJC_GC__
-    return NSMakeCollectable(escaped);
-#else
-    return (__bridge_transfer NSString*)escaped;
-#endif
-
+    NSMutableCharacterSet* mcs = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+    [mcs removeCharactersInString:@"?&/"];
+    NSString* escaped = [docOrRevID stringByAddingPercentEncodingWithAllowedCharacters:mcs];
+    return escaped;
 #endif
 }
 
@@ -137,13 +133,10 @@ NSString* TDEscapeURLParam(NSString* param)
     param = [param stringByReplacingOccurrencesOfString:@"&" withString:@"%26"];
     return param;
 #else
-    CFStringRef escaped = CFURLCreateStringByAddingPercentEscapes(
-        NULL, (CFStringRef)param, NULL, (CFStringRef) @"&", kCFStringEncodingUTF8);
-#ifdef __OBJC_GC__
-    return NSMakeCollectable(escaped);
-#else
-    return (__bridge_transfer NSString*)escaped;
-#endif
+    NSMutableCharacterSet* mcs = [[NSCharacterSet URLQueryAllowedCharacterSet] mutableCopy];
+    [mcs removeCharactersInString:@"&"];
+    NSString* escaped = [param stringByAddingPercentEncodingWithAllowedCharacters:mcs];
+    return escaped;
 #endif
 }
 

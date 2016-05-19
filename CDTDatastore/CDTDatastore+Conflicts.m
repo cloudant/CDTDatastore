@@ -14,10 +14,10 @@
 //  and limitations under the License.
 
 #import "CDTDatastore+Conflicts.h"
-#import "CDTDatastore+Internal.h"
 #import "TD_Database+Attachments.h"
 #import "CDTDocumentRevision.h"
 #import "CDTDatastore+Attachments.h"
+#import "CDTDatastore+Internal.h"
 #import "CDTAttachment.h"
 #import "TD_Revision.h"
 #import "TD_Database+Conflicts.h"
