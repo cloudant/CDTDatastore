@@ -81,6 +81,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)disassociateTask:(NSURLSessionDataTask *)task;
 
+- (void) waitForFreeSlot;
+
 @end
 
 NS_ASSUME_NONNULL_END

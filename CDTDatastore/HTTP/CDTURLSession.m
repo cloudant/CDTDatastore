@@ -24,9 +24,15 @@
 @property (nonatomic, strong) NSArray *interceptors;
 @property (nonatomic, strong) NSMapTable *taskMap;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber*,NSMutableData*> *dataMap;
+@property (nonatomic, strong) dispatch_semaphore_t asyncTaskMonitor;
 
 @end
 
+/* number of async tasks to launch at any given time
+ * if more tasks than this limit are launched, they will block until
+ * -URLSession:task:didCompleteWithError is called
+ */
+static const int kAsyncTasks = 4;
 
 @implementation CDTURLSession
 
@@ -42,6 +48,7 @@
                    requestInterceptors:(NSArray *)requestInterceptors
                  sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate
 {
+    self.asyncTaskMonitor = dispatch_semaphore_create(kAsyncTasks);
     NSParameterAssert(thread);
     self = [super init];
     if (self) {
@@ -71,7 +78,7 @@
 #else
         config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
 #endif
-
+        [config setTimeoutIntervalForRequest:300];
         [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
 
         _session = [NSURLSession sessionWithConfiguration:config
@@ -133,6 +140,8 @@
     [cdtURLSessionTask processError:error onThread:self.thread];
     [cdtURLSessionTask processData:data];
     [cdtURLSessionTask completedThread:self.thread];
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Signalling asyncTaskMonitor");
+    dispatch_semaphore_signal(_asyncTaskMonitor);
     
 }
 
@@ -154,6 +163,11 @@
 {
     [self.taskMap removeObjectForKey:[NSNumber numberWithInteger:task.taskIdentifier]];
     [task cancel];
+}
+
+- (void) waitForFreeSlot
+{
+    dispatch_semaphore_wait(self.asyncTaskMonitor, DISPATCH_TIME_FOREVER);
 }
 
 @end

@@ -40,6 +40,8 @@
 #import "TDInternal.h"
 #import "CDTHTTPInterceptor.h"
 #import "CDTRATestContext.h"
+#import "ReplicationSettings.h"
+#import "CDTLogging.h"
 
 @interface CountingHTTPInterceptor : NSObject <CDTHTTPInterceptor>
 
@@ -64,21 +66,22 @@
  */
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
 
-@end
-
-@implementation ReplicationAcceptance
-
 /**
  This is the standard number of documents those tests requiring a number
  of documents to replicate use. 10k takes 50 minutes, 100k much longer,
  as all these documents are read from both local and remote databases
  during the check phase.
  */
-static NSUInteger n_docs = 10000;
+@property NSUInteger n_docs;
 /**
  Rev tree size for "large rev tree" tests.
  */
-static NSUInteger largeRevTreeSize = 1500;
+@property NSUInteger largeRevTreeSize;
+
+@end
+
+@implementation ReplicationAcceptance
+
 
 #pragma mark - setUp and tearDown
 
@@ -86,8 +89,22 @@ static NSUInteger largeRevTreeSize = 1500;
 {
     [super setUp];
 
-    // Create local and remote databases, start the replicator
+    ReplicationSettings *ra = [[ReplicationSettings alloc] init];
+    
+    // Set values of n_docs and largeRevTreeSize from ReplicationSettings.plist if available
+    // otherwise default to 'large' values
+    self.n_docs = [ra nDocs] != nil ? [[ra nDocs] integerValue] : 10000;
+    self.largeRevTreeSize = [ra largeRevTreeSize] != nil ? [[ra largeRevTreeSize] integerValue] : 1500;
+    
+    // Set up logging if required
+    NSNumber *loggingLevel = [ra loggingLevel];
+    if (loggingLevel != nil && [loggingLevel integerValue] > 0) {
+        CDTChangeLogLevel(CDTTD_REMOTE_REQUEST_CONTEXT, [loggingLevel integerValue]);
+        CDTChangeLogLevel(CDTREPLICATION_LOG_CONTEXT, [loggingLevel integerValue]);
+        [DDLog addLogger:[DDTTYLogger sharedInstance]];
+    }
 
+    // Create local and remote databases, start the replicator
     NSError *error;
     self.datastore =
         [self.factory datastoreNamed:@"test" withEncryptionKeyProvider:self.provider error:&error];
@@ -198,7 +215,7 @@ static NSUInteger largeRevTreeSize = 1500;
 {
     // Create docs in local store
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     CountingHTTPInterceptor *interceptor = [[CountingHTTPInterceptor alloc] init];
     CDTPullReplication *pull =
@@ -237,7 +254,7 @@ static NSUInteger largeRevTreeSize = 1500;
 - (void)testInterceptorRequestPipeline
 {
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     TestRequestPiplineInterceptor1 *first = [[TestRequestPiplineInterceptor1 alloc] init];
     TestRequestPiplineInterceptor2 *second = [[TestRequestPiplineInterceptor2 alloc] init];
@@ -266,7 +283,7 @@ static NSUInteger largeRevTreeSize = 1500;
 - (void)testInterceptorResponsePipeline
 {
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     TestResponsePiplineInterceptor1 *first = [[TestResponsePiplineInterceptor1 alloc] init];
     TestResponsePiplineInterceptor2 *second = [[TestResponsePiplineInterceptor2 alloc] init];
@@ -289,31 +306,31 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
- Load up a local database with n_docs with a single rev, then push it to
+ Load up a local database with self.n_docs with a single rev, then push it to
  the configured remote database.
  */
 -(void)testPushLotsOfOneRevDocuments
 {
     // Create docs in local store
     NSLog(@"Creating documents...");
-    [self createLocalDocs:n_docs];
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    [self createLocalDocs:self.n_docs];
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
 
     CDTReplicator *replicator = [self pushToRemote];
 
-    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
+    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:self.n_docs] integerValue]
                               deletedDocs:0];
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
     XCTAssertTrue(same, @"Remote and local databases differ");
 
-    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
-    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
+    XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 /**
- Load up a remote database with n_docs with a single rev, then pull it to
+ Load up a remote database with self.n_docs with a single rev, then pull it to
  the local datastore.
  */
 -(void) testPullLotsOfOneRevDocuments {
@@ -323,25 +340,25 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create docs in remote database
     NSLog(@"Creating documents...");
 
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     CDTReplicator *replicator = [self pullFromRemote];
 
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
     XCTAssertTrue(same, @"Remote and local databases differ");
     
-    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
+    XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
     
-    XCTAssertEqual(n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
+    XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
 
 -(void) testPullErrorsWhenLocalDatabaseIsDeleted
 {
     
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
     
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
@@ -373,11 +390,11 @@ static NSUInteger largeRevTreeSize = 1500;
     }
 
     
-    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                 replicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                 replicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                   replicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                   replicator.changesProcessed, self.n_docs);
     
     XCTAssertEqual(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:replicator.state],
@@ -400,7 +417,7 @@ static NSUInteger largeRevTreeSize = 1500;
 -(void) testPushErrorsWhenLocalDatabaseIsDeleted
 {
     
-    [self createLocalDocs:n_docs];
+    [self createLocalDocs:self.n_docs];
     
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
                                                                   target:self.primaryRemoteDatabaseURL];
@@ -434,11 +451,11 @@ static NSUInteger largeRevTreeSize = 1500;
     }
     
     
-    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                 replicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)replicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                 replicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                 replicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)replicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                 replicator.changesProcessed, self.n_docs);
     
     XCTAssertEqual(replicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:replicator.state],
@@ -513,11 +530,11 @@ static NSUInteger largeRevTreeSize = 1500;
     
     
     //check pull replicator
-    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                 pullReplicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                 pullReplicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                 pullReplicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                 pullReplicator.changesProcessed, self.n_docs);
 
     XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:pullReplicator.state],
@@ -528,11 +545,11 @@ static NSUInteger largeRevTreeSize = 1500;
 
     
     //check push replicator
-    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                 pushReplicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                 pushReplicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                 pushReplicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                 pushReplicator.changesProcessed, self.n_docs);
     
     XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:pushReplicator.state],
@@ -558,8 +575,9 @@ static NSUInteger largeRevTreeSize = 1500;
     //store before the replicators pull/push all of the remote/local docs
     //If this test fails because the replicators complete their job, then
     //increase increase the number of docs.
-    [self createLocalDocs:2000];
-    [self createRemoteDocs:2000 suffixFrom:2000];
+    int nDocs = 3000;
+    [self createLocalDocs:nDocs];
+    [self createRemoteDocs:nDocs suffixFrom:nDocs];
 
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
@@ -598,11 +616,11 @@ static NSUInteger largeRevTreeSize = 1500;
     }
     
     //check pull replicator
-    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                  pullReplicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pullReplicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                  pullReplicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                  pullReplicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pullReplicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                  pullReplicator.changesProcessed, self.n_docs);
     
     XCTAssertEqual(pullReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:pullReplicator.state],
@@ -612,11 +630,11 @@ static NSUInteger largeRevTreeSize = 1500;
                    @"Wrong error code: %ld", delegateError.code);
     
     //check push replicator
-    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, n_docs %ld",
-                 pushReplicator.changesTotal, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pushReplicator.changesTotal, @"changesTotal: %ld, self.n_docs %ld",
+                 pushReplicator.changesTotal, self.n_docs);
     
-    XCTAssertTrue(n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, n_docs %ld",
-                 pushReplicator.changesProcessed, n_docs);
+    XCTAssertTrue(self.n_docs != (NSUInteger)pushReplicator.changesProcessed, @"changesProcessed: %ld, self.n_docs %ld",
+                 pushReplicator.changesProcessed, self.n_docs);
     
     XCTAssertEqual(pushReplicator.state, CDTReplicatorStateError, @"Found: %@, expected: (%@)",
                    [CDTReplicator stringForReplicatorState:pushReplicator.state],
@@ -640,18 +658,18 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create docs in remote database
     NSLog(@"Creating documents...");
     
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
     
     [self pullFromRemote];
     
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
     
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
     XCTAssertTrue(same, @"Remote and local databases differ");
     
     CDTQResultSet *res = [self.datastore find:@{@"hello":@"world"}];
-    XCTAssertEqual(res.documentIds.count, n_docs, @"Index does not return correct count");
+    XCTAssertEqual(res.documentIds.count, self.n_docs, @"Index does not return correct count");
 }
 
 -(void) testPullFilteredReplication {
@@ -797,13 +815,13 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
- Push a document with largeRevTreeSize revisions (>1000).
+ Push a document with self.largeRevTreeSize revisions (>1000).
  */
 -(void) testPushLargeRevTree {
 
     // Create the initial rev
     NSString *docId = @"doc-0";
-    [self createLocalDocWithId:docId revs:largeRevTreeSize];
+    [self createLocalDocWithId:docId revs:self.largeRevTreeSize];
     XCTAssertEqual(self.datastore.documentCount, (NSUInteger)1, @"Incorrect number of documents created");
 
     [self pushToRemote];
@@ -824,9 +842,9 @@ static NSUInteger largeRevTreeSize = 1500;
     NSDictionary *jsonResponse = response.body.object;
 
     // default couchdb revs_limit is 1000
-    XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)MIN(1000, largeRevTreeSize), @"Wrong number of revs");
+    XCTAssertEqual([jsonResponse[@"_revisions"][@"ids"] count], (NSUInteger)MIN(1000, self.largeRevTreeSize), @"Wrong number of revs");
     
-    NSString *expectedRev = [NSString stringWithFormat:@"%lu", largeRevTreeSize];
+    NSString *expectedRev = [NSString stringWithFormat:@"%lu", self.largeRevTreeSize];
     XCTAssertTrue([jsonResponse[@"_rev"] hasPrefix:expectedRev], @"Not all revs seem to be replicated");
 
     BOOL same = [self compareDatastore:self.datastore
@@ -835,7 +853,7 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
- Pull a document with largeRevTreeSize revisions (>1000).
+ Pull a document with self.largeRevTreeSize revisions (>1000).
  */
 -(void) testPullLargeRevTree {
     NSError *error;
@@ -843,7 +861,7 @@ static NSUInteger largeRevTreeSize = 1500;
     // Create the initial rev in remote datastore
     NSString *docId = [NSString stringWithFormat:@"doc-0"];
 
-    [self createRemoteDocWithId:docId revs:largeRevTreeSize];
+    [self createRemoteDocWithId:docId revs:self.largeRevTreeSize];
 
     [self pullFromRemote];
 
@@ -852,7 +870,7 @@ static NSUInteger largeRevTreeSize = 1500;
     XCTAssertNil(error, @"Error getting replicated doc: %@", error);
     XCTAssertNotNil(rev, @"Error creating doc: rev was nil, but so was error");
 
-    NSString *expectedRev = [NSString stringWithFormat:@"%lu", largeRevTreeSize];
+    NSString *expectedRev = [NSString stringWithFormat:@"%lu", self.largeRevTreeSize];
     XCTAssertTrue([rev.revId hasPrefix:expectedRev], @"Unexpected current rev in local document");
 
     BOOL same = [self compareDatastore:self.datastore
@@ -861,7 +879,7 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
- Create n_docs remote documents and pull them into the local datastore. Then
+ Create self.n_docs remote documents and pull them into the local datastore. Then
  modify all document with ten revisions. Finally push the changes back and check
  the local and remote databases still match.
  */
@@ -872,12 +890,12 @@ static NSUInteger largeRevTreeSize = 1500;
 
     // Create docs in remote database
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
     [self pullFromRemote];
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
 
-    // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
-    for (int i = 1; i < n_docs+1; i++) {
+    // Modify all the docs -- we know they're going to be doc-1 to doc-<self.n_docs+1>
+    for (int i = 1; i < self.n_docs+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
         XCTAssertNil(error, @"Couldn't get document");
@@ -887,13 +905,13 @@ static NSUInteger largeRevTreeSize = 1500;
     // Replicate the changes
     [self pushToRemote];
 
-    [self assertRemoteDatabaseHasDocCount:n_docs
+    [self assertRemoteDatabaseHasDocCount:self.n_docs
                               deletedDocs:0];
 
     // Check number of revs for all docs is <n_mods>
     NSDictionary* headers = @{@"accept": @"application/json",
                               @"content-type": @"application/json"};
-    for (int i = 1; i < n_docs+1; i++) {
+    for (int i = 1; i < self.n_docs+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
         UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
@@ -915,7 +933,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
 
 /**
- Create n_docs remote documents and pull them into the local datastore. Then
+ Create self.n_docs remote documents and pull them into the local datastore. Then
  delete all the documents in the local database. Finally push the changes back and check
  the local and remote databases still match.
  */
@@ -925,24 +943,28 @@ static NSUInteger largeRevTreeSize = 1500;
 
     // Create docs in remote database
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
     [self pullFromRemote];
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
 
-    // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
-    for (int i = 1; i < n_docs+1; i++) {
+    BOOL errorDeleting = NO;
+    // Modify all the docs -- we know they're going to be doc-1 to doc-<self.n_docs+1>
+    for (int i = 1; i < self.n_docs+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         CDTDocumentRevision *rev = [self.datastore getDocumentWithId:docId error:&error];
 
         [self.datastore deleteDocumentFromRevision:rev error:&error];
-        XCTAssertNil(error, @"Couldn't delete document");
+        if (error) {
+            errorDeleting = YES;
+        }
     }
+    XCTAssertFalse(errorDeleting, @"Couldn't delete document(s)");
 
     // Replicate the changes
     [self pushToRemote];
 
     [self assertRemoteDatabaseHasDocCount:0
-                              deletedDocs:n_docs];
+                              deletedDocs:self.n_docs];
 
 
     BOOL same = [self compareDatastore:self.datastore
@@ -955,7 +977,7 @@ static NSUInteger largeRevTreeSize = 1500;
  
  1. Push revisions to the remote database so long as there are still changes
     in the local database.
- 2. Create n_docs single-rev docs in the local datastore.
+ 2. Create self.n_docs single-rev docs in the local datastore.
  
  This tests that the replicator can keep up with a database that's adding docs
  underneath it.
@@ -983,36 +1005,36 @@ static NSUInteger largeRevTreeSize = 1500;
         NSDictionary *dbMeta = [self remoteDbMetadata];
         count = [dbMeta[@"doc_count"] integerValue];
         NSLog(@"Remote count: %ld", (long)count);
-    } while (count < n_docs);
+    } while (count < self.n_docs);
 
     [monitor signal];
 }
 
 -(void) pushDocsAsWritingThem_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
 {
-    [self createLocalDocs:n_docs];
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    [self createLocalDocs:self.n_docs];
+    XCTAssertEqual(self.datastore.documentCount, self.n_docs, @"Incorrect number of documents created");
     [monitor signal];
 }
 
 /**
- Create n_docs in the remote database.
+ Create self.n_docs in the remote database.
 
  Fire up two threads:
 
  1. Pull all revisions from the remote database.
- 2. Create n_docs single-rev docs in the local datastore, with names that DON'T
+ 2. Create self.n_docs single-rev docs in the local datastore, with names that DON'T
     conflict with the ones being pulled.
 
  This tests that we can add documents concurrently with a replication.
  */
 -(void) test_pullDocsWhileWritingOthers
 {
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
 
-    // Replicate n_docs from remote
+    // Replicate self.n_docs from remote
     [self performSelectorInBackground:@selector(pullDocsWhileWritingOthers_pullReplicateThenSignal:)
                            withObject:monitor];
 
@@ -1022,7 +1044,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [monitor wait];
 
-    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)n_docs*2, @"Wrong number of local docs");
+    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)self.n_docs*2, @"Wrong number of local docs");
 
     [self pushToRemote];
 
@@ -1039,7 +1061,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
 -(void) pullDocsWhileWritingOthers_populateLocalDatabaseThenSignal:(TRVSMonitor*)monitor
 {
-    [self createLocalDocs:n_docs suffixFrom:n_docs+1];
+    [self createLocalDocs:self.n_docs suffixFrom:self.n_docs+1];
     [monitor signal];
 }
 
@@ -1051,11 +1073,11 @@ static NSUInteger largeRevTreeSize = 1500;
  */
 -(void) test_pullDocsWhileWritingOthersWriteToThirdDB
 {
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:self.n_docs];
 
     TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
 
-    // Replicate n_docs from remote
+    // Replicate self.n_docs from remote
     [self performSelectorInBackground:@selector(pullDocsWhileWritingOthers_pullReplicateThenSignal:)
                            withObject:monitor];
 
@@ -1099,7 +1121,7 @@ static NSUInteger largeRevTreeSize = 1500;
 }
 
 /**
- Create n_docs in the remote database.
+ Create self.n_docs in the remote database.
 
  Fire up two threads:
 
@@ -1113,12 +1135,12 @@ static NSUInteger largeRevTreeSize = 1500;
  */
 -(void) test_pullDocsWhileWritingSame
 {
-    [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
-    [self createRemoteDocs:n_docs];
+    [self createLocalDocs:self.n_docs suffixFrom:0 reverse:NO updates:NO];
+    [self createRemoteDocs:self.n_docs];
 
     TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
 
-    // Replicate n_docs from remote
+    // Replicate self.n_docs from remote
     [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_pullReplicateThenSignal:)
                            withObject:monitor];
 
@@ -1130,7 +1152,7 @@ static NSUInteger largeRevTreeSize = 1500;
 
     [self pushToRemote];
 
-    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)n_docs, @"Wrong number of local docs");
+    XCTAssertEqual(self.datastore.documentCount, (NSUInteger)self.n_docs, @"Wrong number of local docs");
 
     BOOL same = [self compareDatastore:self.datastore
                           withDatabase:self.primaryRemoteDatabaseURL];
@@ -1147,7 +1169,7 @@ static NSUInteger largeRevTreeSize = 1500;
 {
     // Write in reverse so we'll definitely cross-streams with the concurrent
     // pull replication at some point.
-    [self createLocalDocs:n_docs suffixFrom:0 reverse:YES updates:YES];
+    [self createLocalDocs:self.n_docs suffixFrom:0 reverse:YES updates:YES];
     [monitor signal];
 }
 
@@ -1159,12 +1181,12 @@ static NSUInteger largeRevTreeSize = 1500;
  */
 -(void) test_pullDocsWhileWritingSameWriteToThirdDB
 {
-    [self createLocalDocs:n_docs suffixFrom:0 reverse:NO updates:NO];
-    [self createRemoteDocs:n_docs];
+    [self createLocalDocs:self.n_docs suffixFrom:0 reverse:NO updates:NO];
+    [self createRemoteDocs:self.n_docs];
 
     TRVSMonitor *monitor = [[TRVSMonitor alloc] initWithExpectedSignalCount:2];
 
-    // Replicate n_docs from remote
+    // Replicate self.n_docs from remote
     [self performSelectorInBackground:@selector(pullDocsWhileWritingSame_pullReplicateThenSignal:)
                            withObject:monitor];
 
@@ -1238,7 +1260,7 @@ static NSUInteger largeRevTreeSize = 1500;
     
     [self createRemoteDocs:remoteTotal suffixFrom:startSuffix];
     
-    // Modify all the docs -- we know they're going to be doc-1 to doc-<n_docs+1>
+    // Modify all the docs -- we know they're going to be doc-1 to doc-<self.n_docs+1>
     for (NSInteger i = startSuffix+1; i < remoteDeleteCount+1; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%li", (long)i];
         [self deleteRemoteDocWithId:docId];

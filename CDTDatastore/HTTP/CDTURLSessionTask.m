@@ -90,6 +90,9 @@
     if (!t) {
         self.inProgressTask = [self makeRequest];
     }
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Waiting on asyncTaskMonitor");
+    [self.session waitForFreeSlot];
+    CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Wait completed");
     [self.inProgressTask resume];
 }
 - (void)cancel

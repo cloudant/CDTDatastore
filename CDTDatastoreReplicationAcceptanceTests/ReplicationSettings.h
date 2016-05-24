@@ -12,4 +12,19 @@
 
 @property (readonly) NSString* serverURI;
 
+@property (readonly) NSNumber* nDocs;
+
+@property (readonly) NSNumber* largeRevTreeSize;
+
+/**
+ * Note that the symbolic constants from DDLog.h can't be used in the plist file.
+ * The following numbers should be used:
+ * DDLogLevelOff = 0
+ * DDLogLevelWarning = 1
+ * DDLogLevelInfo = 3
+ * DDLogLevelDebug = 7
+ * DDLogLevelVerbose = 15
+ */
+@property (readonly) NSNumber* loggingLevel;
+
 @end
