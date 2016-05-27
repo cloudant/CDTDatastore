@@ -59,6 +59,12 @@
 
 @end
 
+
+@interface MyTestDelegate : NSObject<CDTURLSessionTaskDelegate>
+@property (nonatomic) int timesGotResponse;
+@end
+
+
 @interface ReplicationAcceptance () 
 
 /** This database is used as the primary remote database. Some tests create further
@@ -79,6 +85,35 @@
 @property NSUInteger largeRevTreeSize;
 
 @end
+
+
+@implementation MyTestDelegate
+
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self) {
+        _timesGotResponse = 0;
+    }
+    return self;
+}
+
+- (void)receivedData:(nullable NSData *)data
+{
+    NSLog(@"receivedData %@", data);
+}
+- (void)receivedResponse:(nullable NSURLResponse *)response
+{
+    NSLog(@"receivedResponse %@", response);
+    _timesGotResponse++;
+}
+- (void)requestDidError:(nullable NSError *)error
+{
+    NSLog(@"requestDidError %@", error);
+}
+@end
+
 
 @implementation ReplicationAcceptance
 
@@ -1528,6 +1563,69 @@
     XCTAssertEqualObjects(localLastSequence, jsonResponse[@"lastSequence"],
                           @"local: %@, remote response %@", localLastSequence, jsonResponse);
 }
+
+
+- (void)testSemaphoreCountsCorrectly
+{
+    MyTestDelegate *del = [[MyTestDelegate alloc] init];
+    
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:nil
+                                                     sessionConfigDelegate:nil];
+    int nRequests = 2000;
+    
+    // launch and cancel n requests
+    NSMutableArray *tasks = [NSMutableArray array];
+    
+    for (int i=0;i<nRequests;i++) {
+        NSURLRequest *request =
+        [NSURLRequest requestWithURL:[self sharedDemoURL]];
+        CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
+        [tasks addObject:task];
+    }
+    
+    for (CDTURLSessionTask *task in tasks) {
+        [task resume];
+        [task cancel];
+    }
+    
+    for (CDTURLSessionTask *task in tasks) {
+        while (task.state != NSURLSessionTaskStateCompleted) {
+            // important to do this instead of `[NSThread sleepForTimeInterval:0.1f];`
+            // as the latter won't yield to allow delegates to be called
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        }
+    }
+    
+    // now launch (and don't cancel) n requests
+    tasks = [NSMutableArray array];
+    // clear counter on delegate
+    del.timesGotResponse = 0;
+    for (int i=0;i<nRequests;i++) {
+        NSURLRequest *request =
+        [NSURLRequest requestWithURL:[self sharedDemoURL]];
+        CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
+        [tasks addObject:task];
+    }
+    
+    for (CDTURLSessionTask *task in tasks) {
+        [task resume];
+    }
+    
+    for (CDTURLSessionTask *task in tasks) {
+        while (task.state != NSURLSessionTaskStateCompleted) {
+            // important to do this instead of `[NSThread sleepForTimeInterval:0.1f];`
+            // as the latter won't yield to allow delegates to be called
+            [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        }
+        
+    }
+    // kludgy wait to allow any outstanding delegate methods to run...
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
+    XCTAssertEqual(del.timesGotResponse, nRequests);
+    
+}
+
 
 #pragma mark -- ChangeTracker tests
 

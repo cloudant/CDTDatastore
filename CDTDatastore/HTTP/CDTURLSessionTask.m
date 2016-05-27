@@ -210,20 +210,18 @@
                                 withObject:self.requestError
                              waitUntilDone:NO];
         } else {
-            [self performSelector:@selector(callDelegateWithResponseAndData)
-                         onThread:thread
-                       withObject:nil
-                    waitUntilDone:NO];
+            [self.delegate performSelector:@selector(receivedResponse:)
+                                  onThread:thread
+                                withObject:self.response
+                             waitUntilDone:NO];
+            [self.delegate performSelector:@selector(receivedData:)
+                                  onThread:thread
+                                withObject:self.requestData
+                             waitUntilDone:NO];
         }
         self.finished = YES;
     }
 
-}
-
-- (void)callDelegateWithResponseAndData
-{
-    [self.delegate receivedResponse:self.response];
-    [self.delegate receivedData:self.requestData];
 }
 
 @end
