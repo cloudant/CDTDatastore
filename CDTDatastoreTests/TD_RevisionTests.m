@@ -69,9 +69,9 @@
 
 - (void)runCollateRevEqualsTest:(const char*)rev1 rev2:(const char*)rev2 val:(int)val
 {
-    XCTAssertEqual(TDCollateRevIDs(NULL, (int)strlen(rev1), rev1, (int)strlen(rev2), rev2),
-                   val,
-                   @"TDCollateRevIDs rev1:%s, rev2:%2 does not return %d in %s", rev1, rev2, val, __PRETTY_FUNCTION__);
+    XCTAssertEqual(TDCollateRevIDs(NULL, (int)strlen(rev1), rev1, (int)strlen(rev2), rev2), val,
+                   @"TDCollateRevIDs rev1:%s, rev2:%s does not return %d in %s", rev1, rev2, val,
+                   __PRETTY_FUNCTION__);
 }
 
 - (void)testCollateRevIDs

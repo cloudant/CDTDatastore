@@ -472,7 +472,7 @@
                        @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
         XCTAssertNotNil(error, @"Error was not set");
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
-                       @"Wrote error code: %@", error.code);
+                       @"Wrote error code: %ld", (long)error.code);
     }
     //make sure the lower case versions fail too
     for (NSString* prohibitedHeader in prohibitedLowerArray) {
@@ -484,7 +484,7 @@
                     @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
         XCTAssertNotNil(error, @"Error was not set");
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
-                       @"Wrote error code: %@", error.code);
+                       @"Wrote error code: %ld", (long)error.code);
     }
 }
 

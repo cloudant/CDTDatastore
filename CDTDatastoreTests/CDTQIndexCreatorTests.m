@@ -302,10 +302,13 @@ SpecBegin(CDTQIndexCreator)
             it(@"doesn't support using the geo type", ^{
 
               @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                   [im ensureIndexed:@[ @{ @"name" : @"asc" },
                                        @{ @"age" : @"desc" } ]
                            withName:@"basic"
                                type:@"geo"];
+#pragma clang diagnostic pop
                   expect(nil).toNot.beNil();
               } @catch (NSException *e) {
                   expect(nil).to.beNil();
@@ -314,10 +317,13 @@ SpecBegin(CDTQIndexCreator)
 
             it(@"doesn't support using the unplanned type", ^{
               @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                   [im ensureIndexed:@[ @{ @"name" : @"asc" },
                                        @{ @"age" : @"desc" } ]
                            withName:@"basic"
                                type:@"frog"];
+#pragma clang diagnostic pop
                   expect(nil).toNot.beNil();
               } @catch (NSException *e) {
                   expect(nil).to.beNil();

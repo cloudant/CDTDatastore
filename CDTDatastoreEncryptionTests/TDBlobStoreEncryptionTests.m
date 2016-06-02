@@ -286,7 +286,7 @@
       NSData *data = dataFromHexadecimalString(TDBLOBSTOREENCRYPTIONTESTS_LOREM_SHA1DIGEST);
 
       TDBlobKey key;
-      [data getBytes:key.bytes];
+      [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
 
       reader = [_blobStore blobForKey:key withDatabase:db];
     }];

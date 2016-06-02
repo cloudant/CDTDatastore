@@ -30,7 +30,9 @@
 {
     TDSequenceMap *map = [[TDSequenceMap alloc] init];
 
-    XCTAssertEqual(map.checkpointedSequence, (SequenceNumber)0, @"TDSequenceMap.checkpointedSequence (%d), is not 0 in %s", map.checkpointedSequence, __PRETTY_FUNCTION__);
+    XCTAssertEqual(map.checkpointedSequence, (SequenceNumber)0,
+                   @"TDSequenceMap.checkpointedSequence (%lld), is not 0 in %s",
+                   map.checkpointedSequence, __PRETTY_FUNCTION__);
     XCTAssertEqualObjects(map.checkpointedValue, nil, @"TDSequenceMap.checkpointedValue is not nil in %s", __PRETTY_FUNCTION__);
     XCTAssertTrue(map.isEmpty, @"TDSequenceMap.isEmpty is not true in %s", __PRETTY_FUNCTION__);
     

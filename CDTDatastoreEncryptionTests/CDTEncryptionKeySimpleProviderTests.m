@@ -41,7 +41,10 @@
 
 - (void)testInitWithNilFails
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     XCTAssertNil([[CDTEncryptionKeySimpleProvider alloc] initWithKey:nil], @"Data is mandatory");
+#pragma clang diagnostic pop
 }
 
 - (void)testInitWithWrongDataLength

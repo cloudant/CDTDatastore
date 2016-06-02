@@ -66,8 +66,11 @@
     if (!index) {
         return nil;
     }
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if ([index.indexType.lowercaseString isEqualToString:@"text"]) {
+#pragma clang diagnostic pop
         if (![CDTQIndexManager ftsAvailableInDatabase:self.database]) {
             CDTLogError(CDTQ_LOG_CONTEXT, @"Text search not supported.  To add support for text "
                                           @"search, enable FTS compile options in SQLite.");
@@ -120,8 +123,11 @@
         NSSet *existingFields = [NSSet setWithArray:existingIndex[@"fields"]];
         NSSet *newFields = [NSSet setWithArray:fieldNames];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         if ([existingFields isEqualToSet:newFields] &&
             [index compareIndexTypeTo:existingType withIndexSettings:existingSettings]) {
+#pragma clang diagnostic pop
             BOOL success = [CDTQIndexUpdater updateIndex:index.indexName
                                               withFields:fieldNames
                                               inDatabase:_database
@@ -138,11 +144,14 @@
     [_database inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
         // Insert metadata table entries
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         NSArray *inserts = [CDTQIndexCreator
                             insertMetadataStatementsForIndexName:index.indexName
                                                             type:index.indexType
                                                         settings:index.settingsAsJSON
                                                       fieldNames:fieldNames];
+#pragma clang diagnostic pop
         for (CDTQSqlParts *sql in inserts) {
             success = success && [db executeUpdate:sql.sqlWithPlaceholders
                                      withArgumentsInArray:sql.placeholderValues];
@@ -151,7 +160,10 @@
         // Create SQLite data structures to support the index
         // For JSON index type create a SQLite table and a SQLite index
         // For TEXT index type create a SQLite virtual table
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         if ([index.indexType.lowercaseString isEqualToString:kCDTQTextType]) {
+#pragma clang diagnostic pop
             // Create the virtual table for the TEXT index
             CDTQSqlParts *createVirtualTable =
             [CDTQIndexCreator createVirtualTableStatementForIndexName:index.indexName
@@ -246,12 +258,18 @@
  */
 + (BOOL) indexLimitReached:(CDTQIndex *)index basedOnIndexes:(NSDictionary *)existingIndexes
 {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if ([index.indexType.lowercaseString isEqualToString:kCDTQTextType]) {
+#pragma clang diagnostic pop
         for (NSString *name in existingIndexes.allKeys) {
             NSDictionary *existingIndex = existingIndexes[name];
             NSString *type = existingIndex[@"type"];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             if ([type.lowercaseString isEqualToString:kCDTQTextType] &&
                 ![name.lowercaseString isEqualToString:index.indexName.lowercaseString]) {
+#pragma clang diagnostic pop
                 CDTLogError(CDTQ_LOG_CONTEXT, @"The text index %@ already exists.  "
                                                "One text index per datastore permitted.  "
                                                "Delete %@ and recreate %@",

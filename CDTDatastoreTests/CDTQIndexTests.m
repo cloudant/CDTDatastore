@@ -34,7 +34,10 @@ describe(@"When creating an instance of index", ^{
         
         expect(index.indexName).to.equal(@"basic");
         expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         expect(index.indexType).to.equal(@"json");
+#pragma clang diagnostic pop
         expect(index.type).to.equal(CDTQIndexTypeJSON);
         expect(index.indexSettings).to.beNil();
     });
@@ -44,7 +47,10 @@ describe(@"When creating an instance of index", ^{
 
       expect(index.indexName).to.equal(@"basic");
       expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       expect(index.indexType).to.equal(@"text");
+#pragma clang diagnostic pop
       expect(index.type).to.equal(CDTQIndexTypeText);
       expect(index.indexSettings.count).to.equal(1);
       expect(index.indexSettings[@"tokenize"]).to.equal(@"simple");
@@ -70,7 +76,11 @@ describe(@"When creating an instance of index", ^{
 
     it(@"returns nil when index type is specifically nil or blank", ^{
       @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
           [CDTQIndex index:indexName withFields:fieldNames ofType:nil];
+#pragma clang diagnostic pop
           expect(nil).toNot.beNil();
       } @catch (NSException *exception) {
           expect(nil).to.beNil();
@@ -78,7 +88,10 @@ describe(@"When creating an instance of index", ^{
 
       @
       try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
           [CDTQIndex index:indexName withFields:fieldNames ofType:@""];
+#pragma clang diagnostic pop
           expect(nil).toNot.beNil();
       } @catch (NSException *exception) {
           expect(nil).to.beNil();
@@ -87,7 +100,10 @@ describe(@"When creating an instance of index", ^{
 
     it(@"returns nil when index type is invalid", ^{
       @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
           [CDTQIndex index:indexName withFields:fieldNames ofType:@"blah"];
+#pragma clang diagnostic pop
           expect(nil).toNot.beNil();
       } @catch (NSException *exception) {
           expect(nil).to.beNil();
@@ -115,7 +131,10 @@ describe(@"When creating an instance of index", ^{
 
         expect(index.indexName).to.equal(@"basic");
         expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         expect(index.indexType).to.equal(@"json");
+#pragma clang diagnostic pop
         expect(index.type).to.equal(CDTQIndexTypeJSON);
         expect(index.indexSettings).to.beNil();
     });
@@ -131,7 +150,10 @@ describe(@"When creating an instance of index", ^{
 
         expect(index.indexName).to.equal(@"basic");
         expect(index.fieldNames).to.containsInAnyOrder(@[ @"name", @"age" ]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         expect(index.indexType).to.equal(@"text");
+#pragma clang diagnostic pop
         expect(index.type).to.equal(CDTQIndexTypeText);
         expect(index.indexSettings[ @"tokenize" ]).to.equal(@"porter");
     });

@@ -110,7 +110,8 @@ extern NSString *const kCDTQTextType __deprecated;
  * @param indexSettings the indexSettings to compare to as an NSString
  * @return YES/NO - whether there is a match
  */
-- (BOOL)compareToIndexType:(CDTQIndexType)indexType withIndexSettings:(NSString *)indexSettings;
+- (BOOL)compareToIndexType:(CDTQIndexType)indexType
+         withIndexSettings:(nullable NSString *)indexSettings;
 
 /**
  * Converts the index settings to a JSON string

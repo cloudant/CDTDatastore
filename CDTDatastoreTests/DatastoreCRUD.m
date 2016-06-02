@@ -129,12 +129,15 @@
     
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
@@ -148,10 +151,6 @@
 -(void)testDocumentRevisionValidDataDeletedDocWithBody
 {
     NSError * error;
-    NSDictionary *body = @{ @"aKey":@"aValue",
-                            @"hello":@"world"
-                            };
-    
     NSDictionary * dict = @{@"_id":@"someIdHere",
                             @"_rev":@"3-750dac460a6cc41e6999f8943b8e603e",
                             @"_deleted":[NSNumber numberWithBool:YES],
@@ -161,12 +160,15 @@
 
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
@@ -185,12 +187,15 @@
     
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere", rev.docId, @"docId was different, expected someIdHere actual %@",rev.docId);
@@ -210,12 +215,15 @@
                             };
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNotNil(error, @"Error did not occur whencreating document with invalid data");
     XCTAssertNil(rev, @"Revision was not nil");
 
@@ -238,12 +246,15 @@
     NSDictionary * body = @{@"aKey":@"aValue",@"hello":@"world"};
     
     XCTAssertNil(error, @"Error should have been nil");
-    
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CDTDocumentRevision * rev = [CDTDocumentRevision createRevisionFromJson:dict
                                                                 forDocument:[NSURL
                                                                              URLWithString:@"http://localhost:5984/temp/doc"]
                                                                       error:&error];
-    
+#pragma clang diagnostic pop
+
     XCTAssertNil(error, @"Error occured creating document with valid data");
     XCTAssertNotNil(rev, @"Revision was nil");
     XCTAssertEqualObjects(@"someIdHere",
@@ -329,15 +340,18 @@
 
     CDTDocumentRevision *rev;
     rev = [CDTDocumentRevision revisionWithDocId:testDocId];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     rev.body = nil;
     rev.attachments = nil;
+#pragma clang diagnostic pop
     [self.datastore documentCount]; //this calls ensureDatabaseOpen, which calls TD_Database open:, which
     
     NSMutableDictionary *initialRowCount = [self.dbutil getAllTablesRowCount];
     
     CDTDocumentRevision *ob = [self.datastore createDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error creating document!");
-    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", (long)error.code);
     XCTAssertNil(ob, @"CDTDocumentRevision object was not nil");
     
     [self.dbutil checkTableRowCount:initialRowCount modifiedBy:nil];
@@ -377,7 +391,7 @@
     doc.body = [@{key:value} mutableCopy];
     ob = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNotNil(error, @"Error was nil when creating second doc with same doc_id");
-    XCTAssertTrue(error.code == 409, @"Error was not a 409. Found %ld", error.code);
+    XCTAssertTrue(error.code == 409, @"Error was not a 409. Found %ld", (long)error.code);
     XCTAssertNil(ob, @"CDTDocumentRevision object was not nil when creating second doc with same doc_id");
 }
 
@@ -467,7 +481,10 @@
 {
     NSError *error;
     CDTDocumentRevision *doc = [CDTDocumentRevision revision];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     doc.body = nil;
+#pragma clang diagnostic pop
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document was created without a body");
 }
@@ -476,7 +493,10 @@
 {
     NSError *error;
     CDTDocumentRevision *doc = [CDTDocumentRevision revisionWithDocId:@"doc1"];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     doc.body = nil;
+#pragma clang diagnostic pop
     CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:doc error:&error];
     XCTAssertNil(saved, @"Document with Id but no body created");
 }
@@ -666,7 +686,7 @@
     NSString *revId = ob.revId;
     CDTDocumentRevision *retrieved = [self.datastore getDocumentWithId:docId rev:revId error:&error];
     XCTAssertNotNil(error, @"Error should not be nil.");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(retrieved, @"retrieved object was nil");
     
 }
@@ -769,7 +789,9 @@
                                      @"Document ID mismatch: %@", [result stringForColumn:@"docid"]);
                 
                 NSString *revid = [result stringForColumn:@"revid"];
-                XCTAssertTrue([TD_Revision generationFromRevID:revid] - 1 == revPrefix, @"revision out of order: Found Rev: %@ and previous prefix %@", revid, revPrefix);
+                XCTAssertTrue([TD_Revision generationFromRevID:revid] - 1 == revPrefix,
+                              @"revision out of order: Found Rev: %@ and previous prefix %ld",
+                              revid, (long)revPrefix);
                 revPrefix = [TD_Revision generationFromRevID:revid];
                 
                 XCTAssertFalse([result boolForColumn:@"deleted"], @"deleted? %@", [result stringForColumn:@"deleted"]);
@@ -880,7 +902,7 @@
     NSDictionary *actualDict = actual.body;
     
     for (NSString *key in [expectedDict keyEnumerator]) {
-        XCTAssertNotNil([actualDict objectForKey:key], @"Actual didn't contain key %s", key);
+        XCTAssertNotNil([actualDict objectForKey:key], @"Actual didn't contain key %@", key);
         XCTAssertEqualObjects([actualDict objectForKey:key], [expectedDict objectForKey:key], @"Actual value didn't match expected value");
     }
 }
@@ -1007,7 +1029,7 @@
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     
     XCTAssertNotNil(error, @"No error when updating document with bad id");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil after update with bad rev");
     
     //expect the database to be unmodified
@@ -1135,10 +1157,13 @@
     error = nil;
 
     rev = [ob copy];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
     rev.body = nil;
+#pragma clang diagnostic pop
     CDTDocumentRevision *ob2 = [self.datastore updateDocumentFromRevision:rev error:&error];
     XCTAssertNotNil(error, @"No Error updating document with nil document body");
-    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", (long)error.code);
     XCTAssertNil(ob2, @"CDTDocumentRevision object was not nil when updating with nil document body");
     
     NSDictionary *modifiedCount = nil;
@@ -1427,7 +1452,7 @@
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
     XCTAssertNotNil(error, @"No Error getting deleted document");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     //Now try deleting it again.
@@ -1489,7 +1514,8 @@
         XCTAssertTrue([TD_Revision generationFromRevID:[result stringForColumn:@"revid"]] == 2, @"rev: %@", [result stringForColumn:@"revid"] );
         XCTAssertTrue([result boolForColumn:@"current"], @"%@", [result stringForColumn:@"current"]);
         XCTAssertTrue([result boolForColumn:@"deleted"], @"%@", [result stringForColumn:@"current"]);
-        XCTAssertTrue([result intForColumn:@"parent"] == 1, @"Found %@", [result intForColumn:@"parent"]);
+        XCTAssertTrue([result intForColumn:@"parent"] == 1, @"Found %d",
+                      [result intForColumn:@"parent"]);
 
         // Although TD_Database+Insertion inserts an empty NSData object instead of NSNull on
         // delete,
@@ -1544,7 +1570,7 @@
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
     XCTAssertNotNil(error, @"No Error getting deleted document");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     // Check we can get the updated revision before it was deleted (ob2)
@@ -1667,7 +1693,7 @@
     CDTDocumentRevision *retrieved;
     retrieved = [self.datastore getDocumentWithId:docId error:&error];
     XCTAssertNotNil(error, @"No Error getting deleted document");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(retrieved, @"retrieved object was not nil");
     
     //now try updating rev 2-
@@ -1745,7 +1771,8 @@
     //make sure none of the deleted documents are found in the results.
     for(CDTDocumentRevision* aRev in result){
         for(NSDictionary *aDeletedDict in deletedDbDicts){
-            XCTAssertFalse(aDeletedDict == aRev.body, @"Found equal pointers. %d == %d", aRev.body, aDeletedDict );
+            XCTAssertFalse(aDeletedDict == aRev.body, @"Found equal pointers. %@ == %@", aRev.body,
+                           aDeletedDict);
             XCTAssertFalse([aDeletedDict isEqualToDictionary:aRev.body], @"Found deleted dictionary in results");
         }
         //is this the same as above?
@@ -1829,13 +1856,13 @@
     NSString *docId = @"idonotexist";
     CDTDocumentRevision *aRev = [self.datastore getDocumentWithId:docId error:&error ];
     XCTAssertNotNil(error, @"No Error getting document that doesn't exist");
-    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", error.code);
+    XCTAssertTrue(error.code == 404, @"Error was not a 404. Found %ld", (long)error.code);
     XCTAssertNil(aRev, @"CDTDocumentRevision should be nil after getting document that doesn't exist");
     
     error = nil;
     CDTDocumentRevision *deleted = [self.datastore deleteDocumentFromRevision:aRev error:&error];
     XCTAssertNotNil(error, @"No Error deleting document that doesn't exist");
-    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", error.code);
+    XCTAssertTrue(error.code == 400, @"Error was not a 400. Found %ld", (long)error.code);
     XCTAssertNil(deleted, @"CDTDocumentRevision* was not nil. Deletion successful?: %@", error);
     
     
@@ -1886,12 +1913,12 @@
     converted.body = [[TD_Body alloc] initWithProperties:body];
 
     TDStatus status;
-    
-    TD_Revision *new = [self.datastore.database putRevision:converted
-                                   prevRevisionID:rev.revId
-                                    allowConflict:YES
-                                           status:&status];
-    
+
+    [self.datastore.database putRevision:converted
+                          prevRevisionID:rev.revId
+                           allowConflict:YES
+                                  status:&status];
+
     NSArray * deleted = [self.datastore deleteDocumentWithId:mutableRev.docId error:&error];
     
     XCTAssertTrue([deleted count] == 2, @"Number of deletions do not match");

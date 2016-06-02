@@ -1182,40 +1182,12 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
-		9873857D1C47BB5D00937212 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 98F77B2D1C43FC9F00515CC3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 987383011C47B38800937212;
-			remoteInfo = CDTDatastoreOSX;
-		};
-		9873857F1C47BB6400937212 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 98F77B2D1C43FC9F00515CC3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 987383EF1C47B3C400937212;
-			remoteInfo = CDTDatastoreEncryptionOSX;
-		};
-		987385961C47EE0200937212 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 98F77B2D1C43FC9F00515CC3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 98F785D21C456B1300515CC3;
-			remoteInfo = CDTDatastoreEncryption;
-		};
 		9873859A1C47F62500937212 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98F77B2D1C43FC9F00515CC3 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 98F77B351C43FC9F00515CC3;
 			remoteInfo = CDTDatastore;
-		};
-		987385BA1C47F63900937212 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 98F77B2D1C43FC9F00515CC3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 987383011C47B38800937212;
-			remoteInfo = CDTDatastoreOSX;
 		};
 		98F77B421C43FC9F00515CC3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3094,7 +3066,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				987385801C47BB6400937212 /* PBXTargetDependency */,
 			);
 			name = CDTDatastoreEncryptionTestsOSX;
 			productName = CDTDatastoreEncryptionTests;
@@ -3116,7 +3087,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				9873857E1C47BB5D00937212 /* PBXTargetDependency */,
 			);
 			name = CDTDatastoreReplicationAcceptanceTestsOSX;
 			productName = CDTDatastoreReplicationAcceptanceTests;
@@ -3180,7 +3150,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				987385B91C47F63900937212 /* PBXTargetDependency */,
 			);
 			name = CDTDatastoreEncryptedReplicationAcceptanceTestsOSX;
 			productName = CDTDatastoreReplicationAcceptanceTests;
@@ -3266,7 +3235,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				987385971C47EE0200937212 /* PBXTargetDependency */,
 			);
 			name = CDTDatastoreEncryptionTests;
 			productName = CDTDatastoreEncryptionTests;
@@ -3299,7 +3267,7 @@
 		98F77B2D1C43FC9F00515CC3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0730;
 				ORGANIZATIONNAME = IBM;
 				TargetAttributes = {
 					98F77B351C43FC9F00515CC3 = {
@@ -4696,30 +4664,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		9873857E1C47BB5D00937212 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 987383011C47B38800937212 /* CDTDatastoreOSX */;
-			targetProxy = 9873857D1C47BB5D00937212 /* PBXContainerItemProxy */;
-		};
-		987385801C47BB6400937212 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 987383EF1C47B3C400937212 /* CDTDatastoreEncryptionOSX */;
-			targetProxy = 9873857F1C47BB6400937212 /* PBXContainerItemProxy */;
-		};
-		987385971C47EE0200937212 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 98F785D21C456B1300515CC3 /* CDTDatastoreEncryption */;
-			targetProxy = 987385961C47EE0200937212 /* PBXContainerItemProxy */;
-		};
 		987385991C47F62500937212 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 98F77B351C43FC9F00515CC3 /* CDTDatastore */;
 			targetProxy = 9873859A1C47F62500937212 /* PBXContainerItemProxy */;
-		};
-		987385B91C47F63900937212 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 987383011C47B38800937212 /* CDTDatastoreOSX */;
-			targetProxy = 987385BA1C47F63900937212 /* PBXContainerItemProxy */;
 		};
 		98F77B431C43FC9F00515CC3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4757,8 +4705,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = BC7093DFD397FCFAE59C4821 /* Pods-CDTDatastoreOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4778,8 +4726,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 47D10054F235C27FE5C1F8AE /* Pods-CDTDatastoreOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4799,8 +4747,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EF6A12738FBB7654A4281965 /* Pods-CDTDatastoreEncryptionOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4821,8 +4769,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 79D67CFD887438B4449E25C5 /* Pods-CDTDatastoreEncryptionOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -4842,8 +4790,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = BFAF32A65C2FFA689AE448B6 /* Pods-CDTDatastoreEncryptionTestsOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreEncryptionTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4857,8 +4805,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 865DF77B87F77B54AA3C53E0 /* Pods-CDTDatastoreEncryptionTestsOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreEncryptionTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4872,7 +4820,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C966C1819F047772D89D8C4D /* Pods-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4886,7 +4834,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2E5476EA72C94B51A626BE21 /* Pods-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4900,7 +4848,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DC8CE6EF9EDE2B0118CD09F7 /* Pods-CDTDatastoreTestsOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4914,7 +4862,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B3E4A1E21382536128103DE8 /* Pods-CDTDatastoreTestsOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4928,6 +4876,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 92EF171B6751664EF6E94197 /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTests.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreReplicationAcceptanceTests;
@@ -4939,6 +4888,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 73EC9650A63363E9B13CAFB8 /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTests.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreReplicationAcceptanceTests;
@@ -4950,7 +4900,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 76C739592E027E636BEB950E /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.debug.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -4964,7 +4914,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5738A8EE4C978050FC1818DD /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.release.xcconfig */;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
@@ -5102,6 +5052,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 986E886E041283B45ECF9B5A /* Pods-CDTDatastoreTests.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
@@ -5113,6 +5064,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E3EF68CCCD8A5406B1B865A0 /* Pods-CDTDatastoreTests.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
@@ -5124,6 +5076,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7751531C9D386AC3DB8C2E7E /* Pods-CDTDatastoreReplicationAcceptanceTests.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreReplicationAcceptanceTests;
@@ -5135,6 +5088,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1B4BA67944461CF1FCA4EE43 /* Pods-CDTDatastoreReplicationAcceptanceTests.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				INFOPLIST_FILE = CDTDatastoreReplicationAcceptanceTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreReplicationAcceptanceTests;
