@@ -21,7 +21,7 @@
 
 -(void)log:(NSString*)format, ...;
 -(NSURL*)replicatorURL;
--(void)startAndFollowReplicator:(CDTReplicator*)replicator label:(NSString*)label;
+-(void)startAndFollowReplicator:(CDTReplicator*)replicator label:(NSString*)label taskGroup:(dispatch_group_t)taskGroup;
 
 @property (nonatomic, strong) NSMutableArray *replicators; //array of CDTReplicators
 

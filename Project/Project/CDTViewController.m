@@ -32,7 +32,7 @@
 @property (nonatomic,weak) UISegmentedControl *showCompletedSegmentedControl;
 
 - (void)addTodoItem:(NSString*)item;
-- (void)deleteTodoItem:(CDTDocumentRevision*)revision;
+- (void)deleteTodoItem:(CDTTodo*)revision;
 - (void)reloadTasks;
 
 @end
