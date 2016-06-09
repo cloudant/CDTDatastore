@@ -26,7 +26,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface CDTURLSession : NSObject <NSURLSessionDataDelegate>
+@interface CDTURLSession : NSObject <NSURLSessionDataDelegate, NSURLSessionTaskDelegate>
 
 /**
  * Initalises a CDTURLSession without a delegate and an empty array of interceptors. Calling this 

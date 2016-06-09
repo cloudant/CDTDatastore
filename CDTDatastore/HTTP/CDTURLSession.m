@@ -24,7 +24,6 @@
 @property (nonatomic, strong) NSArray *interceptors;
 @property (nonatomic, strong) NSMapTable *taskMap;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber*,NSMutableData*> *dataMap;
-@property (nonatomic, strong) dispatch_semaphore_t asyncTaskMonitor;
 
 @end
 
@@ -33,9 +32,9 @@
  * -URLSession:task:didCompleteWithError is called
  */
 static const int kAsyncTasks = 4;
+static dispatch_semaphore_t g_asyncTaskMonitor;
 
 @implementation CDTURLSession
-
 
 - (instancetype)init
 {
@@ -48,7 +47,12 @@ static const int kAsyncTasks = 4;
                    requestInterceptors:(NSArray *)requestInterceptors
                  sessionConfigDelegate:(NSObject<CDTNSURLSessionConfigurationDelegate> *)sessionConfigDelegate
 {
-    self.asyncTaskMonitor = dispatch_semaphore_create(kAsyncTasks);
+    static dispatch_once_t onceToken;
+    
+    dispatch_once (&onceToken, ^{
+        g_asyncTaskMonitor = dispatch_semaphore_create(kAsyncTasks);
+    });
+
     NSParameterAssert(thread);
     self = [super init];
     if (self) {
@@ -141,8 +145,7 @@ static const int kAsyncTasks = 4;
     [cdtURLSessionTask processData:data];
     [cdtURLSessionTask completedThread:self.thread];
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Signalling asyncTaskMonitor");
-    dispatch_semaphore_signal(_asyncTaskMonitor);
-    
+    dispatch_semaphore_signal(g_asyncTaskMonitor);
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition))completionHandler
@@ -167,7 +170,7 @@ static const int kAsyncTasks = 4;
 
 - (void) waitForFreeSlot
 {
-    dispatch_semaphore_wait(self.asyncTaskMonitor, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(g_asyncTaskMonitor, DISPATCH_TIME_FOREVER);
 }
 
 @end
