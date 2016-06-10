@@ -72,6 +72,8 @@
  */
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
 
+@end
+
 /**
  This is the standard number of documents those tests requiring a number
  of documents to replicate use. 10k takes 50 minutes, 100k much longer,
@@ -363,6 +365,101 @@
     XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesTotal, @"total number of changes mismatch");
     XCTAssertEqual(self.n_docs, (NSUInteger)replicator.changesProcessed, @"processed number of changes mismatch");
 }
+
+/**
+ Load up a local database with n_docs with a single rev, then push it to
+ the configured remote database, while not holding a reference to the 
+ replicator.
+ */
+- (void)testPushLotsOfOneRevDocumentsFireAndForget
+{
+    // Create docs in local store
+    NSLog(@"Creating documents...");
+    [self createLocalDocs:n_docs];
+    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    
+    
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
+                                                                  target:self.primaryRemoteDatabaseURL];
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    __weak CDTReplicator *weakReplicator = replicator;
+    replicator = nil; // no longer retain the replicator, it shouldn't get deallocated since it should retain itself.
+    
+    
+    while (weakReplicator.isActive) {
+        XCTAssertNotNil(weakReplicator,"Replicator shouldn't deallocate while running");
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:weakReplicator.state]);
+    }
+    
+    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
+                              deletedDocs:0];
+    
+    // Make sure local and remotes are the same, we can't compare the changes from the replicator
+    // because it will be deallocated as soon as the replicator completes.
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertTrue(same, @"Remote and local databases differ");
+    
+}
+
+/**
+ Load up the configured remote database with n_docs with a single rev, then pull it to
+ the local database, while not holding a reference to the
+ replicator.
+ */
+- (void)testPullLotsOfOneRevDocumentsFireAndForget
+{
+    // Create docs in local store
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:n_docs];
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                                  target:self.datastore];
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating from %@", [self.primaryRemoteDatabaseURL absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    __weak CDTReplicator *weakReplicator = replicator;
+    replicator = nil; // no longer retain the replicator, it shouldn't get deallocated since it should retain itself.
+    
+    
+    while (weakReplicator.isActive) {
+        XCTAssertNotNil(weakReplicator,"Replicator shouldn't deallocate while running");
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:weakReplicator.state]);
+    }
+    
+    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
+                              deletedDocs:0];
+    
+    // Make sure local and remotes are the same, we can't compare the changes from the replicator
+    // because it will be deallocated as soon as the replicator completes.
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertTrue(same, @"Remote and local databases differ");
+    
+}
+
 
 /**
  Load up a remote database with self.n_docs with a single rev, then pull it to

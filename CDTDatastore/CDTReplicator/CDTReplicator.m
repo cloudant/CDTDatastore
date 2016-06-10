@@ -44,12 +44,51 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 @property (nonatomic, readwrite) NSInteger changesProcessed;
 @property (nonatomic, readwrite) NSInteger changesTotal;
 @property (nonatomic, readwrite) NSError *error;
+@property (nonatomic, nullable, readwrite) CDTReplicator* retainedSelf;
 
 @property (nonatomic, copy) CDTFilterBlock pushFilter;
 @property (nonatomic) BOOL started;
 
 @end
+/*
+    The CDTReplicator class is "fire and forget". This is so that an application
+    can choose not to maintain a reference to an instance of CDTReplicator
+    without the instance being immediately deallocated (and so failing to complete
+    its replication).
 
+    This is implemented by each instance retaining itself by assigning to its
+    own retainedSelf property when replication is started. Care must be taken to ensure
+    that this extra retain is released when the replication is complete.
+
+    This is implemented by retaining and releasing at the points noted in
+    the lifecycle table below:
+
+     |----------------------------+------------+--------------------|
+     | Method                     | State(s)   | Action(s)          |
+     |----------------------------+------------+--------------------|
+     | -startWithTaskGroup:error: | .Started   | start TDReplicator |
+     |                            |            | retain self        |
+     |                            |            | return             |
+     |----------------------------+------------+--------------------|
+     | -stop                      | .Stopping  | stop TDReplicator  |
+     |                            |            | return             |
+     |----------------------------+------------+--------------------|
+     | -replicatorStopped         | .Stopped   | release self       |
+     |                            | .Completed | return             |
+     |                            | .Error     |                    |
+     |----------------------------+------------+--------------------|
+
+
+    The replicator **must only** release itself when the TDReplicator has stopped, which
+   CDTReplicator
+    is notified of via NSNotificationCenter, doing so before the replicator has been stopped
+   **will**
+    cause issues, the main one being incomplete replication, which if the checkpoint document hasn't
+    been written means that the replicator will need to start again reducing performance. The
+   datastore
+    will also be in a unexpected state, for example documents may be missing from the local replica.
+    User applications may be affected if they are waiting for state notifications to be received.
+ */
 @implementation CDTReplicator
 
 + (NSString *)stringForReplicatorState:(CDTReplicatorState)state
@@ -102,28 +141,6 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
 - (void)dealloc
 {
-    if (self.tdReplicator.running) {
-        //we are being deallocated while replication is still happening
-        //report error
-        NSError *deallocError;
-        
-        NSString *message = [NSString stringWithFormat: @"Object deallocated before completed "
-                             @"replication. Keep a strong reference to the replicator object to "
-                             @"avoid this.\n %@", self];
-        
-        NSDictionary *userInfo = @{
-                                   NSLocalizedDescriptionKey :
-                                       NSLocalizedString(message, nil)
-                                   };
-        deallocError = [NSError errorWithDomain:CDTReplicatorErrorDomain
-                                           code:CDTReplicatorErrorDeallocatedWhileReplicating
-                                       userInfo:userInfo];
-        //send nil to replicatorDidError since we're half-way through deallocation.
-        [self.delegate replicatorDidError:nil info:deallocError];
-        
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@", message);
-    }
-    
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -189,6 +206,12 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         }
 
         self.started = YES;
+        
+        // In order for the replicator to be "fire and forget" we need to create a retain cycle,
+        // the retain cycle needs to be ended when the replicator stops, whether that is from a
+        // successful run or not. The point where this should be released is in the
+        // -replicatorStopped: method.
+        self.retainedSelf = self;
 
         // doing this inside @synchronized lets us be certain that self.tdReplicator is either
         // created or nil throughout the rest of the code (especially in -stop)
@@ -373,6 +396,11 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     [[NSNotificationCenter defaultCenter] removeObserver:strongSelf
                                                     name:nil
                                                   object:strongSelf.tdReplicator];
+
+    // Break the retain cycle created in -startWithTaskGroup:error,
+    // it is now safe to deallocate this instance in the "fire and forget"
+    // use case
+    strongSelf.retainedSelf = nil;
 }
 
 // Notified that a TDReplicator has started:
