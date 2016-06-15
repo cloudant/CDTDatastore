@@ -18,7 +18,6 @@
 
 @class CDTDocumentRevision;
 @class FMDatabase;
-@class CDTDocumentRevision;
 
 /** NSNotification posted when a document is updated.
  UserInfo keys:
