@@ -48,11 +48,9 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * branches in this tree when changes have been made in two or more places to
  * the same document in-between replications. MVCC exposes these branches as
  * conflicted documents. These conflicts should be resolved by user-code, by
- * marking all but one of the leaf nodes of the branches as "deleted", using
- * the [CDTDatastore deleteDocumentWithId:rev:error:] method. When the
- * datastore is next replicated with a remote datastore, this fix will be
- * propagated, thereby resolving the conflicted document across the set of
- * peers.
+ * using the conflict resolution APIs. When the datastore is next replicated with a remote
+ * datastore, this fix will be propagated, thereby resolving the conflicted document across the
+ * set of peers.
  *
  * See CDTDatastore+Conflicts.h for functions to resolve Document conflicts caused by
  * replication.
