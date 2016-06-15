@@ -72,8 +72,6 @@
  */
 @property (nonatomic, strong) NSString *primaryRemoteDatabaseName;
 
-@end
-
 /**
  This is the standard number of documents those tests requiring a number
  of documents to replicate use. 10k takes 50 minutes, 100k much longer,
@@ -87,7 +85,6 @@
 @property NSUInteger largeRevTreeSize;
 
 @end
-
 
 @implementation MyTestDelegate
 
@@ -375,8 +372,8 @@
 {
     // Create docs in local store
     NSLog(@"Creating documents...");
-    [self createLocalDocs:n_docs];
-    XCTAssertEqual(self.datastore.documentCount, n_docs, @"Incorrect number of documents created");
+    [self createLocalDocs:_n_docs];
+    XCTAssertEqual(self.datastore.documentCount, _n_docs, @"Incorrect number of documents created");
     
     
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:self.datastore
@@ -403,7 +400,7 @@
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:weakReplicator.state]);
     }
     
-    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
+    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:_n_docs] integerValue]
                               deletedDocs:0];
     
     // Make sure local and remotes are the same, we can't compare the changes from the replicator
@@ -423,7 +420,7 @@
 {
     // Create docs in local store
     NSLog(@"Creating documents...");
-    [self createRemoteDocs:n_docs];
+    [self createRemoteDocs:_n_docs];
     
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                                   target:self.datastore];
@@ -449,7 +446,7 @@
         NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:weakReplicator.state]);
     }
     
-    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:n_docs] integerValue]
+    [self assertRemoteDatabaseHasDocCount:[[NSNumber numberWithUnsignedInteger:_n_docs] integerValue]
                               deletedDocs:0];
     
     // Make sure local and remotes are the same, we can't compare the changes from the replicator
