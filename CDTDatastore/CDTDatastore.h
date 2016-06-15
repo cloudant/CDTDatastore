@@ -54,12 +54,8 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * propagated, thereby resolving the conflicted document across the set of
  * peers.
  *
- * **WARNING:** conflict resolution is coming in the next
- * release, where we'll be adding methods to:
- *
- * - Get the IDs of all conflicted documents within the datastore.</li>
- * - Get a list of all current revisions for a given document, so they
- *     can be merged to resolve the conflict.</li>
+ * See CDTDatastore+Conflicts.h for functions to resolve Document conflicts caused by
+ * replication.
  *
  * @see CDTDocumentRevision
  *
