@@ -18,7 +18,6 @@
 
 @class CDTDocumentRevision;
 @class FMDatabase;
-@class CDTDocumentRevision;
 
 /** NSNotification posted when a document is updated.
  UserInfo keys:
@@ -48,18 +47,12 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * branches in this tree when changes have been made in two or more places to
  * the same document in-between replications. MVCC exposes these branches as
  * conflicted documents. These conflicts should be resolved by user-code, by
- * marking all but one of the leaf nodes of the branches as "deleted", using
- * the [CDTDatastore deleteDocumentWithId:rev:error:] method. When the
- * datastore is next replicated with a remote datastore, this fix will be
- * propagated, thereby resolving the conflicted document across the set of
- * peers.
+ * using the conflict resolution APIs. When the datastore is next replicated with a remote
+ * datastore, this fix will be propagated, thereby resolving the conflicted document across the
+ * set of peers.
  *
- * **WARNING:** conflict resolution is coming in the next
- * release, where we'll be adding methods to:
- *
- * - Get the IDs of all conflicted documents within the datastore.</li>
- * - Get a list of all current revisions for a given document, so they
- *     can be merged to resolve the conflict.</li>
+ * See CDTDatastore+Conflicts.h for functions to resolve Document conflicts caused by
+ * replication.
  *
  * @see CDTDocumentRevision
  *
