@@ -23,7 +23,7 @@ Pod::Spec.new do |s|
                     * Replicates with Cloudant and CouchDB.
                    DESC
   s.homepage     = "http://github.com/cloudant/CDTDatastore"
-  s.license      = {:type => 'Apache', :text => license}
+  s.license      = {:type => 'Apache, Version 2.0', :text => license}
   s.author       = { "Cloudant, Inc." => "support@cloudant.com" }
   s.source       = { :git => "https://github.com/cloudant/CDTDatastore.git", :tag => s.version.to_s }
 
