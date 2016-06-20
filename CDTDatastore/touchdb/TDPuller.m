@@ -369,10 +369,13 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void)pullRemoteRevisions
 {
     while (_db && _httpConnectionCount < kMaxOpenHTTPConnections) {
+        NSUInteger nBulk = MIN(_bulkGetRevs.count, kMaxRevsToGetInBulk);
         
-        if (_bulkGetSupported) {
-            NSUInteger nBulk = MIN(_bulkGetRevs.count, kMaxRevsToGetInBulk);
-            
+        // Process from _bulkGetRevs first if there are any.
+        // If the server supports _bulk_get but there are deleted revisions
+        // then we will fall through to the 'deleted revs' case later, once
+        // _bulkGetRevs is empty
+        if (nBulk > 0) {
             NSRange r = NSMakeRange(0, nBulk);
             [self pullBulkRevisionsBulkGet:[_bulkGetRevs subarrayWithRange:r]];
             [_bulkGetRevs removeObjectsInRange:r];
