@@ -1104,6 +1104,47 @@
 }
 
 /**
+ * Test ensures deleted documents correctly pulled
+ * - Create local documents
+ * - Push to remote
+ * - Delete some
+ * - Pull replicate back
+ * - Compare DBs
+ */
+-(void) testPushDeleteSomePull
+{
+    // Create docs in remote database
+    NSLog(@"Creating local documents...");
+    [self createLocalDocs:self.n_docs];
+    [self pushToRemote];
+    XCTAssertEqual(self.n_docs, self.datastore.documentCount, @"Incorrect number of documents created");
+    
+    // delete some of the remote docs
+    // (remote deletes are really slow so we only do a small proportion)
+    NSLog(@"Deleting remote docs...");
+    for (int i = 1; i < self.n_docs/10; i++) {
+        NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
+        [self deleteRemoteDocWithId:docId];
+    }
+
+    // compare and check the databases are different before replication
+    NSLog(@"Compare...");
+    BOOL different = ![self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertTrue(different, @"Remote and local databases are the same");
+
+    NSLog(@"Pull replicate...");
+    // Replicate the changes
+    [self pullFromRemote];
+    
+    // compare and check the databases are the same after replication
+    NSLog(@"Compare...");
+    BOOL same = [self compareDatastore:self.datastore
+                          withDatabase:self.primaryRemoteDatabaseURL];
+    XCTAssertTrue(same, @"Remote and local databases differ");
+}
+
+/**
  Fire up two threads:
  
  1. Push revisions to the remote database so long as there are still changes
