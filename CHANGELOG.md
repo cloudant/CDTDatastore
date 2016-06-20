@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## 1.1.1 (2016-06-20)
+- [FIX] Fix pull replications using `_bulk_get` endpoint. This was
+  broken in the previous release.
+
 ## 1.1.0 (2016-06-17)
 
 - [NEW] Added replication policies, allowing users to easily create policies such as "Replicate
