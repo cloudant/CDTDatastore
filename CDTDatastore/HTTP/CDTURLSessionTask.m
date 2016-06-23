@@ -45,9 +45,10 @@
 
 @property (atomic) BOOL finished;
 
+@property (nonnull, nonatomic, strong) NSMutableDictionary *contextState;
 
 
-#pragma mark properties for the currentl request
+#pragma mark properties for the current request
 @property (nullable, nonatomic, strong) NSHTTPURLResponse *response;
 @property (nullable, nonatomic, strong) NSError * requestError;
 @property (nullable, nonatomic, strong) NSData * requestData;
@@ -80,6 +81,7 @@
         _requestInterceptors = [self filterRequestInterceptors:interceptors];
         _responseInterceptors = [self filterResponseInterceptors:interceptors];
         _remainingRetries = 10;
+        _contextState = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -124,9 +126,9 @@
     self.response = nil;
     self.requestError = nil;
     self.requestData = nil;
-    
     __block CDTHTTPInterceptorContext *ctx =
-        [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
+        [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]
+                                                     state:self.contextState];
 
     // We make sure all objects support `interceptRequestInContext:` during init.
     for (NSObject<CDTHTTPInterceptor> *obj in self.requestInterceptors) {
@@ -190,9 +192,12 @@
 }
 
 - (void) completedThread:(NSThread *)thread {
+    // copy state from request interceptor context to response interceptor context
     __block CDTHTTPInterceptorContext *ctx =
-    [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]];
+    [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]
+                                                 state:self.contextState];
     ctx.response = self.response;
+    
     
     for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
         ctx = [obj interceptResponseInContext:ctx];
@@ -201,6 +206,7 @@
     if (ctx.shouldRetry && self.remainingRetries > 0) {
         // retry
         self.remainingRetries--;
+        // makeRequest maintains the state across retries, even though it creates a fresh context
         self.inProgressTask = [self makeRequest];
         [self.inProgressTask resume];
     } else {

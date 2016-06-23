@@ -25,12 +25,18 @@
 }
 
 - (instancetype)initWithRequest:(NSMutableURLRequest *)request {
+    return [self initWithRequest:request state:[NSMutableDictionary dictionary]];
+}
+
+- (instancetype)initWithRequest:(NSMutableURLRequest *)request
+                          state:(NSMutableDictionary*)state {
     NSParameterAssert(request);
     self = [super init];
     
     if (self) {
         _request = request;
         _shouldRetry = NO;
+        _state = state;
     }
     return self;
 }

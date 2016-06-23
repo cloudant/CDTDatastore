@@ -16,6 +16,14 @@
 		444F22564A61FE341E679D1E /* Pods_CDTDatastore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 661443AD245B12F70D33C303 /* Pods_CDTDatastore.framework */; };
 		6400126AA8043B4CE33B19DA /* Pods_CDTDatastoreReplicationAcceptanceTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BEFE677789AF6FA5E2CDCFF /* Pods_CDTDatastoreReplicationAcceptanceTests.framework */; };
 		672DDDA1A88D83963155710B /* Pods_CDTDatastoreEncryptionTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A15735F4EFD5449302A3D38A /* Pods_CDTDatastoreEncryptionTests.framework */; };
+		8E2DDDF81D1BEFBE00673564 /* CDTRequestLimitInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */; };
+		8E2DDDF91D1BEFBE00673564 /* CDTRequestLimitInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */; };
+		8E2DDDFA1D1BEFBE00673564 /* CDTRequestLimitInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */; };
+		8E2DDDFB1D1BEFBE00673564 /* CDTRequestLimitInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */; };
+		8E2DDDFC1D1BEFC900673564 /* CDTRequestLimitInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */; };
+		8E2DDDFD1D1BEFCA00673564 /* CDTRequestLimitInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */; };
+		8E2DDDFE1D1BEFCC00673564 /* CDTRequestLimitInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */; };
+		8E2DDDFF1D1BEFCD00673564 /* CDTRequestLimitInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */; };
 		980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */; };
 		980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */; };
 		980F22731CB818260075A843 /* CDTQIndexManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0D1C44044000515CC3 /* CDTQIndexManagerTests.m */; };
@@ -1237,6 +1245,8 @@
 		8518228C4BA984DF4307790D /* Pods-CDTDatastoreEncryption.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryption.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryption/Pods-CDTDatastoreEncryption.release.xcconfig"; sourceTree = "<group>"; };
 		86189ACF47443730C2DDF132 /* Pods-CDTDatastore.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastore.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastore/Pods-CDTDatastore.release.xcconfig"; sourceTree = "<group>"; };
 		865DF77B87F77B54AA3C53E0 /* Pods-CDTDatastoreEncryptionTestsOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptionTestsOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptionTestsOSX/Pods-CDTDatastoreEncryptionTestsOSX.release.xcconfig"; sourceTree = "<group>"; };
+		8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTRequestLimitInterceptor.h; sourceTree = "<group>"; };
+		8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTRequestLimitInterceptor.m; sourceTree = "<group>"; };
 		92EF171B6751664EF6E94197 /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptedReplicationAcceptanceTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptedReplicationAcceptanceTests/Pods-CDTDatastoreEncryptedReplicationAcceptanceTests.debug.xcconfig"; sourceTree = "<group>"; };
 		986E886E041283B45ECF9B5A /* Pods-CDTDatastoreTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreTests/Pods-CDTDatastoreTests.debug.xcconfig"; sourceTree = "<group>"; };
 		987382FB1C47B1DD00937212 /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
@@ -2049,6 +2059,8 @@
 				98F77BA91C43FCEE00515CC3 /* CDTURLSession.m */,
 				98F77BAA1C43FCEE00515CC3 /* CDTURLSessionTask.h */,
 				98F77BAB1C43FCEE00515CC3 /* CDTURLSessionTask.m */,
+				8E2DDDF61D1BEFBE00673564 /* CDTRequestLimitInterceptor.h */,
+				8E2DDDF71D1BEFBE00673564 /* CDTRequestLimitInterceptor.m */,
 			);
 			path = HTTP;
 			sourceTree = "<group>";
@@ -2557,6 +2569,7 @@
 				987383AA1C47B38800937212 /* TDMultiStreamWriter.h in Headers */,
 				987383AB1C47B38800937212 /* CDTEncryptionKeySimpleProvider.h in Headers */,
 				987383AC1C47B38800937212 /* CDTQQueryValidator.h in Headers */,
+				8E2DDDF91D1BEFBE00673564 /* CDTRequestLimitInterceptor.h in Headers */,
 				987383AD1C47B38800937212 /* CDTEncryptionKeychainData.h in Headers */,
 				987383AE1C47B38800937212 /* TDCanonicalJSON.h in Headers */,
 				987383AF1C47B38800937212 /* TD_Revision.h in Headers */,
@@ -2687,6 +2700,7 @@
 				987384981C47B3C400937212 /* CDTEncryptionKeySimpleProvider.h in Headers */,
 				987384991C47B3C400937212 /* CDTQQueryValidator.h in Headers */,
 				9873849A1C47B3C400937212 /* CDTEncryptionKeychainData.h in Headers */,
+				8E2DDDFD1D1BEFCA00673564 /* CDTRequestLimitInterceptor.h in Headers */,
 				9873849B1C47B3C400937212 /* TDCanonicalJSON.h in Headers */,
 				9873849C1C47B3C400937212 /* TD_Revision.h in Headers */,
 				9873849D1C47B3C400937212 /* TDInternal.h in Headers */,
@@ -2817,6 +2831,7 @@
 				98F77C511C43FCEE00515CC3 /* CDTEncryptionKeySimpleProvider.h in Headers */,
 				98F77C851C43FCEE00515CC3 /* CDTQQueryValidator.h in Headers */,
 				98F77C571C43FCEE00515CC3 /* CDTEncryptionKeychainData.h in Headers */,
+				8E2DDDF81D1BEFBE00673564 /* CDTRequestLimitInterceptor.h in Headers */,
 				98F77CB41C43FCEE00515CC3 /* TDCanonicalJSON.h in Headers */,
 				98F77CA71C43FCEE00515CC3 /* TD_Revision.h in Headers */,
 				98F77CB81C43FCEE00515CC3 /* TDInternal.h in Headers */,
@@ -2947,6 +2962,7 @@
 				98F7867C1C456B1300515CC3 /* CDTEncryptionKeySimpleProvider.h in Headers */,
 				98F7867D1C456B1300515CC3 /* CDTQQueryValidator.h in Headers */,
 				98F7867E1C456B1300515CC3 /* CDTEncryptionKeychainData.h in Headers */,
+				8E2DDDFC1D1BEFC900673564 /* CDTRequestLimitInterceptor.h in Headers */,
 				98F7867F1C456B1300515CC3 /* TDCanonicalJSON.h in Headers */,
 				98F786801C456B1300515CC3 /* TD_Revision.h in Headers */,
 				98F786811C456B1300515CC3 /* TDInternal.h in Headers */,
@@ -3268,7 +3284,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0730;
-				ORGANIZATIONNAME = IBM;
+				ORGANIZATIONNAME = "IBM Corporation";
 				TargetAttributes = {
 					98F77B351C43FC9F00515CC3 = {
 						CreatedOnToolsVersion = 7.2;
@@ -4002,6 +4018,7 @@
 				987383161C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.m in Sources */,
 				987383171C47B38800937212 /* CDTEncryptionKeychainData.m in Sources */,
 				987383181C47B38800937212 /* TD_DatabaseManager.m in Sources */,
+				8E2DDDFB1D1BEFBE00673564 /* CDTRequestLimitInterceptor.m in Sources */,
 				987383191C47B38800937212 /* Test.m in Sources */,
 				9873831A1C47B38800937212 /* CDTHTTPInterceptorContext.m in Sources */,
 				9873831B1C47B38800937212 /* TDSequenceMap.m in Sources */,
@@ -4107,6 +4124,7 @@
 				987384041C47B3C400937212 /* CDTEncryptionKeychainUtils+PBKDF2.m in Sources */,
 				987384051C47B3C400937212 /* CDTEncryptionKeychainData.m in Sources */,
 				987384061C47B3C400937212 /* TD_DatabaseManager.m in Sources */,
+				8E2DDDFF1D1BEFCD00673564 /* CDTRequestLimitInterceptor.m in Sources */,
 				987384071C47B3C400937212 /* Test.m in Sources */,
 				987384081C47B3C400937212 /* CDTHTTPInterceptorContext.m in Sources */,
 				987384091C47B3C400937212 /* TDSequenceMap.m in Sources */,
@@ -4363,6 +4381,7 @@
 				98F77C641C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.m in Sources */,
 				98F77C581C43FCEE00515CC3 /* CDTEncryptionKeychainData.m in Sources */,
 				98F77CA61C43FCEE00515CC3 /* TD_DatabaseManager.m in Sources */,
+				8E2DDDFA1D1BEFBE00673564 /* CDTRequestLimitInterceptor.m in Sources */,
 				98F77D271C43FDA700515CC3 /* Test.m in Sources */,
 				98F77C6B1C43FCEE00515CC3 /* CDTHTTPInterceptorContext.m in Sources */,
 				98F77CD61C43FCEE00515CC3 /* TDSequenceMap.m in Sources */,
@@ -4581,6 +4600,7 @@
 				98F785E71C456B1300515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.m in Sources */,
 				98F785E81C456B1300515CC3 /* CDTEncryptionKeychainData.m in Sources */,
 				98F785E91C456B1300515CC3 /* TD_DatabaseManager.m in Sources */,
+				8E2DDDFE1D1BEFCC00673564 /* CDTRequestLimitInterceptor.m in Sources */,
 				98F785EA1C456B1300515CC3 /* Test.m in Sources */,
 				98F785EB1C456B1300515CC3 /* CDTHTTPInterceptorContext.m in Sources */,
 				98F785EC1C456B1300515CC3 /* TDSequenceMap.m in Sources */,
