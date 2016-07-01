@@ -846,11 +846,18 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 - (BOOL)existsDocumentWithID:(NSString*)docID revisionID:(NSString*)revID database:(FMDatabase*)db
 {
     TDStatus status;
-    return [self getDocumentWithID:docID
-                        revisionID:revID
-                           options:kTDNoBody
-                            status:&status
-                          database:db] != nil;
+
+    TD_Revision* rev = [self getDocumentWithID:docID
+                                    revisionID:revID
+                                       options:kTDNoBody
+                                        status:&status
+                                      database:db];
+
+    if (status == kTDStatusDeleted) {
+        return YES;  // The doc is now a tombstone, but it does mean it exits in the tree.
+    } else {
+        return rev != nil;
+    }
 }
 
 /** Do not call from fmdbqueue */
