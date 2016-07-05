@@ -27,10 +27,31 @@
 #import "TDPuller.h"
 #import "TDPusher.h"
 #import "CDTSessionCookieInterceptor.h"
+#import "CDTRequestLimitInterceptor.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OCMock/OCMock.h>
 #import <netinet/in.h>
+
+#pragma mark Utility - ContextCaptureInterceptor
+
+@interface ContextCaptureInterceptor : NSObject <CDTHTTPInterceptor>
+
+@property CDTHTTPInterceptorContext *lastContext;
+
+@end
+
+@implementation ContextCaptureInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
+{
+    _lastContext = context;
+    return context;
+}
+
+@end
+
+#pragma mark Utility - ChangesFeedRequestCheckInterceptor
 
 @interface ChangesFeedRequestCheckInterceptor : NSObject <CDTHTTPInterceptor>
 
@@ -63,54 +84,97 @@
 
 @end
 
-@interface CDTReplicationTests : CloudantSyncTests
+#pragma mark Utility - SimpleHttpServer
+
+@interface SimpleHttpServer : NSObject
 
 @property int listenSocketFd;
+@property bool stopped;
+@property NSString *header;
+@property int port;
 
 @end
 
-@implementation CDTReplicationTests
+@implementation SimpleHttpServer
 
-// Start a simple HTTP server on localhost that responds to any message with a "404 Not Found".
-- (void)startSimpleHttp404Server {
+- (id)initWithHeader:(NSString*)header
+                port:(int)port
+{
+    if (self = [super init]) {
+        self.header = header;
+        self.port = port;
+    }
+    return self;
+}
+
+// Start a simple HTTP server on localhost that responds to any message with a fixed header.
+- (void)startWithError:(NSError**)error {
+    int success;
     self.listenSocketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    int yes = 1;
+    setsockopt(self.listenSocketFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+    self.stopped = false;
     const int buf_size = 1024;
-
+    
     struct sockaddr_in serv_addr;
     memset(&serv_addr, '0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8080);
+    serv_addr.sin_port = htons(self.port);
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    bind(self.listenSocketFd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-    listen(self.listenSocketFd, 10);
-
+    
+    success = bind(self.listenSocketFd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    if (success == -1) {
+        *error = [NSError errorWithDomain:NSPOSIXErrorDomain
+                                     code:errno
+                                 userInfo:@{@"reason":@"bind() failed"}];
+        return;
+    }
+    success = listen(self.listenSocketFd, 10);
+    if (success == -1) {
+        *error = [NSError errorWithDomain:NSPOSIXErrorDomain
+                                     code:errno
+                                 userInfo:@{@"reason":@"listen() failed"}];
+        return;
+    }
+    
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        bool stopped = false;
-        while (!stopped)
+        while (!self.stopped)
         {
-            __block int connfd = accept(self.listenSocketFd, (struct sockaddr*)NULL, NULL);
+            int connfd = accept(self.listenSocketFd, (struct sockaddr*)NULL, NULL);
             if (connfd > 0) {
                 char buffer[buf_size];
                 bzero(buffer, buf_size);
-
+                
                 // Receive a message.
                 recv(connfd, buffer, buf_size, 0);
-
-                // We don't care what the message was (or if we read it all), just send back a 404.
-                char* header = "HTTP/1.0 404 Not Found\n";
+                
+                // We don't care what the message was (or if we read it all), just send back the header.
+                const char* header = [self.header cString];
                 write(connfd, header, strlen(header));
                 close(connfd);
             } else {
-                stopped = true;
+                self.stopped = true;
             }
         }
     });
 }
 
-- (void)stopSimpleHttp404Server {
+- (void)stop {
+    self.stopped = true;
     close(self.listenSocketFd);
 }
+
+@end
+
+#pragma mark Tests
+
+@interface CDTReplicationTests : CloudantSyncTests
+
+@end
+
+@implementation CDTReplicationTests
+
+
 - (void)testURLCredsReplacedWithCookieInterceptorPull
 {
     NSError *error;
@@ -142,16 +206,81 @@
     XCTAssertEqualObjects([push.httpInterceptors[0] class], [CDTSessionCookieInterceptor class]);
 }
 
+- (void)test429Retry
+{
+    NSError *error = nil;
+    SimpleHttpServer *server;
+    // simple remote to send 429
+    int port = 9999 + (arc4random() & 0x3FF); // add 10 bits of randomness
+    // find a free port
+    for (int i=0; i<100; i++, port++) {
+        server = [[SimpleHttpServer alloc] initWithHeader:@"HTTP/1.0 429 Too Many Requests\r\n\r\n"
+                                                                       port:port];
+        [server startWithError:&error];
+        if (error == nil) {
+            break;
+        }
+    }
+    XCTAssertNil(error, @"Start errored with %@", error);
+        
+    if (error) {
+        // early exit
+        return;
+    }
+    NSString *remoteUrl = [NSString stringWithFormat:@"http://127.0.0.1:%d", port];
+    
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull =
+    [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl] target:tmp];
+    // add 429 backoff interceptor
+    [pull addInterceptor:[CDTRequestLimitInterceptor interceptor]];
+    // add utility interceptor to capture final sleep valuew
+    ContextCaptureInterceptor *cci = [[ContextCaptureInterceptor alloc] init];
+    [pull addInterceptor:cci];
+    CDTReplicatorFactory *replicatorFactory =
+    [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+    
+    CDTReplicator *replicator = [replicatorFactory oneWay:pull error:&error];
+    
+    dispatch_group_t taskGroup = dispatch_group_create();
+    [replicator startWithTaskGroup:taskGroup error:&error];
+    
+    dispatch_group_wait(taskGroup, DISPATCH_TIME_FOREVER);
+
+    // after 3 retries the sleep time should equal 2s:
+    // 250ms * (2^3)
+    double lastSleepValue = [(NSNumber*)cci.lastContext.state[@"com.cloudant.CDTRequestLimitInterceptor.sleep"] doubleValue];
+    XCTAssertEqual(2.0, lastSleepValue);
+    
+    [server stop];
+}
+
 - (void)testFiltersWithChangesFeed
 {
-    NSError *error;
+    NSError *error = nil;
+    SimpleHttpServer *server;
     // We need a real remote here, so the reachability test before the replication starts
     // passes, it doesn't need a couch server, since the NSURLProtocol will 404 any request.
     // We can't use OHHTTPStubs to stub the server as that doesn't work with background
     // requests, so we just start a simple local server that returns 404 to anything it receives
     // and use that for our remote.
-    [self startSimpleHttp404Server];
-    NSString *remoteUrl = @"http://127.0.0.1:8080";
+    int port = 9999 + (arc4random() & 0x3FF); // add 10 bits of randomness
+    // find a free port
+    for (int i=0; i<100; i++, port++) {
+        server = [[SimpleHttpServer alloc] initWithHeader:@"HTTP/1.0 404 Not Found\r\n\r\n"
+                                                                   port:port];
+        [server startWithError:&error];
+        if (error == nil) {
+            break;
+        }
+    }
+    XCTAssertNil(error, @"Start errored with %@", error);
+
+    if (error) {
+        // early exit
+        return;
+    }
+    NSString *remoteUrl = [NSString stringWithFormat:@"http://127.0.0.1:%d", port];
 
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     CDTPullReplication *pull =
@@ -171,7 +300,7 @@
 
     XCTAssertTrue(interceptor.changesFeedRequestMade);
 
-    [self stopSimpleHttp404Server];
+    [server stop];
 }
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
@@ -184,13 +313,6 @@
 -(void)testDictionaryForPullReplicationDocument
 {
     NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
-    NSDictionary *expectedDictionary = @{
-        @"target" : @"test_database",
-        @"source" : remoteUrl,
-        @"filter" : @"myddoc/myfilter",
-        @"query_params" : @{@"min" : @23, @"max" : @43},
-        @"interceptors" : @[]
-    };
 
     NSError *error;
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
@@ -199,6 +321,14 @@
     
     pull.filter = @"myddoc/myfilter";
     pull.filterParams = @{@"min":@23, @"max":@43};
+    
+    NSDictionary *expectedDictionary = @{
+                                         @"target" : @"test_database",
+                                         @"source" : remoteUrl,
+                                         @"filter" : @"myddoc/myfilter",
+                                         @"query_params" : @{@"min" : @23, @"max" : @43},
+                                         @"interceptors" : pull.httpInterceptors
+                                         };
     
     error = nil;
     NSDictionary *pullDict = [pull dictionaryForReplicatorDocument:&error];
@@ -219,18 +349,18 @@
 -(void)testDictionaryForPushReplicationDocument
 {
     NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
-    NSDictionary *expectedDictionary =
-        @{ @"source" : @"test_database",
-           @"target" : remoteUrl,
-           @"interceptors" : @[] };
-
+ 
     NSError *error;
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
     
     CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
                                                                   target:[NSURL URLWithString:remoteUrl]];
 
-    
+    NSDictionary *expectedDictionary =
+    @{ @"source" : @"test_database",
+       @"target" : remoteUrl,
+       @"interceptors" : push.httpInterceptors };
+   
     error = nil;
     NSDictionary *pushDict = [push dictionaryForReplicatorDocument:&error];
     XCTAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);

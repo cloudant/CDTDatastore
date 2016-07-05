@@ -25,6 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic) BOOL shouldRetry;
 @property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
+/**
+ * For storing arbitrary per-context state
+ * NOTE: Users are strongly encouranged to use unique keys by ensuring keys are prefixed, eg
+ * com.mycompany.MyInterceptor.foo, com.mycompany.MyInterceptor.bar, where:
+ * - com.company is the reversed internet domain name
+ * - MyInterceptor is the name of the interceptor class
+ * - foo and bar describe the values being stored.
+ */
+@property (readwrite, nonatomic, strong) NSMutableDictionary<NSString*, NSObject*> *state;
 
 /**
  *  Unavaiable, use -initWithRequest
@@ -37,9 +46,24 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  Initalizes a CDTURLSessionInterceptorContext
  *
+ *  This is equivalent to calling initWithRequest:request:[NSMutableDictionary dictionary]
+ *
  *  @param request the request this context should represent
+ *
  **/
-- (instancetype)initWithRequest:(NSMutableURLRequest *)request NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithRequest:(NSMutableURLRequest *)request;
+
+/**
+ *  Initalizes a CDTURLSessionInterceptorContext
+ *
+ *  NOTE: electing not to copy the state of a previous interceptor may cause issues (especially for 
+ *  interceptors which share state between Request and Response contexts).
+ *
+ *  @param request the request this context should represent
+ *  @param state the initial state of the interceptor pipeline, as key/value pairs
+ **/
+- (instancetype)initWithRequest:(NSMutableURLRequest *)request
+                          state:(NSMutableDictionary *)state NS_DESIGNATED_INITIALIZER;
 
 @end
 

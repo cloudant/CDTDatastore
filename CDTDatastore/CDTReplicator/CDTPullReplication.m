@@ -15,6 +15,7 @@
 
 #import "CDTPullReplication.h"
 #import "CDTSessionCookieInterceptor.h"
+#import "CDTRequestLimitInterceptor.h"
 #import "CDTDatastore.h"
 #import "CDTLogging.h"
 #import "TDMisc.h"

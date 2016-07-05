@@ -87,7 +87,8 @@ static const NSString *testCookieHeaderValue =
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
 
     CDTHTTPInterceptorContext *context =
-        [[CDTHTTPInterceptorContext alloc] initWithRequest:[request mutableCopy]];
+        [[CDTHTTPInterceptorContext alloc] initWithRequest:[request mutableCopy]
+                                                     state:[NSMutableDictionary dictionary]];
 
     context = [interceptor interceptRequestInContext:context];
 
@@ -107,7 +108,8 @@ static const NSString *testCookieHeaderValue =
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
 
     CDTHTTPInterceptorContext *context =
-        [[CDTHTTPInterceptorContext alloc] initWithRequest:[request mutableCopy]];
+        [[CDTHTTPInterceptorContext alloc] initWithRequest:[request mutableCopy]
+                                                     state:[NSMutableDictionary dictionary]];
 
     context = [interceptor interceptRequestInContext:context];
 
