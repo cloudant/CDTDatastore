@@ -54,24 +54,24 @@ static NSString *kRetryCountKey = @"com.cloudant.CDTRequestLimitInterceptor.retr
     if (context.response.statusCode == 429) {
 
         // if we are the first invocation in this pipeline, set some state
-        if (!context.state[kSleepKey]) {
-            [context.state setValue:@(self.initialSleep) forKey:kSleepKey];
+        if (![context stateForKey:kSleepKey]) {
+            [context setState:@(self.initialSleep) forKey:kSleepKey];
         }
-        if (!context.state[kRetryCountKey]) {
-            [context.state setValue:@0 forKey:kRetryCountKey];
+        if (![context stateForKey:kRetryCountKey]) {
+            [context setState:@0 forKey:kRetryCountKey];
         }
         
-        double sleep = [(NSNumber*)context.state[kSleepKey] doubleValue];
-        int retryCount = [(NSNumber*)context.state[kRetryCountKey] intValue];
+        double sleep = [(NSNumber*)[context stateForKey:kSleepKey] doubleValue];
+        int retryCount = [(NSNumber*)[context stateForKey:kRetryCountKey] intValue];
 
         if (retryCount < self.maxRetries) {
             CDTLogInfo(CDTTD_REMOTE_REQUEST_CONTEXT, @"429 error code (too many requests) received. "
-                       "Will retry in %@ seconds.", context.state[@"sleep"]);
+                       "Will retry in %.3f seconds.", sleep);
             
             // sleep for a short time before making next request
             [NSThread sleepForTimeInterval:sleep];
-            [context.state setValue:@(sleep*2) forKey:kSleepKey]; // exponential back-off
-            [context.state setValue:@(retryCount+1) forKey:kRetryCountKey];
+            [context setState:@(sleep*2) forKey:kSleepKey]; // exponential back-off
+            [context setState:@(retryCount+1) forKey:kRetryCountKey];
             context.shouldRetry = true;
         } else {
             CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"Maximum number of retries (%d) exceeded in "

@@ -25,15 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic) BOOL shouldRetry;
 @property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
-/**
- * For storing arbitrary per-context state
- * NOTE: Users are strongly encouranged to use unique keys by ensuring keys are prefixed, eg
- * com.mycompany.MyInterceptor.foo, com.mycompany.MyInterceptor.bar, where:
- * - com.company is the reversed internet domain name
- * - MyInterceptor is the name of the interceptor class
- * - foo and bar describe the values being stored.
- */
-@property (readwrite, nonatomic, strong) NSMutableDictionary<NSString*, NSObject*> *state;
 
 /**
  *  Unavaiable, use -initWithRequest
@@ -64,6 +55,26 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithRequest:(NSMutableURLRequest *)request
                           state:(NSMutableDictionary *)state NS_DESIGNATED_INITIALIZER;
+
+/**
+ * For retrieving arbitrary per-context state
+ * @param key the key with which the value is associated
+ */                                                   
+- (NSObject*)stateForKey:(NSString*)key;
+
+/**
+ * For storing arbitrary per-context state
+ * NOTE: Users are strongly encouranged to use unique keys by ensuring keys are prefixed, eg
+ * com.mycompany.MyInterceptor.foo, com.mycompany.MyInterceptor.bar, where:
+ * - com.company is the reversed internet domain name
+ * - MyInterceptor is the name of the interceptor class
+ * - foo and bar describe the values being stored.
+ * @param value the value to store
+ * @param key the key with which the value is associated
+ */
+                                                   
+- (void)setState:(NSObject*)value
+          forKey:(NSObject*)key;
 
 @end
 

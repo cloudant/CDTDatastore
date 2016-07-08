@@ -249,7 +249,7 @@
 
     // after 3 retries the sleep time should equal 2s:
     // 250ms * (2^3)
-    double lastSleepValue = [(NSNumber*)cci.lastContext.state[@"com.cloudant.CDTRequestLimitInterceptor.sleep"] doubleValue];
+    double lastSleepValue = [(NSNumber*)[cci.lastContext stateForKey:@"com.cloudant.CDTRequestLimitInterceptor.sleep"] doubleValue];
     XCTAssertEqual(2.0, lastSleepValue);
     
     [server stop];
