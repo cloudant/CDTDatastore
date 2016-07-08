@@ -82,7 +82,6 @@
 
 #pragma mark - CREATE tests
 
-
 -(void) testDocumentWithInfinityValue
 {
     NSError * error;
@@ -1004,6 +1003,26 @@
 
 #pragma mark - UPDATE tests
 
+- (void)testUpdateDeletedDocumentWithOldRevReturns409
+{
+    NSError *error = nil;
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
+
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:rev error:&error];
+    XCTAssertNil(error);
+
+    error = nil;
+    [self.datastore deleteDocumentFromRevision:saved error:&error];
+    XCTAssertNil(error);
+    error = nil;
+
+    saved.body = [@{ @"hello" : @"world", @"updated" : @(YES) } mutableCopy];
+    [self.datastore updateDocumentFromRevision:saved error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(409, error.code);
+}
+
 -(void)testUpdateBadDocId
 {
     NSError *error;
@@ -1389,6 +1408,25 @@
 }
 
 #pragma mark - DELETE tests
+
+- (void)testDeleteDeletedDocumentWithOldRevReturns409
+{
+    NSError *error = nil;
+    CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+    rev.body = [@{ @"hello" : @"world" } mutableCopy];
+
+    CDTDocumentRevision *saved = [self.datastore createDocumentFromRevision:rev error:&error];
+    XCTAssertNil(error);
+
+    error = nil;
+    [self.datastore deleteDocumentFromRevision:saved error:&error];
+    XCTAssertNil(error);
+    error = nil;
+
+    [self.datastore deleteDocumentFromRevision:saved error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(409, error.code);
+}
 
 - (void)testDeletedItem404
 {
