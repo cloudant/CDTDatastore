@@ -60,22 +60,30 @@ end
 
 desc "Run the CDTDatastore Tests for iOS"
 task :testios do
-  test(CDTDATASTORE_WS, TESTS_IOS, IPHONE_DEST)
+  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "iOS")
+    test(CDTDATASTORE_WS, TESTS_IOS, IPHONE_DEST)
+  end
 end
 
 desc "Run the CDTDatastore Tests for OS X"
 task :testosx do
-  test(CDTDATASTORE_WS, TESTS_OSX, OSX_DEST)
+  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "OSX")
+    test(CDTDATASTORE_WS, TESTS_OSX, OSX_DEST)
+  end
 end
 
 desc "Run the CDTDatastore Encryption Tests for iOS"
 task :testencryptionios do
-  test(CDTDATASTORE_WS, ENCRYPTION_IOS, IPHONE_DEST)
+  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "iOS-encrypted")
+    test(CDTDATASTORE_WS, ENCRYPTION_IOS, IPHONE_DEST)
+  end
 end
 
 desc "Run the CDTDatastore Encryption Tests for OS X"
 task :testencryptionosx do
-  test(CDTDATASTORE_WS, ENCRYPTION_OSX, OSX_DEST)
+  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "OSX-encrypted")
+    test(CDTDATASTORE_WS, ENCRYPTION_OSX, OSX_DEST)
+  end
 end
 
 desc "Run the replication acceptance tests for OS X"
