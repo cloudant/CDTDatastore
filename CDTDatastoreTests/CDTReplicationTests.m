@@ -20,7 +20,6 @@
 #import "CDTDatastore.h"
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicator.h"
-#import "TDReplicatorManager.h"
 #import "CDTDocumentRevision.h"
 #import "TD_Body.h"
 #import "TD_Revision.h"
@@ -316,113 +315,6 @@
 #pragma clang diagnostic pop
 }
 
--(void)testDictionaryForPullReplicationDocument
-{
-    NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
-
-    NSError *error;
-    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
-    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl]
-                                                                  target:tmp];
-    
-    pull.filter = @"myddoc/myfilter";
-    pull.filterParams = @{@"min":@23, @"max":@43};
-    
-    NSDictionary *expectedDictionary = @{
-                                         @"target" : @"test_database",
-                                         @"source" : remoteUrl,
-                                         @"filter" : @"myddoc/myfilter",
-                                         @"query_params" : @{@"min" : @23, @"max" : @43},
-                                         @"interceptors" : pull.httpInterceptors
-                                         };
-    
-    error = nil;
-    NSDictionary *pullDict = [pull dictionaryForReplicatorDocument:&error];
-    XCTAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, pull);
-    XCTAssertEqualObjects(pullDict, expectedDictionary, @"pull dictionary: %@", pullDict);
-    
-    //ensure that TDReplicatorManager makes the appropriate TDPuller object
-    //The code to do this, seems, a bit precarious and this guards against any future
-    //changes that could affect this process.
-    error = nil;
-    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
-                                              initWithDatabaseManager:self.factory.manager];
-    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pullDict
-                                                                             error:&error];
-    XCTAssertEqualObjects([tdreplicator class], [TDPuller class], @"Wrong Type of TDReplicator. %@", error);
-}
-
--(void)testDictionaryForPushReplicationDocument
-{
-    NSString *remoteUrl = @"https://myaccount.cloudant.com/mydb";
- 
-    NSError *error;
-    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
-    
-    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
-                                                                  target:[NSURL URLWithString:remoteUrl]];
-
-    NSDictionary *expectedDictionary =
-    @{ @"source" : @"test_database",
-       @"target" : remoteUrl,
-       @"interceptors" : push.httpInterceptors };
-   
-    error = nil;
-    NSDictionary *pushDict = [push dictionaryForReplicatorDocument:&error];
-    XCTAssertNil(error, @"Error creating dictionary. %@. Replicator: %@", error, push);
-    XCTAssertEqualObjects(pushDict, expectedDictionary, @"push dictionary: %@", pushDict);
-    
-    //ensure that TDReplicatorManager makes the appropriate TDPuller object
-    //The code to do this, seems, a bit precarious and this guards against any future
-    //changes that could affect this process.
-    error = nil;
-    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
-                                              initWithDatabaseManager:self.factory.manager];
-    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDict
-                                                                             error:&error];
-    XCTAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
-}
-
-
--(void)testCreatePushReplicationWithFilter
-{
-    NSString *remoteUrl = @"https://adam:cox@myaccount.cloudant.com/mydb";
-    NSError *error;
-    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
-    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
-                                                                  target:[NSURL URLWithString:remoteUrl]];
-    
-    CDTFilterBlock aFilter = ^BOOL(CDTDocumentRevision *rev, NSDictionary *params) {
-        return YES;
-    };
-    
-    push.filter = aFilter;
-    push.filterParams = @{@"param1":@"foo"};
-    
-    CDTReplicatorFactory *replicatorFactory = [[CDTReplicatorFactory alloc]
-                                               initWithDatastoreManager:self.factory];
-    
-    error = nil;
-    CDTReplicator *replicator =  [replicatorFactory oneWay:push error:&error];
-    XCTAssertNotNil(replicator, @"%@", push);
-    XCTAssertNil(error, @"%@", error);
-
-    NSDictionary *pushDoc = [push dictionaryForReplicatorDocument:nil];
-    
-    XCTAssertTrue(push.filter != nil, @"No filter set in CDTPushReplication");
-    XCTAssertEqualObjects(@{@"param1":@"foo"}, pushDoc[@"query_params"], @"\n%@", pushDoc);
-    
-    //ensure that TDReplicatorManager makes the appropriate TDPuller object
-    //The code to do this, seems, a bit precarious and this guards against any future
-    //changes that could affect this process.
-    error = nil;
-    TDReplicatorManager *replicatorManager = [[TDReplicatorManager alloc]
-                                              initWithDatabaseManager:self.factory.manager];
-    TDReplicator *tdreplicator = [replicatorManager createReplicatorWithProperties:pushDoc
-                                                                             error:&error];
-    XCTAssertEqualObjects([tdreplicator class], [TDPusher class], @"Wrong Type of TDReplicator. %@", error);
-}
-
 -(CDTAbstractReplication *)buildReplicationObject:(Class)aClass remoteUrl:(NSURL *)url
 {
     CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:nil];
@@ -575,19 +467,11 @@
 {
     CDTPullReplication *pull;
     NSError *error;
-    NSDictionary *pullDoc;
     NSDictionary *optionalHeaders;
     
     optionalHeaders = @{@"User-Agent": @"My Agent"};
     pull = [self createPullReplicationWithHeaders:optionalHeaders];
     error = nil;
-    pullDoc = [pull dictionaryForReplicatorDocument:&error];
-    XCTAssertNotNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument failed with "
-                   @"header: %@", optionalHeaders);
-    
-    XCTAssertTrue([pullDoc[@"headers"][@"User-Agent"] isEqualToString:@"My Agent"],
-                 @"Bad headers: %@", pullDoc[@"headers"]);
-    
     
     NSArray *prohibitedUpperArray = @[@"Authorization", @"WWW-Authenticate", @"Host",
                                   @"Connection", @"Content-Type", @"Accept",
@@ -602,10 +486,11 @@
     for (NSString* prohibitedHeader in prohibitedUpperArray) {
         optionalHeaders = @{prohibitedHeader: @"some value"};
         pull = [self createPullReplicationWithHeaders:optionalHeaders];
-        error = nil;
-        pullDoc = [pull dictionaryForReplicatorDocument:&error];
-        XCTAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
-                       @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
+        CDTReplicatorFactory *replicatorFactory =
+        [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+        CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
+        
+        XCTAssertNil(rep, @"Error was not set");
         XCTAssertNotNil(error, @"Error was not set");
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %ld", (long)error.code);
@@ -614,10 +499,11 @@
     for (NSString* prohibitedHeader in prohibitedLowerArray) {
         optionalHeaders = @{prohibitedHeader: @"some value"};
         pull = [self createPullReplicationWithHeaders:optionalHeaders];
-        error = nil;
-        pullDoc = [pull dictionaryForReplicatorDocument:&error];
-        XCTAssertNil(pullDoc, @"CDTPullReplication -dictionaryForReplicatorDocument passed with "
-                    @"header: %@, pullDoc: %@", optionalHeaders, pullDoc);
+        CDTReplicatorFactory *replicatorFactory =
+        [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+        CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
+        
+        XCTAssertNil(rep, @"Error was not set");
         XCTAssertNotNil(error, @"Error was not set");
         XCTAssertEqual(error.code, CDTReplicationErrorProhibitedOptionalHttpHeader,
                        @"Wrote error code: %ld", (long)error.code);

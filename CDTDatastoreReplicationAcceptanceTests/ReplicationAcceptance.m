@@ -28,7 +28,6 @@
 #import "CDTDocumentRevision.h"
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
-#import "TDReplicatorManager.h"
 #import "TDReplicator.h"
 #import "CDTReplicator.h"
 #import "TDURLConnectionChangeTracker.h"
@@ -62,6 +61,14 @@
 
 @interface MyTestDelegate : NSObject<CDTURLSessionTaskDelegate>
 @property (nonatomic) int timesGotResponse;
+@end
+
+/**
+ Expose TDReplicator to access remoteCheckpointDocID method
+ and return the doc ID for the checkpoint document.
+ */
+@interface CDTReplicator ()
+@property (nonatomic, strong) TDReplicator *tdReplicator;
 @end
 
 
@@ -1492,14 +1499,6 @@
     NSDictionary *extraHeaders = @{@"SpecialHeader": @"foo", @"user-agent":userAgent};
     pull.optionalHeaders = extraHeaders;
     
-    NSDictionary *pullDoc = [pull dictionaryForReplicatorDocument:nil];
-    XCTAssertEqualObjects(pullDoc[@"headers"][@"SpecialHeader"], @"foo", @"Bad headers: %@",
-                         pullDoc[@"headers"]);
-    
-    XCTAssertEqualObjects(pullDoc[@"headers"][@"user-agent"], userAgent, @"Bad headers: %@",
-                         pullDoc[@"headers"]);
-
-    
     ReplicatorURLProtocolTester* tester = [[ReplicatorURLProtocolTester alloc] init];
 
     tester.expectedHeaders = extraHeaders;
@@ -1631,14 +1630,11 @@
     }
     
     //now explicitly check equality between local and remote checkpoint docs.
-    TDReplicatorManager * tdrepman = [[TDReplicatorManager alloc]
-                                      initWithDatabaseManager:self.factory.manager];
-    NSDictionary *pullConfig = [pull dictionaryForReplicatorDocument:nil];
-    TDReplicator *tdrep = [tdrepman createReplicatorWithProperties:pullConfig error:nil];
-    
+    CDTReplicator *cdtrepl = [[CDTReplicator alloc] initWithTDDatabaseManager:self.factory.manager replication:pull sessionConfigDelegate:nil error:nil];
+
     TD_Database *tdb = self.datastore.database;
     
-    NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
+    NSString *checkpointDocId = [cdtrepl.tdReplicator remoteCheckpointDocID];
     NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
 
     //make sure the remote database has the appropriate document
@@ -1676,14 +1672,11 @@
     }
     
     //now explicitly check equality between local and remote checkpoint docs.
-    TDReplicatorManager * tdrepman = [[TDReplicatorManager alloc]
-                                      initWithDatabaseManager:self.factory.manager];
-    NSDictionary *pushConfig = [push dictionaryForReplicatorDocument:nil];
-    TDReplicator *tdrep = [tdrepman createReplicatorWithProperties:pushConfig error:nil];
+    CDTReplicator *cdtrepl = [[CDTReplicator alloc] initWithTDDatabaseManager:self.factory.manager replication:push sessionConfigDelegate:nil error:nil];
     
     TD_Database *tdb = self.datastore.database;
     
-    NSString *checkpointDocId = [tdrep remoteCheckpointDocID];
+    NSString *checkpointDocId = [cdtrepl.tdReplicator remoteCheckpointDocID];
     NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
 
     //make sure the remote database has the appropriate document

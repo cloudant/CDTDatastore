@@ -13,6 +13,7 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import "CDTAbstractReplication.h"
 #import "CDTPushReplication.h"
 #import "CDTDatastore.h"
 #import "CDTSessionCookieInterceptor.h"
@@ -65,55 +66,10 @@
 }
 
 - (NSString *)description
-{
-    NSMutableDictionary *dictionary = [[self dictionaryForReplicatorDocument:nil] mutableCopy];
-    dictionary[@"target"] = TDCleanURLtoString(self.target);
-    return [NSString stringWithFormat:@"%@: %@", [self class], dictionary];
-}
-
-- (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
-{
-    NSError *localError;
-    if (![self validateRemoteDatastoreURL:self.target error:&localError]) {
-        if (error) {
-            *error = localError;
-        }
-        return nil;
-    }
-
-    NSDictionary *superdoc = [super dictionaryForReplicatorDocument:&localError];
-    if (superdoc == nil) {
-        if (error) {
-            *error = localError;
-        }
-        return nil;
-    }
-
-    NSMutableDictionary *doc = [NSMutableDictionary dictionaryWithDictionary:superdoc];
-
-    [doc setObject:self.target.absoluteString forKey:@"target"];
-
-    if (self.source) {
-        [doc setObject:self.source.name forKey:@"source"];
-    } else {
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                @"CDTPullReplication -dictionaryForReplicatorDocument Error: source is nil.");
-
-        if (error) {
-            NSString *msg = @"Cannot sync data. Local data source not specified.";
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
-            *error = [NSError errorWithDomain:CDTReplicationErrorDomain
-                                         code:CDTReplicationErrorUndefinedSource
-                                     userInfo:userInfo];
-        }
-        return nil;
-    }
-
-    if (self.filterParams) {
-        [doc setObject:self.filterParams ?: @{} forKey:@"query_params"];
-    }
-
-    return doc;
+{    
+    return [NSString stringWithFormat:@"%@, source: %@, target: %@, headers: %@, interceptors: %@, filter: %@, query_params: %@",
+            [self class], self.source.name, TDCleanURLtoString(self.target), self.optionalHeaders, self.httpInterceptors,
+            self.filter, self.filterParams];
 }
 
 // This is method is overridden and this code placed here so we can provide a better error message

@@ -91,7 +91,6 @@
 		9873831F1C47B38800937212 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		987383201C47B38800937212 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
 		987383221C47B38800937212 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
-		987383231C47B38800937212 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		987383241C47B38800937212 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
 		987383251C47B38800937212 /* TDCanonicalJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF21C43FCEE00515CC3 /* TDCanonicalJSON.m */; };
 		987383261C47B38800937212 /* CDTBlobData.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B541C43FCEE00515CC3 /* CDTBlobData.m */; };
@@ -207,7 +206,6 @@
 		987383991C47B38800937212 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839A1C47B38800937212 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839B1C47B38800937212 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9873839C1C47B38800937212 /* TDReplicatorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839D1C47B38800937212 /* FMDatabase+LongLong.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA01C43FCEE00515CC3 /* FMDatabase+LongLong.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839E1C47B38800937212 /* TD_DatabaseManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BE21C43FCEE00515CC3 /* TD_DatabaseManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873839F1C47B38800937212 /* TDMultipartDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BFC1C43FCEE00515CC3 /* TDMultipartDownloader.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -312,7 +310,6 @@
 		9873840D1C47B3C400937212 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		9873840E1C47B3C400937212 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
 		987384101C47B3C400937212 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
-		987384111C47B3C400937212 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		987384121C47B3C400937212 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
 		987384131C47B3C400937212 /* TDCanonicalJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF21C43FCEE00515CC3 /* TDCanonicalJSON.m */; };
 		987384141C47B3C400937212 /* CDTBlobData.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B541C43FCEE00515CC3 /* CDTBlobData.m */; };
@@ -427,7 +424,6 @@
 		987384861C47B3C400937212 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384871C47B3C400937212 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987384881C47B3C400937212 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987384891C47B3C400937212 /* TDReplicatorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873848A1C47B3C400937212 /* FMDatabase+LongLong.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA01C43FCEE00515CC3 /* FMDatabase+LongLong.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873848B1C47B3C400937212 /* TD_DatabaseManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BE21C43FCEE00515CC3 /* TD_DatabaseManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9873848C1C47B3C400937212 /* TDMultipartDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BFC1C43FCEE00515CC3 /* TDMultipartDownloader.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -819,8 +815,6 @@
 		98F77CD01C43FCEE00515CC3 /* TDRemoteRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0D1C43FCEE00515CC3 /* TDRemoteRequest.m */; };
 		98F77CD11C43FCEE00515CC3 /* TDReplicator.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C0E1C43FCEE00515CC3 /* TDReplicator.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77CD21C43FCEE00515CC3 /* TDReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */; };
-		98F77CD31C43FCEE00515CC3 /* TDReplicatorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77CD41C43FCEE00515CC3 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		98F77CD51C43FCEE00515CC3 /* TDSequenceMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C121C43FCEE00515CC3 /* TDSequenceMap.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77CD61C43FCEE00515CC3 /* TDSequenceMap.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C131C43FCEE00515CC3 /* TDSequenceMap.m */; };
 		98F77CD71C43FCEE00515CC3 /* TDStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C141C43FCEE00515CC3 /* TDStatus.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -960,7 +954,6 @@
 		98F785F01C456B1300515CC3 /* CDTAbstractReplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B6C1C43FCEE00515CC3 /* CDTAbstractReplication.m */; };
 		98F785F11C456B1300515CC3 /* TD_Database+Insertion.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BDB1C43FCEE00515CC3 /* TD_Database+Insertion.m */; };
 		98F785F31C456B1300515CC3 /* CDTQQueryValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BC11C43FCEE00515CC3 /* CDTQQueryValidator.m */; };
-		98F785F41C456B1300515CC3 /* TDReplicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */; };
 		98F785F51C456B1300515CC3 /* TD_Database.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BE11C43FCEE00515CC3 /* TD_Database.m */; };
 		98F785F61C456B1300515CC3 /* TDCanonicalJSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BF21C43FCEE00515CC3 /* TDCanonicalJSON.m */; };
 		98F785F71C456B1300515CC3 /* CDTBlobData.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B541C43FCEE00515CC3 /* CDTBlobData.m */; };
@@ -1075,7 +1068,6 @@
 		98F7866A1C456B1300515CC3 /* TDPuller.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C061C43FCEE00515CC3 /* TDPuller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866B1C456B1300515CC3 /* CDTChangedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C191C43FCEE00515CC3 /* CDTChangedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866C1C456B1300515CC3 /* TDBatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BEC1C43FCEE00515CC3 /* TDBatcher.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F7866D1C456B1300515CC3 /* TDReplicatorManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866E1C456B1300515CC3 /* FMDatabase+LongLong.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BA01C43FCEE00515CC3 /* FMDatabase+LongLong.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F7866F1C456B1300515CC3 /* TD_DatabaseManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BE21C43FCEE00515CC3 /* TD_DatabaseManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F786701C456B1300515CC3 /* TDMultipartDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BFC1C43FCEE00515CC3 /* TDMultipartDownloader.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1448,8 +1440,6 @@
 		98F77C0D1C43FCEE00515CC3 /* TDRemoteRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDRemoteRequest.m; sourceTree = "<group>"; };
 		98F77C0E1C43FCEE00515CC3 /* TDReplicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDReplicator.h; sourceTree = "<group>"; };
 		98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDReplicator.m; sourceTree = "<group>"; };
-		98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDReplicatorManager.h; sourceTree = "<group>"; };
-		98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDReplicatorManager.m; sourceTree = "<group>"; };
 		98F77C121C43FCEE00515CC3 /* TDSequenceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDSequenceMap.h; sourceTree = "<group>"; };
 		98F77C131C43FCEE00515CC3 /* TDSequenceMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDSequenceMap.m; sourceTree = "<group>"; };
 		98F77C141C43FCEE00515CC3 /* TDStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDStatus.h; sourceTree = "<group>"; };
@@ -2167,8 +2157,6 @@
 				98F77C0D1C43FCEE00515CC3 /* TDRemoteRequest.m */,
 				98F77C0E1C43FCEE00515CC3 /* TDReplicator.h */,
 				98F77C0F1C43FCEE00515CC3 /* TDReplicator.m */,
-				98F77C101C43FCEE00515CC3 /* TDReplicatorManager.h */,
-				98F77C111C43FCEE00515CC3 /* TDReplicatorManager.m */,
 				98F77C121C43FCEE00515CC3 /* TDSequenceMap.h */,
 				98F77C131C43FCEE00515CC3 /* TDSequenceMap.m */,
 				98F77C141C43FCEE00515CC3 /* TDStatus.h */,
@@ -2552,7 +2540,6 @@
 				987383991C47B38800937212 /* TDPuller.h in Headers */,
 				9873839A1C47B38800937212 /* CDTChangedDictionary.h in Headers */,
 				9873839B1C47B38800937212 /* TDBatcher.h in Headers */,
-				9873839C1C47B38800937212 /* TDReplicatorManager.h in Headers */,
 				9873839D1C47B38800937212 /* FMDatabase+LongLong.h in Headers */,
 				9873839E1C47B38800937212 /* TD_DatabaseManager.h in Headers */,
 				9873839F1C47B38800937212 /* TDMultipartDownloader.h in Headers */,
@@ -2682,7 +2669,6 @@
 				987384861C47B3C400937212 /* TDPuller.h in Headers */,
 				987384871C47B3C400937212 /* CDTChangedDictionary.h in Headers */,
 				987384881C47B3C400937212 /* TDBatcher.h in Headers */,
-				987384891C47B3C400937212 /* TDReplicatorManager.h in Headers */,
 				9873848A1C47B3C400937212 /* FMDatabase+LongLong.h in Headers */,
 				9873848B1C47B3C400937212 /* TD_DatabaseManager.h in Headers */,
 				9873848C1C47B3C400937212 /* TDMultipartDownloader.h in Headers */,
@@ -2813,7 +2799,6 @@
 				98F77CC91C43FCEE00515CC3 /* TDPuller.h in Headers */,
 				98F77CDB1C43FCEE00515CC3 /* CDTChangedDictionary.h in Headers */,
 				98F77CAF1C43FCEE00515CC3 /* TDBatcher.h in Headers */,
-				98F77CD31C43FCEE00515CC3 /* TDReplicatorManager.h in Headers */,
 				98F77C671C43FCEE00515CC3 /* FMDatabase+LongLong.h in Headers */,
 				98F77CA51C43FCEE00515CC3 /* TD_DatabaseManager.h in Headers */,
 				98F77CBF1C43FCEE00515CC3 /* TDMultipartDownloader.h in Headers */,
@@ -2944,7 +2929,6 @@
 				98F7866A1C456B1300515CC3 /* TDPuller.h in Headers */,
 				98F7866B1C456B1300515CC3 /* CDTChangedDictionary.h in Headers */,
 				98F7866C1C456B1300515CC3 /* TDBatcher.h in Headers */,
-				98F7866D1C456B1300515CC3 /* TDReplicatorManager.h in Headers */,
 				98F7866E1C456B1300515CC3 /* FMDatabase+LongLong.h in Headers */,
 				98F7866F1C456B1300515CC3 /* TD_DatabaseManager.h in Headers */,
 				98F786701C456B1300515CC3 /* TDMultipartDownloader.h in Headers */,
@@ -3032,12 +3016,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987383EA1C47B38800937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreOSX" */;
 			buildPhases = (
-				C0D80F0611E3B790FA2BA136 /* 📦 Check Pods Manifest.lock */,
+				C0D80F0611E3B790FA2BA136 /* [CP] Check Pods Manifest.lock */,
 				987383031C47B38800937212 /* Sources */,
 				987383681C47B38800937212 /* Frameworks */,
 				9873836C1C47B38800937212 /* Headers */,
 				987383E81C47B38800937212 /* Resources */,
-				6F6915B85006D9936EDEE7CC /* 📦 Copy Pods Resources */,
+				6F6915B85006D9936EDEE7CC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3052,12 +3036,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987384D71C47B3C400937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryptionOSX" */;
 			buildPhases = (
-				999DADF90202C0C5DBE5F674 /* 📦 Check Pods Manifest.lock */,
+				999DADF90202C0C5DBE5F674 /* [CP] Check Pods Manifest.lock */,
 				987383F11C47B3C400937212 /* Sources */,
 				987384561C47B3C400937212 /* Frameworks */,
 				987384591C47B3C400937212 /* Headers */,
 				987384D51C47B3C400937212 /* Resources */,
-				8845812F02DC3725900E289A /* 📦 Copy Pods Resources */,
+				8845812F02DC3725900E289A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3072,12 +3056,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987384FD1C47B45100937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryptionTestsOSX" */;
 			buildPhases = (
-				6668299CAC86A2B8C6375F36 /* 📦 Check Pods Manifest.lock */,
+				6668299CAC86A2B8C6375F36 /* [CP] Check Pods Manifest.lock */,
 				987384DE1C47B45100937212 /* Sources */,
 				987384F21C47B45100937212 /* Frameworks */,
 				987384F51C47B45100937212 /* Resources */,
-				B4F55BEDD741B55543ECC051 /* 📦 Embed Pods Frameworks */,
-				1EDD3B97A6029CAD1A6851B0 /* 📦 Copy Pods Resources */,
+				B4F55BEDD741B55543ECC051 /* [CP] Embed Pods Frameworks */,
+				1EDD3B97A6029CAD1A6851B0 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3092,12 +3076,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9873851D1C47B45300937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreReplicationAcceptanceTestsOSX" */;
 			buildPhases = (
-				4AE9FDFB19C9500334A02539 /* 📦 Check Pods Manifest.lock */,
+				4AE9FDFB19C9500334A02539 /* [CP] Check Pods Manifest.lock */,
 				987385061C47B45300937212 /* Sources */,
 				987385141C47B45300937212 /* Frameworks */,
 				987385171C47B45300937212 /* Resources */,
-				1C5E1D2A63CE216A3CEFA2B4 /* 📦 Embed Pods Frameworks */,
-				E0CE9A04DAC818E15FECD919 /* 📦 Copy Pods Resources */,
+				1C5E1D2A63CE216A3CEFA2B4 /* [CP] Embed Pods Frameworks */,
+				E0CE9A04DAC818E15FECD919 /* [CP] Copy Pods Resources */,
 				9888EC061C512CA500E58783 /* Set Replication Settings */,
 			);
 			buildRules = (
@@ -3113,12 +3097,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987385731C47B45600937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreTestsOSX" */;
 			buildPhases = (
-				49F077EF054ED47F21F7DADF /* 📦 Check Pods Manifest.lock */,
+				49F077EF054ED47F21F7DADF /* [CP] Check Pods Manifest.lock */,
 				987385261C47B45600937212 /* Sources */,
 				987385641C47B45600937212 /* Frameworks */,
 				987385681C47B45600937212 /* Resources */,
-				7C202EA6D8C982673E20A305 /* 📦 Embed Pods Frameworks */,
-				EBA83FC4C8132BD93CB14457 /* 📦 Copy Pods Resources */,
+				7C202EA6D8C982673E20A305 /* [CP] Embed Pods Frameworks */,
+				EBA83FC4C8132BD93CB14457 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3133,12 +3117,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987385B31C47F62500937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryptedReplicationAcceptanceTests" */;
 			buildPhases = (
-				1B18E3E8A1BD209015EE7BA9 /* 📦 Check Pods Manifest.lock */,
+				1B18E3E8A1BD209015EE7BA9 /* [CP] Check Pods Manifest.lock */,
 				9873859C1C47F62500937212 /* Sources */,
 				987385AA1C47F62500937212 /* Frameworks */,
 				987385AD1C47F62500937212 /* Resources */,
-				FE64BA780CE34986E46D681B /* 📦 Embed Pods Frameworks */,
-				9D682C6D1687193E73985ED1 /* 📦 Copy Pods Resources */,
+				FE64BA780CE34986E46D681B /* [CP] Embed Pods Frameworks */,
+				9D682C6D1687193E73985ED1 /* [CP] Copy Pods Resources */,
 				9888EC051C512C7500E58783 /* Set Replication Settings */,
 			);
 			buildRules = (
@@ -3155,12 +3139,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 987385D31C47F63900937212 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryptedReplicationAcceptanceTestsOSX" */;
 			buildPhases = (
-				4875F2C52560074FC0379BC3 /* 📦 Check Pods Manifest.lock */,
+				4875F2C52560074FC0379BC3 /* [CP] Check Pods Manifest.lock */,
 				987385BC1C47F63900937212 /* Sources */,
 				987385CA1C47F63900937212 /* Frameworks */,
 				987385CD1C47F63900937212 /* Resources */,
-				F10202E7AB1A178DC77D31AE /* 📦 Embed Pods Frameworks */,
-				25CA8313C5888B984B36B42A /* 📦 Copy Pods Resources */,
+				F10202E7AB1A178DC77D31AE /* [CP] Embed Pods Frameworks */,
+				25CA8313C5888B984B36B42A /* [CP] Copy Pods Resources */,
 				9888EC041C512C2200E58783 /* Set Replication Settings */,
 			);
 			buildRules = (
@@ -3176,12 +3160,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98F77B4A1C43FC9F00515CC3 /* Build configuration list for PBXNativeTarget "CDTDatastore" */;
 			buildPhases = (
-				18010A7AC335A1DC45C59083 /* 📦 Check Pods Manifest.lock */,
+				18010A7AC335A1DC45C59083 /* [CP] Check Pods Manifest.lock */,
 				98F77B311C43FC9F00515CC3 /* Sources */,
 				98F77B321C43FC9F00515CC3 /* Frameworks */,
 				98F77B331C43FC9F00515CC3 /* Headers */,
 				98F77B341C43FC9F00515CC3 /* Resources */,
-				2FA89F25B3ED73F39CFA4C97 /* 📦 Copy Pods Resources */,
+				2FA89F25B3ED73F39CFA4C97 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3196,13 +3180,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98F77B4D1C43FC9F00515CC3 /* Build configuration list for PBXNativeTarget "CDTDatastoreTests" */;
 			buildPhases = (
-				E6DC9C53535134C73C8857F9 /* 📦 Check Pods Manifest.lock */,
+				E6DC9C53535134C73C8857F9 /* [CP] Check Pods Manifest.lock */,
 				98F77B3C1C43FC9F00515CC3 /* Sources */,
 				98F77B3D1C43FC9F00515CC3 /* Frameworks */,
 				98F77B3E1C43FC9F00515CC3 /* Resources */,
 				987385FB1C49657A00937212 /* CopyFiles */,
-				09D5A7639A5BB0EDAE8E8053 /* 📦 Embed Pods Frameworks */,
-				282873F5DCB0A93CFFFF523C /* 📦 Copy Pods Resources */,
+				09D5A7639A5BB0EDAE8E8053 /* [CP] Embed Pods Frameworks */,
+				282873F5DCB0A93CFFFF523C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 				987385FA1C49655000937212 /* PBXBuildRule */,
@@ -3219,12 +3203,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98F77D361C44028700515CC3 /* Build configuration list for PBXNativeTarget "CDTDatastoreReplicationAcceptanceTests" */;
 			buildPhases = (
-				457AA11115F42906B2158A90 /* 📦 Check Pods Manifest.lock */,
+				457AA11115F42906B2158A90 /* [CP] Check Pods Manifest.lock */,
 				98F77D281C44028700515CC3 /* Sources */,
 				98F77D291C44028700515CC3 /* Frameworks */,
 				98F77D2A1C44028700515CC3 /* Resources */,
-				BAE31094CCE3DB1970125797 /* 📦 Embed Pods Frameworks */,
-				041AC5C69D22B9854304F724 /* 📦 Copy Pods Resources */,
+				BAE31094CCE3DB1970125797 /* [CP] Embed Pods Frameworks */,
+				041AC5C69D22B9854304F724 /* [CP] Copy Pods Resources */,
 				9888EC091C512CF800E58783 /* Set Replication Settings */,
 			);
 			buildRules = (
@@ -3241,12 +3225,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98F77EFB1C44047600515CC3 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryptionTests" */;
 			buildPhases = (
-				0A2F28E6317B33D03BD8E38A /* 📦 Check Pods Manifest.lock */,
+				0A2F28E6317B33D03BD8E38A /* [CP] Check Pods Manifest.lock */,
 				98F77EEF1C44047600515CC3 /* Sources */,
 				98F77EF01C44047600515CC3 /* Frameworks */,
 				98F77EF11C44047600515CC3 /* Resources */,
-				8ADFC52EE8715FEFD644EDCE /* 📦 Embed Pods Frameworks */,
-				C7F72B7CBA2A186F3CB6A3DC /* 📦 Copy Pods Resources */,
+				8ADFC52EE8715FEFD644EDCE /* [CP] Embed Pods Frameworks */,
+				C7F72B7CBA2A186F3CB6A3DC /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3261,12 +3245,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 98F786BB1C456B1300515CC3 /* Build configuration list for PBXNativeTarget "CDTDatastoreEncryption" */;
 			buildPhases = (
-				2244EB04BB3849FCB4BF009F /* 📦 Check Pods Manifest.lock */,
+				2244EB04BB3849FCB4BF009F /* [CP] Check Pods Manifest.lock */,
 				98F785D41C456B1300515CC3 /* Sources */,
 				98F786391C456B1300515CC3 /* Frameworks */,
 				98F7863D1C456B1300515CC3 /* Headers */,
 				98F786B91C456B1300515CC3 /* Resources */,
-				68B26C8A807C3D37B1C8BB19 /* 📦 Copy Pods Resources */,
+				68B26C8A807C3D37B1C8BB19 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -3454,14 +3438,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		041AC5C69D22B9854304F724 /* 📦 Copy Pods Resources */ = {
+		041AC5C69D22B9854304F724 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3469,14 +3453,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTests/Pods-CDTDatastoreReplicationAcceptanceTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		09D5A7639A5BB0EDAE8E8053 /* 📦 Embed Pods Frameworks */ = {
+		09D5A7639A5BB0EDAE8E8053 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3484,14 +3468,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreTests/Pods-CDTDatastoreTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		0A2F28E6317B33D03BD8E38A /* 📦 Check Pods Manifest.lock */ = {
+		0A2F28E6317B33D03BD8E38A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3499,14 +3483,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		18010A7AC335A1DC45C59083 /* 📦 Check Pods Manifest.lock */ = {
+		18010A7AC335A1DC45C59083 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3514,14 +3498,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		1B18E3E8A1BD209015EE7BA9 /* 📦 Check Pods Manifest.lock */ = {
+		1B18E3E8A1BD209015EE7BA9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3529,14 +3513,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		1C5E1D2A63CE216A3CEFA2B4 /* 📦 Embed Pods Frameworks */ = {
+		1C5E1D2A63CE216A3CEFA2B4 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3544,14 +3528,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-CDTDatastoreReplicationAcceptanceTestsOSX-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1EDD3B97A6029CAD1A6851B0 /* 📦 Copy Pods Resources */ = {
+		1EDD3B97A6029CAD1A6851B0 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3559,14 +3543,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptionTestsOSX/Pods-CDTDatastoreEncryptionTestsOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2244EB04BB3849FCB4BF009F /* 📦 Check Pods Manifest.lock */ = {
+		2244EB04BB3849FCB4BF009F /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3574,14 +3558,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		25CA8313C5888B984B36B42A /* 📦 Copy Pods Resources */ = {
+		25CA8313C5888B984B36B42A /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3589,14 +3573,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		282873F5DCB0A93CFFFF523C /* 📦 Copy Pods Resources */ = {
+		282873F5DCB0A93CFFFF523C /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3604,14 +3588,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreTests/Pods-CDTDatastoreTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2FA89F25B3ED73F39CFA4C97 /* 📦 Copy Pods Resources */ = {
+		2FA89F25B3ED73F39CFA4C97 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3619,14 +3603,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastore/Pods-CDTDatastore-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		457AA11115F42906B2158A90 /* 📦 Check Pods Manifest.lock */ = {
+		457AA11115F42906B2158A90 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3634,14 +3618,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		4875F2C52560074FC0379BC3 /* 📦 Check Pods Manifest.lock */ = {
+		4875F2C52560074FC0379BC3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3649,14 +3633,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		49F077EF054ED47F21F7DADF /* 📦 Check Pods Manifest.lock */ = {
+		49F077EF054ED47F21F7DADF /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3664,14 +3648,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		4AE9FDFB19C9500334A02539 /* 📦 Check Pods Manifest.lock */ = {
+		4AE9FDFB19C9500334A02539 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3679,14 +3663,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		6668299CAC86A2B8C6375F36 /* 📦 Check Pods Manifest.lock */ = {
+		6668299CAC86A2B8C6375F36 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3694,14 +3678,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		68B26C8A807C3D37B1C8BB19 /* 📦 Copy Pods Resources */ = {
+		68B26C8A807C3D37B1C8BB19 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3709,14 +3693,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryption/Pods-CDTDatastoreEncryption-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		6F6915B85006D9936EDEE7CC /* 📦 Copy Pods Resources */ = {
+		6F6915B85006D9936EDEE7CC /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3724,14 +3708,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreOSX/Pods-CDTDatastoreOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		7C202EA6D8C982673E20A305 /* 📦 Embed Pods Frameworks */ = {
+		7C202EA6D8C982673E20A305 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3739,14 +3723,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreTestsOSX/Pods-CDTDatastoreTestsOSX-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8845812F02DC3725900E289A /* 📦 Copy Pods Resources */ = {
+		8845812F02DC3725900E289A /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3754,14 +3738,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptionOSX/Pods-CDTDatastoreEncryptionOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8ADFC52EE8715FEFD644EDCE /* 📦 Embed Pods Frameworks */ = {
+		8ADFC52EE8715FEFD644EDCE /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3825,14 +3809,14 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/buildplist.sh\"";
 		};
-		999DADF90202C0C5DBE5F674 /* 📦 Check Pods Manifest.lock */ = {
+		999DADF90202C0C5DBE5F674 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3840,14 +3824,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		9D682C6D1687193E73985ED1 /* 📦 Copy Pods Resources */ = {
+		9D682C6D1687193E73985ED1 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3855,14 +3839,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptedReplicationAcceptanceTests/Pods-CDTDatastoreEncryptedReplicationAcceptanceTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B4F55BEDD741B55543ECC051 /* 📦 Embed Pods Frameworks */ = {
+		B4F55BEDD741B55543ECC051 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3870,14 +3854,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptionTestsOSX/Pods-CDTDatastoreEncryptionTestsOSX-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BAE31094CCE3DB1970125797 /* 📦 Embed Pods Frameworks */ = {
+		BAE31094CCE3DB1970125797 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3885,14 +3869,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTests/Pods-CDTDatastoreReplicationAcceptanceTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C0D80F0611E3B790FA2BA136 /* 📦 Check Pods Manifest.lock */ = {
+		C0D80F0611E3B790FA2BA136 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3900,14 +3884,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		C7F72B7CBA2A186F3CB6A3DC /* 📦 Copy Pods Resources */ = {
+		C7F72B7CBA2A186F3CB6A3DC /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3915,14 +3899,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptionTests/Pods-CDTDatastoreEncryptionTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E0CE9A04DAC818E15FECD919 /* 📦 Copy Pods Resources */ = {
+		E0CE9A04DAC818E15FECD919 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3930,14 +3914,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-CDTDatastoreReplicationAcceptanceTestsOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E6DC9C53535134C73C8857F9 /* 📦 Check Pods Manifest.lock */ = {
+		E6DC9C53535134C73C8857F9 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3945,14 +3929,14 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		EBA83FC4C8132BD93CB14457 /* 📦 Copy Pods Resources */ = {
+		EBA83FC4C8132BD93CB14457 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3960,14 +3944,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreTestsOSX/Pods-CDTDatastoreTestsOSX-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F10202E7AB1A178DC77D31AE /* 📦 Embed Pods Frameworks */ = {
+		F10202E7AB1A178DC77D31AE /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3975,14 +3959,14 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FE64BA780CE34986E46D681B /* 📦 Embed Pods Frameworks */ = {
+		FE64BA780CE34986E46D681B /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4028,7 +4012,6 @@
 				9873831F1C47B38800937212 /* CDTAbstractReplication.m in Sources */,
 				987383201C47B38800937212 /* TD_Database+Insertion.m in Sources */,
 				987383221C47B38800937212 /* CDTQQueryValidator.m in Sources */,
-				987383231C47B38800937212 /* TDReplicatorManager.m in Sources */,
 				987383241C47B38800937212 /* TD_Database.m in Sources */,
 				987383251C47B38800937212 /* TDCanonicalJSON.m in Sources */,
 				987383261C47B38800937212 /* CDTBlobData.m in Sources */,
@@ -4134,7 +4117,6 @@
 				9873840D1C47B3C400937212 /* CDTAbstractReplication.m in Sources */,
 				9873840E1C47B3C400937212 /* TD_Database+Insertion.m in Sources */,
 				987384101C47B3C400937212 /* CDTQQueryValidator.m in Sources */,
-				987384111C47B3C400937212 /* TDReplicatorManager.m in Sources */,
 				987384121C47B3C400937212 /* TD_Database.m in Sources */,
 				987384131C47B3C400937212 /* TDCanonicalJSON.m in Sources */,
 				987384141C47B3C400937212 /* CDTBlobData.m in Sources */,
@@ -4391,7 +4373,6 @@
 				98F77C371C43FCEE00515CC3 /* CDTAbstractReplication.m in Sources */,
 				98F77C9E1C43FCEE00515CC3 /* TD_Database+Insertion.m in Sources */,
 				98F77C861C43FCEE00515CC3 /* CDTQQueryValidator.m in Sources */,
-				98F77CD41C43FCEE00515CC3 /* TDReplicatorManager.m in Sources */,
 				98F77CA41C43FCEE00515CC3 /* TD_Database.m in Sources */,
 				98F77CB51C43FCEE00515CC3 /* TDCanonicalJSON.m in Sources */,
 				98F77C201C43FCEE00515CC3 /* CDTBlobData.m in Sources */,
@@ -4610,7 +4591,6 @@
 				98F785F01C456B1300515CC3 /* CDTAbstractReplication.m in Sources */,
 				98F785F11C456B1300515CC3 /* TD_Database+Insertion.m in Sources */,
 				98F785F31C456B1300515CC3 /* CDTQQueryValidator.m in Sources */,
-				98F785F41C456B1300515CC3 /* TDReplicatorManager.m in Sources */,
 				98F785F51C456B1300515CC3 /* TD_Database.m in Sources */,
 				98F785F61C456B1300515CC3 /* TDCanonicalJSON.m in Sources */,
 				98F785F71C456B1300515CC3 /* CDTBlobData.m in Sources */,

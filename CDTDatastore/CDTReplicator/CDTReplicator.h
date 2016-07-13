@@ -19,7 +19,7 @@
 #import "CDTNSURLSessionConfigurationDelegate.h"
 
 @class CDTDatastore;
-@class TDReplicatorManager;
+@class TD_DatabaseManager;
 @class CDTAbstractReplication;
 
 /**
@@ -160,7 +160,7 @@ typedef NS_ENUM(NSInteger, CDTReplicatorState) {
  Private so no docs
  */
 - (nullable instancetype)
-initWithTDReplicatorManager:(nonnull TDReplicatorManager *)replicatorManager
+initWithTDDatabaseManager:(nonnull TD_DatabaseManager *)dbManager
                 replication:(nonnull CDTAbstractReplication *)replication
       sessionConfigDelegate:(nullable NSObject<CDTNSURLSessionConfigurationDelegate> *)delegate
                       error:(NSError *__autoreleasing __nullable *__nullable)error;
