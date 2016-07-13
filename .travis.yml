@@ -12,3 +12,6 @@ install:
 
 script:
   - rake travis
+env:
+  - PLATFORM=iOS
+  - PLATFORM=OSX
