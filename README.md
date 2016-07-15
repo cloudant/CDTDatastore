@@ -137,7 +137,7 @@ and configure a bridging header for your project. Pull in the CloudantSync.h
 header into the bridging header, and you should be good to go:
 
 ```objc
-#import <CloudantSync.h>
+#import <CDTDatastore/CloudantSync.h>
 ```
 
 To add, and read documents in Swift, the basics are:
