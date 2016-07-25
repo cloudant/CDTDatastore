@@ -13,9 +13,10 @@
 //  and limitations under the License.
 
 #import "CDTAbstractReplication.h"
-#import "TD_DatabaseManager.h"
 #import "CDTLogging.h"
+#import "CDTSessionCookieInterceptor.h"
 #import "TDRemoteRequest.h"
+#import "TD_DatabaseManager.h"
 
 NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
@@ -23,6 +24,10 @@ NSString *const CDTReplicationErrorDomain = @"CDTReplicationErrorDomain";
 
 NS_ASSUME_NONNULL_BEGIN
 @property (nonnull, nonatomic, readwrite, strong) NSArray *httpInterceptors;
+
+@property (nullable, readwrite, nonatomic, strong) NSString *username;
+@property (nullable, readwrite, nonatomic, strong) NSString *password;
+
 NS_ASSUME_NONNULL_END
 
 @end
@@ -37,6 +42,8 @@ NS_ASSUME_NONNULL_END
     if (copy) {
         copy.optionalHeaders = self.optionalHeaders;
         copy.httpInterceptors = [self.httpInterceptors copyWithZone:zone];
+        copy.username = self.username;
+        copy.password = self.password;
     }
 
     return copy;
@@ -46,9 +53,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init
 {
+    return [self initWithUsername:nil password: nil];
+}
+- (instancetype)initWithUsername:(nullable NSString *)username
+                        password:(nullable NSString *)password
+{
     self = [super init];
     if (self) {
         _httpInterceptors = @[];
+        _username = username;
+        _password = password;
     }
     return self;
 }
@@ -163,6 +177,7 @@ NS_ASSUME_NONNULL_END
         }
     }
     return YES;
+
 }
 
 - (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error

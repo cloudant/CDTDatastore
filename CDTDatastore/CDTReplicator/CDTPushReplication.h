@@ -16,6 +16,8 @@
 #import "CDTAbstractReplication.h"
 @class CDTDocumentRevision;
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
                                NSDictionary *__nonnull params);
 
@@ -30,10 +32,12 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
     CDTDatastore *datastore = [...];
     CDTReplicatorFactory *replicatorFactory = [...];
 
-    NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
+    NSURL *remote = [NSURL URLwithString:@"https://account.cloudant.com/myremotedb"];
 
     CDTPushReplication* push = [CDTPushReplication replicationWithSource:datastore
-                                                                  target:remote];
+                                                                  target:remote
+                                                                username: "user"
+                                                                password: "password"];
 
     NSError *error;
     CDTReplicator *myrep = [replicatorFactory oneWay:push error:&error];
@@ -53,6 +57,8 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
 
 /** All CDTPushReplication objects must have a source and target.
 
+ This is the same as calling [CDTPushReplication replicationWithSource: source target: target username: nil password:nil];
+
  @param source the local datastore from which the data is replicated.
  @param target the remote server URL to which the data is replicated, if this contains user info
         it will be removed from the URL and replaced with CDTSessionCookieInterceptor
@@ -61,6 +67,24 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
  */
 + (nonnull instancetype)replicationWithSource:(nonnull CDTDatastore *)source
                                        target:(nonnull NSURL *)target;
+
+/** All CDTPushReplication objects must have a source and target.
+
+ @param source the local datastore from which the data is replicated.
+ @param target the remote server URL to which the data is replicated, if this contains user info
+        it will be removed from the URL and replaced with CDTSessionCookieInterceptor.
+ @param username the user to use when authenticating with the sever, or `nil` if no authentication is required.
+ @param password the password to use when authenticating with the server, or `nil` if no authentication is required.
+ @return a CDTPushReplication object.
+
+ @warning If credentials are included with the URL and in the parameters, the credentials in the target URL
+ will be ignored.
+
+ */
++ (instancetype)replicationWithSource:(CDTDatastore *)source
+                               target:(NSURL *)target
+                             username:(nullable NSString *)username
+                             password:(nullable NSString *)password;
 
 /**
  @name Accessing the replication source and target
@@ -147,3 +171,5 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
 @property (nullable, nonatomic, copy) NSDictionary *filterParams;
 
 @end
+
+NS_ASSUME_NONNULL_END

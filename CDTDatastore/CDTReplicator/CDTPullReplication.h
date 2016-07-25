@@ -15,6 +15,8 @@
 
 #import "CDTAbstractReplication.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
 
  CDTPullReplication objects are used to configure a replication of a
@@ -27,10 +29,12 @@
     CDTDatastore *datastore = [...];
     CDTReplicatorFactory *replicatorFactory = [...];
 
-    NSURL *remote = [NSURL URLwithString:@"https://user:password@account.cloudant.com/myremotedb"];
+    NSURL *remote = [NSURL URLwithString:@"https://account.cloudant.com/myremotedb"];
 
-    CDTPullReplication* pull = [CDTPullReplication replicationWithSource:remote
-                                                                  target:datastore];
+    CDTPullReplication* pull = [CDTPullReplication replicationWithSource: remote
+                                                                  target: datastore
+                                                                username: "user"
+                                                                password: "password"];
 
     NSError *error;
     CDTReplicator *rep = [replicatorFactory oneWay:pull error:&error];
@@ -48,6 +52,8 @@
 
 /** All CDTPullReplication objects must have a source and target.
 
+  This is the same as calling [CDTPullReplication replicationWithSource: source target:target username: nil password: nil]
+
  @param source the remote server URL from which the data is replicated, if this contains user info
         it will be removed from the URL and replaced with CDTSessionCookieInterceptor
  @param target the local datastore to which the data is replicated.
@@ -56,6 +62,24 @@
  */
 + (nonnull instancetype)replicationWithSource:(nonnull NSURL *)source
                                        target:(nonnull CDTDatastore *)target;
+
+/** All CDTPullReplication objects must have a source and target.
+
+ @param source the remote server URL from which the data is replicated, if this contains user info
+        it will be removed from the URL and replaced with CDTSessionCookieInterceptor.
+ @param target the local datastore to which the data is replicated.
+ @param username the username to use when authenticating with the remote database.
+ @param password the password to use when authenticating with the remote datbase.
+ @return a CDTPullReplication object.
+
+ @warning If credentials are included with the source URL and in the parameters, the credentials in the source URL
+ will be ignored.
+
+ */
++ (instancetype)replicationWithSource:(NSURL *)source
+                               target:(CDTDatastore *)target
+                             username:(nullable NSString *)username
+                             password:(nullable NSString *)password;
 
 /**
  @name Accessing the replication source and target
@@ -154,3 +178,5 @@
 @property (nullable, nonatomic, copy) NSDictionary *filterParams;
 
 @end
+
+NS_ASSUME_NONNULL_END

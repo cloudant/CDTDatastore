@@ -27,11 +27,24 @@
 #import "TDPusher.h"
 #import "CDTSessionCookieInterceptor.h"
 #import "CDTReplay429Interceptor.h"
+#import "TD_Database.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OCMock/OCMock.h>
 #import <netinet/in.h>
 
+
+@interface TDReplicator ()
+@property (nonatomic, strong) NSArray* interceptors;
+@end
+
+@interface CDTReplicator()
+- (TDReplicator *)buildTDReplicatorFromConfiguration:(NSError *__autoreleasing *)error;
+@end
+
+@interface CDTSessionCookieInterceptor()
+@property (nonnull, strong, nonatomic) NSData *sessionRequestBody;
+@end
 #pragma mark Utility - ContextCaptureInterceptor
 
 @interface ContextCaptureInterceptor : NSObject <CDTHTTPInterceptor>
@@ -173,6 +186,54 @@
 
 @implementation CDTReplicationTests
 
+- (void) testURLCredsIgnoredIfParametersPresentPull
+{
+    CDTReplicatorFactory * factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+    NSError *error;
+    //Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL * remoteUrl = [[NSURL alloc] initWithString:@"http://user:pass@example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull =
+            [CDTPullReplication replicationWithSource:remoteUrl target:tmp username:@"username" password:@"password"];
+
+
+    CDTReplicator * replicator = [factory oneWay:pull error:nil];
+    TDReplicator * tdReplicator = [replicator buildTDReplicatorFromConfiguration:nil];
+            // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", pull.source.absoluteString);
+    XCTAssertEqual(tdReplicator.interceptors.count, 1);
+    XCTAssertEqualObjects([tdReplicator.interceptors[0] class], [CDTSessionCookieInterceptor class]);
+
+    NSData* expectedPayload = [[NSString stringWithFormat:@"name=%@&password=%@", @"username", @"password"]
+            dataUsingEncoding:NSUTF8StringEncoding];
+    CDTSessionCookieInterceptor* cookieInterceptor = (CDTSessionCookieInterceptor*)tdReplicator.interceptors[0];
+            XCTAssertEqualObjects(expectedPayload, [cookieInterceptor sessionRequestBody]);
+}
+
+- (void) testURLCredsIgnoredIfParametersPresentPush {
+    CDTReplicatorFactory * factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+    NSError *error;
+    //Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL * remoteUrl = [[NSURL alloc] initWithString:@"http://user:pass@example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp target:remoteUrl username:@"username" password:@"password"];
+
+    CDTReplicator * replicator = [factory oneWay:push error:nil];
+    TDReplicator * tdReplicator = [replicator buildTDReplicatorFromConfiguration:nil];
+
+
+    // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", push.target.absoluteString);
+    XCTAssertEqual(tdReplicator.interceptors.count, 1);
+    XCTAssertEqualObjects([tdReplicator.interceptors[0] class], [CDTSessionCookieInterceptor class]);
+
+    NSData* expectedPayload = [[NSString stringWithFormat:@"name=%@&password=%@", @"username", @"password"]
+            dataUsingEncoding:NSUTF8StringEncoding];
+    CDTSessionCookieInterceptor* cookieInterceptor = (CDTSessionCookieInterceptor*) tdReplicator.interceptors[0];
+    XCTAssertEqualObjects(expectedPayload, [cookieInterceptor sessionRequestBody]);
+}
 
 - (void)testURLCredsReplacedWithCookieInterceptorPull
 {
@@ -203,6 +264,70 @@
     XCTAssertEqualObjects(@"http://example.com", push.target.absoluteString);
     XCTAssertEqual(push.httpInterceptors.count, 1);
     XCTAssertEqualObjects([push.httpInterceptors[0] class], [CDTSessionCookieInterceptor class]);
+}
+
+- (void)testCredentialsAddedViaPushInit
+{
+    NSError *error;
+    // Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL *remoteUrl = [[NSURL alloc] initWithString:@"http://example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:tmp
+                                                                  target:remoteUrl
+                                                                username:@"user"
+                                                                password:@"password"];
+
+    // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", push.target.absoluteString);
+    XCTAssertEqual(push.httpInterceptors.count, 0);
+
+    // The interceptor will be added when creating the TDReplicator
+    error = nil;
+
+    CDTReplicatorFactory *factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+    CDTReplicator *replicator = [factory oneWay:push error:&error];
+    XCTAssertNil(error);
+    error = nil;
+    TDReplicator *tdReplicator = [replicator buildTDReplicatorFromConfiguration:&error];
+    XCTAssertNil(error);
+    NSArray<id<CDTHTTPInterceptor>> *interceptors = tdReplicator.interceptors;
+
+    XCTAssertNotNil(interceptors);
+    XCTAssertEqual(1, interceptors.count);
+    XCTAssertEqual([interceptors[0] class], [CDTSessionCookieInterceptor class]);
+}
+
+- (void)testCredentialsAddedViaPullInit
+{
+    NSError *error;
+    // Doesn't need to be real, we aren't going to actually make a replication.
+    NSURL *remoteUrl = [[NSURL alloc] initWithString:@"http://example.com"];
+    CDTDatastore *tmp = [self.factory datastoreNamed:@"test_database" error:&error];
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:remoteUrl
+                                                                  target:tmp
+                                                                username:@"user"
+                                                                password:@"password"];
+
+    // check the underlying source to make sure it doesn't contain the userinfo
+    // and check that the interceptors list contains the cookie interceptor.
+    XCTAssertEqualObjects(@"http://example.com", pull.source.absoluteString);
+    XCTAssertEqual(pull.httpInterceptors.count, 0);
+
+    // The interceptor will be added when creating the TDReplicator
+    error = nil;
+
+    CDTReplicatorFactory *factory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:self.factory];
+    CDTReplicator *replicator = [factory oneWay:pull error:&error];
+    XCTAssertNil(error);
+    error = nil;
+    TDReplicator *tdReplicator = [replicator buildTDReplicatorFromConfiguration:&error];
+    XCTAssertNil(error);
+    NSArray<id<CDTHTTPInterceptor>> *interceptors = tdReplicator.interceptors;
+
+    XCTAssertNotNil(interceptors);
+    XCTAssertEqual(1, interceptors.count);
+    XCTAssertEqual([interceptors[0] class], [CDTSessionCookieInterceptor class]);
 }
 
 // this test can only run on macOS and not iOS because it needs to start a server

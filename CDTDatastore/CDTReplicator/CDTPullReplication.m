@@ -29,19 +29,34 @@
 
 + (instancetype)replicationWithSource:(NSURL *)source target:(CDTDatastore *)target
 {
-    return [[self alloc] initWithSource:source target:target];
+    return
+        [CDTPullReplication replicationWithSource:source target:target username:nil password:nil];
 }
 
-- (instancetype)initWithSource:(NSURL *)source target:(CDTDatastore *)target
++ (instancetype)replicationWithSource:(NSURL *)source
+                               target:(CDTDatastore *)target
+                             username:(NSString *)username
+                             password:(NSString *)password
 {
-    if (self = [super init]) {
-        
+    return [[self alloc] initWithSource:source target:target username:username password:password];
+}
+
+- (instancetype)initWithSource:(NSURL *)source
+                        target:(CDTDatastore *)target
+                      username:(NSString *)username
+                      password:(NSString *)password
+{
+    if (self = [super initWithUsername:username password:password]) {
         NSURLComponents * sourceComponents = [NSURLComponents componentsWithURL:source resolvingAgainstBaseURL:NO];
         if(sourceComponents.user && sourceComponents.password){
-            CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:sourceComponents.user password:sourceComponents.password];
+            if (username && password) {
+                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"Credentials provided via the URL and username and password parameters, discarding URL credentials.");
+            } else {
+                CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:sourceComponents.user password:sourceComponents.password];
+                [self addInterceptor:cookieInterceptor];
+            }
             sourceComponents.user = nil;
             sourceComponents.password = nil;
-            [self addInterceptor:cookieInterceptor];
         }
         
         _source = sourceComponents.URL;
