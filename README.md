@@ -71,15 +71,8 @@ See [CONTRIBUTING](CONTRIBUTING.md).
 
 CDTDatastore gets regularly tested on the following platforms:
 
-- OS X 10.10.2 (Yosemite)
-- iPhone 4S (Simulator), iOS 8.1 and 7.1
-- iPhone 5 (Simulator), iOS 8.1 and 7.1
-- iPhone 5S (Simulator), iOS 8.1 and 7.1
-- iPhone 6 Plus (Simulator), iOS 8.1
-- iPhone 6 (Simulator), iOS 8.1
-- iPad 2 (Simulator), iOS 8.1 and 7.1
-- iPad Air (Simulator), iOS 8.1 and 7.1
-- iPad Retina (Simulator), iOS 8.1 and 7.1
+- OS X 10.11 (El Captain)
+- iPhone 4S (Simulator), iOS 9.2
 
 ## <a name="overview"></a>Overview of the library
 
