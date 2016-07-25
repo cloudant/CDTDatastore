@@ -372,7 +372,9 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                 if (strongSelf.tdReplicator.error) {
                     strongSelf.state = CDTReplicatorStateError;
                     // copy underlying error pointer
-                    strongSelf.error = strongSelf.tdReplicator.error;
+                    if (strongSelf.error == nil) {
+                        strongSelf.error = strongSelf.tdReplicator.error;
+                    }
                 } else {
                     strongSelf.state = CDTReplicatorStateStopped;
                 }
@@ -384,7 +386,9 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
                 if (strongSelf.tdReplicator.error) {
                     strongSelf.state = CDTReplicatorStateError;
                     // copy underlying error pointer
-                    strongSelf.error = strongSelf.tdReplicator.error;
+                    if (strongSelf.error == nil) {
+                        strongSelf.error = strongSelf.tdReplicator.error;
+                    }
                 } else {
                     strongSelf.state = CDTReplicatorStateComplete;
                 }
@@ -457,7 +461,9 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         } else if (self.tdReplicator.error) {
             strongSelf.state = CDTReplicatorStateError;
             // copy underlying error pointer
-            strongSelf.error = strongSelf.tdReplicator.error;
+            if (strongSelf.error == nil) {
+                strongSelf.error = strongSelf.tdReplicator.error;
+            }
         } else {
             strongSelf.state = CDTReplicatorStateComplete;
         }
