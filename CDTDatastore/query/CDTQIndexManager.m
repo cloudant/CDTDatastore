@@ -120,6 +120,12 @@ static const int VERSION = 2;
     return self;
 }
 
+- (void)dealloc
+{
+    // close the database.
+    [self.database close];
+}
+
 #pragma mark List indexes
 
 /**
@@ -492,6 +498,8 @@ static const int VERSION = 2;
     }
     
     if (!success) {
+        // close the database.
+        [database close];
         database = nil;
         
         if (error) {
