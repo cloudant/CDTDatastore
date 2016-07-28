@@ -55,9 +55,6 @@ extern NSString *__nonnull const CDTDatastoreErrorDomain;
 
  All datastore files, including attachments and extensions, are deleted.
 
- Currently it is the responsibility of the caller to ensure that extensions should be shutdown (and
- their underlying databases closed) before calling this method.
-
  @param name datastore name
  @param error will point to an NSError object in case of error.
 
