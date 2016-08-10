@@ -206,6 +206,8 @@
     XCTAssertEqualObjects([push.httpInterceptors[0] class], [CDTSessionCookieInterceptor class]);
 }
 
+// this test can only run on macOS and not iOS because it needs to start a server
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)test429Retry
 {
     NSError *error = nil;
@@ -254,7 +256,10 @@
     
     [server stop];
 }
+#endif
 
+// this test can only run on macOS and not iOS because it needs to start a server
+#if TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)testFiltersWithChangesFeed
 {
     NSError *error = nil;
@@ -302,6 +307,7 @@
 
     [server stop];
 }
+#endif
 
 -(void)testReplicatorIsNilForNilDatastoreManager {
 #pragma clang diagnostic push
