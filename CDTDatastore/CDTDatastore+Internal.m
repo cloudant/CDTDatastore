@@ -38,30 +38,21 @@
     for (TD_Revision *tdRev in revs) {
         [self.database loadRevisionBody:tdRev options:0 database:db];
 
-        CDTDocumentRevision *ob = [[CDTDocumentRevision alloc] initWithDocId:tdRev.docID
-                                                                  revisionId:tdRev.revID
-                                                                        body:tdRev.body.properties
-                                                                     deleted:tdRev.deleted
-                                                                 attachments:@{}
-                                                                    sequence:tdRev.sequence];
-
-        //[[CDTDocumentRevision alloc] initWithTDRevision:tdRev];
-
-        NSArray *attachmentArray = [self attachmentsForRev:ob inTransaction:db error:nil];
+        NSArray *attachmentArray = [self attachmentsForSeq:tdRev.sequence inTransaction:db error:nil];
         NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
 
         for (CDTAttachment *attachment in attachmentArray) {
             [attachments setObject:attachment forKey:attachment.name];
         }
 
-        ob = [[CDTDocumentRevision alloc] initWithDocId:tdRev.docID
+        CDTDocumentRevision *doc = [[CDTDocumentRevision alloc] initWithDocId:tdRev.docID
                                              revisionId:tdRev.revID
                                                    body:tdRev.body.properties
                                                 deleted:tdRev.deleted
                                             attachments:attachments
                                                sequence:tdRev.sequence];
 
-        [results addObject:ob];
+        [results addObject:doc];
     }
 
     return results;

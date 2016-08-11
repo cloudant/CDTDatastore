@@ -199,13 +199,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         return nil;
     }
 
-    CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithDocId:rev.docID
-                                                                    revisionId:rev.revID
-                                                                          body:rev.body.properties
-                                                                       deleted:rev.deleted
-                                                                   attachments:@{}
-                                                                      sequence:rev.sequence];
-    NSArray *attachments = [self attachmentsForRev:revision error:error];
+    NSArray *attachments = [self attachmentsForSeq:rev.sequence error:error];
 
     NSMutableDictionary *attachmentsDict = [NSMutableDictionary dictionary];
 
@@ -213,7 +207,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         [attachmentsDict setObject:attachment forKey:attachment.name];
     }
 
-    revision = [[CDTDocumentRevision alloc] initWithDocId:rev.docID
+    CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithDocId:rev.docID
                                                revisionId:rev.revID
                                                      body:rev.body.properties
                                                   deleted:rev.deleted
@@ -258,15 +252,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
             revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
 
-            CDTDocumentRevision *ob =
-                [[CDTDocumentRevision alloc] initWithDocId:revision.docID
-                                                revisionId:revision.revID
-                                                      body:revision.body.properties
-                                                   deleted:revision.deleted
-                                               attachments:@{}
-                                                  sequence:revision.sequence];
-
-            NSArray *attachments = [self attachmentsForRev:ob error:&error];
+            NSArray *attachments = [self attachmentsForSeq:revision.sequence error:&error];
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
             for (CDTAttachment *attachment in attachments) {
                 [dict setObject:attachment forKey:attachment.name];
@@ -373,14 +359,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
         }
 
-        CDTDocumentRevision *ob =
-            [[CDTDocumentRevision alloc] initWithDocId:revision.docID
-                                            revisionId:revision.revID
-                                                  body:revision.body.properties
-                                               deleted:revision.deleted
-                                           attachments:@{}
-                                              sequence:revision.sequence];
-        NSArray *attachments = [self attachmentsForRev:ob error:&error];
+        NSArray *attachments = [self attachmentsForSeq:revision.sequence error:&error];
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         for (CDTAttachment *attachment in attachments) {
             [dict setObject:attachment forKey:attachment.name];

@@ -15,6 +15,7 @@
 //
 
 #import "CDTDatastore.h"
+#import "CDTDefines.h"
 
 /**
  * Indexing and query erors.
@@ -50,7 +51,9 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */
 - (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev error:(NSError *__autoreleasing *)error;
 
-- (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev
+- (NSArray *)attachmentsForSeq:(SequenceNumber)seq error:(NSError *__autoreleasing *)error;
+
+- (NSArray *)attachmentsForSeq:(SequenceNumber)seq
                  inTransaction:(FMDatabase *)db
                          error:(NSError *__autoreleasing *)error;
 
