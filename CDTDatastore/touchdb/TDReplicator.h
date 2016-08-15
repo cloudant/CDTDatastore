@@ -47,7 +47,6 @@ extern NSString* TDReplicatorStoppedNotification;
     NSUInteger _changesProcessed, _changesTotal;
     CFAbsoluteTime _startTime;
     id<TDAuthorizer> _authorizer;
-    NSDictionary* _options;
     NSDictionary* _requestHeaders;
    @private
     TDReachability* _host;
@@ -69,7 +68,13 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (copy) NSString* filterName;
 @property (copy) NSDictionary* filterParameters;
 @property (copy) NSArray* docIDs;
-@property (copy) NSDictionary* options;
+
+/** Whether to ignore saved changes feed checkpoints */
+@property (nonatomic) BOOL reset;
+
+/** Heartbeat value used for _changes requests during pull (in ms) */
+@property (nonatomic) NSNumber* heartbeat;
+
 @property (nonatomic, strong,readonly) CDTURLSession *session;
 @property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 

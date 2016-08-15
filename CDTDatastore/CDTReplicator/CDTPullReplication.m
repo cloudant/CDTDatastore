@@ -65,57 +65,9 @@
 
 - (NSString *)description
 {
-    NSMutableDictionary *dictionary = [[self dictionaryForReplicatorDocument:nil] mutableCopy];
-    dictionary[@"source"] = TDCleanURLtoString(self.source);
-    return [NSString stringWithFormat:@"%@: %@", [self class], dictionary];
-}
-
-- (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
-{
-    NSError *localError;
-    if (![self validateRemoteDatastoreURL:self.source error:&localError]) {
-        if (error) {
-            *error = localError;
-        }
-        return nil;
-    }
-
-    NSDictionary *superdoc = [super dictionaryForReplicatorDocument:&localError];
-    if (superdoc == nil) {
-        if (error) {
-            *error = localError;
-        }
-        return nil;
-    }
-
-    NSMutableDictionary *doc = [NSMutableDictionary dictionaryWithDictionary:superdoc];
-
-    [doc setObject:self.source.absoluteString forKey:@"source"];
-
-    if (self.target) {
-        [doc setObject:self.target.name forKey:@"target"];
-    } else {
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                @"CDTPullReplication -dictionaryForReplicatorDocument Error: target is nil.");
-
-        if (error) {
-            NSString *msg = @"Cannot sync data. Remote server not specified.";
-            NSDictionary *userInfo = @{NSLocalizedDescriptionKey : NSLocalizedString(msg, nil)};
-            *error = [NSError errorWithDomain:CDTReplicationErrorDomain
-                                         code:CDTReplicationErrorUndefinedTarget
-                                     userInfo:userInfo];
-        }
-        return nil;
-    }
-
-    if (self.filter) {
-        [doc setObject:self.filter forKey:@"filter"];
-        if (self.filterParams) {
-            [doc setObject:self.filterParams forKey:@"query_params"];
-        }
-    }
-
-    return doc;
+    return [NSString stringWithFormat:@"%@, source: %@, target: %@, headers: %@, interceptors: %@, filter: %@, query_params: %@",
+            [self class], TDCleanURLtoString(self.source), self.target.name, self.optionalHeaders, self.httpInterceptors,
+            self.filter, self.filterParams];
 }
 
 // This is method is overridden and this code placed here so we can provide a better error message

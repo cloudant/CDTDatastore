@@ -78,25 +78,22 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 /**
- This method sets all of the common replication parameters. The subclasses,
- CDTPushReplication and CDTPullReplication add source, target and filter.
-
+ Validates user supplied optional headers.
  */
-- (NSDictionary *)dictionaryForReplicatorDocument:(NSError *__autoreleasing *)error
++ (BOOL)validateOptionalHeaders:(NSDictionary *)candidateHeaders
+                          error:(NSError *__autoreleasing *)error
 {
-    NSMutableDictionary *doc = [[NSMutableDictionary alloc] init];
-
-    if (self.optionalHeaders) {
+    if (candidateHeaders) {
         NSMutableArray *lowercaseOptionalHeaders = [[NSMutableArray alloc] init];
 
         // check for strings
-        for (id key in self.optionalHeaders) {
+        for (id key in candidateHeaders) {
             if (![key isKindOfClass:[NSString class]]) {
                 CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                        @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
-                        @"Replication HTTP header key is invalid (%@).\n It must be NSString. "
-                        @"Found type %@",
-                        key, [key class]);
+                           @"CDTAbstractReplication " @"-validateOptionalHeaders Error: "
+                           @"Replication HTTP header key is invalid (%@).\n It must be NSString. "
+                           @"Found type %@",
+                           key, [key class]);
 
                 if (error) {
                     NSString *msg = @"Cannot sync data. Bad optional HTTP header.";
@@ -106,15 +103,15 @@ NS_ASSUME_NONNULL_END
                                                  code:CDTReplicationErrorBadOptionalHttpHeaderType
                                              userInfo:userInfo];
                 }
-                return nil;
+                return NO;
             }
 
-            if (![self.optionalHeaders[key] isKindOfClass:[NSString class]]) {
+            if (![candidateHeaders[key] isKindOfClass:[NSString class]]) {
                 CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                        @"CDTAbstractReplication " @"-dictionaryForReplicatorDocument Error: "
-                        @"Value for replication HTTP header %@ is invalid (%@).\n"
-                        @"It must be NSString. Found type %@.",
-                        key, self.optionalHeaders[key], [self.optionalHeaders[key] class]);
+                           @"CDTAbstractReplication " @"-validateOptionalHeaders Error: "
+                           @"Value for replication HTTP header %@ is invalid (%@).\n"
+                           @"It must be NSString. Found type %@.",
+                           key, candidateHeaders[key], [candidateHeaders[key] class]);
 
                 if (error) {
                     NSString *msg = @"Cannot sync data. Bad optional HTTP header.";
@@ -124,7 +121,7 @@ NS_ASSUME_NONNULL_END
                                                  code:CDTReplicationErrorBadOptionalHttpHeaderType
                                              userInfo:userInfo];
                 }
-                return nil;
+                return NO;
             }
 
             [lowercaseOptionalHeaders addObject:[(NSString *)key lowercaseString]];
@@ -150,7 +147,7 @@ NS_ASSUME_NONNULL_END
 
         if ([badHeaders count] > 0) {
             CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                    @"CDTAbstractionReplication " @"-dictionaryForReplicatorDocument Error: "
+                    @"CDTAbstractionReplication " @"-validateOptionalHeaders Error: "
                     @"You may not use these prohibited headers: %@",
                     badHeaders);
 
@@ -162,14 +159,10 @@ NS_ASSUME_NONNULL_END
                                          userInfo:userInfo];
             }
 
-            return nil;
+            return NO;
         }
-
-        doc[@"headers"] = self.optionalHeaders;
     }
-    doc[@"interceptors"] = self.httpInterceptors;
-
-    return [NSDictionary dictionaryWithDictionary:doc];
+    return YES;
 }
 
 - (BOOL)validateRemoteDatastoreURL:(NSURL *)url error:(NSError *__autoreleasing *)error

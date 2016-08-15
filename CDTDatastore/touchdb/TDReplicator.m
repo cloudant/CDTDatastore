@@ -101,6 +101,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         _replicatorThread = nil;
         _replicatorStopped = NO;
         _interceptors = interceptors;
+        _heartbeat = nil;
     }
     return self;
 }
@@ -132,7 +133,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 @synthesize db=_db, remote=_remote, filterName=_filterName, filterParameters=_filterParameters, docIDs = _docIDs;
 @synthesize running=_running, online=_online, active=_active, continuous=_continuous;
-@synthesize error=_error, sessionID=_sessionID, options=_options;
+@synthesize error=_error, sessionID=_sessionID;
 @synthesize changesProcessed=_changesProcessed, changesTotal=_changesTotal;
 @synthesize remoteCheckpoint=_remoteCheckpoint;
 @synthesize authorizer=_authorizer;
@@ -147,8 +148,8 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 {
     return _db == other->_db && $equal(_remote, other->_remote) && self.isPush == other.isPush &&
            _continuous == other->_continuous && $equal(_filterName, other->_filterName) &&
-           $equal(_filterParameters, other->_filterParameters) &&
-           $equal(_options, other->_options) && $equal(_docIDs, other->_docIDs) &&
+           $equal(_filterParameters, other->_filterParameters) && _reset == other->_reset &&
+           [_heartbeat isEqualToNumber:other->_heartbeat] && $equal(_docIDs, other->_docIDs) &&
            $equal(_requestHeaders, other->_requestHeaders);
 }
 
@@ -341,7 +342,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [_db addActiveReplicator:self];
 
     // Did client request a reset (i.e. starting over from first sequence?)
-    if (_options[@"reset"] != nil) {
+    if (self.reset) {
         [_db setLastSequence:nil withCheckpointID:self.remoteCheckpointDocID];
     }
 

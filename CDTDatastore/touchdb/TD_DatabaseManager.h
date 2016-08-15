@@ -68,8 +68,6 @@ extern NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName;
 
 - (void)close;
 
-- (TDStatus)validateReplicatorProperties:(NSDictionary*)properties;
-- (TDReplicator*)replicatorWithProperties:(NSDictionary*)body status:(TDStatus*)outStatus;
 
 #if DEBUG  // made public for testing (Adam Cox, Cloudant. 2014-1-20)
 + (TD_DatabaseManager*)createEmptyAtPath:(NSString*)path;

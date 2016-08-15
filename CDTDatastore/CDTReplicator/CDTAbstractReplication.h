@@ -158,26 +158,11 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
 */
 + (NSString*)defaultUserAgentHTTPHeader;
 
-/*
- ---------------------------------------------------------------------------------------
- The following methods should not be accessed by a user of this class or the subclasses.
- The only exception may be the dictionaryForReplicatorDocument method, in special circumstances.
- */
-
 /** --------------------------------------------------------------------------------------
  @name For internal use only
  ---------------------------------------------------------------------------------------
  */
 
-/** The NSDictionary is used by CDTReplicatorFactory to properly configure CDTReplicator objects.
-
- @param error reports error information
- @return The NSDictionary that configures a CDTReplicator instance.
- @warning This method is for internal use only. The CDTPushReplication and CDTPullReplication
-     classes override this method.
-
- */
-- (nullable NSDictionary*)dictionaryForReplicatorDocument:(NSError* __autoreleasing __nullable * __nullable)error;
 
 /** Checks the content and format of the remoteDatastore URL to ensure that it uses a proper
  protocol (http or https) and has both a username and password (or neither).
@@ -190,6 +175,16 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
  */
 - (BOOL)validateRemoteDatastoreURL:(NSURL*)url
                              error:(NSError* __autoreleasing __nullable* __nullable)error;
+
+/**
+ Validates user supplied optional headers.
+ 
+ @param optional user-defined headers
+ @param error reports error information
+ @return YES on valid optional headers.
+ */
++ (BOOL)validateOptionalHeaders:(NSDictionary *)candidateHeaders
+                          error:(NSError *__autoreleasing *)error;
 
 @end
 
