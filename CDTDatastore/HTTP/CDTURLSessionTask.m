@@ -135,6 +135,9 @@
         ctx = [obj interceptRequestInContext:ctx];
     }
 
+    // Update self.request with the updated request modified by any interceptors.
+    self.request = ctx.request;
+
     return [self.session createDataTaskWithRequest:ctx.request
                                 associatedWithTask:self];
 }

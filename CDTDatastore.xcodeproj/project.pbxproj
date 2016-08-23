@@ -1161,7 +1161,7 @@
 		98F786ED1C4658E800515CC3 /* emptyencrypteddb.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 98F786EC1C4658E800515CC3 /* emptyencrypteddb.touchdb */; };
 		98F786EF1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 98F786EE1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb */; };
 		98F786F11C465BC500515CC3 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 98F786F01C465BC500515CC3 /* lorem.txt */; };
-		C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
+		C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
 		C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
 		C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
@@ -2855,7 +2855,6 @@
 				98F77D211C43FDA700515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */,
 				98F77D151C43FDA700515CC3 /* MYErrorUtils.h in Headers */,
-				C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				98F77D131C43FDA700515CC3 /* MYDynamicObject.h in Headers */,
 				98F77D241C43FDA700515CC3 /* Target.h in Headers */,
 				98F77D261C43FDA700515CC3 /* Test.h in Headers */,
@@ -2873,6 +2872,7 @@
 				98F77C4E1C43FCEE00515CC3 /* CDTEncryptionKeyNilProvider.h in Headers */,
 				98F77C471C43FCEE00515CC3 /* CDTBlobEncryptedDataConstants.h in Headers */,
 				98F77CD71C43FCEE00515CC3 /* TDStatus.h in Headers */,
+				C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				98F77C591C43FCEE00515CC3 /* CDTEncryptionKeychainManager+Internal.h in Headers */,
 				98F77C761C43FCEE00515CC3 /* CDTQIndexCreator.h in Headers */,
 				98F77C291C43FCEE00515CC3 /* CDTDatastore+Internal.h in Headers */,
