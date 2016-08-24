@@ -581,8 +581,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     if ([TD_Database existsDatabaseAtPath:path]) {
         NSString *attachmentsPath = [TD_Database attachmentStorePathWithDatabasePath:path];
 
+        // Delete the database file, and the associated temp files if they are present.
         success =
-            (removeItemIfExists(path, outError) && removeItemIfExists(attachmentsPath, outError));
+            (removeItemIfExists(path, outError) && removeItemIfExists(attachmentsPath, outError) &&
+             removeItemIfExists([path stringByAppendingString:@"-wal"], outError) &&
+             removeItemIfExists([path stringByAppendingString:@"-shm"], outError));
     }
 
     return success;
