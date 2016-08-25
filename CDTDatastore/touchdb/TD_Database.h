@@ -57,13 +57,13 @@ extern const TDChangesOptions kDefaultTDChangesOptions;
 
 /** A TouchDB database. */
 @interface TD_Database : NSObject {
+
    @private
     NSString* _path;
     NSString* _name;
     FMDatabaseQueue* _fmdbQueue;
     id<CDTEncryptionKeyProvider> _keyProviderToOpenDB;
     BOOL _readOnly;
-    BOOL _open;
     int _transactionLevel;
     NSMutableDictionary* _views;
     NSMutableDictionary* _validations;

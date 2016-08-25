@@ -69,9 +69,18 @@ NSString* const TD_DatabaseWillBeDeletedNotification = @"TD_DatabaseWillBeDelete
 //}
 //@end
 
+@interface TD_Database()
+
+@property (nonatomic) dispatch_queue_t queue;
+@property (atomic, getter=isOpen) BOOL open;
+
+
+@end
+
 @implementation TD_Database
 
 @synthesize fmdbQueue = _fmdbQueue;
+
 
 static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
@@ -99,7 +108,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     return db;
 }
 
-- (id)initWithPath:(NSString*)path
+- (instancetype)initWithPath:(NSString*)path
 {
     if (self = [super init]) {
         Assert([path hasPrefix:@"/"], @"Path must be absolute");
@@ -111,6 +120,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             _validations = nil;
             _pendingAttachmentsByDigest = nil;
         }
+        _queue = dispatch_queue_create("com.cloudant.sync.db", NULL); //Serial dispatch queue.
     }
     return self;
 }
@@ -213,65 +223,64 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 {
     __block BOOL result = YES;
 
-    // Create database
-    FMDatabaseQueue* queue = nil;
-    
-    if (result) {
-        queue = [TD_Database queueForDatabaseAtPath:_path readOnly:_readOnly];
-        
-        result = (queue != nil);
-    }
 
-    // Set key to cipher database (if available)
-    if (result) {
-        [queue inDatabase:^(FMDatabase* db) {
-          NSError* error = nil;
-          result = [db setKeyWithProvider:provider error:&error];
-          if (!result) {
-              CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Key not set for DB at %@: %@", _path, error);
-          }
-        }];
-    }
+    dispatch_sync(self.queue, ^{
+        // Create database
+        FMDatabaseQueue* queue = nil;
 
-    // Register CouchDB-compatible JSON collation functions:
-    if (result) {
-        [queue inDatabase:^(FMDatabase* db) {
-          sqlite3_create_collation(db.sqliteHandle, "JSON", SQLITE_UTF8, kTDCollateJSON_Unicode,
-                                   TDCollateJSON);
-          sqlite3_create_collation(db.sqliteHandle, "JSON_RAW", SQLITE_UTF8, kTDCollateJSON_Raw,
-                                   TDCollateJSON);
-          sqlite3_create_collation(db.sqliteHandle, "JSON_ASCII", SQLITE_UTF8, kTDCollateJSON_ASCII,
-                                   TDCollateJSON);
-          sqlite3_create_collation(db.sqliteHandle, "REVID", SQLITE_UTF8, NULL, TDCollateRevIDs);
-        }];
-    }
+        if (result) {
+            queue = [TD_Database queueForDatabaseAtPath:_path readOnly:_readOnly];
 
-    // Stuff we need to initialize every time the database opens:
-    if (result) {
-        __weak TD_Database* weakSelf = self;
-        [queue inDatabase:^(FMDatabase* db) {
-          TD_Database* strongSelf = weakSelf;
-          if (!strongSelf || ![strongSelf initialize:@"PRAGMA foreign_keys = ON;" inDatabase:db]) {
-              result = NO;
-          }
-        }];
-    }
+            result = (queue != nil);
+        }
 
-    // Assign properties (if everything was OK)
-    if (result) {
-        _fmdbQueue = queue;
-        _keyProviderToOpenDB = provider;
-    } else if (queue) {
-        [queue close];
-    }
+        // Set key to cipher database (if available)
+        if (result) {
+            [queue inDatabase:^(FMDatabase* db) {
+                NSError* error = nil;
+                result = [db setKeyWithProvider:provider error:&error];
+                if (!result) {
+                    CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Key not set for DB at %@: %@", _path, error);
+                }
+            }];
+        }
+
+        // Register CouchDB-compatible JSON collation functions:
+        if (result) {
+            [queue inDatabase:^(FMDatabase* db) {
+                sqlite3_create_collation(db.sqliteHandle, "JSON", SQLITE_UTF8, kTDCollateJSON_Unicode,
+                        TDCollateJSON);
+                sqlite3_create_collation(db.sqliteHandle, "JSON_RAW", SQLITE_UTF8, kTDCollateJSON_Raw,
+                        TDCollateJSON);
+                sqlite3_create_collation(db.sqliteHandle, "JSON_ASCII", SQLITE_UTF8, kTDCollateJSON_ASCII,
+                        TDCollateJSON);
+                sqlite3_create_collation(db.sqliteHandle, "REVID", SQLITE_UTF8, NULL, TDCollateRevIDs);
+            }];
+        }
+
+        // Stuff we need to initialize every time the database opens:
+        if (result) {
+            __weak TD_Database* weakSelf = self;
+            [queue inDatabase:^(FMDatabase* db) {
+                TD_Database* strongSelf = weakSelf;
+                if (!strongSelf || ![strongSelf initialize:@"PRAGMA foreign_keys = ON;" inDatabase:db]) {
+                    result = NO;
+                }
+            }];
+        }
+
+        // Assign properties (if everything was OK)
+        if (result) {
+            _fmdbQueue = queue;
+            _keyProviderToOpenDB = provider;
+        } else if (queue) {
+            [queue close];
+        }
+
+    });
+
 
     return result;
-}
-
-// callers: many things
-- (BOOL)isOpen
-{
-    return _open;
 }
 
 // callers: many things
@@ -522,7 +531,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
     }];
     
     if (result) {
-        _open = YES;
+        self.open = YES;
         return YES;
     } else {
         return NO;
@@ -530,10 +539,25 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 }
 
 #pragma mark Closing and deleting database
-
 - (BOOL)close
 {
-    if (![self isOpen]) return NO;
+
+    __block BOOL result;
+    dispatch_sync(self.queue, ^{
+        result = [self closeInternal];
+    });
+
+    return result;
+}
+
+/**
+ *  Closes the database, this **MUST** be called on the synchronously dispatch queue stored in the `queue` property
+ */
+- (BOOL)closeInternal
+{
+    if (![self isOpen]) {
+        return NO;
+    }
 
     CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Close %@", _path);
     [[NSNotificationCenter defaultCenter] postNotificationName:TD_DatabaseWillCloseNotification
@@ -547,29 +571,41 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
     [_fmdbQueue close];
     _fmdbQueue = nil;
-    
+
     _keyProviderToOpenDB = nil;
-    
+
     _attachments = nil;
 
-    _open = NO;
+    self.open = NO;
     _transactionLevel = 0;
-    
     return YES;
 }
 
 - (BOOL)deleteDatabase:(NSError **)outError
 {
+    __block BOOL result =  NO;
+    dispatch_sync(self.queue, ^{
+        result = [self deleteDatabaseInternal:outError];
+    });
+    return result;
+}
+
+/**
+ * Deletes the database, this **MUST** only be called synchronously on the dispatch queue stored in the `queue` property.
+ */
+- (BOOL)deleteDatabaseInternal:(NSError **)outError
+{
     [[NSNotificationCenter defaultCenter] postNotificationName:TD_DatabaseWillBeDeletedNotification
                                                         object:self];
 
-    if (_open && ![self close]) {
+    if (self.open && ![self closeInternal]) {
         CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Database at path %@ could not be closed", _path);
 
         return NO;
     }
 
     return [[self class] deleteClosedDatabaseAtPath:_path error:outError];
+
 }
 
 + (BOOL)deleteClosedDatabaseAtPath:(NSString *)path error:(NSError **)outError
@@ -593,7 +629,7 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (void)dealloc
 {
-    if (_open) {
+    if (self.isOpen) {
         // Warn(@"%@ dealloced without being closed first!", self);
         [self close];
     }
