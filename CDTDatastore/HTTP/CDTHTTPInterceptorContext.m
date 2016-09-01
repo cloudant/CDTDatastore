@@ -19,16 +19,18 @@
 
 @implementation CDTHTTPInterceptorContext
 
+NSMutableDictionary<NSString*, NSObject*> *_state;
+
 -(instancetype)init {
     NSAssert(NO, @"Call the designated initaliser");
     return nil;
 }
 
-- (instancetype)initWithRequest:(NSMutableURLRequest *)request {
+- (instancetype)initWithRequest:(NSMutableURLRequest*)request {
     return [self initWithRequest:request state:[NSMutableDictionary dictionary]];
 }
 
-- (instancetype)initWithRequest:(NSMutableURLRequest *)request
+- (instancetype)initWithRequest:(NSMutableURLRequest*)request
                           state:(NSMutableDictionary*)state {
     NSParameterAssert(request);
     self = [super init];
@@ -40,5 +42,15 @@
     }
     return self;
 }
+
+- (NSObject*)stateForKey:(NSString*)key {
+    return _state[key];
+}
+
+- (void)setState:(NSObject*)value
+          forKey:(NSObject*)key {
+    [_state setValue:value forKey:key];
+}
+
 
 @end
