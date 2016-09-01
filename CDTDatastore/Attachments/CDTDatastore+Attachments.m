@@ -56,28 +56,33 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
 #pragma mark Getting attachments
 
 /**
- Returns the names of attachments for a document revision.
+ Returns the attachments for a document revision.
 
  @return NSArray of CDTAttachment
  */
 - (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev error:(NSError *__autoreleasing *)error;
 {
+    return [self attachmentsForSeq:rev.sequence error:error];
+}
+
+- (NSArray *)attachmentsForSeq:(SequenceNumber)seq error:(NSError *__autoreleasing *)error
+{
     FMDatabaseQueue *db_queue = self.database.fmdbQueue;
-
+    
     __block NSArray *attachments;
-
+    
     __weak CDTDatastore *weakSelf = self;
-
+    
     [db_queue inDatabase:^(FMDatabase *db) {
-
+        
         CDTDatastore *strongSelf = weakSelf;
-        attachments = [strongSelf attachmentsForRev:rev inTransaction:db error:error];
+        attachments = [strongSelf attachmentsForSeq:seq inTransaction:db error:error];
     }];
-
+    
     return attachments;
 }
 
-- (NSArray *)attachmentsForRev:(CDTDocumentRevision *)rev
+- (NSArray *)attachmentsForSeq:(SequenceNumber)seq
                  inTransaction:(FMDatabase *)db
                          error:(NSError *__autoreleasing *)error
 {
@@ -86,7 +91,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     // Get all attachments for this revision using the revision's
     // sequence number
 
-    NSDictionary *params = @{ @"sequence" : @(rev.sequence) };
+    NSDictionary *params = @{ @"sequence" : @(seq) };
     FMResultSet *r =
         [db executeQuery:[SQL_ATTACHMENTS_SELECT_ALL copy] withParameterDictionary:params];
 
@@ -98,9 +103,9 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                 [attachments addObject:attachment];
             } else {
                 CDTLogInfo(CDTDATASTORE_LOG_CONTEXT,
-                        @"Error reading an attachment row for attachments on doc <%@, %@>"
+                        @"Error reading an attachment row for attachments on doc with seq %lld\n"
                         @"Closed connection during read?",
-                        rev.docId, rev.revId);
+                        seq);
             }
         }
     }
