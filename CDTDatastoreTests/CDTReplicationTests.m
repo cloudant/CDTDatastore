@@ -26,7 +26,7 @@
 #import "TDPuller.h"
 #import "TDPusher.h"
 #import "CDTSessionCookieInterceptor.h"
-#import "CDTRequestLimitInterceptor.h"
+#import "CDTReplay429Interceptor.h"
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OCMock/OCMock.h>
@@ -234,7 +234,7 @@
     CDTPullReplication *pull =
     [CDTPullReplication replicationWithSource:[NSURL URLWithString:remoteUrl] target:tmp];
     // add 429 backoff interceptor
-    [pull addInterceptor:[CDTRequestLimitInterceptor interceptor]];
+    [pull addInterceptor:[CDTReplay429Interceptor interceptor]];
     // add utility interceptor to capture final sleep valuew
     ContextCaptureInterceptor *cci = [[ContextCaptureInterceptor alloc] init];
     [pull addInterceptor:cci];
