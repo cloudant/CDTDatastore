@@ -10,6 +10,14 @@
 		016D1893CDC0214E9D985B6A /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E1355F12F8B3C6BAD03877E /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTests.framework */; };
 		093B0D76D4A2A4C1B1573A14 /* Pods_CDTDatastoreEncryption.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7A2ACFEFC64F349EC3C349 /* Pods_CDTDatastoreEncryption.framework */; };
 		2D4884327E9CA7EC3E066969 /* Pods_CDTDatastoreEncryptionOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 486CE35D1A1E051980A59D58 /* Pods_CDTDatastoreEncryptionOSX.framework */; };
+		3567D22135DB02790BD939BA /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3567D2AFF0C6FF2C6B9DA2A5 /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3567D43713667ABFE05C08F2 /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		3567D4A6D5376E99F71E1411 /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
+		3567DA2E9930DA1BFABB6617 /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
+		3567DB3346B03BED878BC14F /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
+		3567DB7E71CA579C66B3A4AB /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
+		3567DF59204D91BCDC89CD72 /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3A34E9D5E876D487CE33DE8D /* Pods_CDTDatastoreReplicationAcceptanceTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C87687429D40D81A58F8343 /* Pods_CDTDatastoreReplicationAcceptanceTestsOSX.framework */; };
 		3B8BBED1AD4F991A909B5234 /* Pods_CDTDatastoreTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C63FB1B38CDCADCE96686E73 /* Pods_CDTDatastoreTestsOSX.framework */; };
 		4181AEA27C46BB358EF663BF /* Pods_CDTDatastoreOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD2F0299C901635CB953E07D /* Pods_CDTDatastoreOSX.framework */; };
@@ -627,9 +635,9 @@
 		987385FC1C49659200937212 /* CDTDatastore.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98F77B361C43FC9F00515CC3 /* CDTDatastore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		987386001C4D497A00937212 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 987385FF1C4D497A00937212 /* libz.tbd */; };
 		9891D10A1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9891D10B1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; };
-		9891D10C1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; };
-		9891D10D1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; };
+		9891D10B1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9891D10C1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9891D10D1C511A820068FD1A /* CDTDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 9891D1091C511A820068FD1A /* CDTDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98C367E91C91B51100C4059D /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E181C44044000515CC3 /* CDTReplicationTests.m */; };
 		98C367EA1C91B51300C4059D /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E181C44044000515CC3 /* CDTReplicationTests.m */; };
 		98C367EC1C91B51900C4059D /* CDTReplicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E181C44044000515CC3 /* CDTReplicationTests.m */; };
@@ -1162,9 +1170,9 @@
 		98F786EF1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb in Resources */ = {isa = PBXBuildFile; fileRef = 98F786EE1C46597A00515CC3 /* schema100_1Bonsai_2Lorem.touchdb */; };
 		98F786F11C465BC500515CC3 /* lorem.txt in Resources */ = {isa = PBXBuildFile; fileRef = 98F786F01C465BC500515CC3 /* lorem.txt */; };
 		C5AF64D51C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
-		C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
-		C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; };
+		C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C5AF64D41C76000C007E2551 /* CDTNSURLSessionConfigurationDelegate.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CF4251BDAE41A5387FBB4E4D /* Pods_CDTDatastoreTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F8B6B8BECA622CF4B5161C9F /* Pods_CDTDatastoreTests.framework */; };
 		D502D42852153AB8FF29062F /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 847F58C050F0CE82D7DDA804 /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.framework */; };
 /* End PBXBuildFile section */
@@ -1224,6 +1232,8 @@
 		1E1355F12F8B3C6BAD03877E /* Pods_CDTDatastoreEncryptedReplicationAcceptanceTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDTDatastoreEncryptedReplicationAcceptanceTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1E7A2ACFEFC64F349EC3C349 /* Pods_CDTDatastoreEncryption.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDTDatastoreEncryption.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E5476EA72C94B51A626BE21 /* Pods-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig"; sourceTree = "<group>"; };
+		3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CDTDatastore+Replication.m"; sourceTree = "<group>"; };
+		3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CDTDatastore+Replication.h"; sourceTree = "<group>"; };
 		47D10054F235C27FE5C1F8AE /* Pods-CDTDatastoreOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreOSX/Pods-CDTDatastoreOSX.release.xcconfig"; sourceTree = "<group>"; };
 		486CE35D1A1E051980A59D58 /* Pods_CDTDatastoreEncryptionOSX.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CDTDatastoreEncryptionOSX.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5738A8EE4C978050FC1818DD /* Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX/Pods-CDTDatastoreEncryptedReplicationAcceptanceTestsOSX.release.xcconfig"; sourceTree = "<group>"; };
@@ -1966,6 +1976,8 @@
 				98F77B731C43FCEE00515CC3 /* CDTReplicatorDelegate.h */,
 				98F77B741C43FCEE00515CC3 /* CDTReplicatorFactory.h */,
 				98F77B751C43FCEE00515CC3 /* CDTReplicatorFactory.m */,
+				3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */,
+				3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */,
 			);
 			path = CDTReplicator;
 			sourceTree = "<group>";
@@ -2532,7 +2544,6 @@
 				987383911C47B38800937212 /* TDAuthorizer.h in Headers */,
 				987383921C47B38800937212 /* CDTEncryptionKeychainConstants.h in Headers */,
 				987383931C47B38800937212 /* CDTEncryptionKeyProvider.h in Headers */,
-				9891D10C1C511A820068FD1A /* CDTDefines.h in Headers */,
 				987383941C47B38800937212 /* TDMultipartUploader.h in Headers */,
 				987383951C47B38800937212 /* CDTConflictResolver.h in Headers */,
 				987383961C47B38800937212 /* CDTHTTPInterceptor.h in Headers */,
@@ -2595,7 +2606,6 @@
 				987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */,
 				987383D11C47B38800937212 /* CollectionUtils.h in Headers */,
 				987383D21C47B38800937212 /* MYErrorUtils.h in Headers */,
-				C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				987383D31C47B38800937212 /* MYDynamicObject.h in Headers */,
 				987383D41C47B38800937212 /* Target.h in Headers */,
 				987383D51C47B38800937212 /* Test.h in Headers */,
@@ -2613,6 +2623,9 @@
 				987383E21C47B38800937212 /* CDTEncryptionKeyNilProvider.h in Headers */,
 				987383E31C47B38800937212 /* CDTBlobEncryptedDataConstants.h in Headers */,
 				987383E41C47B38800937212 /* TDStatus.h in Headers */,
+				9891D10C1C511A820068FD1A /* CDTDefines.h in Headers */,
+				C5AF64D71C760013007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
+				3567D43713667ABFE05C08F2 /* CDTDatastore+Replication.h in Headers */,
 				987383E51C47B38800937212 /* CDTEncryptionKeychainManager+Internal.h in Headers */,
 				987383E61C47B38800937212 /* CDTQIndexCreator.h in Headers */,
 				987383E71C47B38800937212 /* CDTDatastore+Internal.h in Headers */,
@@ -2705,7 +2718,6 @@
 				987384AA1C47B3C400937212 /* CDTDatastore.h in Headers */,
 				987384AB1C47B3C400937212 /* CDTQResultSet.h in Headers */,
 				987384AC1C47B3C400937212 /* CDTBlobReader.h in Headers */,
-				9891D10D1C511A820068FD1A /* CDTDefines.h in Headers */,
 				987384AD1C47B3C400937212 /* CDTChangedArray.h in Headers */,
 				987384AE1C47B3C400937212 /* TDMultipartReader.h in Headers */,
 				987384AF1C47B3C400937212 /* CDTAttachment.h in Headers */,
@@ -2725,7 +2737,6 @@
 				987384BD1C47B3C400937212 /* MYUtilities_Prefix.pch in Headers */,
 				987384BE1C47B3C400937212 /* CollectionUtils.h in Headers */,
 				987384BF1C47B3C400937212 /* MYErrorUtils.h in Headers */,
-				C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				987384C01C47B3C400937212 /* MYDynamicObject.h in Headers */,
 				987384C11C47B3C400937212 /* Target.h in Headers */,
 				987384C21C47B3C400937212 /* Test.h in Headers */,
@@ -2743,6 +2754,9 @@
 				987384CF1C47B3C400937212 /* CDTEncryptionKeyNilProvider.h in Headers */,
 				987384D01C47B3C400937212 /* CDTBlobEncryptedDataConstants.h in Headers */,
 				987384D11C47B3C400937212 /* TDStatus.h in Headers */,
+				9891D10D1C511A820068FD1A /* CDTDefines.h in Headers */,
+				C5AF64D81C760014007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
+				3567DF59204D91BCDC89CD72 /* CDTDatastore+Replication.h in Headers */,
 				987384D21C47B3C400937212 /* CDTEncryptionKeychainManager+Internal.h in Headers */,
 				987384D31C47B3C400937212 /* CDTQIndexCreator.h in Headers */,
 				987384D41C47B3C400937212 /* CDTDatastore+Internal.h in Headers */,
@@ -2875,6 +2889,7 @@
 				9891D10A1C511A820068FD1A /* CDTDefines.h in Headers */,
 				98F77C761C43FCEE00515CC3 /* CDTQIndexCreator.h in Headers */,
 				8E2DDDF81D1BEFBE00673564 /* CDTReplay429Interceptor.h in Headers */,
+				3567D22135DB02790BD939BA /* CDTDatastore+Replication.h in Headers */,
 				98F77C291C43FCEE00515CC3 /* CDTDatastore+Internal.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2965,7 +2980,6 @@
 				98F7868E1C456B1300515CC3 /* CDTDatastore.h in Headers */,
 				98F7868F1C456B1300515CC3 /* CDTQResultSet.h in Headers */,
 				98F786901C456B1300515CC3 /* CDTBlobReader.h in Headers */,
-				9891D10B1C511A820068FD1A /* CDTDefines.h in Headers */,
 				98F786911C456B1300515CC3 /* CDTChangedArray.h in Headers */,
 				98F786921C456B1300515CC3 /* TDMultipartReader.h in Headers */,
 				98F786931C456B1300515CC3 /* CDTAttachment.h in Headers */,
@@ -2985,7 +2999,6 @@
 				98F786A11C456B1300515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F786A21C456B1300515CC3 /* CollectionUtils.h in Headers */,
 				98F786A31C456B1300515CC3 /* MYErrorUtils.h in Headers */,
-				C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
 				98F786A41C456B1300515CC3 /* MYDynamicObject.h in Headers */,
 				98F786A51C456B1300515CC3 /* Target.h in Headers */,
 				98F786A61C456B1300515CC3 /* Test.h in Headers */,
@@ -3003,6 +3016,9 @@
 				98F786B31C456B1300515CC3 /* CDTEncryptionKeyNilProvider.h in Headers */,
 				98F786B41C456B1300515CC3 /* CDTBlobEncryptedDataConstants.h in Headers */,
 				98F786B51C456B1300515CC3 /* TDStatus.h in Headers */,
+				9891D10B1C511A820068FD1A /* CDTDefines.h in Headers */,
+				C5AF64D61C760012007E2551 /* CDTNSURLSessionConfigurationDelegate.h in Headers */,
+				3567D2AFF0C6FF2C6B9DA2A5 /* CDTDatastore+Replication.h in Headers */,
 				98F786B61C456B1300515CC3 /* CDTEncryptionKeychainManager+Internal.h in Headers */,
 				98F786B71C456B1300515CC3 /* CDTQIndexCreator.h in Headers */,
 				98F786B81C456B1300515CC3 /* CDTDatastore+Internal.h in Headers */,
@@ -4079,6 +4095,7 @@
 				987383651C47B38800937212 /* Target.m in Sources */,
 				987383661C47B38800937212 /* TD_Attachment.m in Sources */,
 				987383671C47B38800937212 /* CDTQProjectedDocumentRevision.m in Sources */,
+				3567DB3346B03BED878BC14F /* CDTDatastore+Replication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4184,6 +4201,7 @@
 				987384531C47B3C400937212 /* Target.m in Sources */,
 				987384541C47B3C400937212 /* TD_Attachment.m in Sources */,
 				987384551C47B3C400937212 /* CDTQProjectedDocumentRevision.m in Sources */,
+				3567DB7E71CA579C66B3A4AB /* CDTDatastore+Replication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4440,6 +4458,7 @@
 				98F77D251C43FDA700515CC3 /* Target.m in Sources */,
 				98F77C941C43FCEE00515CC3 /* TD_Attachment.m in Sources */,
 				98F77C7E1C43FCEE00515CC3 /* CDTQProjectedDocumentRevision.m in Sources */,
+				3567DA2E9930DA1BFABB6617 /* CDTDatastore+Replication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4658,6 +4677,7 @@
 				98F786361C456B1300515CC3 /* Target.m in Sources */,
 				98F786371C456B1300515CC3 /* TD_Attachment.m in Sources */,
 				98F786381C456B1300515CC3 /* CDTQProjectedDocumentRevision.m in Sources */,
+				3567D4A6D5376E99F71E1411 /* CDTDatastore+Replication.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
