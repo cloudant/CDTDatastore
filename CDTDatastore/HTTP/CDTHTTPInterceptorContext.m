@@ -17,9 +17,12 @@
 
 #import "CDTHTTPInterceptorContext.h"
 
+@interface CDTHTTPInterceptorContext ()
+@property NSMutableDictionary<NSString*, NSObject*> *state;
+@end
+
 @implementation CDTHTTPInterceptorContext
 
-NSMutableDictionary<NSString*, NSObject*> *_state;
 
 -(instancetype)init {
     NSAssert(NO, @"Call the designated initaliser");

@@ -332,13 +332,15 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     // Headers are validated before being put in properties
     repl.requestHeaders = self.cdtReplication.optionalHeaders;
     
-    // Pull replications can have filters assigned.
+    // Push and pull replications can have filters assigned.
     if (!push) {
         CDTPullReplication *shadowConfig = (CDTPullReplication *)self.cdtReplication;
         repl.filterName = shadowConfig.filter;
         repl.filterParameters = shadowConfig.filterParams;
     } else {
+        CDTPushReplication *shadowConfig = (CDTPushReplication *)self.cdtReplication;
         ((TDPusher *)repl).createTarget = NO;
+        repl.filterParameters = shadowConfig.filterParams;
     }
 
     return repl;

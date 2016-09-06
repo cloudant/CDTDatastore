@@ -64,7 +64,7 @@
 }
 
 - (void) dealloc {
-    [self.session disassociateTask:self.inProgressTask];
+    [_session disassociateTask:_inProgressTask];
 }
 
 - (instancetype)initWithSession:(CDTURLSession *)session
