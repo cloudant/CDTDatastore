@@ -22,6 +22,10 @@
 
 static BOOL databaseDeletionTestWasDatabaseAtPathDeleted = NO;
 
+@interface TD_Database()
+- (BOOL) closeInternal; // expose the internal close method.
+@end
+
 @interface TD_MockDatabase : TD_Database
 
 @property (assign, nonatomic) BOOL isCloseExecuted;
@@ -44,11 +48,11 @@ static BOOL databaseDeletionTestWasDatabaseAtPathDeleted = NO;
 }
 
 #pragma mark - TD_Database methods
-- (BOOL)close
+- (BOOL)closeInternal
 {
     self.isCloseExecuted = YES;
 
-    return (self.forceCloseFailure ? NO : [super close]);
+    return (self.forceCloseFailure ? NO : [super closeInternal]);
 }
 
 + (BOOL)deleteClosedDatabaseAtPath:(NSString *)path error:(NSError **)outError
