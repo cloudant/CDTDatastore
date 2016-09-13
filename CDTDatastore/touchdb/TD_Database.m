@@ -331,8 +331,11 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
     __block BOOL result = YES;
     __weak TD_Database* weakSelf = self;
-    [_fmdbQueue inDatabase:^(FMDatabase* db) {
+    [self.fmdbQueue inTransaction:^(FMDatabase* db, BOOL* rollback) {
         TD_Database* strongSelf = weakSelf;
+
+        // Transaction will be rolled back unless, rollback is changed to NO.
+        *rollback = YES;
 
         // Check the user_version number we last stored in the database:
         int dbVersion = [db intForQuery:@"PRAGMA user_version"];
@@ -504,8 +507,13 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             while ([attachmentKeys next]) {
                 NSData *keyData = [attachmentKeys dataNoCopyForColumn:@"key"];
                 
-                [TD_Database generateAndInsertFilenameBasedOnKey:*(TDBlobKey *)keyData.bytes
-                                intoBlobFilenamesTableInDatabase:db];
+                NSString* filename = [TD_Database generateAndInsertFilenameBasedOnKey:*(TDBlobKey *)keyData.bytes
+                                                     intoBlobFilenamesTableInDatabase:db];
+
+                if (!filename) {
+                    result = NO;
+                    return;
+                }
             }
             
             // dbVersion = 200;
@@ -528,6 +536,9 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
             result = NO;
             return;
         }
+
+        // Transaction has completed successfully, setting rollback to NO to prevent rollback.
+        *rollback = NO;
     }];
     
     if (result) {
