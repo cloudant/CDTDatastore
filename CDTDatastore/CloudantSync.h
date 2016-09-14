@@ -36,3 +36,4 @@
 #import "CDTPullReplication.h"
 #import "CDTReplicatorFactory.h"
 #import "CDTReplicatorDelegate.h"
+#import "CDTDatastore+Replication.h"
