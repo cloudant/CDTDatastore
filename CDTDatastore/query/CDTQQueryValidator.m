@@ -518,9 +518,11 @@
         return [CDTQQueryValidator validateModArgument:predicateValue];
     } else if ([operator isEqualToString:SEARCH]) {
         return [CDTQQueryValidator validateTextSearchArgument:predicateValue];
+    } else if ([predicateValue isKindOfClass:[NSString class]] || [predicateValue isKindOfClass:[NSNumber class]]) {
+        return YES;
     } else {
-        return (([predicateValue isKindOfClass:[NSString class]] ||
-                 [predicateValue isKindOfClass:[NSNumber class]]));
+        CDTLogError(CDTQ_LOG_CONTEXT,@"Only types NSString and NSNumber can be used with %@ operator", operator);
+        return NO;
     }
 }
 
