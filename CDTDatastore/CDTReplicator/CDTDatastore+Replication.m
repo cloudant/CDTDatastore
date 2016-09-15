@@ -16,6 +16,44 @@
 #import "CDTPullReplication.h"
 #import "CDTReplicator.h"
 
+@interface CDTDatastoreReplicationDelegate: NSObject<CDTReplicatorDelegate>
+
+@property (nonatomic, nullable, strong) NSError *error;
+@property (nonatomic, nonnull, strong) void (^completionHandler)(NSError* __nullable) ;
+@property (nonatomic, nullable, strong) CDTDatastoreReplicationDelegate* instance;
+
+- (instancetype) init NS_UNAVAILABLE;
+- (instancetype) initWithCompletionHandler:(void (^ __nonnull)(NSError* __nullable)) compeltionHandler NS_DESIGNATED_INITIALIZER;
+
+
+
+@end
+
+@implementation CDTDatastoreReplicationDelegate
+
+- (instancetype)initWithCompletionHandler:(void (^)(NSError *))completionHandler {
+    self = [super init];
+    if (self) {
+        _completionHandler = completionHandler;
+        // Since the replicator doesn't retain it's delegate, we need to retain ourselves so we can complete.
+        _instance = self;
+    }
+
+    return self;
+}
+
+- (void)replicatorDidComplete:(CDTReplicator *)replicator {
+    self.completionHandler(self.error);
+    self.instance = nil;
+}
+
+- (void)replicatorDidError:(CDTReplicator *)replicator info:(NSError *)info {
+    self.error = info;
+}
+
+@end
+
+
 @interface CDTDatastore ()
 
 @property(readonly) CDTDatastoreManager *manager; // this exists in the CDTDatastoreManager
@@ -48,6 +86,39 @@
     replicator.delegate = delegate;
     return replicator;
 }
+
+- (void) pushReplicationWithTarget:(NSURL*) target
+                 completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
+{
+    NSError* error = nil;
+    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
+    CDTReplicator* replicator = [self pushReplicationTarget:target withDelegate:delegate error:&error];
+    if (!error){
+        [replicator startWithError:&error];
+    }
+
+    if (error) {
+        completionHandler(error);
+    }
+
+}
+
+- (void) pullReplicationWithSource:(NSURL*) source
+                 completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
+{
+    NSError* error = nil;
+    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
+    CDTReplicator* replicator = [self pullReplicationSource:source withDelegate:delegate error:&error];
+    if (!error){
+        [replicator startWithError:&error];
+    }
+    
+    if (error) {
+        completionHandler(error);
+    }
+}
+
+
 
 
 @end

@@ -288,6 +288,40 @@
     XCTAssertEqual(previousNumberOfTimesCalled, interceptor.timesCalled);
 }
 
+-(void)testPullReplicationUsingOneLiner
+{
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:10];
+
+
+    XCTestExpectation* expectation = [self expectationWithDescription:@"pullReplication"];
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [self.datastore pullReplicationWithSource:self.primaryRemoteDatabaseURL completionHandler:^(NSError *error) {
+        XCTAssertNil(error);
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    [self compareDatastore:self.datastore withDatabase:self.primaryRemoteDatabaseURL];
+}
+
+-(void)testPushReplicatorUsingOneLiner
+{
+    NSLog(@"Creating documents...");
+    [self createLocalDocs: 10];
+
+    XCTestExpectation* expectation = [self expectationWithDescription:@"pullReplication"];
+
+    NSLog(@"Replicating to %@", self.primaryRemoteDatabaseURL);
+    [self.datastore pushReplicationWithTarget:self.primaryRemoteDatabaseURL completionHandler:^(NSError *error) {
+        XCTAssertNil(error);
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    [self compareDatastore:self.datastore withDatabase:self.primaryRemoteDatabaseURL];
+}
+
 /**
  Verifies that a modifed context object is
  successfully passed down the interceptor pipeline for requests.
