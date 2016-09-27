@@ -23,9 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param target The URL of the remote database to push to.
  * @param delegate An optional delegate for the replication
  * @param error A pointer to an error that will be set if the replicator could not be created.
+ * @param username          The username to authenticate with.
+ * @param password          The password to authenticate with.
  * @return A push replicator.
  */
 - (nullable CDTReplicator*) pushReplicationTarget:(NSURL*)target
+                                         username:(nullable NSString*)username
+                                         password:(nullable NSString*)password
                                      withDelegate:(nullable NSObject<CDTReplicatorDelegate>*)delegate
                                             error:(NSError *__autoreleasing *) error;
 
@@ -34,9 +38,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param source The URL of the database from which to pull.
  * @param delegate An optional delegate for the replication.
  * @param error A pointer to an error that will be set if the replicator could not be created.
+ * @param username          The username to authenticate with.
+ * @param password          The password to authenticate with.
  * @return A pull replicator.
  */
 - (nullable CDTReplicator*) pullReplicationSource:(NSURL*)source
+                                         username:(nullable NSString*) username
+                                         password:(nullable NSString*)password
                                      withDelegate:(nullable NSObject<CDTReplicatorDelegate>*)delegate
                                             error:(NSError *__autoreleasing *) error;
 
@@ -61,6 +69,35 @@ NS_ASSUME_NONNULL_BEGIN
 - (void) pullReplicationWithSource:(NSURL*) source
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
          NS_SWIFT_NAME(pull(from:completionHandler:));
+
+/**
+ Asynchronously pushes data in this datastore to the server.
+
+ @param target            The URL of the remote database to push the data to.
+ @param completionHandler A block to call when the replication completes or errors.
+ @param username          The username to authenticate with.
+ @param password          The password to authenticate with.
+ */
+- (void) pushReplicationWithTarget:(NSURL*) target
+                          username:(nullable NSString*) username
+                          password:(nullable NSString*) password
+                 completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
+NS_SWIFT_NAME(push(to:username:password:completionHandler:));
+
+
+/**
+ Asynchronously pull data from a remote server to this local datastore.
+
+ @param source            The URL of the remote database from which to pull data.
+ @param completionHandler A block to call when the replication completes or errors.
+ @param username          The username to authenticate with.
+ @param password          The password to authenticate with.
+ */
+- (void) pullReplicationWithSource:(NSURL*) source
+                          username:(nullable NSString*) username
+                          password:(nullable NSString*) password
+                 completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
+NS_SWIFT_NAME(pull(from:username:password:completionHandler:));
 
 @end
 

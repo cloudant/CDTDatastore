@@ -62,17 +62,22 @@
 @implementation CDTDatastore (Replication)
 
 - (CDTReplicator *)pushReplicationTarget:(NSURL *)target
+                                username:(NSString*)username
+                                password:(NSString*)password
                             withDelegate:(NSObject <CDTReplicatorDelegate> *)delegate
                                    error:(NSError *__autoreleasing *)error {
-    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self target:target];
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self target:target username:username password:password];
     return [self replicatorWithReplication:push delegate:delegate error:error];
 }
 
 - (CDTReplicator *)pullReplicationSource:(NSURL *)source
+                                username:(NSString*)username
+                                password:(NSString*)password
                             withDelegate:(NSObject <CDTReplicatorDelegate> *)delegate
                                    error:(NSError *__autoreleasing *)error {
 
-    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:self];
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:self username:username password:password];
+
     return [self replicatorWithReplication:pull delegate:delegate error:error];
 }
 
@@ -90,9 +95,20 @@
 - (void) pushReplicationWithTarget:(NSURL*) target
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
 {
+    [self pushReplicationWithTarget:target username:nil password:nil completionHandler:completionHandler];
+}
+
+- (void)pushReplicationWithTarget:(NSURL *)target
+                         username:(NSString *)username
+                         password:(NSString *)password
+                completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
+{
     NSError* error = nil;
     CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
-    CDTReplicator* replicator = [self pushReplicationTarget:target withDelegate:delegate error:&error];
+    CDTReplicator* replicator = [self pushReplicationTarget:target
+                                                      username:username
+                                                      password:password
+                                                  withDelegate:delegate error:&error];
     if (!error){
         [replicator startWithError:&error];
     }
@@ -100,19 +116,28 @@
     if (error) {
         completionHandler(error);
     }
-
 }
+
 
 - (void) pullReplicationWithSource:(NSURL*) source
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
 {
+    [self pullReplicationWithSource:source username:nil password:nil completionHandler:completionHandler];
+}
+
+- (void)pullReplicationWithSource:(NSURL *)source
+                         username:(NSString *)username
+                         password:(NSString *)password
+                completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
+{
     NSError* error = nil;
     CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
-    CDTReplicator* replicator = [self pullReplicationSource:source withDelegate:delegate error:&error];
+    CDTReplicator* replicator = [self pullReplicationSource:source
+                                                      username:username password:password withDelegate:delegate error:&error];
     if (!error){
         [replicator startWithError:&error];
     }
-    
+
     if (error) {
         completionHandler(error);
     }

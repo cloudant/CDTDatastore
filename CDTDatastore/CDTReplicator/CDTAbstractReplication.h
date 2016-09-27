@@ -135,6 +135,17 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
  */
 @property (nonatomic, readonly, strong) NSArray<NSObject<CDTHTTPInterceptor>*>* httpInterceptors;
 
+@property (nullable, nonatomic, readonly, strong) NSString* username;
+
+@property (nullable, nonatomic, readonly, strong) NSString* password;
+
+/**
+ * Initalises the abstract replication.
+ * @param username The user to use when authenticating with the remote server.
+ * @param password The password to use when authenticating with the remote server.
+ * @return an initialsed instance of CDTAbstractReplication.
+ */
+- (instancetype)initWithUsername:(nullable NSString*)username password:(nullable NSString*)password;
 /**
   Adds an interceptor to the interceptors array.
  @param interceptor the interceptor to append to the interceptors array.

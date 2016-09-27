@@ -30,6 +30,7 @@
 #import "TDPuller.h"
 #import "TD_DatabaseManager.h"
 #import "TDStatus.h"
+#import "CDTSessionCookieInterceptor.h"
 
 const NSString *CDTReplicatorLog = @"CDTReplicator";
 static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
@@ -307,8 +308,15 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         remote = shadowConfig.target;
     }
     
+    NSMutableArray<id<CDTHTTPInterceptor>>* interceptors = [self.cdtReplication.httpInterceptors mutableCopy];
+    if (self.cdtReplication.username && self.cdtReplication.password) {
+        CDTSessionCookieInterceptor* cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:self.cdtReplication.username
+                                                                                                      password: self.cdtReplication.password];
+        [interceptors addObject:cookieInterceptor];
+    }
+    
     TDReplicator *repl = [[TDReplicator alloc] initWithDB:db.database remote:remote push:push continuous:continuous
-                                             interceptors:self.cdtReplication.httpInterceptors];
+                                             interceptors:interceptors];
     if (!repl) {
         if (error) {
             NSString *msg = [NSString

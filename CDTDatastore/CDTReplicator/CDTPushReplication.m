@@ -30,19 +30,34 @@
 
 + (instancetype)replicationWithSource:(CDTDatastore *)source target:(NSURL *)target
 {
-    return [[self alloc] initWithSource:source target:target];
+    return
+        [CDTPushReplication replicationWithSource:source target:target username:nil password:nil];
 }
 
-- (instancetype)initWithSource:(CDTDatastore *)source target:(NSURL *)target
++ (instancetype)replicationWithSource:(CDTDatastore *)source
+                               target:(NSURL *)target
+                             username:(NSString *)username
+                             password:(NSString *)password
 {
-    if (self = [super init]) {
-        
+    return [[self alloc] initWithSource:source target:target username:username password:password];
+}
+
+- (instancetype)initWithSource:(CDTDatastore *)source
+                        target:(NSURL *)target
+                      username:(NSString *)username
+                      password:(NSString *)password
+{
+    if (self = [super initWithUsername:username password:password]) {
         NSURLComponents * targetComponents = [NSURLComponents componentsWithURL:target resolvingAgainstBaseURL:NO];
         if(targetComponents.user && targetComponents.password){
-            CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:targetComponents.user password:targetComponents.password];
+            if (username && password) {
+                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"Credentials provided via the URL and username and password parameters, discarding URL credentials.");
+            } else {
+                CDTSessionCookieInterceptor * cookieInterceptor = [[CDTSessionCookieInterceptor alloc] initWithUsername:targetComponents.user password:targetComponents.password];
+                [self addInterceptor:cookieInterceptor];
+            }
             targetComponents.user = nil;
             targetComponents.password = nil;
-            [self addInterceptor:cookieInterceptor];
         }
         
         _source = source;
