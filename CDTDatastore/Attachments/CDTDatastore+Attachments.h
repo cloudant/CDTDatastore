@@ -72,6 +72,7 @@ typedef NS_ENUM(NSInteger, CDTAttachmentError) {
  */
 - (BOOL)addAttachment:(NSDictionary *)attachmentData
                 toRev:(CDTDocumentRevision *)revision
-           inDatabase:(FMDatabase *)db;
+           inDatabase:(FMDatabase *)db
+                error:(NSError *__autoreleasing *)error;
 
 @end

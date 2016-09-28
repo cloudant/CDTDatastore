@@ -13,21 +13,22 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import "CDTDatastore+Conflicts.h"
-#import "TD_Database+Attachments.h"
-#import "CDTDocumentRevision.h"
-#import "CDTDatastore+Attachments.h"
-#import "CDTDatastore+Internal.h"
+#import <FMDB/FMDB.h>
+#import <sqlite3.h>
 #import "CDTAttachment.h"
-#import "TD_Revision.h"
+#import "CDTConflictResolver.h"
+#import "CDTDatastore+Attachments.h"
+#import "CDTDatastore+Conflicts.h"
+#import "CDTDatastore+Internal.h"
+#import "CDTDocumentRevision.h"
+#import "CDTLogging.h"
+#import "TDInternal.h"
+#import "TDStatus.h"
+#import "TD_Body.h"
+#import "TD_Database+Attachments.h"
 #import "TD_Database+Conflicts.h"
 #import "TD_Database+Insertion.h"
-#import "CDTConflictResolver.h"
-#import "TDStatus.h"
-#import "TDInternal.h"
-#import <FMDB/FMDB.h>
-#import "TD_Body.h"
-#import "CDTLogging.h"
+#import "TD_Revision.h"
 
 @implementation CDTDatastore (Conflicts)
 
@@ -127,6 +128,7 @@
             // okay we have the new winner, need to insert the attachments
             // start with the new ones
             for (NSDictionary *attachment in downloadedAttachments) {
+                NSError *attachmentError = nil;
                 if (![strongSelf addAttachment:attachment
                                          toRev:[[CDTDocumentRevision alloc]
                                                    initWithDocId:winner.docID
@@ -135,8 +137,13 @@
                                                          deleted:winner.deleted
                                                      attachments:@{}
                                                         sequence:winner.sequence]
-                                    inDatabase:db]) {
-                    localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
+                                    inDatabase:db
+                                         error:&attachmentError]) {
+                    if (attachmentError.code == SQLITE_FULL) {
+                        localError = TDStatusToNSError(kTDStatusInsufficientStorage, nil);
+                    } else {
+                        localError = TDStatusToNSError(kTDStatusAttachmentError, nil);
+                    }
                     return kTDStatusAttachmentError;
                 }
             }

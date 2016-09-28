@@ -32,6 +32,7 @@
 #import <FMDB/FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 #import <FMDB/FMDatabaseQueue.h>
+#import <sqlite3.h>
 
 #import "Version.h"
 
@@ -535,10 +536,15 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                                                       sequence:new.sequence];
             for (NSDictionary *attachment in downloadedAttachments) {
                 // insert each attchment into the database, if this fails rollback
-                if (![datastore addAttachment:attachment toRev:saved inDatabase:db]) {
+                if (![datastore addAttachment:attachment toRev:saved inDatabase:db error:error]) {
                     // failed need to rollback
                     saved = nil;
                     *rollback = YES;
+                    if ((*error).code == SQLITE_FULL) {
+                        *error = TDStatusToNSError(kTDStatusInsufficientStorage, nil);
+                    } else {
+                        *error = TDStatusToNSError(kTDStatusDBError, nil);
+                    }
                     return;
                 }
             }
@@ -670,10 +676,15 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         if (result) {
             for (NSDictionary *attachment in downloadedAttachments) {
                 // insert each attchment into the database, if this fails rollback
-                if (![datastore addAttachment:attachment toRev:result inDatabase:db]) {
+                if (![datastore addAttachment:attachment toRev:result inDatabase:db error:error]) {
                     // failed need to rollback
                     result = nil;
                     *rollback = YES;
+                    if ((*error).code == SQLITE_FULL) {
+                        *error = TDStatusToNSError(kTDStatusInsufficientStorage, nil);
+                    } else {
+                        *error = TDStatusToNSError(kTDStatusDBError, nil);
+                    }
                 }
             }
             for (CDTSavedAttachment *attachment in attachmentToCopy) {

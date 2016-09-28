@@ -32,6 +32,7 @@ typedef NS_ENUM(NSInteger, TDStatus) {
     kTDStatusDuplicate = 412,  // Formally known as "Precondition Failed"
     kTDStatusUnsupportedType = 415,
     kTDStatusServerError = 500,
+    kTDStatusInsufficientStorage = 507,
 
     // Non-HTTP errors:
     kTDStatusBadEncoding = 490,
