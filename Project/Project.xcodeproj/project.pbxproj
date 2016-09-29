@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
-		2799959718D9D19D0042301D /* CDTTodoReplicator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959518D9D19D0042301D /* CDTTodoReplicator.m */; };
 		2799959B18D9D7910042301D /* CDTTodo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959A18D9D7910042301D /* CDTTodo.m */; };
 		2799959C18D9D7910042301D /* CDTTodo.m in Sources */ = {isa = PBXBuildFile; fileRef = 2799959A18D9D7910042301D /* CDTTodo.m */; };
 		27C1CDC7184E2D9C000604EF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDC6184E2D9C000604EF /* Foundation.framework */; };
@@ -39,8 +37,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2799959418D9D19D0042301D /* CDTTodoReplicator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodoReplicator.h; sourceTree = "<group>"; };
-		2799959518D9D19D0042301D /* CDTTodoReplicator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTTodoReplicator.m; sourceTree = "<group>"; };
 		2799959918D9D7910042301D /* CDTTodo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTTodo.h; sourceTree = "<group>"; };
 		2799959A18D9D7910042301D /* CDTTodo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTTodo.m; sourceTree = "<group>"; };
 		27C1CDC3184E2D9C000604EF /* Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Project.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,8 +140,6 @@
 				27C1CDD8184E2D9C000604EF /* Main.storyboard */,
 				27C1CDDB184E2D9C000604EF /* CDTViewController.h */,
 				27C1CDDC184E2D9C000604EF /* CDTViewController.m */,
-				2799959418D9D19D0042301D /* CDTTodoReplicator.h */,
-				2799959518D9D19D0042301D /* CDTTodoReplicator.m */,
 				27C1CDDE184E2D9C000604EF /* Images.xcassets */,
 				27C1CDCD184E2D9C000604EF /* Supporting Files */,
 			);
@@ -197,12 +191,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 27C1CDF5184E2D9C000604EF /* Build configuration list for PBXNativeTarget "Project" */;
 			buildPhases = (
-				F89A156CF8A2F5DE5C622ED1 /* 📦 Check Pods Manifest.lock */,
+				F89A156CF8A2F5DE5C622ED1 /* [CP] Check Pods Manifest.lock */,
 				27C1CDBF184E2D9C000604EF /* Sources */,
 				27C1CDC0184E2D9C000604EF /* Frameworks */,
 				27C1CDC1184E2D9C000604EF /* Resources */,
-				0ACCC6334D2AE204A575DDD7 /* 📦 Embed Pods Frameworks */,
-				FAFE0C0908533A384F9323D2 /* 📦 Copy Pods Resources */,
+				0ACCC6334D2AE204A575DDD7 /* [CP] Embed Pods Frameworks */,
+				FAFE0C0908533A384F9323D2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -287,14 +281,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		0ACCC6334D2AE204A575DDD7 /* 📦 Embed Pods Frameworks */ = {
+		0ACCC6334D2AE204A575DDD7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Embed Pods Frameworks";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -302,29 +296,29 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Project/Pods-Project-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F89A156CF8A2F5DE5C622ED1 /* 📦 Check Pods Manifest.lock */ = {
+		F89A156CF8A2F5DE5C622ED1 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Check Pods Manifest.lock";
+			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		FAFE0C0908533A384F9323D2 /* 📦 Copy Pods Resources */ = {
+		FAFE0C0908533A384F9323D2 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "📦 Copy Pods Resources";
+			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -341,7 +335,6 @@
 			files = (
 				2799959B18D9D7910042301D /* CDTTodo.m in Sources */,
 				27C1CDD7184E2D9C000604EF /* CDTAppDelegate.m in Sources */,
-				2799959618D9D19D0042301D /* CDTTodoReplicator.m in Sources */,
 				27C1CDD3184E2D9C000604EF /* main.m in Sources */,
 				27C1CDDD184E2D9C000604EF /* CDTViewController.m in Sources */,
 			);
@@ -352,7 +345,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2799959C18D9D7910042301D /* CDTTodo.m in Sources */,
-				2799959718D9D19D0042301D /* CDTTodoReplicator.m in Sources */,
 				27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -16,7 +16,6 @@
 #import "CDTViewController.h"
 
 #import "CDTAppDelegate.h"
-#import "CDTTodoReplicator.h"
 #import "CDTTodo.h"
 
 #import <CDTDatastore/CloudantSync.h>
@@ -24,7 +23,6 @@
 @interface CDTViewController ()
 
 @property (readonly) CDTDatastore *datastore;
-@property (readonly) CDTTodoReplicator *todoReplicator;
 @property (nonatomic, strong) NSArray *todoList;
 @property (nonatomic,readonly) BOOL showOnlyCompleted;
 @property (nonatomic, strong) NSTimer *timer;
@@ -44,12 +42,22 @@
 
     [self reloadTasks];
     [self.tableView reloadData];
+}
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stopTimer:) name:UIApplicationWillResignActiveNotification object:nil];
+- (NSURL *)replicatorURL
+{
+    // Shared database for demo purposes -- anyone can put stuff here...
+    NSString *username = @"iessidesseepromanownessi";
+    NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
+    NSString *db_name = @"shared_todo_sample";
 
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startTimer:) name:UIApplicationWillEnterForegroundNotification object:nil];
+    NSString *cleanURL = [NSString
+        stringWithFormat:@"https://%@:*****@mikerhodescloudant.cloudant.com/%@", username, db_name];
+    NSLog(@"%@", cleanURL);
 
-    [self startTimer:self];
+    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
+                                               username, password, db_name];
+    return [NSURL URLWithString:url];
 }
 
 #pragma mark Data managment
@@ -161,17 +169,25 @@
 }
 
 /**
- Handler for clicking the sync button. Starts a sync using the
- CDTTodoReplicator class.
+ Handler for clicking the sync button. Starts replicating, starts with a pull,
+ then pushes any changes to server. When the pull replication has completed,
+ the push replication is triggered.
  */
 -(IBAction)replicateTapped:(id)sender {
     NSLog(@"Replicate");
 
     __weak CDTViewController *weakSelf = self;
-    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
-        __strong CDTViewController *strongSelf = weakSelf;
-        [strongSelf toggleCompletedShown:nil];
-    }];
+
+    [self.datastore pullReplicationWithSource:[self replicatorURL]
+                            completionHandler:^(NSError *_Nullable error) {
+                              __strong CDTViewController *strongSelf = weakSelf;
+                              [strongSelf.datastore
+                                  pushReplicationWithTarget:[strongSelf replicatorURL]
+                                          completionHandler:^(NSError *_Nullable error) {
+                                            __strong CDTViewController *strongSelf = weakSelf;
+                                            [strongSelf toggleCompletedShown:nil];
+                                          }];
+                            }];
 }
 
 /**
@@ -354,28 +370,6 @@
     }
     
     [self.tableView endUpdates];
-}
-
-- (void)periodicReplication:(NSTimer *)timer
-{
-    __weak CDTViewController *weakSelf = self;
-    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
-        __strong CDTViewController *strongSelf = weakSelf;
-        [strongSelf performSelectorOnMainThread:@selector(refresh) withObject:nil waitUntilDone:false];
-    }];
-}
-
-- (void)startTimer:(id)sender {
-    _timer = [NSTimer scheduledTimerWithTimeInterval:5*60
-                                              target:self
-                                            selector:@selector(periodicReplication:)
-                                            userInfo:nil
-                                             repeats:YES];
-}
-
-- (void)stopTimer:(id)sender {
-    [_timer invalidate];
-    _timer = nil;
 }
 
 - (void)refresh {
