@@ -205,6 +205,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
 - (BOOL)addAttachment:(NSDictionary *)attachmentData
                 toRev:(CDTDocumentRevision *)revision
            inDatabase:(FMDatabase *)db
+                error:(NSError *__autoreleasing *)error
 {
     if (attachmentData == nil) {
         return NO;
@@ -234,6 +235,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     success = [db executeUpdate:[SQL_DELETE_ATTACHMENT_ROW copy] withParameterDictionary:params];
 
     if (!success) {
+        *error = [db lastError];
         return NO;
     }
 
@@ -249,11 +251,14 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     };
 
     // insert new record
-    success = [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
+    success = success =
+        [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
 
     // We don't remove the blob from the store on !success because
     // it could be referenced from another attachment (as files are
     // only stored once per sha1 of file data).
+
+    if (!success) *error = [db lastError];
 
     return success;
 }

@@ -24,6 +24,7 @@
 
 #import <FMDB/FMDatabase.h>
 #import <FMDB/FMDatabaseQueue.h>
+#import <sqlite3.h>
 
 @implementation TD_Database (LocalDocs)
 
@@ -85,7 +86,10 @@
                 if (![db executeUpdate:@"UPDATE localdocs SET revid=?, json=? "
                                         "WHERE docid=? AND revid=?",
                                        newRevID, json, docID, prevRevID]) {
-                    *outStatus = kTDStatusDBError;
+                    if (db.lastErrorCode == SQLITE_FULL)
+                        *outStatus = kTDStatusInsufficientStorage;
+                    else
+                        *outStatus = kTDStatusDBError;
                     return;
                 }
             } else {
@@ -95,7 +99,10 @@
                 if (![db executeUpdate:@"INSERT OR IGNORE INTO localdocs (docid, revid, json) "
                                         "VALUES (?, ?, ?)",
                                        docID, newRevID, json]) {
-                    *outStatus = kTDStatusDBError;
+                    if (db.lastErrorCode == SQLITE_FULL)
+                        *outStatus = kTDStatusInsufficientStorage;
+                    else
+                        *outStatus = kTDStatusDBError;
                     return;
                 }
             }

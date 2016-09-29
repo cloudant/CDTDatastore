@@ -120,11 +120,14 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 /**
  * Adds a new document ID to the 'docs' table.
  * Must be called from within an FMDatabaseQueue block */
-- (SInt64)insertDocumentID:(NSString*)docID inDatabase:(FMDatabase*)db
+- (SInt64)insertDocumentID:(NSString*)docID
+                inDatabase:(FMDatabase*)db
+                     error:(NSError* __autoreleasing*)error
 {
     Assert([TD_Database isValidDocumentID:docID]);  // this should be caught before I get here
 
-    if (![db executeUpdate:@"INSERT INTO docs (docid) VALUES (?)", docID]) {
+    if (![db executeUpdate:@"INSERT INTO docs (docid) VALUES (?)"
+            withErrorAndBindings:error, docID]) {
         return -1;
     }
     return db.lastInsertRowId;
@@ -232,11 +235,13 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                          current:(BOOL)current
                             JSON:(NSData*)json
                         database:(FMDatabase*)db
+                           error:(NSError* __autoreleasing*)error
 {
     if (![db executeUpdate:@"INSERT INTO revs (doc_id, revid, parent, current, deleted, json) "
-                            "VALUES (?, ?, ?, ?, ?, ?)",
-                           @(docNumericID), rev.revID, (parentSequence ? @(parentSequence) : nil),
-                           @(current), @(rev.deleted), json]) {
+                            "VALUES (?, ?, ?, ?, ?, ?)"
+            withErrorAndBindings:error, @(docNumericID), rev.revID,
+                                 (parentSequence ? @(parentSequence) : nil), @(current),
+                                 @(rev.deleted), json]) {
         return 0;
     }
     return rev.sequence = db.lastInsertRowId;
@@ -369,9 +374,13 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             // Inserting first revision, with docID given (PUT):
             if (docNumericID <= 0) {
                 // Doc ID doesn't exist at all; create it:
-                docNumericID = [self insertDocumentID:docID inDatabase:db];
-                if (docNumericID <= 0) {
-                    *outStatus = kTDStatusDBError;
+                NSError* error = nil;
+                docNumericID = [self insertDocumentID:docID inDatabase:db error:&error];
+                if (error) {
+                    if (error.code == SQLITE_FULL)
+                        *outStatus = kTDStatusInsufficientStorage;
+                    else
+                        *outStatus = kTDStatusDBError;
                     return nil;
                 }
             } else {
@@ -391,9 +400,13 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
         } else {
             // Inserting first revision, with no docID given (POST): generate a unique docID:
             docID = [[self class] generateDocumentID];
-            docNumericID = [self insertDocumentID:docID inDatabase:db];
-            if (docNumericID <= 0) {
-                *outStatus = kTDStatusDBError;
+            NSError* error = nil;
+            docNumericID = [self insertDocumentID:docID inDatabase:db error:&error];
+            if (error) {
+                if (error.code == SQLITE_FULL)
+                    *outStatus = kTDStatusInsufficientStorage;
+                else
+                    *outStatus = kTDStatusDBError;
                 return nil;
             }
         }
@@ -434,19 +447,24 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     if (json == nil) json = [NSData data];
 
     //// PART III: In which the actual insertion finally takes place:
-
     SequenceNumber sequence = [self insertRevision:rev
                                       docNumericID:docNumericID
                                     parentSequence:parentSequence
                                            current:YES
                                               JSON:json
-                                          database:db];
+                                          database:db
+                                             error:nil];
     if (!sequence) {
         // The insert failed. If it was due to a constraint violation, that means a revision
         // already exists with identical contents and the same parent rev. We can ignore this
         // insert call, then.
-        if (db.lastErrorCode != SQLITE_CONSTRAINT) {
-            *outStatus = kTDStatusDBError;
+        int dbErrorCode = db.lastErrorCode;
+        if (dbErrorCode != SQLITE_CONSTRAINT) {
+            if (dbErrorCode == SQLITE_FULL) {
+                *outStatus = kTDStatusInsufficientStorage;
+            } else {
+                *outStatus = kTDStatusDBError;
+            }
             return nil;
         }
         CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"Duplicate rev insertion: %@ / %@", docID, newRevID);
@@ -458,7 +476,11 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     // Make replaced rev non-current:
     if (parentSequence > 0) {
         if (![db executeUpdate:@"UPDATE revs SET current=0 WHERE sequence=?", @(parentSequence)]) {
-            *outStatus = kTDStatusDBError;
+            if (db.lastErrorCode == SQLITE_FULL) {
+                *outStatus = kTDStatusInsufficientStorage;
+            } else {
+                *outStatus = kTDStatusDBError;
+            }
             return nil;
         }
     }
@@ -560,9 +582,12 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                     return;
                 }
             } else {
-                docNumericID = [strongSelf insertDocumentID:docID inDatabase:db];
+                docNumericID = [strongSelf insertDocumentID:docID inDatabase:db error:NULL];
                 if (docNumericID <= 0) {
-                    result = kTDStatusDBError;
+                    if (db.lastErrorCode == SQLITE_FULL)
+                        result = kTDStatusInsufficientStorage;
+                    else
+                        result = kTDStatusDBError;
                     return;
                 }
             }
@@ -629,9 +654,13 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
                                            parentSequence:sequence
                                                   current:current
                                                      JSON:json
-                                                 database:db];
+                                                 database:db
+                                                    error:NULL];
                     if (sequence <= 0) {
-                        result = kTDStatusDBError;
+                        if (db.lastErrorCode == SQLITE_FULL)
+                            result = kTDStatusInsufficientStorage;
+                        else
+                            result = kTDStatusDBError;
                         return;
                     }
                     newRev.sequence = sequence;
@@ -660,7 +689,10 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
             if (localParentSequence > 0 && localParentSequence != sequence) {
                 if (![db executeUpdate:@"UPDATE revs SET current=0 WHERE sequence=?",
                                        @(localParentSequence)]) {
-                    result = kTDStatusDBError;
+                    if (db.lastErrorCode == SQLITE_FULL)
+                        result = kTDStatusInsufficientStorage;
+                    else
+                        result = kTDStatusDBError;
                     return;
                 }
             }
