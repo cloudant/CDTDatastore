@@ -452,6 +452,25 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 {
     return [_database openWithEncryptionKeyProvider:self.keyProvider];
 }
+/**
+ * Validates that attachments are keyed by attachment name.
+ * @param attachments The attachments dictionary to validate.
+ * @return True if the attachments dictionary is of the form @[ attachment.name : attachment ],
+ * false
+ * otherwise.
+ */
+- (BOOL)validateAttachments:(NSDictionary<NSString *, CDTAttachment *> *)attachments
+{
+    __block BOOL result = YES;
+    [attachments
+        enumerateKeysAndObjectsUsingBlock:^(NSString *key, CDTAttachment *obj, BOOL *stop) {
+          if (![key isEqualToString:obj.name]) {
+              result = NO;
+              *stop = YES;
+          }
+        }];
+    return result;
+}
 
 #pragma mark fromRevision API methods
 
@@ -469,6 +488,13 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     if (![self validateBodyDictionary:revision.body error:error]) {
         return nil;
+    }
+
+    if (![self validateAttachments:revision.attachments]) {
+        CDTLogWarn(
+            CDTDATASTORE_LOG_CONTEXT,
+            @"Attachments dictionary is not keyed by attachment name. "
+             "When accessing attachments on saved revisions they will be keyed by attachment name");
     }
 
     if (![self ensureDatabaseOpen]) {
@@ -623,6 +649,13 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     if (![self validateBodyDictionary:revision.body error:error]) {
         return nil;
+    }
+
+    if (![self validateAttachments:revision.attachments]) {
+        CDTLogWarn(
+            CDTDATASTORE_LOG_CONTEXT,
+            @"Attachments dictionary is not keyed by attachment name. "
+             "When accessing attachments on saved revisions they will be keyed by attachment name");
     }
 
     if (![self ensureDatabaseOpen]) {

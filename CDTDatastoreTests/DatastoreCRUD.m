@@ -36,6 +36,10 @@
 #import "DBQueryUtils.h"
 #import "CDTAttachment.h"
 
+@interface CDTDatastore ()
+- (BOOL)validateAttachments:(NSDictionary<NSString *, CDTAttachment *> *)attachments;
+@end
+
 @interface DatastoreCRUD : CloudantSyncTests
 
 @property (nonatomic,strong) CDTDatastore *datastore;
@@ -97,6 +101,29 @@
                    error.code,
                    @"Error code should be 400, but was %ld",
                    (long)error.code);
+}
+
+- (void)testAttachmentValidationUnexpectedAttsDictKey
+{
+    CDTUnsavedDataAttachment *dataAttachment = [[CDTUnsavedDataAttachment alloc]
+        initWithData:[@"test" dataUsingEncoding:NSUTF8StringEncoding]
+                name:@"test"
+                type:@"text/plain"];
+    NSDictionary<NSString *, CDTAttachment *> *attachmentsDict =
+        @{ @"not the name" : dataAttachment };
+    XCTAssertFalse([self.datastore validateAttachments:attachmentsDict],
+                   "Attachments dictionary not keyed on attachment name should fail validation");
+}
+
+- (void)testAttachmentValidationCorrectAttsDictKey
+{
+    CDTUnsavedDataAttachment *dataAttachment = [[CDTUnsavedDataAttachment alloc]
+        initWithData:[@"test" dataUsingEncoding:NSUTF8StringEncoding]
+                name:@"test"
+                type:@"text/plain"];
+    NSDictionary<NSString *, CDTAttachment *> *attachmentsDict = @{ @"test" : dataAttachment };
+    XCTAssertTrue([self.datastore validateAttachments:attachmentsDict],
+                  "Attachments dictionary keyed on attachment name should pass validation");
 }
 
 -(void) testDocumentWithNonSerialisableValue {
