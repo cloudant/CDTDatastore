@@ -19,7 +19,7 @@
 
 - (instancetype)initWithContext:(CDTHTTPInterceptorContext *)context
 {
-    self = [super initWithRequest:context.request];
+    self = [super initWithRequest:context.request state:[context.state mutableCopy]];
     if (self) {
         self.response = context.response;
     }
