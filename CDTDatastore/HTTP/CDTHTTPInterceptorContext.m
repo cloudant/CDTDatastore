@@ -18,7 +18,7 @@
 #import "CDTHTTPInterceptorContext.h"
 
 @interface CDTHTTPInterceptorContext ()
-@property NSMutableDictionary<NSString*, NSObject*> *state;
+@property NSMutableDictionary<NSString *, NSObject *> *internalState;
 @end
 
 @implementation CDTHTTPInterceptorContext
@@ -41,19 +41,19 @@
     if (self) {
         _request = request;
         _shouldRetry = NO;
-        _state = state;
+        _internalState = state;
     }
     return self;
 }
 
 - (NSObject*)stateForKey:(NSString*)key {
-    return _state[key];
+    return self.internalState[key];
 }
 
 - (void)setState:(NSObject*)value
           forKey:(NSObject*)key {
-    [_state setValue:value forKey:key];
+    [self.internalState setValue:value forKey:key];
 }
 
-
+- (NSDictionary *)state { return [self.internalState copy]; }
 @end

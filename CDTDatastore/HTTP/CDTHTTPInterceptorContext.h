@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
 
 /**
+ * An immutable copy of the state dictionary for this context.
+ * This is useful when subclassing.
+ */
+@property (nonnull, readonly, nonatomic) NSDictionary *state;
+
+/**
  *  Unavaiable, use -initWithRequest
  *
  *  Calling this method from your code will result in

@@ -19,7 +19,7 @@ SAMPLE_IOS = "Project"
 
 
 # Destinations
-IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 4S'
+IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 5'
 OSX_DEST = 'platform=OS X'
 
 #
