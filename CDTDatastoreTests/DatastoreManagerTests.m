@@ -78,8 +78,13 @@
 
     // check that we get back the upgraded sequence numbers
     for (NSString *remote in remotes) {
-        NSObject *sequence = [[store database] lastSequenceWithCheckpointID:remote];
-        XCTAssertNotNil(sequence);
+        __block NSData *lastSequenceJson;
+        [[[store database] fmdbQueue] inDatabase:^(FMDatabase *db) {
+          lastSequenceJson =
+              [db dataForQuery:@"SELECT last_sequence FROM replicators WHERE remote=?", remote];
+        }];
+
+        XCTAssertNotNil(lastSequenceJson);
     }
 }
 

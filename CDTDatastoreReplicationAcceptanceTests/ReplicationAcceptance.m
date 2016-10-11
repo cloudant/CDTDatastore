@@ -1671,18 +1671,16 @@
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:nil];
     
     [replicator startWithError:nil];
-    
+    NSString *checkpointDocId = [replicator.tdReplicator remoteCheckpointDocID];
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:3.0f];
     }
     
     //now explicitly check equality between local and remote checkpoint docs.
-    CDTReplicator *cdtrepl = [[CDTReplicator alloc] initWithTDDatabaseManager:self.factory.manager replication:pull sessionConfigDelegate:nil error:nil];
 
     TD_Database *tdb = self.datastore.database;
-    
-    NSString *checkpointDocId = [cdtrepl.tdReplicator remoteCheckpointDocID];
-    NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+
+    NSDictionary *localLastSequence = [tdb checkpointDocumentWithID:checkpointDocId];
 
     //make sure the remote database has the appropriate document
     NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
@@ -1694,10 +1692,11 @@
         [request setHeaders:headers];
     }] asJson];
     NSDictionary *jsonResponse = response.body.object;
-    
-    XCTAssertEqualObjects(localLastSequence, jsonResponse[@"lastSequence"],
+
+    XCTAssertNotNil(localLastSequence);
+    XCTAssertNotNil(jsonResponse[@"source_last_seq"]);
+    XCTAssertEqualObjects(localLastSequence[@"source_last_seq"], jsonResponse[@"source_last_seq"],
                           @"local: %@, remote response %@", localLastSequence, jsonResponse);
-    
 }
 
 - (void) testRemoteLastSequenceValueAfterPushReplication
@@ -1713,18 +1712,15 @@
     CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:nil];
     
     [replicator startWithError:nil];
-    
+    NSString *checkpointDocId = [replicator.tdReplicator remoteCheckpointDocID];
     while (replicator.isActive) {
         [NSThread sleepForTimeInterval:3.0f];
     }
     
     //now explicitly check equality between local and remote checkpoint docs.
-    CDTReplicator *cdtrepl = [[CDTReplicator alloc] initWithTDDatabaseManager:self.factory.manager replication:push sessionConfigDelegate:nil error:nil];
-    
     TD_Database *tdb = self.datastore.database;
-    
-    NSString *checkpointDocId = [cdtrepl.tdReplicator remoteCheckpointDocID];
-    NSObject *localLastSequence = [tdb lastSequenceWithCheckpointID:checkpointDocId];
+
+    NSDictionary *localLastSequence = [tdb checkpointDocumentWithID:checkpointDocId];
 
     //make sure the remote database has the appropriate document
     NSString *remoteCheckpointPath = [NSString stringWithFormat:@"_local/%@", checkpointDocId];
@@ -1736,8 +1732,10 @@
         [request setHeaders:headers];
     }] asJson];
     NSDictionary *jsonResponse = response.body.object;
-    
-    XCTAssertEqualObjects(localLastSequence, jsonResponse[@"lastSequence"],
+
+    XCTAssertNotNil(localLastSequence);
+    XCTAssertNotNil(jsonResponse[@"source_last_seq"]);
+    XCTAssertEqualObjects(localLastSequence[@"source_last_seq"], jsonResponse[@"source_last_seq"],
                           @"local: %@, remote response %@", localLastSequence, jsonResponse);
 }
 

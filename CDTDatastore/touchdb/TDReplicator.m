@@ -16,22 +16,24 @@
 //  and limitations under the License.
 
 #import "TDReplicator.h"
-#import "TDPusher.h"
-#import "TDPuller.h"
-#import "TD_Database+Replication.h"
-#import "TDRemoteRequest.h"
-#import "TDAuthorizer.h"
-#import "TDBatcher.h"
-#import "TDInternal.h"
-#import "TDMisc.h"
-#import "TDBase64.h"
-#import "TDCanonicalJSON.h"
-#import "TDReachability.h"
-#import "MYURLUtils.h"
+#import <Foundation/Foundation.h>
 #import "CDTLogging.h"
 #import "CDTURLSession.h"
 #import "CollectionUtils.h"
+#import "MYURLUtils.h"
+#import "TDAuthorizer.h"
+#import "TDBase64.h"
+#import "TDBatcher.h"
+#import "TDCanonicalJSON.h"
+#import "TDInternal.h"
+#import "TDMisc.h"
+#import "TDPuller.h"
+#import "TDPusher.h"
+#import "TDReachability.h"
+#import "TDRemoteRequest.h"
+#import "TD_Database+Replication.h"
 #import "Test.h"
+
 #if TARGET_OS_IPHONE
 #import <UIKit/UIApplication.h>
 #endif
@@ -340,11 +342,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STARTING ...", self);
 
     [_db addActiveReplicator:self];
-
-    // Did client request a reset (i.e. starting over from first sequence?)
-    if (self.reset) {
-        [_db setLastSequence:nil withCheckpointID:self.remoteCheckpointDocID];
-    }
 
     // Note: This is actually a ref cycle, because the block has a (retained) reference to 'self',
     // and _batcher retains the block, and of course I retain _batcher.
@@ -748,7 +745,13 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 {
     _lastSequenceChanged = NO;
     NSString* checkpointID = self.remoteCheckpointDocID;
-    NSObject* localLastSequence = [_db lastSequenceWithCheckpointID:checkpointID];
+    NSDictionary<NSString*, NSObject*>* localCheckpoint =
+        [_db checkpointDocumentWithID:checkpointID];
+    NSObject* localLastSequence = localCheckpoint[@"source_last_seq"];
+    if (!localLastSequence) {
+        // local doc is in the old format
+        localLastSequence = localCheckpoint[@"seq"];
+    }
 
     [self asyncTaskStarted];
     TDRemoteJSONRequest* request = [self
@@ -765,13 +768,52 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                     if (error.code == kTDStatusNotFound) [self maybeCreateRemoteDB];
                     response = $castIf(NSDictionary, response);
                     self.remoteCheckpoint = response;
-                    NSObject* remoteLastSequence = response[@"lastSequence"];
+                    NSObject* remoteLastSequence = response[@"source_last_seq"];
+                    if (!remoteLastSequence) {
+                        // the checkpoint doc is the old format, it will be converted when we
+                        // resave, for now
+                        // fall back to the `lastSequence` property
+                        remoteLastSequence = response[@"seq"];
+                    }
 
                     if ($equal(remoteLastSequence, localLastSequence)) {
                         _lastSequence = localLastSequence;
                         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Replicating from lastSequence=%@",
                                 self, _lastSequence);
                     } else {
+                        // traverse the history object looking for the last session where the
+                        // session ids match.
+                        if (self.remoteCheckpoint[@"history"]) {
+                            NSArray<NSDictionary<NSString*, NSObject*>*>* remoteHistory =
+                                self.remoteCheckpoint[@"history"];
+                            NSArray<NSDictionary<NSString*, NSObject*>*>* localHistory =
+                                localCheckpoint[@"history"];
+
+                            // This assumes the  history array is ordered (most recent -> least
+                            // recent)
+                            for (NSDictionary<NSString*, NSObject*>* rHistory in remoteHistory) {
+                                NSString* sessionID = (NSString*)rHistory[@"session_id"];
+                                BOOL found = NO;
+                                for (NSDictionary<NSString*, NSObject*>* lHistory in
+                                         remoteHistory) {
+                                    if ([lHistory[@"session_id"] isEqual:sessionID]) {
+                                        found = YES;
+                                        break;
+                                    }
+                                }
+
+                                if (found) {
+                                    self.lastSequence = rHistory[@"recorded_seq"];
+                                    break;
+                                }
+                            }
+                        } else {
+                            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
+                                       @"%@: Remote checkpoint doc does not contain history,"
+                                       @" falling back to full replication",
+                                       self);
+                        }
+
                         CDTLogInfo(
                             CDTREPLICATION_LOG_CONTEXT,
                             @"%@: lastSequence mismatch: I had %@, remote had %@ (response = %@)",
@@ -790,6 +832,27 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void)saveLastSequence
 {
+    // Replication Protocol V3 check point documents.
+    // ===============================================
+    // history (array of object): Replication history. Required
+    //    doc_write_failures (number): Number of failed writes
+    //    docs_read (number): Number of read documents
+    //    docs_written (number): Number of written documents
+    //    end_last_seq (number): Last processed Update Sequence ID
+    //    end_time (string): Replication completion datetime in RFC 5322 format
+    //    missing_checked (number): Number of checked revisions on Source
+    //    missing_found (number): Number of missing revisions found on Target
+    //    recorded_seq (number): Recorded intermediate Checkpoint. Required
+    //    session_id (string): Unique session ID. Commonly, a random UUID value is used. Required
+    //    start_last_seq (number): Start update Sequence ID
+    //    start_time (string): Replication start datetime in RFC 5322 format
+    // replication_id_version (number): Replication protocol version. Defines Replication ID
+    // calculation algorithm, HTTP API calls and the others routines. Required
+    // session_id (string): Unique ID of the last session. Shortcut to the session_id field of the
+    // latest history object. Required
+    // source_last_seq (number): Last processed Checkpoint. Shortcut to the recorded_seq field of
+    // the latest history object. Required
+
     if (!_lastSequenceChanged) return;
     if (_savingCheckpoint) {
         // If a save is already in progress, don't do anything. (The completion block will trigger
@@ -800,10 +863,35 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     _lastSequenceChanged = _overdueForSave = NO;
 
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ checkpointing sequence=%@", self, _lastSequence);
-    NSMutableDictionary* body = [_remoteCheckpoint mutableCopy];
-    if (!body) body = $mdict();
-    [body setValue:_lastSequence forKey:@"lastSequence"];
-    
+    NSMutableDictionary* body = [self.remoteCheckpoint mutableCopy];
+
+    // upgrade the replication doc to the new format.
+    if (body && !body[@"history"]) {
+        NSMutableArray<NSDictionary<NSString*, NSObject*>*>* history = [@[ @{
+            @"session_id" : [[NSUUID UUID] UUIDString],
+            @"recorded_seq" : body[@"lastSequence"]
+        } ] mutableCopy];
+        body[@"history"] = history;
+        body[@"replication_id_version"] = @(3);
+        body[@"session_id"] = history[0][@"session_id"];
+        body[@"source_last_seq"] = body[@"lastSequence"];
+        body[@"lastSequence"] = nil;
+    }
+
+    if (!body) body = [NSMutableDictionary dictionary];
+
+    NSMutableDictionary<NSString*, NSObject*>* historyItem =
+        [@{ @"session_id" : [[NSUUID UUID] UUIDString],
+            @"recorded_seq" : _lastSequence } mutableCopy];
+
+    NSMutableArray* history = [((NSArray*)body[@"history"])mutableCopy];
+    if (!history) history = [NSMutableArray array];
+    [history insertObject:historyItem
+                  atIndex:0];  // the latest history entry needs to be first in the array.
+    body[@"history"] = history;
+    [body setValue:_lastSequence forKey:@"source_last_seq"];
+    body[@"session_id"] = history[0][@"session_id"];
+
     _savingCheckpoint = YES;
     NSString* checkpointID = self.remoteCheckpointDocID;
     [self asyncTaskStarted];
@@ -819,9 +907,14 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                       // read-only and don't attempt to read its checkpoint next time.
                   } else if (_db) {
                       id rev = response[@"rev"];
+                      id ID = response[@"id"];
                       if (rev) body[@"_rev"] = rev;
+                      if (ID) body[@"_id"] = ID;
                       self.remoteCheckpoint = body;
-                      [_db setLastSequence:_lastSequence withCheckpointID:checkpointID];
+                      if (ID && [self.db saveCheckpointDocument:body error:nil]) {
+                          CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                                     @"Failed to save checkpoint to local database");
+                      }
                   }
 
                   CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,

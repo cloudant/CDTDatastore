@@ -68,8 +68,10 @@
         [_activeReplicators removeObjectIdenticalTo:repl];
 }
 
-- (NSObject*)lastSequenceWithCheckpointID:(NSString *)checkpointID
+- (NSDictionary<NSString *, NSObject *> *)checkpointDocumentWithID:(NSString *)checkpointID
 {
+    NSParameterAssert(checkpointID);
+
     // This table schema is out of date but I'm keeping it the way it is for compatibility.
     // The 'remote' column now stores the opaque checkpoint IDs, and 'push' is ignored.
     __block NSData *lastSequenceJson = nil;
@@ -81,28 +83,38 @@
     if (lastSequenceJson != nil) {
         NSDictionary *lastSequence = [TDJSON JSONObjectWithData:lastSequenceJson options:0 error:nil];
         // the sequence is saved as a json dict of {"seq": <data>}
-        return lastSequence[@"seq"];
+        return lastSequence;
     } else {
         return nil;
     }
 }
 
-- (void)setLastSequence:(NSObject*)lastSequence withCheckpointID:(NSString *)checkpointID
+- (BOOL)saveCheckpointDocument:(NSDictionary<NSString *, NSObject *> *)checkpoint
+                         error:(NSError *__autoreleasing *)error
 {
-    // nothing to save so return early
-    if (lastSequence == nil) {
-        return;
+    NSParameterAssert(checkpoint);
+    NSParameterAssert(checkpoint.count > 0);
+
+    NSString *remote = (NSString *)checkpoint[@"_id"];
+    // 8 is the length of _local/ +1
+    remote = [remote substringFromIndex:8];
+
+    NSData *checkpointData = [TDJSON dataWithJSONObject:checkpoint options:0 error:&error];
+    if (error) {
+        return NO;
     }
-    __block BOOL result;
-    id lastSequenceJson;
-    // write the sequence as a json dict of {"seq": <data>}
-    NSDictionary *dict = @{@"seq": lastSequence};
-    lastSequenceJson = [TDJSON dataWithJSONObject:dict options:0 error:nil];
-    [_fmdbQueue inDatabase:^(FMDatabase *db) {
-        result = [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
-                                   @"last_sequence) VALUES (?, -1, ?)",
-                                   checkpointID, lastSequenceJson];
+
+    [self.fmdbQueue inDatabase:^(FMDatabase *db) {
+      [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
+                        @"last_sequence) VALUES (?, -1, ?)"
+          withErrorAndBindings:error, remote, checkpointData];
     }];
+
+    if (error) {
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 + (NSString *)joinQuotedStrings:(NSArray *)strings
