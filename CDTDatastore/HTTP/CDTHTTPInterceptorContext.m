@@ -49,9 +49,8 @@
 - (NSObject*)stateForKey:(NSString*)key {
     return self.internalState[key];
 }
-
-- (void)setState:(NSObject*)value
-          forKey:(NSObject*)key {
+- (void)setState:(NSObject *)value forKey:(NSString *)key
+{
     [self.internalState setValue:value forKey:key];
 }
 

@@ -78,9 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value the value to store
  * @param key the key with which the value is associated
  */
-                                                   
-- (void)setState:(NSObject*)value
-          forKey:(NSObject*)key;
+
+- (void)setState:(NSObject *)value forKey:(NSString *)key;
 
 @end
 
