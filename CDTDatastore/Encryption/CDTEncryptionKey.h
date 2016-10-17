@@ -27,6 +27,7 @@
 // Size (bytes) of the DPK (Data Protection Key)
 #define CDTENCRYPTIONKEY_KEYSIZE 32
 
+NS_ASSUME_NONNULL_BEGIN
 @interface CDTEncryptionKey : NSObject
 
 /**
@@ -34,7 +35,7 @@
  */
 @property (nonnull, strong, nonatomic, readonly) NSData *data;
 
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**
  Initialise an encryption key with a buffer.
@@ -50,3 +51,4 @@
 + (nullable instancetype)encryptionKeyWithData:(nonnull NSData *)data;
 
 @end
+NS_ASSUME_NONNULL_END

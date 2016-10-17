@@ -251,8 +251,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     };
 
     // insert new record
-    success = success =
-        [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
+    success = [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
 
     // We don't remove the blob from the store on !success because
     // it could be referenced from another attachment (as files are

@@ -28,6 +28,7 @@
 
 - (instancetype)init
 {
+    NSAssert(NO, @"Use designated initializer");
     return nil;
 }
 

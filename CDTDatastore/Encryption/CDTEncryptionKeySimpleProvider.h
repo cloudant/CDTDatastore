@@ -27,12 +27,14 @@
  @see CDTEncryptionKeyProvider
  @see CDTEncryptionKey
  */
+NS_ASSUME_NONNULL_BEGIN
 @interface CDTEncryptionKeySimpleProvider : NSObject <CDTEncryptionKeyProvider>
 
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (nullable instancetype)initWithKey:(nonnull NSData *)key NS_DESIGNATED_INITIALIZER;
 
 + (nullable instancetype)providerWithKey:(nonnull NSData *)key;
 
 @end
+NS_ASSUME_NONNULL_END

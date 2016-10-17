@@ -34,6 +34,7 @@
 #pragma mark - Init object
 - (instancetype)init
 {
+    NSAssert(NO, @"Use designated initializer");
     return nil;
 }
 
