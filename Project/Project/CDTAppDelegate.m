@@ -15,7 +15,6 @@
 
 #import "CDTAppDelegate.h"
 
-#import "CDTTodoReplicator.h"
 #import "CDTLogging.h"
 #import <CDTDatastore/CloudantSync.h>
 
@@ -47,8 +46,6 @@
         NSLog(@"Error creating indexManager.");
         exit(1);
     }
-
-    self.todoReplicator = [[CDTTodoReplicator alloc] init];
     
     int backgroundInterval24hrs = 24*60*60;
     [[UIApplication sharedApplication] setMinimumBackgroundFetchInterval:backgroundInterval24hrs];
@@ -129,8 +126,6 @@
         exit(1);
     }
 
-    self.replicatorFactory = [[CDTReplicatorFactory alloc] initWithDatastoreManager:manager];
-
     CDTDatastore *datastore = [manager datastoreNamed:@"todo_items" error:&outError];
 
     if (nil != outError) {
@@ -142,11 +137,5 @@
 
 }
 
-- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler
-{
-    [self.todoReplicator syncInBackgroundWithCompletionHandler:^{
-        completionHandler(UIBackgroundFetchResultNewData);
-    }];
-}
 
 @end

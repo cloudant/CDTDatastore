@@ -40,9 +40,6 @@ Let's assume we wish to configure a replication policy as follows:
 * When the app is displaying data to the user we want to refresh the UI to display the new data when the pull replication has completed.
 * After the device has rebooted, we want replications to continue in the same way as prior to the reboot.
 
-Note that there is a full example implementing a policy similar to the above in the example project in the
-`Project` directory.
-
 #### Configuring app capabilities
 
 On the `Capabilities` tab of your Xcode project turn on `Background Modes` and select `Background fetch`.
@@ -193,5 +190,3 @@ Add the following to the View Controller's `viewWillAppear:animated` method:
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(startTimer:) name:UIApplicationWillEnterForegroundNotification object:nil];
 ```
-
-

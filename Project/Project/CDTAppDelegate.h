@@ -22,7 +22,6 @@
 @interface CDTAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (nonatomic, strong) CDTDatastore *datastore;
-@property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 @property (nonatomic, strong) CDTTodoReplicator *todoReplicator;
 
 @property (strong, nonatomic) UIWindow *window;
