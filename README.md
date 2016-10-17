@@ -124,25 +124,29 @@ NSString *docId = revision.docId;
 CDTDocumentRevision *retrieved = [datastore getDocumentWithId:docId
                                                         error:&error];
 ```
+If you are using Swift, install the library as per the instructions above
+and add the `use_frameworks!` instruction to your target. A bridging header is
+required if the `use_frameworks!` instruction is not used.
 
-If you are using Swift, install the libraries as per the instructions above,
-and configure a bridging header for your project. Pull in the CloudantSync.h
-header into the bridging header, and you should be good to go:
+If you are using a bridging header, include the `CloudantSync.h` and you
+should be good to go:
 
 ```objc
 #import <CDTDatastore/CloudantSync.h>
 ```
 
+
 To add, and read documents in Swift, the basics are:
 
 ```swift
+import CDTDatastore
+
 do {
-    let fileManager = NSFileManager.defaultManager()
+    let fileManager = FileManager.default
 
-    let documentsDir = fileManager.URLsForDirectory(.DocumentDirectory,
-        inDomains: .UserDomainMask).last!
+    let documentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).last!
 
-    let storeURL = documentsDir.URLByAppendingPathComponent("cloudant-sync-datastore")
+    let storeURL = documentsDir.appendingPathComponent("cloudant-sync-datastore")
     let path = storeURL.path
 
     let manager = try CDTDatastoreManager(directory: path)
@@ -151,26 +155,25 @@ do {
     // Create a document
     let rev = CDTDocumentRevision(docId: "doc1")
     rev.body = ["description":"Buy Milk",
-        "completed": false,
-        "type":"com.cloudant.sync.example.task"]
+                "completed": false,
+                "type":"com.cloudant.sync.example.task"]
 
     // Add an attachment - binary data like a JPEG
     let att1 = CDTUnsavedFileAttachment(path: "/path/to/image/jpg",
-        name: "cute_cat.jpg",
-        type: "image/jpeg")
+                                        name: "cute_cat.jpg",
+                                        type: "image/jpeg")!
     rev.attachments[att1.name] = att1
 
-    // Save the document to the database
-    let revision = try datastore.createDocumentFromRevision(rev)
+    let revision = try datastore.createDocument(from: rev)
 
     // Read a document
     let docId = revision.docId
-    let retrieved = try datastore.getDocumentWithId(docId)
-
+    let retrieved = try datastore.getDocumentWithId(docId!)
 
 } catch {
     print("Encountered an error: \(error)")
 }
+
 ```
 
 Read more in [the CRUD document](https://github.com/cloudant/CDTDatastore/blob/master/doc/crud.md).
@@ -216,21 +219,22 @@ CDTReplicator *replicator = [replicatorFactory oneWay:pushReplication error:&err
 [replicator start];
 ```
 ```swift
+import CDTDatastore
 do {
-    // Create and start the replicator -- -start is essential!
-    let replicatorFactory = CDTReplicatorFactory(datastoreManager: manager)
 
-    let s = "https://apikey:apipassword@username.cloudant.com/my_database"
-    let remoteDatabaseURL = NSURL(string: s)
     let datastore = try manager.datastoreNamed("my_datastore");
 
     // Replicate from the local to remote database
-    let pushReplication = CDTPushReplication(source: datastore, target: remoteDatabaseURL)
-    let replicator =  try replicatorFactory.oneWay(pushReplication)
+    let remote = URL(string: "https://apikey:apipassword@username.cloudant.com/my_database")!
+    datastore.push(to: remote) { error in
 
-    // Start the replicator
-    try replicator.start()
+        if let error = error {
+            print("Encountered an error: \(error)")
+        } else {
+            print("Replication complete")
+        }
 
+    }
 
 } catch {
     print("Encountered an error: \(error)")
@@ -261,9 +265,9 @@ let query = [
     "age" : ["$gt" : 25] // age greater than 25
 ]
 let result = datastore.find(query)
-result.enumerateObjectsUsingBlock({ (rev, idx, stop) -> Void in
+result?.enumerateObjects { rev, idx, stop in
     // do something
-})
+}
 ```
 
 See [Index and Querying Data](https://github.com/cloudant/CDTDatastore/blob/master/doc/query.md).
