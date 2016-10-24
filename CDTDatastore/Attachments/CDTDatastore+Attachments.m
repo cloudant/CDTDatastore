@@ -142,7 +142,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
                                                                          size:size
                                                                        revpos:revpos
                                                                      sequence:sequence
-                                                                          key:keyData
+                                                                          key:[keyData copy]
                                                                      encoding:encoding];
 
     return attachment;
