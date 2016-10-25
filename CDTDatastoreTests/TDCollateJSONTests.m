@@ -13,11 +13,11 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TDCollateJSON.h>
+#import <CDTDatastore/TDJSON.h>  //I don't understand how the tests in TDCollateJSON compile without this import
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"
-#import "TDCollateJSON.h"
-#import "TDJSON.h"  //I don't understand how the tests in TDCollateJSON compile without this import
 #import "CloudantTests.h"
+#import "CollectionUtils.h"
 
 extern char convertEscape(const char**);
 

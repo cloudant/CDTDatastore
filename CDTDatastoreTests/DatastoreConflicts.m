@@ -19,6 +19,8 @@
 #import "CloudantSyncTests.h"
 #import "DatastoreConflictResolvers.h"
 
+@import CDTDatastore;
+
 #import "CDTDatastoreManager+EncryptionKey.h"
 #import "CDTDatastore+Conflicts.h"
 #import "CDTDatastore+Attachments.h"
@@ -27,17 +29,17 @@
 #import "CDTConflictResolver.h"
 #import "CDTHelperOneUseKeyProvider.h"
 
+#import <CDTDatastore/TDJSON.h>
+#import <CDTDatastore/TD_Database+Insertion.h>
+#import <CDTDatastore/TD_Revision.h>
 #import "FMDatabaseQueue.h"
-#import "TDJSON.h"
 #import "FMResultSet.h"
-#import "TD_Database+Insertion.h"
-#import "TD_Revision.h"
 
-#import "TD_Body.h"
+#import <CDTDatastore/TD_Body.h>
+#import <MRDatabaseContentChecker/MRDatabaseContentChecker.h>
+#import "CDTAttachment.h"
 #import "CollectionUtils.h"
 #import "DBQueryUtils.h"
-#import "CDTAttachment.h"
-#import <MRDatabaseContentChecker/MRDatabaseContentChecker.h>
 
 @interface DatastoreConflicts : CloudantSyncTests
 @property (nonatomic,strong) CDTDatastore *datastore;

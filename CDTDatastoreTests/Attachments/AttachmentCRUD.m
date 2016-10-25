@@ -22,7 +22,7 @@
 #import "DBQueryUtils.h"
 #import "AmazonMD5Util.h"
 
-#import "TD_Database+BlobFilenames.h"
+#import <CDTDatastore/TD_Database+BlobFilenames.h>
 
 #import "CDTMisc.h"
 

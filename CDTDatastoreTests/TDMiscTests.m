@@ -13,10 +13,10 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TDMisc.h>
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"
-#import "TDMisc.h"
 #import "CloudantTests.h"
+#import "CollectionUtils.h"
 
 @interface TDMiscTests : CloudantTests
 

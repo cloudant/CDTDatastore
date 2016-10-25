@@ -16,10 +16,10 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CloudantSyncTests.h"
+#import <CDTDatastore/CDTEncryptionKeyNilProvider.h>
+#import <CDTDatastore/TD_Database.h>
 #import "CDTHelperFixedKeyProvider.h"
-#import "CDTEncryptionKeyNilProvider.h"
-#import "TD_Database.h"
+#import "CloudantSyncTests.h"
 
 #import "CDTDatastoreManager+EncryptionKey.h"
 #import "CDTDatastore+EncryptionKey.h"

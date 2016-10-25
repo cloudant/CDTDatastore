@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0730"
+   LastUpgradeVersion = "0800"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "987383011C47B38800937212"
-               BuildableName = "CDTDatastoreOSX.framework"
-               BlueprintName = "CDTDatastoreOSX"
+               BlueprintIdentifier = "98CA32B11DBF704F00FD30A1"
+               BuildableName = "CDTDatastoreCLTest.app"
+               BlueprintName = "CDTDatastoreCLTest"
                ReferencedContainer = "container:CDTDatastore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,7 +28,36 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "98CA32C61DBF704F00FD30A1"
+               BuildableName = "CDTDatastoreCLTestTests.xctest"
+               BlueprintName = "CDTDatastoreCLTestTests"
+               ReferencedContainer = "container:CDTDatastore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "98CA32D11DBF704F00FD30A1"
+               BuildableName = "CDTDatastoreCLTestUITests.xctest"
+               BlueprintName = "CDTDatastoreCLTestUITests"
+               ReferencedContainer = "container:CDTDatastore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "98CA32B11DBF704F00FD30A1"
+            BuildableName = "CDTDatastoreCLTest.app"
+            BlueprintName = "CDTDatastoreCLTest"
+            ReferencedContainer = "container:CDTDatastore.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -42,15 +71,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "987383011C47B38800937212"
-            BuildableName = "CDTDatastoreOSX.framework"
-            BlueprintName = "CDTDatastoreOSX"
+            BlueprintIdentifier = "98CA32B11DBF704F00FD30A1"
+            BuildableName = "CDTDatastoreCLTest.app"
+            BlueprintName = "CDTDatastoreCLTest"
             ReferencedContainer = "container:CDTDatastore.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -60,15 +90,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "987383011C47B38800937212"
-            BuildableName = "CDTDatastoreOSX.framework"
-            BlueprintName = "CDTDatastoreOSX"
+            BlueprintIdentifier = "98CA32B11DBF704F00FD30A1"
+            BuildableName = "CDTDatastoreCLTest.app"
+            BlueprintName = "CDTDatastoreCLTest"
             ReferencedContainer = "container:CDTDatastore.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

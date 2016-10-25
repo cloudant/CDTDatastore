@@ -13,10 +13,10 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TDMultiStreamWriter.h>
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"  //needed for the class extenstion to NSData found in the CollectionUtils. although that class extension to NSData is easy to reproduce
-#import "TDMultiStreamWriter.h"
 #import "CloudantTests.h"
+#import "CollectionUtils.h"  //needed for the class extenstion to NSData found in the CollectionUtils. although that class extension to NSData is easy to reproduce
 
 @interface MyMultiStreamWriterTester : NSObject <NSStreamDelegate>
 {

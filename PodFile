@@ -1,16 +1,5 @@
 use_frameworks!
 
-def import_base_pods
-    pod 'FMDB', '= 2.6'
-    pod 'CocoaLumberjack', '~> 2.0'
-end
-
-def import_encrypted_base_pods
-    pod 'FMDB/SQLCipher', '= 2.6'
-    pod 'SQLCipher/fts', '~> 3.1.0'
-    pod 'CocoaLumberjack', '~> 2.0'
-end
-
 def import_test_pods
     pod 'Specta'
     pod 'Expecta'
@@ -32,69 +21,61 @@ def import_encrypted_test_pods
     pod 'OHHTTPStubs'
 end
 
-target :CDTDatastore do
-    platform :ios, '7.0'
-    import_base_pods
-end
+target :CDTDatastoreTestApp do
+  pod 'CDTDatastore', :path => '.'
 
-target :CDTDatastoreTests do
-    platform :ios, '7.0'
-    import_base_pods
-    import_test_pods
-end
+  target :CDTDatastoreTests do
+      import_test_pods
+      inherit! :complete
+  end
 
-target :CDTDatastoreReplicationAcceptanceTests do
-    import_RA_pods
-    import_base_pods
-end
-
-target :CDTDatastoreEncryption do
-   import_encrypted_base_pods
-   xcconfig = {'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
-end
-
-target :CDTDatastoreEncryptionTests do
-import_encrypted_base_pods
-    import_encrypted_test_pods
-end
-
-target :CDTDatastoreEncryptedReplicationAcceptanceTests do
-    import_RA_pods
-    import_encrypted_base_pods
-end
-
-target :CDTDatastoreOSX do
-    platform :osx, '10.9'
-    import_base_pods
-end
-
-target :CDTDatastoreTestsOSX do
-    platform :osx, '10.9'
-    import_base_pods
-    import_test_pods
-end
-
-target :CDTDatastoreReplicationAcceptanceTestsOSX do
-    platform :osx, '10.9'
-    import_RA_pods
-    import_base_pods
-end
-
-target :CDTDatastoreEncryptedReplicationAcceptanceTestsOSX do
-    platform :osx, '10.9'
-    import_RA_pods
-    import_encrypted_base_pods
-end
-
-target :CDTDatastoreEncryptionOSX do
-    platform :osx, '10.9'
-    import_encrypted_base_pods
-   xcconfig = {'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
+  target :CDTDatastoreReplicationAcceptanceTests do
+      import_RA_pods
+  end
 
 end
 
-target :CDTDatastoreEncryptionTestsOSX do
-    platform :osx, '10.9'
-    import_encrypted_test_pods
-    import_encrypted_base_pods
+target :CDTTestAppEncrypted do
+  pod 'CDTDatastore/SQLCipher', :path => '.'
+  xcconfig = {'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
+
+  target :CDTDatastoreEncryptionTests do
+      inherit! :complete
+      import_encrypted_test_pods
+  end
+
+  target :CDTDatastoreEncryptedReplicationAcceptanceTests do
+      import_RA_pods
+  end
+end
+
+target :CDTDatastoreCLTest do
+  pod 'CDTDatastore', :path => '.'
+
+  target :CDTDatastoreTestsOSX do
+      inherit! :complete
+      import_test_pods
+  end
+
+  target :CDTDatastoreReplicationAcceptanceTestsOSX do
+      import_RA_pods
+      inherit! :complete
+  end
+
+end
+
+target :CDTDatastoreCLEncryptedTest do
+  pod 'CDTDatastore/SQLCipher', :path => '.'
+
+  target :CDTDatastoreEncryptionTestsOSX do
+      import_encrypted_test_pods
+      inherit! :complete
+
+  end
+
+  target :CDTDatastoreEncryptedReplicationAcceptanceTestsOSX do
+      import_RA_pods
+      inherit! :complete
+
+  end
 end

@@ -16,11 +16,11 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CloudantSyncTests.h"
-#import "TD_Database.h"
+#import <CDTDatastore/CDTDatastoreManager+EncryptionKey.h>
+#import <CDTDatastore/CDTEncryptionKeyNilProvider.h>
+#import <CDTDatastore/TD_Database.h>
 #import "CDTHelperFixedKeyProvider.h"
-#import "CDTEncryptionKeyNilProvider.h"
-#import "CDTDatastoreManager+EncryptionKey.h"
+#import "CloudantSyncTests.h"
 
 @interface DatastoreManagerEncryptionTests : CloudantSyncTests
 

@@ -13,11 +13,10 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TDReachability.h>
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"
-#import "TDReachability.h"
 #import "CloudantTests.h"
-
+#import "CollectionUtils.h"
 
 @interface TDReachabilityTests : CloudantTests
 

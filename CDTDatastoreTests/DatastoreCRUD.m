@@ -19,22 +19,22 @@
 
 #import "CloudantSyncTests.h"
 
-#import "CDTDatastoreManager.h"
+#import <CDTDatastore/TD_Revision.h>
 #import "CDTDatastore.h"
+#import "CDTDatastoreManager.h"
 #import "CDTDocumentRevision.h"
-#import "TD_Revision.h"
 
+#import <CDTDatastore/TDJSON.h>
 #import "FMDatabaseAdditions.h"
 #import "FMDatabaseQueue.h"
-#import "TDJSON.h"
 #import "FMResultSet.h"
 
-#import "TD_Body.h"
-#import "CollectionUtils.h"
-#import "TD_Database+Insertion.h"
-#import "TDStatus.h"
-#import "DBQueryUtils.h"
+#import <CDTDatastore/TDStatus.h>
+#import <CDTDatastore/TD_Body.h>
+#import <CDTDatastore/TD_Database+Insertion.h>
 #import "CDTAttachment.h"
+#import "CollectionUtils.h"
+#import "DBQueryUtils.h"
 
 @interface CDTDatastore ()
 - (BOOL)validateAttachments:(NSDictionary<NSString *, CDTAttachment *> *)attachments;

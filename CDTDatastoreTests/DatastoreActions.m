@@ -15,12 +15,12 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CloudantSyncTests.h"
+#import <CDTDatastore/TDJSON.h>
 #import "CDTDatastore.h"
 #import "CDTDatastoreManager.h"
-#import "FMDatabaseAdditions.h"
 #import "CDTDocumentRevision.h"
-#import "TDJSON.h"
+#import "CloudantSyncTests.h"
+#import "FMDatabaseAdditions.h"
 
 @interface DatastoreActions : CloudantSyncTests
 

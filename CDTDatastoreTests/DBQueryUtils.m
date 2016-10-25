@@ -16,12 +16,12 @@
 
 #import <sqlite3.h>
 
-#import "FMResultSet.h"
-#import "FMDatabaseQueue.h"
+#import <CDTDatastore/TDCollateJSON.h>
+#import <CDTDatastore/TDJSON.h>
+#import <CDTDatastore/TD_Revision.h>
 #import "FMDatabase.h"
-#import "TDJSON.h"
-#import "TDCollateJSON.h"
-#import "TD_Revision.h"
+#import "FMDatabaseQueue.h"
+#import "FMResultSet.h"
 
 NSString* const DBQueryUtilsErrorDomain = @"DBQueryUtilsErrorDomain";
 

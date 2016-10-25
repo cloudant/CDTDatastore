@@ -10,7 +10,7 @@
 
 #import <FMDB/FMDB.h>
 
-#import "TD_Database+BlobFilenames.h"
+#import <CDTDatastore/TD_Database+BlobFilenames.h>
 
 #import "CDTEncryptionKeyNilProvider.h"
 

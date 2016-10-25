@@ -18,7 +18,9 @@
 #import "CloudantTests.h"
 #import "CDTEncryptionKeyNilProvider.h"
 
-#import "TD_Database.h"
+@import CDTDatastore;
+
+#import <CDTDatastore/TD_Database.h>
 
 static BOOL databaseDeletionTestWasDatabaseAtPathDeleted = NO;
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0730"
+   LastUpgradeVersion = "0800"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "987383EF1C47B3C400937212"
-               BuildableName = "CDTDatastoreEncryptionOSX.framework"
-               BlueprintName = "CDTDatastoreEncryptionOSX"
+               BlueprintIdentifier = "98CA32E51DBF714400FD30A1"
+               BuildableName = "CDTDatastoreCLEncryptedTest.app"
+               BlueprintName = "CDTDatastoreCLEncryptedTest"
                ReferencedContainer = "container:CDTDatastore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,7 +28,36 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "98CA32FA1DBF714400FD30A1"
+               BuildableName = "CDTDatastoreCLEncryptedTestTests.xctest"
+               BlueprintName = "CDTDatastoreCLEncryptedTestTests"
+               ReferencedContainer = "container:CDTDatastore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "98CA33051DBF714400FD30A1"
+               BuildableName = "CDTDatastoreCLEncryptedTestUITests.xctest"
+               BlueprintName = "CDTDatastoreCLEncryptedTestUITests"
+               ReferencedContainer = "container:CDTDatastore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "98CA32E51DBF714400FD30A1"
+            BuildableName = "CDTDatastoreCLEncryptedTest.app"
+            BlueprintName = "CDTDatastoreCLEncryptedTest"
+            ReferencedContainer = "container:CDTDatastore.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -42,15 +71,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "987383EF1C47B3C400937212"
-            BuildableName = "CDTDatastoreEncryptionOSX.framework"
-            BlueprintName = "CDTDatastoreEncryptionOSX"
+            BlueprintIdentifier = "98CA32E51DBF714400FD30A1"
+            BuildableName = "CDTDatastoreCLEncryptedTest.app"
+            BlueprintName = "CDTDatastoreCLEncryptedTest"
             ReferencedContainer = "container:CDTDatastore.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -60,15 +90,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "987383EF1C47B3C400937212"
-            BuildableName = "CDTDatastoreEncryptionOSX.framework"
-            BlueprintName = "CDTDatastoreEncryptionOSX"
+            BlueprintIdentifier = "98CA32E51DBF714400FD30A1"
+            BuildableName = "CDTDatastoreCLEncryptedTest.app"
+            BlueprintName = "CDTDatastoreCLEncryptedTest"
             ReferencedContainer = "container:CDTDatastore.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
