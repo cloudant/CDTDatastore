@@ -41,7 +41,7 @@ end
 
 desc "pod update"
 task :podupdatetests do
-  sh "pod update"
+  sh "pod _1.0.1_ update"
 end
 
 desc "pod update"
