@@ -330,7 +330,7 @@
 }
 
 // this test can only run on macOS and not iOS because it needs to start a server
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if !TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)test429Retry
 {
     NSError *error = nil;
@@ -382,7 +382,7 @@
 #endif
 
 // this test can only run on macOS and not iOS because it needs to start a server
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if !TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)testFiltersWithChangesFeed
 {
     NSError *error = nil;
