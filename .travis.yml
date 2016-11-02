@@ -15,3 +15,8 @@ script:
 env:
   - PLATFORM=iOS
   - PLATFORM=OSX
+  - PLATFORM=OSX-encrypted
+  - PLATFORM=iOS-encrypted
+
+matrix:
+  fast_finish: true
