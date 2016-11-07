@@ -96,8 +96,8 @@
     NSParameterAssert(checkpoint.count > 0);
 
     NSString *remote = (NSString *)checkpoint[@"_id"];
-    // 8 is the length of _local/ +1
-    remote = [remote substringFromIndex:8];
+    // 7 is the length of _local/ +1
+    remote = [remote substringFromIndex:7];
 
     NSData *checkpointData = [TDJSON dataWithJSONObject:checkpoint options:0 error:&error];
     if (error) {
