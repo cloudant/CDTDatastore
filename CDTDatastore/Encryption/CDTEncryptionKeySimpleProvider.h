@@ -32,9 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (nullable instancetype)initWithKey:(nonnull NSData *)key NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
 
-+ (nullable instancetype)providerWithKey:(nonnull NSData *)key;
++ (nullable instancetype)providerWithKey:(NSData *)key;
 
 @end
 NS_ASSUME_NONNULL_END

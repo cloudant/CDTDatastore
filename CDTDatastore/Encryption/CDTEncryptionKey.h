@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  CDTENCRYPTIONKEY_KEYSIZE bytes buffer with the DPK
  */
-@property (nonnull, strong, nonatomic, readonly) NSData *data;
+@property (strong, nonatomic, readonly) NSData *data;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -44,11 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
  
  @warning If data.length is not CDTENCRYPTIONKEY_KEYSIZE, init will return nil
  */
-- (nullable instancetype)initWithData:(nonnull NSData *)data NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(NSData *)data NS_DESIGNATED_INITIALIZER;
 
-- (BOOL)isEqualToEncryptionKey:(nonnull CDTEncryptionKey *)encryptionKey;
+- (BOOL)isEqualToEncryptionKey:(CDTEncryptionKey *)encryptionKey;
 
-+ (nullable instancetype)encryptionKeyWithData:(nonnull NSData *)data;
++ (nullable instancetype)encryptionKeyWithData:(NSData *)data;
 
 @end
 NS_ASSUME_NONNULL_END
