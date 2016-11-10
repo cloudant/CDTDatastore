@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//  Copyright © 2016 IBM Corporation. All rights reserved.
 //
 
 #import "TD_Database.h"
