@@ -14,10 +14,10 @@
 //  and limitations under the License.
 
 #import "DatastoreConflictResolvers.h"
-#import "TD_Revision.h"
-#import "TD_Body.h"
-#import "CDTDocumentRevision.h"
+#import <CDTDatastore/TD_Body.h>
+#import <CDTDatastore/TD_Revision.h>
 #import "CDTAttachment.h"
+#import "CDTDocumentRevision.h"
 
 #pragma mark CDTTestBiggestRevResolver
 @interface CDTTestBiggestRevResolver()

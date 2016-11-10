@@ -15,12 +15,12 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CloudantTests+EncryptionTests.h"
-#import "CDTEncryptionKeyNilProvider.h"
+#import <CDTDatastore/CDTEncryptionKeyNilProvider.h>
 #import "CDTHelperFixedKeyProvider.h"
+#import "CloudantTests+EncryptionTests.h"
 #import "FMDatabase+SQLCipher.h"
 
-#import "TD_Database.h"
+#import <CDTDatastore/TD_Database.h>
 
 @interface TD_DatabaseEncryptionTests : CloudantTests
 

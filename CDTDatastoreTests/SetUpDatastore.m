@@ -17,14 +17,14 @@
 
 #import "CloudantSyncTests.h"
 
-#import "CDTDatastoreManager.h"
+#import <CDTDatastore/CDTDatastoreManager.h>
 
-#import "CDTDatastore+Query.h"
+#import <CDTDatastore/CDTDatastore+Query.h>
 
-#import "CDTDatastore.h"
+#import <CDTDatastore/CDTDatastore.h>
 
-#import "TD_Database.h"
-#import "TD_DatabaseManager.h"
+#import <CDTDatastore/TD_Database.h>
+#import <CDTDatastore/TD_DatabaseManager.h>
 
 @interface SetUpDatastore : CloudantSyncTests
 

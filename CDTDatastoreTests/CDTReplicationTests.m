@@ -12,27 +12,26 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import <XCTest/XCTest.h>
-#import "CDTPullReplication.h"
-#import "CDTPushReplication.h"
-#import "CloudantSyncTests.h"
-#import "CDTDatastoreManager.h"
-#import "CDTDatastore.h"
-#import "CDTReplicatorFactory.h"
-#import "CDTReplicator.h"
-#import "CDTDocumentRevision.h"
-#import "TD_Body.h"
-#import "TD_Revision.h"
-#import "TDPuller.h"
-#import "TDPusher.h"
-#import "CDTSessionCookieInterceptor.h"
-#import "CDTReplay429Interceptor.h"
-#import "TD_Database.h"
+#import <CDTDatastore/TDPuller.h>
+#import <CDTDatastore/TDPusher.h>
+#import <CDTDatastore/TD_Body.h>
+#import <CDTDatastore/TD_Database.h>
+#import <CDTDatastore/TD_Revision.h>
+#import <OCMock/OCMock.h>
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
-#import <OCMock/OCMock.h>
+#import <XCTest/XCTest.h>
 #import <netinet/in.h>
-
+#import "CDTDatastore.h"
+#import "CDTDatastoreManager.h"
+#import "CDTDocumentRevision.h"
+#import "CDTPullReplication.h"
+#import "CDTPushReplication.h"
+#import "CDTReplay429Interceptor.h"
+#import "CDTReplicator.h"
+#import "CDTReplicatorFactory.h"
+#import "CDTSessionCookieInterceptor.h"
+#import "CloudantSyncTests.h"
 
 @interface TDReplicator ()
 @property (nonatomic, strong) NSArray* interceptors;
@@ -331,7 +330,7 @@
 }
 
 // this test can only run on macOS and not iOS because it needs to start a server
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if !TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)test429Retry
 {
     NSError *error = nil;
@@ -383,7 +382,7 @@
 #endif
 
 // this test can only run on macOS and not iOS because it needs to start a server
-#if TARGET_OS_MAC && !TARGET_OS_IPHONE
+#if !TARGET_OS_MAC && !TARGET_OS_IPHONE
 - (void)testFiltersWithChangesFeed
 {
     NSError *error = nil;

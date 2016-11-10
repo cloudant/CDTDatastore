@@ -15,15 +15,15 @@
 
 #import <XCTest/XCTest.h>
 
-#import "TDBlobStore+Internal.h"
+#import <CDTDatastore/TDBlobStore+Internal.h>
 
-#import "TD_Database+BlobFilenames.h"
+#import <CDTDatastore/TD_Database+BlobFilenames.h>
 
+#import <CDTDatastore/CDTEncryptionKeyNilProvider.h>
 #import "CDTHelperFixedKeyProvider.h"
-#import "CDTEncryptionKeyNilProvider.h"
 
-#import "TDMisc.h"
-#import "CDTMisc.h"
+#import <CDTDatastore/CDTMisc.h>
+#import <CDTDatastore/TDMisc.h>
 
 #define TDBLOBSTOREENCRYPTIONTESTS_DBFILENAME @"schema100_1Bonsai_2Lorem.touchdb"
 #define TDBLOBSTOREENCRYPTIONTESTS_LOREM_FILE @"lorem.txt"

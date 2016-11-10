@@ -19,9 +19,9 @@
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonKeyDerivation.h>
 
-#import "CDTEncryptionKeychainUtils+PBKDF2.h"
+#import <CDTDatastore/CDTEncryptionKeychainUtils+PBKDF2.h>
 
-#import "TDMisc.h"
+#import <CDTDatastore/TDMisc.h>
 
 @interface CDTEncryptionKeychainUtilsPBKDF2Tests : XCTestCase
 

@@ -13,12 +13,12 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TDInternal.h>
+#import <CDTDatastore/TDMultipartDownloader.h>
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"
-#import "TDMultipartDownloader.h"
-#import "TDInternal.h"
 #import "CDTEncryptionKeyNilProvider.h"
 #import "CloudantTests.h"
+#import "CollectionUtils.h"
 
 @interface TDMultipartDownloaderTests : CloudantTests
 

@@ -20,7 +20,7 @@
 
 #import "CDTMisc.h"
 
-#import "TDBase64.h"
+#import <CDTDatastore/TDBase64.h>
 
 @interface CDTEncryptionKeychainUtilsAESTests : XCTestCase
 

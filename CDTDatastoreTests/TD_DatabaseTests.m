@@ -13,11 +13,11 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+#import <CDTDatastore/TD_Database.h>
+#import <CDTDatastore/TD_Revision.h>
 #import <Foundation/Foundation.h>
-#import "CollectionUtils.h"
-#import "TD_Database.h"
-#import "TD_Revision.h"
 #import "CloudantTests.h"
+#import "CollectionUtils.h"
 
 extern NSDictionary* makeRevisionHistoryDict(NSArray* history);
 

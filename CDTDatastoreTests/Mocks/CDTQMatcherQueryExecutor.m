@@ -8,9 +8,7 @@
 
 #import "CDTQMatcherQueryExecutor.h"
 
-#import <CDTDatastore/CDTQQuerySqlTranslator.h>
-#import <CDTDatastore/CDTQIndexManager.h>
-#import <CDTDatastore/CDTDatastore.h>
+@import CDTDatastore;
 
 #import <FMDB/FMDB.h>
 

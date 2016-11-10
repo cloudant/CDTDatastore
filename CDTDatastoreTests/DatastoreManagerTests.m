@@ -6,10 +6,10 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import <CDTDatastore/CloudantSync.h>
+#import <CDTDatastore/TDInternal.h>
+#import <Foundation/Foundation.h>
 #import "CloudantSyncTests.h"
-#import "TDInternal.h"
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
 

@@ -16,15 +16,15 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CDTBlobEncryptedData+Internal.h"
+#import <CDTDatastore/CDTBlobEncryptedData+Internal.h>
 //common crypto must be included before encrypted data constants
 #import <CommonCrypto/CommonCryptor.h>
 #import "CDTBlobEncryptedDataConstants.h"
 
 #import "CDTHelperFixedKeyProvider.h"
 
-#import "CDTMisc.h"
-#import "TDBase64.h"
+#import <CDTDatastore/CDTMisc.h>
+#import <CDTDatastore/TDBase64.h>
 
 @interface CDTBlobCustomEncryptedData : CDTBlobEncryptedData
 
