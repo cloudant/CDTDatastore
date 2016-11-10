@@ -4,6 +4,7 @@
 //
 //  Created by Michael Rhodes on 24/03/2014.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
+//  Copyright © 2016 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -251,8 +252,7 @@ static NSString *const CDTAttachmentsErrorDomain = @"CDTAttachmentsErrorDomain";
     };
 
     // insert new record
-    success = success =
-        [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
+    success = [db executeUpdate:[SQL_INSERT_ATTACHMENT_ROW copy] withParameterDictionary:params];
 
     // We don't remove the blob from the store on !success because
     // it could be referenced from another attachment (as files are

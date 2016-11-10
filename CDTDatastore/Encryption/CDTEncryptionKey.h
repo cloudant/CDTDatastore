@@ -4,6 +4,7 @@
 //
 //  Created by Enrique de la Torre Fernandez on 12/05/2015.
 //  Copyright (c) 2015 IBM Cloudant. All rights reserved.
+//  Copyright © 2016 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -27,14 +28,15 @@
 // Size (bytes) of the DPK (Data Protection Key)
 #define CDTENCRYPTIONKEY_KEYSIZE 32
 
+NS_ASSUME_NONNULL_BEGIN
 @interface CDTEncryptionKey : NSObject
 
 /**
  CDTENCRYPTIONKEY_KEYSIZE bytes buffer with the DPK
  */
-@property (nonnull, strong, nonatomic, readonly) NSData *data;
+@property (strong, nonatomic, readonly) NSData *data;
 
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**
  Initialise an encryption key with a buffer.
@@ -43,10 +45,11 @@
  
  @warning If data.length is not CDTENCRYPTIONKEY_KEYSIZE, init will return nil
  */
-- (nullable instancetype)initWithData:(nonnull NSData *)data NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithData:(NSData *)data NS_DESIGNATED_INITIALIZER;
 
-- (BOOL)isEqualToEncryptionKey:(nonnull CDTEncryptionKey *)encryptionKey;
+- (BOOL)isEqualToEncryptionKey:(CDTEncryptionKey *)encryptionKey;
 
-+ (nullable instancetype)encryptionKeyWithData:(nonnull NSData *)data;
++ (nullable instancetype)encryptionKeyWithData:(NSData *)data;
 
 @end
+NS_ASSUME_NONNULL_END

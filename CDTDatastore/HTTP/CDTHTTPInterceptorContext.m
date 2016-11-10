@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Rhys Short on 17/08/2015.
-//  Copyright (c) 2015 IBM Corp.
+//  Copyright © 2015, 2016 IBM Corporation. All rights reserved.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -49,9 +49,8 @@
 - (NSObject*)stateForKey:(NSString*)key {
     return self.internalState[key];
 }
-
-- (void)setState:(NSObject*)value
-          forKey:(NSObject*)key {
+- (void)setState:(NSObject *)value forKey:(NSString *)key
+{
     [self.internalState setValue:value forKey:key];
 }
 

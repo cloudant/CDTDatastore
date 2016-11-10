@@ -4,6 +4,7 @@
 //
 //  Created by Enrique de la Torre Fernandez on 26/05/2015.
 //  Copyright (c) 2015 IBM Cloudant. All rights reserved.
+//  Copyright © 2016 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -27,12 +28,14 @@
  @see CDTEncryptionKeyProvider
  @see CDTEncryptionKey
  */
+NS_ASSUME_NONNULL_BEGIN
 @interface CDTEncryptionKeySimpleProvider : NSObject <CDTEncryptionKeyProvider>
 
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (nullable instancetype)initWithKey:(nonnull NSData *)key NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithKey:(NSData *)key NS_DESIGNATED_INITIALIZER;
 
-+ (nullable instancetype)providerWithKey:(nonnull NSData *)key;
++ (nullable instancetype)providerWithKey:(NSData *)key;
 
 @end
+NS_ASSUME_NONNULL_END

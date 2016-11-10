@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Don't call this initialiser; it will throw an exception.
  */
-- (nullable instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /*
  * Initalises an instance of CDTURLSessionTask

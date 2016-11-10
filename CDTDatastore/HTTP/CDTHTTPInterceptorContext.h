@@ -3,7 +3,7 @@
 //  
 //
 //  Created by Rhys Short on 17/08/2015.
-//  Copyright (c) 2015 IBM Corp.
+//  Copyright © 2015, 2016 IBM Corporation. All rights reserved.
 //
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -78,9 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value the value to store
  * @param key the key with which the value is associated
  */
-                                                   
-- (void)setState:(NSObject*)value
-          forKey:(NSObject*)key;
+
+- (void)setState:(NSObject *)value forKey:(NSString *)key;
 
 @end
 
