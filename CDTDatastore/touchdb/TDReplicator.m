@@ -790,13 +790,19 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                             NSArray<NSDictionary<NSString*, NSObject*>*>* localHistory =
                                 localCheckpoint[@"history"];
 
+                            if (!localHistory) {
+                                CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
+                                           @"%@: Local checkpoint doc does not contain history,"
+                                           @" falling back to full replication",
+                                           self);
+                            }
+
                             // This assumes the  history array is ordered (most recent -> least
                             // recent)
                             for (NSDictionary<NSString*, NSObject*>* rHistory in remoteHistory) {
                                 NSString* sessionID = (NSString*)rHistory[@"session_id"];
                                 BOOL found = NO;
-                                for (NSDictionary<NSString*, NSObject*>* lHistory in
-                                         remoteHistory) {
+                                for (NSDictionary<NSString*, NSObject*>* lHistory in localHistory) {
                                     if ([lHistory[@"session_id"] isEqual:sessionID]) {
                                         found = YES;
                                         break;
