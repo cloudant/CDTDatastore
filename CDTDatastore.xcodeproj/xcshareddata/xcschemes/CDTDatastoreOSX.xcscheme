@@ -28,7 +28,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "987385221C47B45600937212"
+               BuildableName = "CDTDatastoreTestsOSX.xctest"
+               BlueprintName = "CDTDatastoreTestsOSX"
+               ReferencedContainer = "container:CDTDatastore.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "987383011C47B38800937212"
+            BuildableName = "CDTDatastoreOSX.framework"
+            BlueprintName = "CDTDatastoreOSX"
+            ReferencedContainer = "container:CDTDatastore.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>

@@ -103,7 +103,7 @@
 + (NSString *)hexadecimalRepresentationForData:(NSData *)data
 {
     NSString *hexStr = TDHexFromBytes(data.bytes, data.length);
-    
+
     return hexStr;
 }
 

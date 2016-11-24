@@ -18,10 +18,10 @@
 
 #import <OCMock/OCMock.h>
 
-#import "CDTEncryptionKeychainManager+Internal.h"
 #import <CommonCrypto/CommonCryptor.h>
-#import "CDTEncryptionKeychainUtils.h"
 #import "CDTEncryptionKeychainConstants.h"
+#import "CDTEncryptionKeychainManager+Internal.h"
+#import "CDTEncryptionKeychainUtils.h"
 
 // NOTE: There is no need for a stronger password given that the following tests check the
 // behaviour of CDTEncryptionKeychainManager, not its encryption capabilities (which is tested in

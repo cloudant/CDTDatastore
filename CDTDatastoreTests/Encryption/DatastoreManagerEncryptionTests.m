@@ -16,11 +16,11 @@
 
 #import <XCTest/XCTest.h>
 
+#import "CDTDatastoreManager+EncryptionKey.h"
+#import "CDTEncryptionKeyNilProvider.h"
+#import "CDTHelperFixedKeyProvider.h"
 #import "CloudantSyncTests.h"
 #import "TD_Database.h"
-#import "CDTHelperFixedKeyProvider.h"
-#import "CDTEncryptionKeyNilProvider.h"
-#import "CDTDatastoreManager+EncryptionKey.h"
 
 @interface DatastoreManagerEncryptionTests : CloudantSyncTests
 
@@ -143,5 +143,69 @@
         !datastore && error,
         @"Non-encrypted db can not be opened with a key, so datastore can not initialised");
 }
+
+#if defined ENCRYPT_DATABASE
+- (void)
+    testDatastoreNamedReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToCipherTheDatabase
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *dbName = @"testdatastoremanager_encryptdbwrongkey";
+    [TD_Database createEmptyDBAtPath:[self pathForDBName:dbName]
+           withEncryptionKeyProvider:fixedProvider];
+
+    // Get datastore
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
+
+    NSError *error = nil;
+    CDTDatastore *datastore =
+        [self.factory datastoreNamed:dbName withEncryptionKeyProvider:otherProvider error:&error];
+
+    // Test
+    XCTAssert(!datastore && error,
+              @"DB can not be opened with a wrong key so the datastore can not be initialised");
+}
+
+- (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderReturnsNilWithAnAlreadyOpenEncryptedDB
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *dbName = @"testdatastoremanager_alreadyopenencryptdb";
+    [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
+
+    // Get datastore
+    CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
+
+    NSError *error = nil;
+    CDTDatastore *datastore =
+        [self.factory datastoreNamed:dbName withEncryptionKeyProvider:nilProvider error:&error];
+
+    // Test
+    XCTAssertTrue(!datastore && error,
+                  @"Encrypted db requires a key, so datastore can not be initialised");
+}
+
+- (void)testDatastoreNamedReturnsNilIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToOpenTheDatabase
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *dbName = @"testdatastoremanager_encryptdbwrongkey_again";
+    [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
+
+    // Get datastore
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
+
+    NSError *error = nil;
+    CDTDatastore *datastore =
+        [self.factory datastoreNamed:dbName withEncryptionKeyProvider:otherProvider error:&error];
+
+    // Test
+    XCTAssertTrue(!datastore && error,
+                  @"DB can not be opened with a wrong key so the datastore can not be initialised");
+}
+#endif
 
 @end

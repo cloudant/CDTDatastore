@@ -17,7 +17,7 @@
 #import <XCTest/XCTest.h>
 
 #import "CDTBlobEncryptedData+Internal.h"
-//common crypto must be included before encrypted data constants
+// common crypto must be included before encrypted data constants
 #import <CommonCrypto/CommonCryptor.h>
 #import "CDTBlobEncryptedDataConstants.h"
 
@@ -205,17 +205,17 @@
 - (void)testDataWithErrorFailsIfFileStartsWithVersion0
 {
     NSMutableData *fileData = [NSMutableData dataWithData:self.headerData];
-    
+
     CDTBLOBENCRYPTEDDATA_VERSION_TYPE wrongVersion = 0;
     [fileData replaceBytesInRange:NSMakeRange(CDTBLOBENCRYPTEDDATA_VERSION_LOCATION,
                                               sizeof(CDTBLOBENCRYPTEDDATA_VERSION_TYPE))
                         withBytes:&wrongVersion];
-    
+
     [fileData writeToFile:self.pathToNotEmptyFile atomically:YES];
-    
+
     NSError *error = nil;
     NSData *data = [self.blobForNotEmptyFile dataWithError:&error];
-    
+
     XCTAssertNil(data, @"Data is not encrypted, is corrupted or the version is wrong");
     XCTAssertTrue(error && [error.domain isEqualToString:CDTBlobEncryptedDataErrorDomain] &&
                       (error.code == CDTBlobEncryptedDataErrorWrongVersion),
@@ -603,5 +603,4 @@
 
 #pragma mark - CDTBlobEncryptedData+Internal methods
 - (NSData *)generateAESIv { return (self.iv ? self.iv : [super generateAESIv]); }
-
 @end
