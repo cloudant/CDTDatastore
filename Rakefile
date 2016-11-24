@@ -9,12 +9,8 @@ SAMPLE_APP_WS = 'Project/Project.xcworkspace'
 # Schemes
 TESTS_IOS = 'CDTDatastoreTests'
 TESTS_OSX = 'CDTDatastoreTestsOSX'
-ENCRYPTION_IOS = 'CDTDatastoreEncryptionTests'
-ENCRYPTION_OSX = 'CDTDatastoreEncryptionTestsOSX'
 REPLICATION_ACCEPTANCE_IOS = 'CDTDatastoreReplicationAcceptanceTests'
 REPLICATION_ACCEPTANCE_OSX = 'CDTDatastoreReplicationAcceptanceTestsOSX'
-REPLICATION_ACCEPTANCE_ENCRYPTED_IOS = 'CDTDatastoreEncryptedReplicationAcceptanceTests'
-REPLICATION_ACCEPTANCE_ENCRYPTED_OSX = 'CDTDatastoreEncryptedReplicationAcceptanceTestsOSX'
 SAMPLE_IOS = "Project"
 
 
@@ -27,11 +23,11 @@ OSX_DEST = 'platform=OS X'
 #
 
 desc "Run tests for all platforms"
-task :test => [:testios, :testosx, :testencryptionios, :testencryptionosx] do
+task :test => [:testios, :testosx] do
 end
 
 desc "Task for travis"
-task :travis => [:test, :sample] do
+task :travis => [:podupdate, :test, :sample] do
   sh "pod lib lint --allow-warnings --verbose | xcpretty; exit ${PIPESTATUS[0]}"
 end
 
@@ -41,7 +37,12 @@ end
 
 desc "pod update"
 task :podupdatetests do
-  sh "pod _1.0.1_ update"
+  sh "pod update"
+end
+
+desc "sample pod update"
+task :podupdatesample do
+  sh "cd Project && pod update"
 end
 
 desc "pod update"
@@ -50,8 +51,10 @@ end
 
 # Sample build task
 desc "Build sample iOS application"
-task :sample do
-    run_build(SAMPLE_APP_WS,SAMPLE_IOS,IPHONE_DEST)
+task :sample => [:podupdatesample] do
+    unless run_build(SAMPLE_APP_WS,SAMPLE_IOS,IPHONE_DEST)
+      fail "[FAILED] Sample failed to compile"
+    end
 end
 
 #
@@ -75,14 +78,14 @@ end
 desc "Run the CDTDatastore Encryption Tests for iOS"
 task :testencryptionios do
   if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "iOS-encrypted")
-    test(CDTDATASTORE_WS, ENCRYPTION_IOS, IPHONE_DEST)
+    test(CDTDATASTORE_WS, TESTS_IOS, IPHONE_DEST)
   end
 end
 
 desc "Run the CDTDatastore Encryption Tests for OS X"
 task :testencryptionosx do
   if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "OSX-encrypted")
-    test(CDTDATASTORE_WS, ENCRYPTION_OSX, OSX_DEST)
+    test(CDTDATASTORE_WS, TESTS_OSX, OSX_DEST)
   end
 end
 
@@ -98,12 +101,12 @@ end
 
 desc "Run the replication acceptance tests for OS X with encrypted datastores"
 task :encryptionreplicationacceptanceosx do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_OSX, OSX_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
 end
 
 desc "Run the replication acceptance tests for iOS with encrypted datastores"
 task :encryptionreplicationacceptanceios do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_ENCRYPTED_IOS, IOS_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
 end
 
 #
@@ -121,13 +124,15 @@ end
 
 # Runs `build` target for workspace/scheme/destination
 def run_build(workspace, scheme, destination)
+  settings = "GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1'" unless !ENV["encrypted"]
   # build using xcpretty as otherwise it's very verbose when running tests
-  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' build | xcpretty; exit ${PIPESTATUS[0]}")
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} build | xcpretty; exit ${PIPESTATUS[0]}")
 end
 
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
-  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test | xcpretty; exit ${PIPESTATUS[0]}")
+  settings = "GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1'" unless !ENV["encrypted"]
+  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} test | xcpretty; exit ${PIPESTATUS[0]}")
 end
 
 def test(workspace, scheme, destination)
