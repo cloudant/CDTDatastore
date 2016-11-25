@@ -14,4 +14,8 @@ script:
   - rake travis
 env:
   - PLATFORM=iOS
+    encrypted=yes
+  - PLATFORM=iOS
   - PLATFORM=OSX
+  - PLATFORM=OSX
+    encrypted=yes
