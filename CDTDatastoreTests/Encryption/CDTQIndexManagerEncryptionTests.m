@@ -112,6 +112,20 @@
 }
 
 #if defined ENCRYPT_DATABASE
+- (void)testCreateQueryIndexManagerWithFixedKeyProvider
+{
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
+    CDTDatastore *datastore = [self.factory datastoreNamed:@"create_query_index_tests_fixedprovider"
+                                 withEncryptionKeyProvider:provider
+                                                     error:nil];
+
+    NSError *err = nil;
+    CDTQIndexManager *im = [[CDTQIndexManager alloc] initUsingDatastore:datastore error:&err];
+
+    XCTAssertNotNil(im, @"indexManager is not nil");
+    XCTAssertNil(err, @"error has to be nil");
+}
+
 - (void)testCreateQueryIndexManagerWithFixedKeyProviderCiphersIndex
 {
     // Create index
