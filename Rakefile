@@ -75,20 +75,6 @@ task :testosx do
   end
 end
 
-desc "Run the CDTDatastore Encryption Tests for iOS"
-task :testencryptionios do
-  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "iOS-encrypted")
-    test(CDTDATASTORE_WS, TESTS_IOS, IPHONE_DEST)
-  end
-end
-
-desc "Run the CDTDatastore Encryption Tests for OS X"
-task :testencryptionosx do
-  if (ENV["PLATFORM"] == nil || ENV["PLATFORM"] == "OSX-encrypted")
-    test(CDTDATASTORE_WS, TESTS_OSX, OSX_DEST)
-  end
-end
-
 desc "Run the replication acceptance tests for OS X"
 task :replicationacceptanceosx do
   test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
@@ -96,16 +82,6 @@ end
 
 desc "Run the replication acceptance tests for iOS"
 task :replicationacceptanceios do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
-end
-
-desc "Run the replication acceptance tests for OS X with encrypted datastores"
-task :encryptionreplicationacceptanceosx do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
-end
-
-desc "Run the replication acceptance tests for iOS with encrypted datastores"
-task :encryptionreplicationacceptanceios do
   test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
 end
 
