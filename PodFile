@@ -1,68 +1,54 @@
 use_frameworks!
 
-def import_base_pods
-    pod 'FMDB', '= 2.6'
+if ENV["encrypted"]
+    MRDatabaseContentChecker = "MRDatabaseContentChecker/SQLCipher"
+    FMDB = "FMDB/SQLCipher"
+else
+    MRDatabaseContentChecker = "MRDatabaseContentChecker"
+    FMDB = "FMDB"
+end
+
+abstract_target 'base' do
+    pod FMDB, '= 2.6'
     pod 'CocoaLumberjack', '~> 2.0'
-end
+    pod 'SQLCipher/fts', '~> 3.1.0' if ENV["encrypted"]
 
-def import_encrypted_base_pods
-    pod 'FMDB/SQLCipher', '= 2.6'
-    pod 'SQLCipher/fts', '~> 3.1.0'
-    pod 'CocoaLumberjack', '~> 2.0'
-end
+    target :CDTDatastore do
+        platform :ios, '7.0'
+    end
+    target :CDTDatastoreOSX do
+        platform :osx, '10.9'
+    end
 
-def import_test_pods
-    pod 'Specta'
-    pod 'Expecta'
-    pod 'OCMock'
-    pod 'OHHTTPStubs'
-    pod "MRDatabaseContentChecker", :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
-end
+    abstract_target 'tests' do
 
-def import_RA_pods
-    pod "Unirest", :git => 'https://github.com/rhyshort/unirest-obj-c.git'
-    pod 'TRVSMonitor'
-    pod 'NSData+Base64'
-end
+        pod 'Specta'
+        pod 'Expecta'
+        pod 'OCMock'
+        pod 'OHHTTPStubs'
+        pod MRDatabaseContentChecker, :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 
-def import_encrypted_test_pods
-    pod 'Specta'
-    pod 'Expecta'
-    pod 'OCMock'
-    pod 'OHHTTPStubs'
-    pod "MRDatabaseContentChecker/SQLCipher", :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
-end
+        target :CDTDatastoreTests do
+            platform :ios, '7.0'
+        end
 
-target :CDTDatastore do
-    platform :ios, '7.0'
-    import_encrypted_base_pods
-end
+        target :CDTDatastoreTestsOSX do
+            platform :osx, '10.9'
+        end
 
-target :CDTDatastoreTests do
-    platform :ios, '7.0'
-    import_encrypted_base_pods
-    import_encrypted_test_pods
-end
+    end
 
-target :CDTDatastoreReplicationAcceptanceTests do
-    platform :ios, '7.0'
-    import_RA_pods
-    import_encrypted_base_pods
-end
+    abstract_target 'raTests' do
+        pod "Unirest", :git => 'https://github.com/rhyshort/unirest-obj-c.git'
+        pod 'TRVSMonitor'
+        pod 'NSData+Base64'
 
-target :CDTDatastoreOSX do
-    platform :osx, '10.9'
-    import_encrypted_base_pods
-end
+        target :CDTDatastoreReplicationAcceptanceTestsOSX do
+            platform :osx, '10.9'
+        end
 
-target :CDTDatastoreTestsOSX do
-    platform :osx, '10.9'
-    import_encrypted_base_pods
-    import_encrypted_test_pods
-end
-
-target :CDTDatastoreReplicationAcceptanceTestsOSX do
-    platform :osx, '10.9'
-    import_RA_pods
-    import_encrypted_base_pods
+        target :CDTDatastoreReplicationAcceptanceTests do
+          platform :ios, '7.0'
+        end
+    end
 end
