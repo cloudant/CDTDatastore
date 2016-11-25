@@ -57,9 +57,12 @@
 {
     NSError * error = nil;
     ReplicatorDelegate *delegate = [[ReplicatorDelegate alloc] init];
-    CDTReplicator * replicator = [self.datastore pullReplicationSource:[[NSURL alloc] initWithString:@"http://exmaple.example"]
-                                                          withDelegate:delegate
-                                                                 error:&error];
+    CDTReplicator *replicator = [self.datastore
+        pullReplicationSource:[[NSURL alloc] initWithString:@"http://exmaple.example"]
+                     username:nil
+                     password:nil
+                 withDelegate:delegate
+                        error:&error];
     XCTAssertNil(error, "An error should not have been encountered.");
     XCTAssertNotNil(replicator, "replicator should not be nil");
     XCTAssertEqual(replicator.delegate, delegate, "the replicator's delegate should be the same as the delegate passed into");
@@ -69,9 +72,12 @@
 {
     NSError * error = nil;
     ReplicatorDelegate *delegate = [[ReplicatorDelegate alloc] init];
-    CDTReplicator * replicator = [self.datastore pushReplicationTarget:[[NSURL alloc] initWithString:@"http://example.example"]
-                                                          withDelegate:delegate
-                                                                 error:&error];
+    CDTReplicator *replicator = [self.datastore
+        pushReplicationTarget:[[NSURL alloc] initWithString:@"http://example.example"]
+                     username:nil
+                     password:nil
+                 withDelegate:delegate
+                        error:&error];
     XCTAssertNil(error, "An error should not have been encountered.");
     XCTAssertNotNil(replicator, "replicator should not be nil");
     XCTAssertEqual(replicator.delegate, delegate, "the replicator's delegate should be the same as the delegate passed into");

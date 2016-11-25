@@ -16,7 +16,7 @@ def import_test_pods
     pod 'Expecta'
     pod 'OCMock'
     pod 'OHHTTPStubs'
-    pod "MRDatabaseContentChecker"
+    pod "MRDatabaseContentChecker", :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 end
 
 def import_RA_pods
@@ -30,71 +30,39 @@ def import_encrypted_test_pods
     pod 'Expecta'
     pod 'OCMock'
     pod 'OHHTTPStubs'
+    pod "MRDatabaseContentChecker/SQLCipher", :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 end
 
 target :CDTDatastore do
     platform :ios, '7.0'
-    import_base_pods
+    import_encrypted_base_pods
 end
 
 target :CDTDatastoreTests do
     platform :ios, '7.0'
-    import_base_pods
-    import_test_pods
-end
-
-target :CDTDatastoreReplicationAcceptanceTests do
-    import_RA_pods
-    import_base_pods
-end
-
-target :CDTDatastoreEncryption do
-   import_encrypted_base_pods
-   xcconfig = {'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
-end
-
-target :CDTDatastoreEncryptionTests do
-import_encrypted_base_pods
+    import_encrypted_base_pods
     import_encrypted_test_pods
 end
 
-target :CDTDatastoreEncryptedReplicationAcceptanceTests do
+target :CDTDatastoreReplicationAcceptanceTests do
+    platform :ios, '7.0'
     import_RA_pods
     import_encrypted_base_pods
 end
 
 target :CDTDatastoreOSX do
     platform :osx, '10.9'
-    import_base_pods
+    import_encrypted_base_pods
 end
 
 target :CDTDatastoreTestsOSX do
     platform :osx, '10.9'
-    import_base_pods
-    import_test_pods
+    import_encrypted_base_pods
+    import_encrypted_test_pods
 end
 
 target :CDTDatastoreReplicationAcceptanceTestsOSX do
     platform :osx, '10.9'
     import_RA_pods
-    import_base_pods
-end
-
-target :CDTDatastoreEncryptedReplicationAcceptanceTestsOSX do
-    platform :osx, '10.9'
-    import_RA_pods
-    import_encrypted_base_pods
-end
-
-target :CDTDatastoreEncryptionOSX do
-    platform :osx, '10.9'
-    import_encrypted_base_pods
-   xcconfig = {'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
-
-end
-
-target :CDTDatastoreEncryptionTestsOSX do
-    platform :osx, '10.9'
-    import_encrypted_test_pods
     import_encrypted_base_pods
 end

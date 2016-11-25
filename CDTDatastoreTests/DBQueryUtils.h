@@ -12,12 +12,12 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
-#import "CloudantTests.h"
+#import <Foundation/Foundation.h>
 
 @class FMDatabaseQueue;
 @class FMResultSet;
 
-@interface DBQueryUtils : CloudantTests
+@interface DBQueryUtils : NSObject
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
 @property (nonatomic, readonly) NSSet *sqlTables;

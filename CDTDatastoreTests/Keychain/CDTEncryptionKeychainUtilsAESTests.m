@@ -67,33 +67,37 @@
 
     plainText = @"a1s2d3f4g5";
     expectedCiphertext = @"jEcy1ZxPXMJ9aX2kzHVX5eaWtMAJZQhPrfgLadcAKus=";
-    data = [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
-                                         withKey:self.key
-                                              iv:self.iv];
+    data =
+        [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
+                                      withKey:self.key
+                                           iv:self.iv];
     result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedCiphertext, result, @"Unexpected result");
 
     plainText = @"摇噺摃䈰婘栰";
     expectedCiphertext = @"Wfip2t2sH9ojHHsEN7B6Uw==";
-    data = [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
-                                         withKey:self.key
-                                              iv:self.iv];
+    data =
+        [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
+                                      withKey:self.key
+                                           iv:self.iv];
     result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedCiphertext, result, @"Unexpected result");
 
     plainText = @"摇;摃:§婘栰";
     expectedCiphertext = @"+B/AXr0PQrxQSAdMnE8BKKUymEak2akCuGGHIY99lNU=";
-    data = [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
-                                         withKey:self.key
-                                              iv:self.iv];
+    data =
+        [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
+                                      withKey:self.key
+                                           iv:self.iv];
     result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedCiphertext, result, @"Unexpected result");
 
     plainText = @"摇;摃:xx👹⌚️👽";
     expectedCiphertext = @"H6nWVwfuGB8hDv/dFVUXbU2yb07NzE2vf3HttPF/qps=";
-    data = [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
-                                         withKey:self.key
-                                              iv:self.iv];
+    data =
+        [CDTEncryptionKeychainUtils doEncrypt:[plainText dataUsingEncoding:NSUnicodeStringEncoding]
+                                      withKey:self.key
+                                           iv:self.iv];
     result = [TDBase64 encode:data];
     XCTAssertEqualObjects(expectedCiphertext, result, @"Unexpected result");
 }
@@ -102,46 +106,41 @@
 {
     NSString *cipherTxt = @"ExUL75zXTBiQKHAqYeR3Glt+EXMR25qmNTdeToHdA40=";
     NSString *expectedPlainText = @"1234567890";
-    NSData *data =
-        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
-                                      withKey:self.key
-                                           iv:self.iv];
+    NSData *data = [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
+                                                 withKey:self.key
+                                                      iv:self.iv];
     NSString *result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
 
     cipherTxt = @"jEcy1ZxPXMJ9aX2kzHVX5eaWtMAJZQhPrfgLadcAKus=";
     expectedPlainText = @"a1s2d3f4g5";
-    data =
-        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
-                                      withKey:self.key
-                                           iv:self.iv];
+    data = [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
+                                         withKey:self.key
+                                              iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
 
     cipherTxt = @"Wfip2t2sH9ojHHsEN7B6Uw==";
     expectedPlainText = @"摇噺摃䈰婘栰";
-    data =
-        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
-                                      withKey:self.key
-                                           iv:self.iv];
+    data = [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
+                                         withKey:self.key
+                                              iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
 
     cipherTxt = @"+B/AXr0PQrxQSAdMnE8BKKUymEak2akCuGGHIY99lNU=";
     expectedPlainText = @"摇;摃:§婘栰";
-    data =
-        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
-                                      withKey:self.key
-                                           iv:self.iv];
+    data = [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
+                                         withKey:self.key
+                                              iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
 
     cipherTxt = @"H6nWVwfuGB8hDv/dFVUXbU2yb07NzE2vf3HttPF/qps=";
     expectedPlainText = @"摇;摃:xx👹⌚️👽";
-    data =
-        [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
-                                      withKey:self.key
-                                           iv:self.iv];
+    data = [CDTEncryptionKeychainUtils doDecrypt:[TDBase64 decode:cipherTxt]
+                                         withKey:self.key
+                                              iv:self.iv];
     result = [[NSString alloc] initWithData:data encoding:NSUnicodeStringEncoding];
     XCTAssertEqualObjects(expectedPlainText, result, @"Unexpected result");
 }

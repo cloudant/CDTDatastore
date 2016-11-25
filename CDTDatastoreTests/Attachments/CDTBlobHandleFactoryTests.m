@@ -21,8 +21,8 @@
 #import "CDTBlobData.h"
 #import "CDTBlobEncryptedData.h"
 
-#import "CDTHelperFixedKeyProvider.h"
 #import "CDTEncryptionKeyNilProvider.h"
+#import "CDTHelperFixedKeyProvider.h"
 
 @interface CDTBlobHandleFactoryTests : XCTestCase
 
@@ -33,7 +33,7 @@
 - (void)setUp
 {
     [super setUp];
-    
+
     // Put setup code here. This method is called before the invocation of each test method in the
     // class.
 }
@@ -42,7 +42,7 @@
 {
     // Put teardown code here. This method is called after the invocation of each test method in the
     // class.
-    
+
     [super tearDown];
 }
 
@@ -55,11 +55,11 @@
 - (void)testFactoryWithNilProviderCreatesBlobHandlesForNonEncryptedAttachments
 {
     CDTBlobHandleFactory *factory = [[CDTBlobHandleFactory alloc]
-                                     initWithEncryptionKeyProvider:[CDTEncryptionKeyNilProvider provider]];
-    
+        initWithEncryptionKeyProvider:[CDTEncryptionKeyNilProvider provider]];
+
     id<CDTBlobReader> reader = [factory readerWithPath:@"///This is not a path"];
     id<CDTBlobWriter> writer = [factory writerWithPath:@"///This is not a path"];
-    
+
     XCTAssertTrue([reader isKindOfClass:[CDTBlobData class]], @"Unexpected type");
     XCTAssertTrue([writer isKindOfClass:[CDTBlobData class]], @"Unexpected type");
 }
@@ -67,11 +67,11 @@
 - (void)testFactoryWithFixedProviderCreatesBlobHandlesForEncryptedAttachments
 {
     CDTBlobHandleFactory *factory = [[CDTBlobHandleFactory alloc]
-                                     initWithEncryptionKeyProvider:[CDTHelperFixedKeyProvider provider]];
-    
+        initWithEncryptionKeyProvider:[CDTHelperFixedKeyProvider provider]];
+
     id<CDTBlobReader> reader = [factory readerWithPath:@"///This is not a path"];
     id<CDTBlobWriter> writer = [factory writerWithPath:@"///This is not a path"];
-    
+
     XCTAssertTrue([reader isKindOfClass:[CDTBlobEncryptedData class]], @"Unexpected type");
     XCTAssertTrue([writer isKindOfClass:[CDTBlobEncryptedData class]], @"Unexpected type");
 }
