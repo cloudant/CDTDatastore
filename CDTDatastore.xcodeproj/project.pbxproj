@@ -62,6 +62,7 @@
 		9848508D1DF5733B003B1310 /* FMDatabase+SQLCipher.m in Sources */ = {isa = PBXBuildFile; fileRef = 987AF7B01DE7274C00577DAC /* FMDatabase+SQLCipher.m */; };
 		9848508E1DF5733B003B1310 /* TD_DatabaseEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 987AF7B11DE7274C00577DAC /* TD_DatabaseEncryptionTests.m */; };
 		9848508F1DF5733B003B1310 /* TDBlobStoreEncryptionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 987AF7B21DE7274C00577DAC /* TDBlobStoreEncryptionTests.m */; };
+		984850901DF57A2C003B1310 /* emptynonencryptedindex.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 987AF7BB1DE7275800577DAC /* emptynonencryptedindex.sqlite */; };
 		987382F91C47ADD300937212 /* CDTFetchChanges.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B641C43FCEE00515CC3 /* CDTFetchChanges.m */; };
 		987382FF1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 987382FC1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m */; };
 		987383001C47B1DD00937212 /* CDTHelperOneUseKeyProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 987382FE1C47B1DD00937212 /* CDTHelperOneUseKeyProvider.m */; };
@@ -2428,6 +2429,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				984850901DF57A2C003B1310 /* emptynonencryptedindex.sqlite in Resources */,
 				987385691C47B45600937212 /* emptyencryptedindex.sqlite in Resources */,
 				9873856A1C47B45600937212 /* InfoPlist.strings in Resources */,
 				9873856B1C47B45600937212 /* schema100_1Bonsai_2Lorem.touchdb in Resources */,
