@@ -3,14 +3,14 @@
 ## Contributor License Agreement
 
 In order for us to accept pull-requests, the contributor must first complete
-a Contributor License Agreement (CLA). This clarifies the intellectual 
-property license granted with any contribution. It is for your protection as a 
-Contributor as well as the protection of IBM and its customers; it does not 
+a Contributor License Agreement (CLA). This clarifies the intellectual
+property license granted with any contribution. It is for your protection as a
+Contributor as well as the protection of IBM and its customers; it does not
 change your rights to use your own Contributions for any other purpose.
 
 This is a quick process: one option is signing using Preview on a Mac,
 then sending a copy to us via email. Signing this agreement covers both
-[CDTDatastore](https://github.com/cloudant/CDTDatastore) and 
+[CDTDatastore](https://github.com/cloudant/CDTDatastore) and
 [sync-android](https://github.com/cloudant/sync-android).
 
 You can download the CLAs here:
@@ -96,7 +96,7 @@ Firstly, under the `CDTDatastore` project:
 * `CDTDatastore`: the source code for CDTDatastore. If you are
   contributing to the library then this group will be of most
   relevance.
-  
+
 * `CDTDatastoreTests`: unit and integration tests for CDTDatastore. If
   you are contributing a new feature or making large modifications to
   an existing one, you may need to add or modify tests here.
@@ -153,11 +153,9 @@ encryption key (an instance that conforms to protocol
 will fail.
 
 The `CDTDatastore` and `CDTDatastoreOSX` targets can be used to build
-the library with SQLCipher support.
-
-The `CDTDatastoreEncryptionTests` and `CDTDatastoreEncryptionTestsOSX`
-targets will build and run the sub-set of tests which take a key and
-exercise the database encryption functionality.
+the library with SQLCipher support. To enable SQLCipher support in the project
+`pod update` needs to run the with environment variable `encrypted` set to `yes`,
+to run the tests with encryption support, use the rakefile.
 
 [SQLCipher]: https://www.zetetic.net/sqlcipher/
 [FMDB]: https://github.com/ccgus/fmdb
@@ -181,8 +179,10 @@ Run the following at the command line:
 ```
 xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTests' test | xcpretty -c
 xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTestsOSX' test | xcpretty -c
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreEncryptionTests' test | xcpretty -c
-xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreEncryptionTestsOSX' test | xcpretty -c
+
+# encrypted
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTests' GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1' test | xcpretty -c
+xcodebuild -workspace CDTDatastore.xcworkspace -scheme 'CDTDatastoreTestsOSX' GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1' test | xcpretty -c
 ```
 
 To test on a specific device you need to specify `-destination`:
@@ -205,8 +205,7 @@ Miss out the `| xcpretty` if you didn't install that.
 
 These tests are executed via the various
 `CDTDatastoreReplicationAcceptanceTests` targets (these targets vary
-by platform - iOS and OSX and whether the database is encrypted with
-SQLCipher or not)
+by platform - iOS and OSX, encryption is enabled the same way as for the main project)
 
 The tests can be configured by using a series of environment variables. The environment variables are as follows:
 
@@ -215,8 +214,8 @@ Environment Variable | Purpose | Default
 `TEST_COUCH_HOST` | CouchDB hostname | `localhost`
 `TEST_COUCH_PORT` | Port couchdb is listening on | `5984`
 `TEST_COUCH_HTTP` | http protocol to use, either http or https | `http`
-`TEST_COUCH_USERNAME` | CouchDB account username | 
-`TEST_COUCH_PASSWORD` | CouchDB account Password | 
+`TEST_COUCH_USERNAME` | CouchDB account username |
+`TEST_COUCH_PASSWORD` | CouchDB account Password |
 
 
 Example
