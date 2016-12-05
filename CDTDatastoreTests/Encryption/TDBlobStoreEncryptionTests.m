@@ -19,11 +19,11 @@
 
 #import "TD_Database+BlobFilenames.h"
 
-#import "CDTHelperFixedKeyProvider.h"
 #import "CDTEncryptionKeyNilProvider.h"
+#import "CDTHelperFixedKeyProvider.h"
 
-#import "TDMisc.h"
 #import "CDTMisc.h"
+#import "TDMisc.h"
 
 #define TDBLOBSTOREENCRYPTIONTESTS_DBFILENAME @"schema100_1Bonsai_2Lorem.touchdb"
 #define TDBLOBSTOREENCRYPTIONTESTS_LOREM_FILE @"lorem.txt"

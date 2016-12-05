@@ -15,9 +15,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CloudantTests+EncryptionTests.h"
 #import "CDTEncryptionKeyNilProvider.h"
 #import "CDTHelperFixedKeyProvider.h"
+#import "CloudantTests+EncryptionTests.h"
 #import "FMDatabase+SQLCipher.h"
 
 #import "TD_Database.h"
@@ -44,6 +44,7 @@
                    @"not included");
 }
 
+#ifndef ENCRYPT_DATABASE
 - (void)testCreateEmptyWithFixedKeyProviderFails
 {
     // Create db
@@ -58,17 +59,6 @@
                  @"It is not possible to create an encrypted db without the corresponding library");
 }
 
-- (void)testOpenWithoutEncryptionKeyThrowsException
-{
-    NSString *path =
-        [NSTemporaryDirectory() stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests"];
-
-    TD_Database *db = [[TD_Database alloc] initWithPath:path];
-
-    XCTAssertThrows([db openWithEncryptionKeyProvider:nil],
-                    @"The key is mandatory. Inform a nil provider to not cipher the database");
-}
-
 - (void)testOpenFailsIfEncryptionKeyProviderReturnsAValue
 {
     CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
@@ -79,6 +69,18 @@
 
     XCTAssertFalse([db openWithEncryptionKeyProvider:provider],
                    @"DB can't be opened with key because encription library is not available");
+}
+#endif
+
+- (void)testOpenWithoutEncryptionKeyThrowsException
+{
+    NSString *path =
+        [NSTemporaryDirectory() stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests"];
+
+    TD_Database *db = [[TD_Database alloc] initWithPath:path];
+
+    XCTAssertThrows([db openWithEncryptionKeyProvider:nil],
+                    @"The key is mandatory. Inform a nil provider to not cipher the database");
 }
 
 - (void)testOpenFailsIfEncryptionKeyProviderReturnsAValueWithANonEncryptedDatabase
@@ -161,5 +163,86 @@
     XCTAssertFalse([db openWithEncryptionKeyProvider:fixedProvider],
                    @"A non-encrypted db can not be open with an encryption key");
 }
+
+#if defined ENCRYPT_DATABASE
+- (void)testCreateEmptyWithFixedKeyProviderCiphersDatabase
+{
+    // Create db
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *path = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_DoCipherDb"];
+    [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:provider];
+
+    // Check
+    XCTAssertEqual([FMDatabase isDatabaseUnencryptedAtPath:path], kFMDatabaseUnencryptedIsEncrypted,
+                   @"If a key is provided, db has to be encrypted");
+}
+
+- (void)testOpenDoesNotFailIfEncryptionKeyProviderReturnsAValue
+{
+    CDTHelperFixedKeyProvider *provider = [CDTHelperFixedKeyProvider provider];
+    NSString *path = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_openNotFail"];
+
+    TD_Database *db = [[TD_Database alloc] initWithPath:path];
+
+    XCTAssertTrue([db openWithEncryptionKeyProvider:provider],
+                  @"DB can be opened with a key with the encryption library available");
+}
+
+- (void)testOpenFailsIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToCipherTheDatabase
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *path = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_encryptDBWrongKey"];
+    [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
+
+    // Reload db
+    TD_Database *db = [[TD_Database alloc] initWithPath:path];
+
+    // Open with another fixed provider
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
+
+    XCTAssertFalse([db openWithEncryptionKeyProvider:otherProvider],
+                   @"An encrypted db can only be open with the same key it was created");
+}
+
+- (void)testReopenFailsIfEncryptionKeyProviderReturnsNilWithAnEncryptedDatabase
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *path = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_reOpenEncryptDB"];
+    TD_Database *db =
+        [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
+
+    // Re-open with nil provider
+    CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
+
+    XCTAssertFalse([db openWithEncryptionKeyProvider:nilProvider],
+                   @"An encrypted db requires a key to be open");
+}
+
+- (void)testReopenFailsIfEncryptionKeyProviderDoesNotReturnTheKeyUsedToCipherTheDatabase
+{
+    // Create encrypted db
+    CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
+
+    NSString *path = [NSTemporaryDirectory()
+        stringByAppendingPathComponent:@"TD_DatabaseEncryptionTests_reOpenEncryptDBWrongKey"];
+    TD_Database *db =
+        [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
+
+    // Open with another fixed provider
+    CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
+
+    XCTAssertFalse([db openWithEncryptionKeyProvider:otherProvider],
+                   @"An encrypted db can only be open with the same key it was created");
+}
+#endif
 
 @end

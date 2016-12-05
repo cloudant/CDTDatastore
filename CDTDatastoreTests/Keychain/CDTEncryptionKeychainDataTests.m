@@ -122,12 +122,12 @@
     NSData *archivedData = [NSKeyedArchiver archivedDataWithRootObject:keychainData];
     CDTEncryptionKeychainData *keychainUnarchivedData =
         [NSKeyedUnarchiver unarchiveObjectWithData:archivedData];
-    
+
     XCTAssertTrue([keychainData.encryptedDPK isEqualToData:keychainUnarchivedData.encryptedDPK] &&
-                  [keychainData.salt isEqualToData:keychainUnarchivedData.salt] &&
-                  [keychainData.iv isEqualToData:keychainUnarchivedData.iv] &&
-                  (keychainData.iterations == keychainUnarchivedData.iterations) &&
-                  [keychainData.version isEqualToString:keychainUnarchivedData.version],
+                      [keychainData.salt isEqualToData:keychainUnarchivedData.salt] &&
+                      [keychainData.iv isEqualToData:keychainUnarchivedData.iv] &&
+                      (keychainData.iterations == keychainUnarchivedData.iterations) &&
+                      [keychainData.version isEqualToString:keychainUnarchivedData.version],
                   @"An unarchived data must be equal to the original");
 }
 
