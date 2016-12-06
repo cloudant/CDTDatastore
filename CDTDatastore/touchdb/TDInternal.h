@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//  Copyright © 2016 IBM Corporation. All rights reserved.
 //
 
 #import "TD_Database.h"
@@ -103,8 +104,14 @@
 
 @interface TD_Database (Replication_Internal)
 - (void)stopAndForgetReplicator:(TDReplicator*)repl;
-- (NSObject*)lastSequenceWithCheckpointID:(NSString*)checkpointID;
-- (void)setLastSequence:(NSObject*)lastSequence withCheckpointID:(NSString*)checkpointID;
+NS_ASSUME_NONNULL_BEGIN
+- (nullable NSDictionary<NSString *, NSObject *> *)checkpointDocumentWithID:
+    (nonnull NSString *)checkpointID;
+- (BOOL)saveCheckpointDocument:(nonnull NSDictionary<NSString *, NSObject *> *)checkpoint
+                         error:(NSError *__autoreleasing *)error;
+- (BOOL)deleteCheckpointDocunemtWithID:(NSString *)checkpointID
+                                 error:(NSError *__autoreleasing *)error;
+NS_ASSUME_NONNULL_END;
 + (NSString*)joinQuotedStrings:(NSArray*)strings;
 @end
 
