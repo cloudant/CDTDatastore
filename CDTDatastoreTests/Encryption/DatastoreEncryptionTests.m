@@ -45,7 +45,7 @@
 
 - (void)testInitWithoutEncryptionKeyThrowsException
 {
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_exception"];
 
     TD_Database *db = [[TD_Database alloc] initWithPath:path];
@@ -61,7 +61,7 @@
     // Create non-encrypted db
     CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_nonEncryptDB"];
     [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:nilProvider];
 
@@ -119,7 +119,7 @@
     // Create non-encrypted db
     CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_alreadyOpen"];
     TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:nilProvider];
 
@@ -135,7 +135,7 @@
     // Create non-encrypted db
     CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_alreadyOpenNonEncryptDB"];
     TD_Database *db = [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:nilProvider];
 
@@ -155,7 +155,7 @@
     // Create encrypted db
     CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_encryptDBWrongKey"];
     [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
 
@@ -176,7 +176,7 @@
     // Create encrypted db
     CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_alreadyOpenEncryptDB"];
     TD_Database *db =
         [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
@@ -195,7 +195,7 @@
     // Create encrypted db
     CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
 
-    NSString *path = [NSTemporaryDirectory()
+    NSString *path = [[self createTemporaryDirectoryAndReturnPath]
         stringByAppendingPathComponent:@"datastoreEncryptionTests_encryptDBWrongKey_again"];
     TD_Database *db =
         [TD_Database createEmptyDBAtPath:path withEncryptionKeyProvider:fixedProvider];
