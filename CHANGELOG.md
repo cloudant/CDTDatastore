@@ -1,5 +1,23 @@
 # CDTDatastore CHANGELOG
 
+## 1.2.0 (2016-12-07)
+
+- [NEW] Warnings are logged if attachments dictionary is not keyed by `attachment.name`.
+- [NEW] Replications can now be managed from CDTDatastore object, see `CDTDatastore+Replication.h`.
+- [NEW] Credentials for replications can now be provided via the username and
+  password parameters for `CDTPushReplication` and `CDTPullReplication` objects.
+- [NEW] `CDTReplay429Interceptor` to back off and retry `429` responses while replicating.
+   Optionally add this interceptor to replication configurations to enable this behaviour.
+- [IMPROVED] Return Conflict (409) instead of Not Found (404) when attempting to update a
+  deleted document.
+- [IMPROVED] Removed incorrect documentation for closing of datastores.
+- [IMPROVED] Updated replicator to use version 3 of the replicator protocol.
+- [IMPROVED] Disk full errors are now reported with code 507 rather than 500.
+- [FIXED] Issue where the index database was not closed when CDTQIndexManager was
+   deallocated.
+- [FIXED] Dangling reference when loading saved attachments from the datastore.
+
+
 ## 1.1.1 (2016-06-20)
 - [FIX] Fix pull replications using `_bulk_get` endpoint. This was
   broken in the previous release.
