@@ -15,8 +15,8 @@ SAMPLE_IOS = "Project"
 
 
 # Destinations
-IPHONE_DEST = 'platform=iOS Simulator,OS=latest,name=iPhone 5'
-OSX_DEST = 'platform=OS X'
+IPHONE_DEST = (ENV["IPHONE_DEST"] == nil || ENV["IPHONE_DEST"] == "null") ? 'platform=iOS Simulator,OS=latest,name=iPhone 5' : ENV["IPHONE_DEST"]
+OSX_DEST = (ENV["OSX_DEST"] == nil || ENV["IPHONE_DEST"] == "null") ? 'platform=OS X' : ENV["OSX_DEST"]
 
 #
 #  Primary tasks
@@ -108,7 +108,8 @@ end
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
   settings = "GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1'" unless !ENV["encrypted"]
-  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} test | xcpretty; exit ${PIPESTATUS[0]}")
+  logName = (ENV["encrypted"] ? "Encrypted" : "") + "#{scheme}.log"
+  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} test | tee #{logName} | xcpretty -r junit; exit ${PIPESTATUS[0]}")
 end
 
 def test(workspace, scheme, destination)
