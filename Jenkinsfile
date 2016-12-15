@@ -86,8 +86,8 @@ stage('Publish') {
         node {
             checkout scm // re-checkout to be able to git tag
             // read the version name and determine if it is a release build
-            versionFile = readFile('CDTDatastore/Version.h').trim()
-            versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION \"(.*)\"/
+            def versionFile = readFile('CDTDatastore/Version.h').trim()
+            def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION \"(.*)\"/
             if (versionMatcher.matches()) {
               isReleaseVersion = !versionMatcher.group(1).toUpperCase(Locale.ENGLISH).contains("SNAPSHOT")
 
