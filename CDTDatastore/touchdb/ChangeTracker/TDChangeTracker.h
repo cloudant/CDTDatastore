@@ -3,6 +3,9 @@
 //  TouchDB
 //
 //  Created by Jens Alfke on 6/20/11.
+//
+//  Copyright © 2017 IBM Corp. All rights reserved.
+//
 //  Copyright 2011 Couchbase, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -23,6 +26,7 @@
 - (void)changeTrackerReceivedChange:(NSDictionary*)change;
 - (void)changeTrackerReceivedChanges:(NSArray*)changes;
 - (void)changeTrackerStopped:(TDChangeTracker*)tracker;
+- (NSUInteger)sizeOfChangeQueue;
 @end
 
 typedef enum TDChangeTrackerMode { kOneShot, kLongPoll, kContinuous } TDChangeTrackerMode;

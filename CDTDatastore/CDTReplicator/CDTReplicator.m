@@ -181,8 +181,8 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     {
         // check both self.started and self.state. While unlikely, it is possible for -stop to
         // be called before -startWithTaskGroup:error:. If -stop is called first on a particular
-        // instance, the resulting state will 'stopped' and the object can no longer be started at
-        // that point.
+        // instance, the resulting state will be 'stopped' and the object can no longer be started
+        // at that point.
         if (self.started || self.state != CDTReplicatorStatePending) {
             CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
                        @"-startWithTaskGroup:error: CDTReplicator can only be started "

@@ -2,7 +2,7 @@
 //  CDTURLSession.m
 //
 //  Created by Rhys Short.
-//  Copyright © 2015, 2016 IBM Corporation. All rights reserved.
+//  Copyright © 2015, 2016, 2017 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -100,7 +100,7 @@ static dispatch_semaphore_t g_asyncTaskMonitor;
     return self;
 }
 
-- (void)dealloc { [self.session finishTasksAndInvalidate]; }
+- (void)finishTasksAndInvalidate { [self.session finishTasksAndInvalidate]; }
 
 - (CDTURLSessionTask *)dataTaskWithRequest:(NSURLRequest *)request
                               taskDelegate:(NSObject<CDTURLSessionTaskDelegate> *)taskDelegate
