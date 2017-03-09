@@ -32,6 +32,9 @@ def podfile(podfileDir) {
 
 def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
     node(nodeLabel) {
+        // Clean the directory before un-stashing (removes old logs)
+        deleteDir()
+
         // Unstash the source on this node
         unstash name: 'source'
 
@@ -42,19 +45,24 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                // Install or update the pods
-                if (target == 'sample') {
-                    podfile('Project')
-                } else {
-                    podfile('.')
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'couchdb', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD']]) {
+                    // Install or update the pods
+                    if (target == 'sample') {
+                        podfile('Project')
+                    } else {
+                        podfile('.')
+                    }
+                    sh "rake ${target}"
                 }
-                sh "rake ${target}"
             }
         } finally {
-            // Load the test results
-            junit 'build/reports/junit.xml'
-            // Archive the complete log in case more debugging needed
-            archiveArtifacts artifacts: '*CDTDatastoreTests*.log'
+            // Note the sample build has no junit results or CDT*.log
+            if (target != 'sample') {
+                // Load the test results
+                junit 'build/reports/junit.xml'
+                // Archive the complete log in case more debugging needed
+                archiveArtifacts artifacts: '*CDTDatastore*.log'
+            }
         }
     }
 }
@@ -68,21 +76,37 @@ stage('Checkout') {
 }
 
 stage('BuildAndTest') {
-    parallel(
-        ios: {
-            buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
-            buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
-        },
-        iosEncrypted: {
-            buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes')
-        },
-        macos: {
-            buildAndTest('macos', 'testosx', 'OSX_DEST', 'no')
-        },
-        macosEncrypted: {
-            buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
-        }
-    )
+    def axes = [
+            ios: {
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
+                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
+            },
+            iosEncrypted: {
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes')
+            },
+            macos: {
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'no')
+            },
+            macosEncrypted: {
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
+            }]
+    // Add replication acceptance tests for the master branch
+    if (env.BRANCH_NAME == "master") {
+      axes.putAll(
+                  iosRAT: {
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+                  },
+                  iosRATEncrypted: {
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
+                  },
+                  macosRAT: {
+                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+                  },
+                  macosRATEncrypted: {
+                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+                  })
+    }
+    parallel(axes)
 }
 
 // Publish the master branch
