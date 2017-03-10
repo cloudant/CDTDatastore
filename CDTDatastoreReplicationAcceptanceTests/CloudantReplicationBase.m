@@ -30,7 +30,13 @@
     XCTAssertNil(error, @"CDTDatastoreManager had error");
     XCTAssertNotNil(self.factory, @"Factory is nil");
 
-    self.remoteRootURL = [NSURL URLWithString:[[ReplicationSettings alloc] init].serverURI];
+    ReplicationSettings *settings = [[ReplicationSettings alloc] init];
+    self.remoteRootURL = [NSURL URLWithString:settings.serverURI];
+    
+    // Configure BasicAuth header for UNIRest requests
+    if (settings.authorization != nil) {
+        [UNIRest defaultHeader:@"Authorization" value: settings.authorization];
+    }
     
 #ifdef USE_ENCRYPTION
     self.remoteDbPrefix = @"replication-acceptance-with-encryption";
