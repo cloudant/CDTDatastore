@@ -13,9 +13,11 @@ install:
 script:
   - rake travis
 env:
-  - PLATFORM=iOS
-    encrypted=yes
-  - PLATFORM=iOS
+  # Travis hardware is too slow to run the iOS tests as the build exceeds the
+  # allowed time of 50 minutes. Rely on Jenkins coverage for iOS for now.
+  #- PLATFORM=iOS
+  #  encrypted=yes
+  #- PLATFORM=iOS
   - PLATFORM=OSX
   - PLATFORM=OSX
     encrypted=yes
