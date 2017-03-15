@@ -16,7 +16,7 @@
 
 def podfile(podfileDir) {
     // Lock the pod repo and update the pod
-    lock('pod') {
+    lock("${env.NODE_NAME.split('-')[0]}pod") {
         if(fileExists('Podfile.lock')) {
             sh "cd ${podfileDir} && pod update --verbose"
         } else {
