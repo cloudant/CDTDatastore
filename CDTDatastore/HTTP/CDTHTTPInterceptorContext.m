@@ -25,7 +25,7 @@
 
 
 -(instancetype)init {
-    NSAssert(NO, @"Call the designated initaliser");
+    NSAssert(NO, @"Call the designated initialiser");
     return nil;
 }
 

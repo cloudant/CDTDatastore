@@ -3,6 +3,8 @@
 //  TouchDB
 //
 //  Created by Jens Alfke on 12/2/11.
+//  Copyright © 2017 IBM Corp. All rights reserved.
+//
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
@@ -302,6 +304,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     if (!_caughtUp) [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -beginReplicating
 }
 
+- (NSUInteger)sizeOfChangeQueue { return _revsToPull.count; }
 #pragma mark - REVISION CHECKING:
 
 // Process a bunch of remote revisions from the _changes feed at once
@@ -646,6 +649,8 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                 [_pendingSequences removeSequence:fakeSequence];
             }
         }
+
+        [_db clearPendingAttachments];
 
         CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT, @"%@ finished inserting %u revisions", self,
                    (unsigned)downloads.count);

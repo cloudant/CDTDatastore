@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+
+- [IMPROVED] Significant reduction in memory usage during large pull replications.
+
 ## 1.2.0 (2016-12-07)
 
 - [NEW] Warnings are logged if attachments dictionary is not keyed by `attachment.name`.
