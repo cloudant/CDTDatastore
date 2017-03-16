@@ -16,6 +16,11 @@
 
 def podfile(podfileDir) {
     // Lock the pod repo and update the pod
+
+    // Note that each macOS host has a podfile so there is one Jenkins lock
+    // available per host. Nodes are named as nodeHost-executorEnv so we use the
+    // part of the node name before the - to identify the pod lock.
+
     lock("${env.NODE_NAME.split('-')[0]}pod") {
         if(fileExists('Podfile.lock')) {
             sh "cd ${podfileDir} && pod update --verbose"
