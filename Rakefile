@@ -82,7 +82,7 @@ end
 
 desc "Run the replication acceptance tests for iOS"
 task :replicationacceptanceios do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IOS_DEST)
+  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IPHONE_DEST)
 end
 
 #

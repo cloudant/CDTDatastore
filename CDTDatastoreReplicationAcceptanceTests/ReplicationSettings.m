@@ -84,4 +84,13 @@
     return server;
 }
 
+-(NSString *) authorization {
+    NSString *base64Creds;
+    if (self.username != nil && ![self.username isEqualToString:@""] ){
+        NSData *creds = [[NSString stringWithFormat:@"%@:%@", self.username, self.password]dataUsingEncoding:NSUTF8StringEncoding];
+        base64Creds = [NSString stringWithFormat:@"Basic %@", [creds base64EncodedStringWithOptions:0]];
+    }
+    return base64Creds;
+}
+
 @end

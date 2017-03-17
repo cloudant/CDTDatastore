@@ -12,6 +12,8 @@
 
 @property (readonly) NSString* serverURI;
 
+@property (readonly) NSString* authorization;
+
 @property (readonly) NSNumber* nDocs;
 
 @property (readonly) NSNumber* largeRevTreeSize;
