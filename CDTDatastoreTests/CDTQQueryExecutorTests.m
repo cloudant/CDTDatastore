@@ -1861,6 +1861,12 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12", @"fred34", @"bill34" ]);
         });
         
+        it(@"works when array count does not match", ^{
+            NSDictionary* query = @{ @"pet" : @{ @"$not" : @{ @"$size" : @2 } } };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24", @"john44", @"fred72", @"john12", @"fred11" ]);
+        });
+        
         it(@"correctly returns empty result set when array count does not match", ^{
             NSDictionary* query = @{ @"pet": @{ @"$size": @3 } };
             CDTQResultSet* result = [im find:query];
@@ -1878,6 +1884,33 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             NSDictionary* query = @{ @"pet": @{ @"$size": @0 } };
             CDTQResultSet* result = [im find:query];
             expect(result.documentIds).to.containsInAnyOrder(@[ @"fred11" ]);
+        });
+        
+        it(@"correctly returns a result set when argument is negative in negated clause", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$not" : @{ @"$size": @-1 }} };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(8);
+        });
+        
+        it(@"correctly returns a result set when argument is not a whole number in negated clause", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$not" : @{ @"$size": @1.6 }} };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(8);
+        });
+        
+        it(@"correctly returns a result set when argument is string in negated clause", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$not" : @{ @"$size": @"dog" }} };
+            CDTQResultSet* result = [im find:query];
+            expect(result).toNot.beNil();
+            expect(result.documentIds.count).to.equal(8);
+        });
+        
+        it(@"correctly returns nil when argument is invalid in negated clause", ^{
+            NSDictionary* query = @{ @"pet": @{ @"$not" : @{ @"$size": @[ @1 ] }} };
+            CDTQResultSet* result = [im find:query];
+            expect(result).to.beNil();
         });
         
         it(@"correctly returns empty result set when argument is negative", ^{
@@ -1914,6 +1947,13 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
             expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12" ]);
         });
         
+        it(@"correctly performs compound AND query with negated $size clause", ^{
+            NSDictionary* query = @{ @"$and": @[ @{ @"pet": @{@"$not" : @{ @"$size": @2 } }},
+                                                 @{ @"name": @"mike" } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24" ]);
+        });
+        
         it(@"correctly performs compound AND query on same field with single $size clause", ^{
             NSDictionary* query = @{ @"$and": @[ @{ @"pet": @{ @"$size": @2 } },
                                                  @{ @"pet": @"dog" } ] };
@@ -1931,6 +1971,17 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
                                                                 @"john44" ]);
         });
         
+        it(@"correctly performs compound OR query with negated $size clause", ^{
+            NSDictionary* query = @{ @"$or": @[ @{ @"pet": @{@"$not" : @{ @"$size": @2 } }},
+                                                @{ @"name": @"john" } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike24",
+                                                                @"fred72",
+                                                                @"john12",
+                                                                @"john44",
+                                                                @"fred11"]);
+        });
+        
         it(@"correctly performs compound OR query with multiple $size clauses on same field", ^{
             NSDictionary* query = @{ @"$or": @[ @{ @"pet": @{ @"$size": @1 } },
                                                 @{ @"pet": @{ @"$size": @2 } } ] };
@@ -1939,6 +1990,20 @@ sharedExamplesFor(@"queries without covering indexes", ^(NSDictionary* data) {
                                                                 @"mike12",
                                                                 @"fred34",
                                                                 @"fred72",
+                                                                @"bill34" ]);
+        });
+        
+        it(@"correctly performs compound OR query with multiple negated $size clauses on same field", ^{
+            NSDictionary* query = @{ @"$or": @[ @{ @"pet": @{@"$not" : @{ @"$size": @1 }} },
+                                                @{ @"pet": @{@"$not" : @{ @"$size": @2 }} } ] };
+            CDTQResultSet* result = [im find:query];
+            expect(result.documentIds).to.containsInAnyOrder(@[ @"mike12",
+                                                                @"mike24",
+                                                                @"fred11",
+                                                                @"fred34",
+                                                                @"fred72",
+                                                                @"john12",
+                                                                @"john44",
                                                                 @"bill34" ]);
         });
         

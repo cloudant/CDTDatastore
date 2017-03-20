@@ -314,6 +314,11 @@
             NSDictionary *predicate = (NSDictionary *) term.allValues[0];
             if (predicate[operator]) {
                 found = YES;
+            } else {
+                found = [self isOperator:operator inClause:[NSArray arrayWithObjects:predicate, nil]];
+            }
+            
+            if (found) {
                 break;
             }
         }

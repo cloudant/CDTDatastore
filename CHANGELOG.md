@@ -3,6 +3,7 @@
 ## Unreleased
 
 - [IMPROVED] Significant reduction in memory usage during large pull replications.
+- [FIXED] Issue querying indexed fields when combining the `$not` and `$size` operators.
 
 ## 1.2.0 (2016-12-07)
 

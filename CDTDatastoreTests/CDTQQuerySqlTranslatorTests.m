@@ -619,6 +619,16 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(idx).to.beNil();
         });
         
+        it(@"does not select an index for negated $size queries", ^{
+            NSDictionary *indexes = @{ @"named": @{ @"name": @"named",
+                                                    @"type": @"json",
+                                                    @"fields": @[ @"name", @"pet", @"age" ] } };
+            NSString *idx =
+            [CDTQQuerySqlTranslator chooseIndexForAndClause:@[ @{ @"pet": @{ @"$not" : @{ @"$size": @2 }} } ]
+                                                fromIndexes:indexes];
+            expect(idx).to.beNil();
+        });
+        
         it(@"does not select an index for multi-field queries containing $size", ^{
             NSDictionary *indexes = @{ @"named": @{ @"name": @"named",
                                                     @"type": @"json",
@@ -626,6 +636,17 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             NSString *idx =
             [CDTQQuerySqlTranslator chooseIndexForAndClause:@[ @{ @"name": @{ @"$eq": @"mike" } },
                                                                @{ @"pet": @{ @"$size": @2 } } ]
+                                                fromIndexes:indexes];
+            expect(idx).to.beNil();
+        });
+        
+        it(@"does not select an index for multi-field queries containing $size in negated clause", ^{
+            NSDictionary *indexes = @{ @"named": @{ @"name": @"named",
+                                                    @"type": @"json",
+                                                    @"fields": @[ @"name", @"pet", @"age" ] } };
+            NSString *idx =
+            [CDTQQuerySqlTranslator chooseIndexForAndClause:@[ @{ @"name": @{ @"$eq": @"mike" } },
+                                                               @{ @"pet": @{ @"$not" : @{ @"$size": @2 }} } ]
                                                 fromIndexes:indexes];
             expect(idx).to.beNil();
         });
@@ -978,7 +999,6 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
                 expect(parts.placeholderValues).to.equal(@[ @2, @1 ]);
             });
         });
-        
     });
 
     describe(@"when multiple conditions on one field", ^{
@@ -1278,9 +1298,21 @@ SpecBegin(CDTQQuerySqlTranslator) describe(@"cdtq", ^{
             expect(actual).to.equal(@{ @"$and": @[ @{ @"pet": @{ @"$size": @2 } } ] });
         });
         
+        it(@"correctly normalizes query with NOT and SIZE operator", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"pet": @{ @"$not" : @{ @"$size": @2 } } } ];
+             expect(actual).to.equal(@{ @"$and": @[ @{ @"pet": @{ @"$not" : @{ @"$size": @2 } } } ] });
+        });
+        
         it(@"returns nil when SIZE argument is invalid", ^{
             NSDictionary *actual =
             [CDTQQueryValidator normaliseAndValidateQuery:@{@"pet": @{ @"$size": @[ @2 ] } } ];
+            expect(actual).to.beNil();
+        });
+        
+        it(@"returns nil when SIZE argument is invalid in negated clause", ^{
+            NSDictionary *actual =
+            [CDTQQueryValidator normaliseAndValidateQuery:@{@"pet": @{ @"$not" : @{ @"$size": @[ @2 ] } } } ];
             expect(actual).to.beNil();
         });
         
