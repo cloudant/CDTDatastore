@@ -67,6 +67,12 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
     }
 }
 
+@NonCPS
+def isReleaseVersion(versionFile) {
+  def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION \"(.*)\"/
+  return versionMatcher.matches() && !versionMatcher.group(1).toUpperCase(Locale.ENGLISH).contains("SNAPSHOT")
+}
+
 stage('Checkout') {
     // Checkout, build and assemble the source and doc
     node {
@@ -114,44 +120,39 @@ stage('Publish') {
     if (env.BRANCH_NAME == "master") {
         node {
             checkout scm // re-checkout to be able to git tag
-            // read the version name and determine if it is a release build
+
+            // read the version name
             def versionFile = readFile('CDTDatastore/Version.h').trim()
-            def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION \"(.*)\"/
-            if (versionMatcher.matches()) {
-              isReleaseVersion = !versionMatcher.group(1).toUpperCase(Locale.ENGLISH).contains("SNAPSHOT")
 
-              // if it is a release build then do the git tagging
-              if (isReleaseVersion) {
+            // if it is a release build then do the git tagging
+            if (isReleaseVersion(versionFile)) {
 
-                  // Read the CHANGELOG.md to get the tag message
-                  changes = """"""
-                  changes += readFile('CHANGELOG.md')
-                  tagMessage = """"""
-                  for (line in changes.readLines()) {
-                      if (!"".equals(line)) {
-                          // append the line to the tagMessage
-                          tagMessage = "${tagMessage}${line}\n"
-                      } else {
-                          break
-                      }
-                  }
+                // Read the CHANGELOG.md to get the tag message
+                tagMessage = ''
+                for (line in readFile('CHANGELOG.md').readLines()) {
+                    if (!''.equals(line)) {
+                        // append the line to the tagMessage
+                        tagMessage = "${tagMessage}${line}\n"
+                    } else {
+                        break
+                    }
+                }
 
-                  // Use git to tag the release at the version
-                  try {
-                      // Awkward workaround until resolution of https://issues.jenkins-ci.org/browse/JENKINS-28335
-                      withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']]) {
-                          sh "git config user.email \"nomail@hursley.ibm.com\""
-                          sh "git config user.name \"Jenkins CI\""
-                          sh "git config credential.username ${env.GIT_USERNAME}"
-                          sh "git config credential.helper '!echo password=\$GIT_PASSWORD; echo'"
-                          sh "git tag -a ${version} -m '${tagMessage}'"
-                          sh "git push origin ${version}"
-                      }
-                  } finally {
-                      sh "git config --unset credential.username"
-                      sh "git config --unset credential.helper"
-                  }
-              }
+                // Use git to tag the release at the version
+                try {
+                    // Awkward workaround until resolution of https://issues.jenkins-ci.org/browse/JENKINS-28335
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']]) {
+                        sh "git config user.email \"nomail@hursley.ibm.com\""
+                        sh "git config user.name \"Jenkins CI\""
+                        sh "git config credential.username ${env.GIT_USERNAME}"
+                        sh "git config credential.helper '!echo password=\$GIT_PASSWORD; echo'"
+                        sh "git tag -a ${version} -m '${tagMessage}'"
+                        sh "git push origin ${version}"
+                    }
+                } finally {
+                    sh "git config --unset credential.username"
+                    sh "git config --unset credential.helper"
+                }
             }
         }
     }
