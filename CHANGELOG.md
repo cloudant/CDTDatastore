@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 1.2.1 (2017-04-07)
 
 - [IMPROVED] Significant reduction in memory usage during large pull replications.
 - [FIXED] Issue querying indexed fields when combining the `$not` and `$size` operators.
