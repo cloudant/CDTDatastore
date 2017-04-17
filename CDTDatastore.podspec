@@ -68,7 +68,7 @@ Pod::Spec.new do |s|
     sp.frameworks = 'SystemConfiguration'
 
     sp.dependency 'CDTDatastore/no-arc'
-    sp.dependency 'CocoaLumberjack', '~> 2.0'
+    sp.dependency 'CocoaLumberjack', '= 2.0.0'
   end
 
   s.subspec 'no-arc' do |sp|
