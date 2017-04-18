@@ -157,7 +157,7 @@ if (!name) {
 }
 ```
 
-####Indexing for text search
+#### Indexing for text search
 
 Since text search relies on SQLite FTS, which is a compile time option, we must ensure that SQLite FTS is available.  To verify that text search is enabled and that a text index can be created use `-isTextSearchEnabled` before attempting to create a text index.  If text search is not enabled see [compiling and enabling SQLite FTS][enableFTS] for details. 
 
@@ -206,7 +206,7 @@ it is successful, otherwise they returns `nil`.
 - Text indexes cannot be created on field names containing an `=` 
 sign. This is due to restrictions imposed by SQLite's virtual table syntax.
 
-####Viewing index definitions
+#### Viewing index definitions
 
 Use `-listIndexes` to retrieve a dictionary containing all of the query indexes in a datastore.  The key to the dictionary is the index name.
 
@@ -227,7 +227,7 @@ The format of the dictionary returned by `-listindexes` is:
 
 Note:  `settings` are returned as a JSON string.
 
-####Changing and removing indexes
+#### Changing and removing indexes
 
 If an index needs to be changed, first delete the existing index 
 by calling `-deleteIndexNamed:` and provide the index name of the index to be deleted, then call the appropriate 
