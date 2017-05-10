@@ -102,7 +102,7 @@ podspec.
                                                   error:&error];
     
     // Use the encrypted store just the same as an unencrypted datastore
-    CDTDocumentRevision *rev = [CDTMutableDocumentRevision revisionWithDocId:@"doc1"];
+    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:@"doc1"];
     rev.body = @{@"description": @"Buy milk",
                  @"completed": @NO,
                  @"type": @"com.cloudant.sync.example.task"
