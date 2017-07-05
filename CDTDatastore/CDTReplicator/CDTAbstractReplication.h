@@ -146,6 +146,16 @@ typedef NS_ENUM(NSInteger, CDTReplicationErrors) {
  * @return an initialsed instance of CDTAbstractReplication.
  */
 - (instancetype)initWithUsername:(nullable NSString*)username password:(nullable NSString*)password;
+
+/**
+ * Initalises the abstract replication, using an IAM API key to authenticate.
+ * See https://console.bluemix.net/docs/services/Cloudant/guides/iam.html#ibm-cloud-identity-and-access-management
+ * for more information about IAM.
+ * @param IAMAPIKey The IAM API key.
+ * @return an initialsed instance of CDTAbstractReplication.
+ */
+- (instancetype)initWithIAMAPIKey:(NSString *)IAMAPIKey;
+
 /**
   Adds an interceptor to the interceptors array.
  @param interceptor the interceptor to append to the interceptors array.

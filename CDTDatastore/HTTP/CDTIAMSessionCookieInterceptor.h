@@ -1,9 +1,9 @@
 //
-//  CDTSessionCookieInterceptor.h
+//  CDTIAMSessionCookieInterceptor.h
+//  CDTDatastore
 //
-//
-//  Created by Rhys Short on 08/09/2015.
-//  Copyright (c) 2015 IBM Corp.
+//  Created by tomblench on 05/07/2017.
+//  Copyright © 2017 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -18,11 +18,10 @@
 #import "CDTSessionCookieInterceptorBase.h"
 #import "CDTMacros.h"
 
-@interface CDTSessionCookieInterceptor : CDTSessionCookieInterceptorBase
+@interface CDTIAMSessionCookieInterceptor :  CDTSessionCookieInterceptorBase
 
 - (nonnull instancetype)init NS_UNAVAILABLE;
 
-- (nonnull instancetype)initWithUsername:(nonnull NSString *)username
-                                password:(nonnull NSString *)password NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithAPIKey:(nonnull NSString *)apiKey NS_DESIGNATED_INITIALIZER;
 
 @end
