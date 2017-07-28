@@ -19,6 +19,16 @@
 		8E2DDDF91D1BEFBE00673564 /* CDTReplay429Interceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */; };
 		8E2DDDFA1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
 		8E2DDDFB1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
+		8E705A8B1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
+		8E705A8C1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
+		8E705A8E1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */; };
+		8E705A8F1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */; };
+		8E705A921F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */; };
+		8E705A931F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */; };
+		8E705A941F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */; };
+		8E705A951F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */; };
+		8E705A971F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */; };
+		8E705A981F0E348F00FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */; };
 		90D44B38BE0B6F0F5E18F462 /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FF78267FE761ABB49CEB76BB /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTests.framework */; };
 		980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */; };
 		980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */; };
@@ -750,6 +760,11 @@
 		880C1D944A8E097B9021DF85 /* Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-base-tests-CDTDatastoreTestsOSX/Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTReplay429Interceptor.h; sourceTree = "<group>"; };
 		8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplay429Interceptor.m; sourceTree = "<group>"; };
+		8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTIAMSessionCookieInterceptor.m; sourceTree = "<group>"; };
+		8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTIAMSessionCookieInterceptor.h; sourceTree = "<group>"; };
+		8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTSessionCookieInterceptorBase.h; sourceTree = "<group>"; };
+		8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTSessionCookieInterceptorBase.m; sourceTree = "<group>"; };
+		8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTIAMSessionCookieInterceptorTests.m; sourceTree = "<group>"; };
 		987382FB1C47B1DD00937212 /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		987382FC1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		987382FD1C47B1DD00937212 /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
@@ -1378,6 +1393,7 @@
 				98F77E171C44044000515CC3 /* CDTQValueExtractorTests.m */,
 				98F77E181C44044000515CC3 /* CDTReplicationTests.m */,
 				98F77E191C44044000515CC3 /* CDTSessionCookieInterceptorTests.m */,
+				8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */,
 				98F77E1A1C44044000515CC3 /* CDTURLSessionTaskTests.m */,
 				98F77E1B1C44044000515CC3 /* CDTURLSessionTests.m */,
 				98F77E1C1C44044000515CC3 /* CloudantSyncTests.h */,
@@ -1535,6 +1551,10 @@
 				98F77BA51C43FCEE00515CC3 /* CDTHTTPInterceptorContext.m */,
 				98F77BA61C43FCEE00515CC3 /* CDTSessionCookieInterceptor.h */,
 				98F77BA71C43FCEE00515CC3 /* CDTSessionCookieInterceptor.m */,
+				8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */,
+				8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */,
+				8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */,
+				8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */,
 				98F77BA81C43FCEE00515CC3 /* CDTURLSession.h */,
 				98F77BA91C43FCEE00515CC3 /* CDTURLSession.m */,
 				98F77BAA1C43FCEE00515CC3 /* CDTURLSessionTask.h */,
@@ -1935,6 +1955,7 @@
 				987383881C47B38800937212 /* CDTQLogging.h in Headers */,
 				987383891C47B38800937212 /* CDTDatastore+Query.h in Headers */,
 				9873838A1C47B38800937212 /* Version.h in Headers */,
+				8E705A8F1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */,
 				9873838B1C47B38800937212 /* TDBlobStore+Internal.h in Headers */,
 				9873838C1C47B38800937212 /* TD_Database+BlobFilenames.h in Headers */,
 				9873838D1C47B38800937212 /* CDTBlobEncryptedData+Internal.h in Headers */,
@@ -1994,6 +2015,7 @@
 				987383C41C47B38800937212 /* TD_Database+Attachments.h in Headers */,
 				987383C51C47B38800937212 /* CDTEncryptionKeychainManager.h in Headers */,
 				987383C61C47B38800937212 /* CloudantSyncEncryption.h in Headers */,
+				8E705A931F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h in Headers */,
 				987383C71C47B38800937212 /* TDReachability.h in Headers */,
 				987383C81C47B38800937212 /* TDBase64.h in Headers */,
 				987383C91C47B38800937212 /* CDTURLSessionTask.h in Headers */,
@@ -2066,6 +2088,7 @@
 				98F77C7C1C43FCEE00515CC3 /* CDTQLogging.h in Headers */,
 				98F77C721C43FCEE00515CC3 /* CDTDatastore+Query.h in Headers */,
 				98F77CDE1C43FCEE00515CC3 /* Version.h in Headers */,
+				8E705A8E1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */,
 				98F77CB11C43FCEE00515CC3 /* TDBlobStore+Internal.h in Headers */,
 				98F77C991C43FCEE00515CC3 /* TD_Database+BlobFilenames.h in Headers */,
 				98F77C441C43FCEE00515CC3 /* CDTBlobEncryptedData+Internal.h in Headers */,
@@ -2125,6 +2148,7 @@
 				98F77C5A1C43FCEE00515CC3 /* CDTEncryptionKeychainManager.h in Headers */,
 				98F77C531C43FCEE00515CC3 /* CloudantSyncEncryption.h in Headers */,
 				98F77CCD1C43FCEE00515CC3 /* TDReachability.h in Headers */,
+				8E705A921F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h in Headers */,
 				98F77CAD1C43FCEE00515CC3 /* TDBase64.h in Headers */,
 				98F77C701C43FCEE00515CC3 /* CDTURLSessionTask.h in Headers */,
 				98F77CD11C43FCEE00515CC3 /* TDReplicator.h in Headers */,
@@ -2799,6 +2823,7 @@
 				987383181C47B38800937212 /* TD_DatabaseManager.m in Sources */,
 				8E2DDDFB1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */,
 				987383191C47B38800937212 /* Test.m in Sources */,
+				8E705A951F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m in Sources */,
 				9873831A1C47B38800937212 /* CDTHTTPInterceptorContext.m in Sources */,
 				9873831B1C47B38800937212 /* TDSequenceMap.m in Sources */,
 				9873831C1C47B38800937212 /* MYStreamUtils.m in Sources */,
@@ -2816,6 +2841,7 @@
 				9873832A1C47B38800937212 /* CDTQIndexCreator.m in Sources */,
 				9873832B1C47B38800937212 /* TDMisc.m in Sources */,
 				9873832C1C47B38800937212 /* CDTChangedDictionary.m in Sources */,
+				8E705A8C1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */,
 				9873832D1C47B38800937212 /* CDTAttachment.m in Sources */,
 				9873832E1C47B38800937212 /* CDTEncryptionKeyNilProvider.m in Sources */,
 				9873832F1C47B38800937212 /* TD_Database+Replication.m in Sources */,
@@ -2945,6 +2971,7 @@
 				9873853C1C47B45600937212 /* CDTQMatcherQueryExecutor.m in Sources */,
 				9873853E1C47B45600937212 /* TDMiscTests.m in Sources */,
 				987385401C47B45600937212 /* TD_DatabaseTests.m in Sources */,
+				8E705A981F0E348F00FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */,
 				987385411C47B45600937212 /* DatastoreManagerTests.m in Sources */,
 				987385431C47B45600937212 /* TDMultiStreamWriterTests.m in Sources */,
 				987385441C47B45600937212 /* CDTQEitherMatcher.m in Sources */,
@@ -3026,6 +3053,7 @@
 				98F77CA61C43FCEE00515CC3 /* TD_DatabaseManager.m in Sources */,
 				8E2DDDFA1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */,
 				98F77D271C43FDA700515CC3 /* Test.m in Sources */,
+				8E705A941F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m in Sources */,
 				98F77C6B1C43FCEE00515CC3 /* CDTHTTPInterceptorContext.m in Sources */,
 				98F77CD61C43FCEE00515CC3 /* TDSequenceMap.m in Sources */,
 				98F77D1A1C43FDA700515CC3 /* MYStreamUtils.m in Sources */,
@@ -3043,6 +3071,7 @@
 				98F77C771C43FCEE00515CC3 /* CDTQIndexCreator.m in Sources */,
 				98F77CBC1C43FCEE00515CC3 /* TDMisc.m in Sources */,
 				98F77CDC1C43FCEE00515CC3 /* CDTChangedDictionary.m in Sources */,
+				8E705A8B1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */,
 				98F77C1E1C43FCEE00515CC3 /* CDTAttachment.m in Sources */,
 				98F77C4F1C43FCEE00515CC3 /* CDTEncryptionKeyNilProvider.m in Sources */,
 				98F77CA21C43FCEE00515CC3 /* TD_Database+Replication.m in Sources */,
@@ -3117,6 +3146,7 @@
 				980F22761CB818260075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
 				987AF7B61DE7274C00577DAC /* DatastoreEncryptionTests.m in Sources */,
 				980F22771CB818260075A843 /* CDTQPerformanceTests.m in Sources */,
+				8E705A971F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */,
 				980F22781CB818260075A843 /* CDTQQueryExecutorTests.m in Sources */,
 				980F22791CB818260075A843 /* CDTQQuerySortTests.m in Sources */,
 				980F227A1CB818260075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */,

@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readwrite, nonatomic, strong) NSString *username;
 @property (nullable, readwrite, nonatomic, strong) NSString *password;
+@property (nullable, readwrite, nonatomic, strong) NSString *IAMAPIKey;
 
 NS_ASSUME_NONNULL_END
 
@@ -55,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
     return [self initWithUsername:nil password: nil];
 }
+
 - (instancetype)initWithUsername:(nullable NSString *)username
                         password:(nullable NSString *)password
 {
@@ -63,6 +65,16 @@ NS_ASSUME_NONNULL_BEGIN
         _httpInterceptors = @[];
         _username = username;
         _password = password;
+    }
+    return self;
+}
+
+- (instancetype)initWithIAMAPIKey:(NSString *)IAMAPIKey
+{
+    self = [super init];
+    if (self) {
+        _httpInterceptors = @[];
+        _IAMAPIKey= IAMAPIKey;
     }
     return self;
 }

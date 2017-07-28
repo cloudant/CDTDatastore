@@ -62,26 +62,30 @@ static dispatch_semaphore_t g_asyncTaskMonitor;
         NSURLSessionConfiguration *config;
         // Create a unique session id using the address of self.
         NSString *sessionId = [NSString stringWithFormat:@"com.cloudant.sync.sessionid.%p", self];
-
-// Only compile this for iOS8.0 and above or OSX 10.10 and above
+        if (getenv("CDT_TEST_ENABLE_OHHTTPSTUBS")) {
+            config = [NSURLSessionConfiguration defaultSessionConfiguration];
+        } else {
+            // Only compile this for iOS8.0 and above or OSX 10.10 and above
 #if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000) \
  || (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= 101000)
-        // NSURLSessionConfiguration:backgroundSessionConfigurationWithIdentifier was introduced in iOS 8.0
-        // to replace backgroundSessionConfiguration which was deprecated in iOS 8.0, so use the new version if
-        // available.
-        if ([[NSURLSessionConfiguration class] respondsToSelector:@selector(backgroundSessionConfigurationWithIdentifier:)]) {
-            config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessionId];
-        } else {
+            // NSURLSessionConfiguration:backgroundSessionConfigurationWithIdentifier was introduced in iOS 8.0
+            // to replace backgroundSessionConfiguration which was deprecated in iOS 8.0, so use the new version if
+            // available.
+            if ([[NSURLSessionConfiguration class] respondsToSelector:@selector(backgroundSessionConfigurationWithIdentifier:)]) {
+                config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:sessionId];
+            } else {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-            // since the method is only called on platforms where its replacement is missing
-            // we supress the warning
-            config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
+                // since the method is only called on platforms where its replacement is missing
+                // we supress the warning
+                config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
 #pragma GCC pop
-        }
+            }
 #else
+        }
         config = [NSURLSessionConfiguration backgroundSessionConfiguration:sessionId];
 #endif
+        }
         [config setTimeoutIntervalForRequest:300];
         [sessionConfigDelegate customiseNSURLSessionConfiguration:config];
 

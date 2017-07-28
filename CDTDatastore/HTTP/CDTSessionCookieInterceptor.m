@@ -17,22 +17,8 @@
 #import "CDTSessionCookieInterceptor.h"
 #import "CDTLogging.h"
 
-/** Number of seconds to wait for _session to respond. */
-static const NSInteger CDTSessionCookieRequestTimeout = 600;
 
 @interface CDTSessionCookieInterceptor ()
-
-/** Form encoded username and password. */
-@property (nonnull, strong, nonatomic) NSData *sessionRequestBody;
-
-/** Whether it looks worthwhile for us to make the session request (no bad failures so far). */
-@property (nonatomic) BOOL shouldMakeSessionRequest;
-
-/** Current session cookie. */
-@property (nullable, strong, nonatomic) NSString *cookie;
-
-/** NSURLSession to make calls to _session using (shouldn't be same one we're intercepting). */
-@property (nonnull, nonatomic, strong) NSURLSession *urlSession;
 
 @end
 
@@ -42,20 +28,26 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
 {
     self = [super init];
     if (self) {
-        NSURLSessionConfiguration *config =
-            [NSURLSessionConfiguration ephemeralSessionConfiguration];
 
         // The _session endpoint requires a form-encoded username/password combination.
         // We might as well set that up now.
-        config.HTTPAdditionalHeaders = @{ @"Content-Type" : @"application/x-www-form-urlencoded" };
-        _sessionRequestBody =
-            [[NSString stringWithFormat:@"name=%@&password=%@", username, password]
-                dataUsingEncoding:NSUTF8StringEncoding];
+        [[[super urlSession] configuration] setHTTPAdditionalHeaders:@{ @"Content-Type" : @"application/x-www-form-urlencoded" }];
+        [super setSessionRequestBody:
+            [[NSString stringWithFormat:@"name=%@&password=%@",
+              [username stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]],
+              [password stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]]
+             dataUsingEncoding:NSUTF8StringEncoding]];
 
-        _shouldMakeSessionRequest = YES;
-        _urlSession = [NSURLSession sessionWithConfiguration:config];
     }
     return self;
+}
+
+- (NSURLSessionConfiguration*)customiseSessionConfig:(NSURLSessionConfiguration*)config
+{
+    // The _session endpoint requires a form-encoded username/password combination.
+    // We might as well set that up now.
+    [config setHTTPAdditionalHeaders:@{ @"Content-Type" : @"application/x-www-form-urlencoded" }];
+    return config;
 }
 
 /**
@@ -77,21 +69,6 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
 }
 
 /**
- We assume a 401 means that the cookie we applied at request time was rejected. Therefore
- clear it and tell the HTTP mechanism to retry the request. For all other responses, there's
- nothing for this interceptor to do.
- */
-- (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
-{
-    if (context.response.statusCode == 401) {
-        self.cookie = nil;
-        context.shouldRetry = YES;
-    }
-
-    return context;
-}
-
-/**
  Handles retrieving a cookie ("logging in") for the credentials this interceptor
  was initialised with.
 
@@ -101,61 +78,10 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
 - (nullable NSString *)startNewSessionAtURL:(NSURL *)url
 {
     NSURLComponents *components =
-        [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
+    [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
     components.path = @"/_session";
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:components.URL];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = self.sessionRequestBody;
-
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    __block NSString *cookie = nil;
-    NSURLSessionDataTask *task = [self.urlSession
-        dataTaskWithRequest:request
-          completionHandler:^(NSData *__nullable data, NSURLResponse *__nullable response,
-                              NSError *__nullable error) {
-
-            NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)response;
-
-            if (httpResp && httpResp.statusCode / 100 == 2) {
-                // Success! Get the cookie from the header if login succeeded.
-                if (data && [self hasSessionStarted:data]) {
-                    NSString *cookieHeader = httpResp.allHeaderFields[@"Set-Cookie"];
-                    cookie = [cookieHeader componentsSeparatedByString:@";"][0];
-                }
-            } else if (!httpResp) {
-                // Network failure of some kind; often transient. Try again next time.
-                CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"Error making cookie response, error:%@",
-                            [error localizedDescription]);
-            } else if (httpResp.statusCode / 100 == 5) {
-                // Server error of some kind; often transient. Try again next time.
-                CDTLogError(CDTREPLICATION_LOG_CONTEXT,
-                            @"Failed to get cookie from the server, response code was %ld.",
-                            (long)httpResp.statusCode);
-            } else if (httpResp.statusCode == 401) {
-                // Credentials are not valid, fail and don't retry.
-                CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"Credentials are incorrect, cookie "
-                                                        @"authentication will not be attempted "
-                                                        @"again by this interceptor object");
-                self.shouldMakeSessionRequest = NO;
-            } else {
-                // Most other HTTP status codes are non-transient failures; don't retry.
-                CDTLogError(CDTREPLICATION_LOG_CONTEXT,
-                            @"Failed to get cookie from the server,response code %ld. Cookie "
-                            @"authentication will not be attempted again by this interceptor "
-                            @"object",
-                            (long)httpResp.statusCode);
-                self.shouldMakeSessionRequest = NO;
-            }
-
-            dispatch_semaphore_signal(sema);
-
-          }];
-    [task resume];
-    dispatch_semaphore_wait(
-        sema, dispatch_time(DISPATCH_TIME_NOW, CDTSessionCookieRequestTimeout * NSEC_PER_SEC));
-
-    return cookie;
+    
+    return [super startNewSessionAtURL:[components URL] withBody:self.sessionRequestBody session:self.urlSession sessionStartedHandler:^(NSData * data){return [self hasSessionStarted:data];}];
 }
 
 /**
