@@ -92,7 +92,8 @@ static const NSString *testCookieHeaderValue =
 
     context = [interceptor interceptRequestInContext:context];
 
-    XCTAssertEqualObjects(interceptor.cookie, testCookieHeaderValue);
+    NSString *cookieString = [NSString stringWithFormat:@"%@=%@", interceptor.cookies[0].name, interceptor.cookies[0].value];
+    XCTAssertEqualObjects(cookieString, testCookieHeaderValue);
     XCTAssertEqual(interceptor.shouldMakeSessionRequest, YES);
     XCTAssertEqualObjects([context.request valueForHTTPHeaderField:@"Cookie"],
                           testCookieHeaderValue);
@@ -113,7 +114,7 @@ static const NSString *testCookieHeaderValue =
 
     context = [interceptor interceptRequestInContext:context];
 
-    XCTAssertNil(interceptor.cookie);
+    XCTAssertNil(interceptor.cookies);
     XCTAssertEqual(interceptor.shouldMakeSessionRequest, NO);
     XCTAssertNil([context.request valueForHTTPHeaderField:@"Cookie"]);
 }

@@ -58,11 +58,13 @@
 - (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
 {
     if (self.shouldMakeSessionRequest) {
-        if (!self.cookie) {
-            // We don't have a cookie -- either a new session entirely or the old one expired.
-            self.cookie = [self startNewSessionAtURL:context.request.URL];
+        BOOL hasCookie = [self hasValidCookieWithName:@"AuthSession" forRequestURL: context.request.URL];
+        if (!hasCookie) {
+            // We don't have a cookie --
+            // either a new session entirely or the old one is expired (or nearly expired).
+            self.cookies = [self startNewSessionAtURL:context.request.URL];
         }
-        [context.request setValue:self.cookie forHTTPHeaderField:@"Cookie"];
+        [context.request setAllHTTPHeaderFields: [NSHTTPCookie requestHeaderFieldsWithCookies:self.cookies]];
     }
 
     return context;
@@ -75,7 +77,7 @@
  If the request fails, this method will also set the `shouldMakeSessionRequest` property
  to `NO` if the error didn't look transient.
  */
-- (nullable NSString *)startNewSessionAtURL:(NSURL *)url
+- (nullable NSArray<NSHTTPCookie *> *)startNewSessionAtURL:(NSURL *)url
 {
     NSURLComponents *components =
     [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
