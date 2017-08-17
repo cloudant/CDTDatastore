@@ -69,6 +69,7 @@ Pod::Spec.new do |s|
 
     sp.dependency 'CDTDatastore/no-arc'
     sp.dependency 'CocoaLumberjack', '~> 2.0'
+    sp.dependency 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
   end
 
   s.subspec 'no-arc' do |sp|
