@@ -7,8 +7,8 @@ before_install:
 install:
   - gem install cocoapods --no-document
   - gem install xcpretty --no-document
-  - pod install
   - pod repo update
+  - pod install
   - cd Project && pod install
 
 script:
