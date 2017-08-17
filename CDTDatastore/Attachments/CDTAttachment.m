@@ -16,7 +16,7 @@
 
 #import "CDTAttachment.h"
 
-#import "GTMNSData+zlib.h"
+#import <GoogleToolboxForMac/GTMNSData+zlib.h>
 #import "TDBase64.h"
 #import "TD_Database.h"
 #import "CDTLogging.h"

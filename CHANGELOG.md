@@ -1,5 +1,8 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+- [FIXED] Replaced the GoogleToolboxForMac files with the CocoaPod subspec.
+
 ## 1.2.1 (2017-04-07)
 
 - [IMPROVED] Significant reduction in memory usage during large pull replications.

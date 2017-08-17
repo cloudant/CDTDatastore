@@ -41,7 +41,7 @@
 #import <FMDB/FMDatabaseQueue.h>
 #import <FMDB/FMDatabaseAdditions.h>
 #import <FMDB/FMResultSet.h>
-#import "GTMNSData+zlib.h"
+#import <GoogleToolboxForMac/GTMNSData+zlib.h>
 #import "Test.h"
 
 #import "CDTLogging.h"
