@@ -137,7 +137,6 @@
 		987383401C47B38800937212 /* CDTEncryptionKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B931C43FCEE00515CC3 /* CDTEncryptionKeychainManager.m */; };
 		987383411C47B38800937212 /* TDPusher.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C091C43FCEE00515CC3 /* TDPusher.m */; };
 		987383421C47B38800937212 /* CDTReplicatorFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B751C43FCEE00515CC3 /* CDTReplicatorFactory.m */; };
-		987383431C47B38800937212 /* GTMNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */; };
 		987383441C47B38800937212 /* CDTURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BA91C43FCEE00515CC3 /* CDTURLSession.m */; };
 		987383451C47B38800937212 /* CDTDatastoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B601C43FCEE00515CC3 /* CDTDatastoreManager.m */; };
 		987383461C47B38800937212 /* CDTMisc.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B691C43FCEE00515CC3 /* CDTMisc.m */; };
@@ -270,7 +269,6 @@
 		987383CB1C47B38800937212 /* ExceptionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEA1C43FDA700515CC3 /* ExceptionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CC1C47B38800937212 /* MYRegexUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF41C43FDA700515CC3 /* MYRegexUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CD1C47B38800937212 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEC1C43FDA700515CC3 /* Logging.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383CE1C47B38800937212 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE11C43FDA700515CC3 /* GTMDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CF1C47B38800937212 /* MYStreamUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF61C43FDA700515CC3 /* MYStreamUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFE1C43FDA700515CC3 /* MYUtilities_Prefix.pch */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D11C47B38800937212 /* CollectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE61C43FDA700515CC3 /* CollectionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -280,7 +278,6 @@
 		987383D51C47B38800937212 /* Test.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D031C43FDA700515CC3 /* Test.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D81C47B38800937212 /* MYURLUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFA1C43FDA700515CC3 /* MYURLUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B9B1C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DB1C47B38800937212 /* TD_Attachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BD01C43FCEE00515CC3 /* TD_Attachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DC1C47B38800937212 /* CDTDatastoreManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B5F1C43FCEE00515CC3 /* CDTDatastoreManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -579,9 +576,6 @@
 		98F77CDC1C43FCEE00515CC3 /* CDTChangedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C1A1C43FCEE00515CC3 /* CDTChangedDictionary.m */; };
 		98F77CDD1C43FCEE00515CC3 /* CDTChangedObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C1B1C43FCEE00515CC3 /* CDTChangedObserver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77CDE1C43FCEE00515CC3 /* Version.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C1C1C43FCEE00515CC3 /* Version.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D051C43FDA700515CC3 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE11C43FDA700515CC3 /* GTMDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D061C43FDA700515CC3 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D071C43FDA700515CC3 /* GTMNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */; };
 		98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE61C43FDA700515CC3 /* CollectionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77D0A1C43FDA700515CC3 /* CollectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE71C43FDA700515CC3 /* CollectionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F77D0B1C43FDA700515CC3 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -999,10 +993,6 @@
 		98F77C1A1C43FCEE00515CC3 /* CDTChangedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTChangedDictionary.m; sourceTree = "<group>"; };
 		98F77C1B1C43FCEE00515CC3 /* CDTChangedObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTChangedObserver.h; sourceTree = "<group>"; };
 		98F77C1C1C43FCEE00515CC3 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
-		98F77CE11C43FDA700515CC3 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
-		98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSData+zlib.h"; sourceTree = "<group>"; };
-		98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSData+zlib.m"; sourceTree = "<group>"; };
-		98F77CE41C43FDA700515CC3 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		98F77CE61C43FDA700515CC3 /* CollectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectionUtils.h; sourceTree = "<group>"; };
 		98F77CE71C43FDA700515CC3 /* CollectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectionUtils.m; sourceTree = "<group>"; };
 		98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConcurrentOperation.h; sourceTree = "<group>"; };
@@ -1701,21 +1691,9 @@
 		98F77CDF1C43FDA700515CC3 /* vendor */ = {
 			isa = PBXGroup;
 			children = (
-				98F77CE01C43FDA700515CC3 /* google-toolbox-for-mac */,
 				98F77CE51C43FDA700515CC3 /* MYUtilities */,
 			);
 			path = vendor;
-			sourceTree = "<group>";
-		};
-		98F77CE01C43FDA700515CC3 /* google-toolbox-for-mac */ = {
-			isa = PBXGroup;
-			children = (
-				98F77CE11C43FDA700515CC3 /* GTMDefines.h */,
-				98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */,
-				98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */,
-				98F77CE41C43FDA700515CC3 /* README */,
-			);
-			path = "google-toolbox-for-mac";
 			sourceTree = "<group>";
 		};
 		98F77CE51C43FDA700515CC3 /* MYUtilities */ = {
@@ -2023,7 +2001,6 @@
 				987383CB1C47B38800937212 /* ExceptionUtils.h in Headers */,
 				987383CC1C47B38800937212 /* MYRegexUtils.h in Headers */,
 				987383CD1C47B38800937212 /* Logging.h in Headers */,
-				987383CE1C47B38800937212 /* GTMDefines.h in Headers */,
 				987383CF1C47B38800937212 /* MYStreamUtils.h in Headers */,
 				987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */,
 				987383D11C47B38800937212 /* CollectionUtils.h in Headers */,
@@ -2033,7 +2010,6 @@
 				987383D51C47B38800937212 /* Test.h in Headers */,
 				987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */,
 				987383D81C47B38800937212 /* MYURLUtils.h in Headers */,
-				987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */,
 				987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
 				987383DB1C47B38800937212 /* TD_Attachment.h in Headers */,
 				987383DC1C47B38800937212 /* CDTDatastoreManager.h in Headers */,
@@ -2155,7 +2131,6 @@
 				98F77D0D1C43FDA700515CC3 /* ExceptionUtils.h in Headers */,
 				98F77D171C43FDA700515CC3 /* MYRegexUtils.h in Headers */,
 				98F77D0F1C43FDA700515CC3 /* Logging.h in Headers */,
-				98F77D051C43FDA700515CC3 /* GTMDefines.h in Headers */,
 				98F77D191C43FDA700515CC3 /* MYStreamUtils.h in Headers */,
 				98F77D211C43FDA700515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */,
@@ -2165,7 +2140,6 @@
 				98F77D261C43FDA700515CC3 /* Test.h in Headers */,
 				98F77D0B1C43FDA700515CC3 /* ConcurrentOperation.h in Headers */,
 				98F77D1D1C43FDA700515CC3 /* MYURLUtils.h in Headers */,
-				98F77D061C43FDA700515CC3 /* GTMNSData+zlib.h in Headers */,
 				98F77C631C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
 				98F77C931C43FCEE00515CC3 /* TD_Attachment.h in Headers */,
 				98F77C2B1C43FCEE00515CC3 /* CDTDatastoreManager.h in Headers */,
@@ -2864,7 +2838,6 @@
 				987383401C47B38800937212 /* CDTEncryptionKeychainManager.m in Sources */,
 				987383411C47B38800937212 /* TDPusher.m in Sources */,
 				987383421C47B38800937212 /* CDTReplicatorFactory.m in Sources */,
-				987383431C47B38800937212 /* GTMNSData+zlib.m in Sources */,
 				987383441C47B38800937212 /* CDTURLSession.m in Sources */,
 				987383451C47B38800937212 /* CDTDatastoreManager.m in Sources */,
 				987383461C47B38800937212 /* CDTMisc.m in Sources */,
@@ -3094,7 +3067,6 @@
 				98F77C5B1C43FCEE00515CC3 /* CDTEncryptionKeychainManager.m in Sources */,
 				98F77CCC1C43FCEE00515CC3 /* TDPusher.m in Sources */,
 				98F77C401C43FCEE00515CC3 /* CDTReplicatorFactory.m in Sources */,
-				98F77D071C43FDA700515CC3 /* GTMNSData+zlib.m in Sources */,
 				98F77C6F1C43FCEE00515CC3 /* CDTURLSession.m in Sources */,
 				98F77C2C1C43FCEE00515CC3 /* CDTDatastoreManager.m in Sources */,
 				98F77C351C43FCEE00515CC3 /* CDTMisc.m in Sources */,

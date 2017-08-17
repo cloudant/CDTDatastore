@@ -12,7 +12,8 @@ abstract_target 'base' do
     pod FMDB, '= 2.6'
     pod 'CocoaLumberjack', '~> 2.0'
     pod 'SQLCipher/fts', '~> 3.1.0' if ENV["encrypted"]
-
+    pod 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
+    
     target :CDTDatastore do
         platform :ios, '7.0'
     end
