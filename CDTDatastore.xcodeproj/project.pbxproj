@@ -137,7 +137,6 @@
 		987383401C47B38800937212 /* CDTEncryptionKeychainManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B931C43FCEE00515CC3 /* CDTEncryptionKeychainManager.m */; };
 		987383411C47B38800937212 /* TDPusher.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C091C43FCEE00515CC3 /* TDPusher.m */; };
 		987383421C47B38800937212 /* CDTReplicatorFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B751C43FCEE00515CC3 /* CDTReplicatorFactory.m */; };
-		987383431C47B38800937212 /* GTMNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */; };
 		987383441C47B38800937212 /* CDTURLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77BA91C43FCEE00515CC3 /* CDTURLSession.m */; };
 		987383451C47B38800937212 /* CDTDatastoreManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B601C43FCEE00515CC3 /* CDTDatastoreManager.m */; };
 		987383461C47B38800937212 /* CDTMisc.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77B691C43FCEE00515CC3 /* CDTMisc.m */; };
@@ -270,7 +269,6 @@
 		987383CB1C47B38800937212 /* ExceptionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEA1C43FDA700515CC3 /* ExceptionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CC1C47B38800937212 /* MYRegexUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF41C43FDA700515CC3 /* MYRegexUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CD1C47B38800937212 /* Logging.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CEC1C43FDA700515CC3 /* Logging.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383CE1C47B38800937212 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE11C43FDA700515CC3 /* GTMDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383CF1C47B38800937212 /* MYStreamUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CF61C43FDA700515CC3 /* MYStreamUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFE1C43FDA700515CC3 /* MYUtilities_Prefix.pch */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D11C47B38800937212 /* CollectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE61C43FDA700515CC3 /* CollectionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -280,7 +278,6 @@
 		987383D51C47B38800937212 /* Test.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77D031C43FDA700515CC3 /* Test.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383D81C47B38800937212 /* MYURLUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CFA1C43FDA700515CC3 /* MYURLUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B9B1C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DB1C47B38800937212 /* TD_Attachment.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77BD01C43FCEE00515CC3 /* TD_Attachment.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		987383DC1C47B38800937212 /* CDTDatastoreManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77B5F1C43FCEE00515CC3 /* CDTDatastoreManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -579,9 +576,6 @@
 		98F77CDC1C43FCEE00515CC3 /* CDTChangedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77C1A1C43FCEE00515CC3 /* CDTChangedDictionary.m */; };
 		98F77CDD1C43FCEE00515CC3 /* CDTChangedObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C1B1C43FCEE00515CC3 /* CDTChangedObserver.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77CDE1C43FCEE00515CC3 /* Version.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77C1C1C43FCEE00515CC3 /* Version.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D051C43FDA700515CC3 /* GTMDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE11C43FDA700515CC3 /* GTMDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D061C43FDA700515CC3 /* GTMNSData+zlib.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		98F77D071C43FDA700515CC3 /* GTMNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */; };
 		98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE61C43FDA700515CC3 /* CollectionUtils.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		98F77D0A1C43FDA700515CC3 /* CollectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77CE71C43FDA700515CC3 /* CollectionUtils.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		98F77D0B1C43FDA700515CC3 /* ConcurrentOperation.h in Headers */ = {isa = PBXBuildFile; fileRef = 98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -999,10 +993,6 @@
 		98F77C1A1C43FCEE00515CC3 /* CDTChangedDictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTChangedDictionary.m; sourceTree = "<group>"; };
 		98F77C1B1C43FCEE00515CC3 /* CDTChangedObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTChangedObserver.h; sourceTree = "<group>"; };
 		98F77C1C1C43FCEE00515CC3 /* Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Version.h; sourceTree = "<group>"; };
-		98F77CE11C43FDA700515CC3 /* GTMDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMDefines.h; sourceTree = "<group>"; };
-		98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSData+zlib.h"; sourceTree = "<group>"; };
-		98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSData+zlib.m"; sourceTree = "<group>"; };
-		98F77CE41C43FDA700515CC3 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		98F77CE61C43FDA700515CC3 /* CollectionUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CollectionUtils.h; sourceTree = "<group>"; };
 		98F77CE71C43FDA700515CC3 /* CollectionUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CollectionUtils.m; sourceTree = "<group>"; };
 		98F77CE81C43FDA700515CC3 /* ConcurrentOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConcurrentOperation.h; sourceTree = "<group>"; };
@@ -1701,21 +1691,9 @@
 		98F77CDF1C43FDA700515CC3 /* vendor */ = {
 			isa = PBXGroup;
 			children = (
-				98F77CE01C43FDA700515CC3 /* google-toolbox-for-mac */,
 				98F77CE51C43FDA700515CC3 /* MYUtilities */,
 			);
 			path = vendor;
-			sourceTree = "<group>";
-		};
-		98F77CE01C43FDA700515CC3 /* google-toolbox-for-mac */ = {
-			isa = PBXGroup;
-			children = (
-				98F77CE11C43FDA700515CC3 /* GTMDefines.h */,
-				98F77CE21C43FDA700515CC3 /* GTMNSData+zlib.h */,
-				98F77CE31C43FDA700515CC3 /* GTMNSData+zlib.m */,
-				98F77CE41C43FDA700515CC3 /* README */,
-			);
-			path = "google-toolbox-for-mac";
 			sourceTree = "<group>";
 		};
 		98F77CE51C43FDA700515CC3 /* MYUtilities */ = {
@@ -2023,7 +2001,6 @@
 				987383CB1C47B38800937212 /* ExceptionUtils.h in Headers */,
 				987383CC1C47B38800937212 /* MYRegexUtils.h in Headers */,
 				987383CD1C47B38800937212 /* Logging.h in Headers */,
-				987383CE1C47B38800937212 /* GTMDefines.h in Headers */,
 				987383CF1C47B38800937212 /* MYStreamUtils.h in Headers */,
 				987383D01C47B38800937212 /* MYUtilities_Prefix.pch in Headers */,
 				987383D11C47B38800937212 /* CollectionUtils.h in Headers */,
@@ -2033,7 +2010,6 @@
 				987383D51C47B38800937212 /* Test.h in Headers */,
 				987383D61C47B38800937212 /* ConcurrentOperation.h in Headers */,
 				987383D81C47B38800937212 /* MYURLUtils.h in Headers */,
-				987383D91C47B38800937212 /* GTMNSData+zlib.h in Headers */,
 				987383DA1C47B38800937212 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
 				987383DB1C47B38800937212 /* TD_Attachment.h in Headers */,
 				987383DC1C47B38800937212 /* CDTDatastoreManager.h in Headers */,
@@ -2155,7 +2131,6 @@
 				98F77D0D1C43FDA700515CC3 /* ExceptionUtils.h in Headers */,
 				98F77D171C43FDA700515CC3 /* MYRegexUtils.h in Headers */,
 				98F77D0F1C43FDA700515CC3 /* Logging.h in Headers */,
-				98F77D051C43FDA700515CC3 /* GTMDefines.h in Headers */,
 				98F77D191C43FDA700515CC3 /* MYStreamUtils.h in Headers */,
 				98F77D211C43FDA700515CC3 /* MYUtilities_Prefix.pch in Headers */,
 				98F77D091C43FDA700515CC3 /* CollectionUtils.h in Headers */,
@@ -2165,7 +2140,6 @@
 				98F77D261C43FDA700515CC3 /* Test.h in Headers */,
 				98F77D0B1C43FDA700515CC3 /* ConcurrentOperation.h in Headers */,
 				98F77D1D1C43FDA700515CC3 /* MYURLUtils.h in Headers */,
-				98F77D061C43FDA700515CC3 /* GTMNSData+zlib.h in Headers */,
 				98F77C631C43FCEE00515CC3 /* CDTEncryptionKeychainUtils+PBKDF2.h in Headers */,
 				98F77C931C43FCEE00515CC3 /* TD_Attachment.h in Headers */,
 				98F77C2B1C43FCEE00515CC3 /* CDTDatastoreManager.h in Headers */,
@@ -2531,13 +2505,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-tests-CDTDatastoreTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		05C7FB7C68AD518220643360 /* [CP] Check Pods Manifest.lock */ = {
@@ -2546,13 +2523,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		1037323DDF182E4A373CC77F /* [CP] Embed Pods Frameworks */ = {
@@ -2561,9 +2541,22 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack-iOS/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FMDB-iOS/FMDB.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac-iOS/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/NSData+Base64-iOS/NSData_Base64.framework",
+				"${BUILT_PRODUCTS_DIR}/TRVSMonitor-iOS/TRVSMonitor.framework",
+				"${BUILT_PRODUCTS_DIR}/Unirest-iOS/Unirest.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/NSData_Base64.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TRVSMonitor.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Unirest.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2591,9 +2584,26 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-base-tests-CDTDatastoreTests/Pods-base-tests-CDTDatastoreTests-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack-iOS/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FMDB-iOS/FMDB.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac-iOS/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/Expecta-iOS/Expecta.framework",
+				"${BUILT_PRODUCTS_DIR}/MRDatabaseContentChecker-iOS/MRDatabaseContentChecker.framework",
+				"${BUILT_PRODUCTS_DIR}/OCMock-iOS/OCMock.framework",
+				"${BUILT_PRODUCTS_DIR}/OHHTTPStubs-iOS/OHHTTPStubs.framework",
+				"${BUILT_PRODUCTS_DIR}/Specta-iOS/Specta.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Expecta.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MRDatabaseContentChecker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OCMock.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OHHTTPStubs.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Specta.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2621,13 +2631,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-CDTDatastoreOSX-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		7F8DF32603F19F1A42B0D9AA /* [CP] Embed Pods Frameworks */ = {
@@ -2636,9 +2649,26 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-base-tests-CDTDatastoreTestsOSX/Pods-base-tests-CDTDatastoreTestsOSX-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack-macOS/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FMDB-macOS/FMDB.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac-macOS/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/Expecta-macOS/Expecta.framework",
+				"${BUILT_PRODUCTS_DIR}/MRDatabaseContentChecker-macOS/MRDatabaseContentChecker.framework",
+				"${BUILT_PRODUCTS_DIR}/OCMock-macOS/OCMock.framework",
+				"${BUILT_PRODUCTS_DIR}/OHHTTPStubs-macOS/OHHTTPStubs.framework",
+				"${BUILT_PRODUCTS_DIR}/Specta-macOS/Specta.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Expecta.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MRDatabaseContentChecker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OCMock.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OHHTTPStubs.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Specta.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2651,13 +2681,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-tests-CDTDatastoreTestsOSX-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		92D05D0D610105627EDBEE52 /* [CP] Check Pods Manifest.lock */ = {
@@ -2666,13 +2699,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-CDTDatastore-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		9888EC061C512CA500E58783 /* Set Replication Settings */ = {
@@ -2724,9 +2760,22 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack-macOS/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FMDB-macOS/FMDB.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac-macOS/GoogleToolboxForMac.framework",
+				"${BUILT_PRODUCTS_DIR}/NSData+Base64-macOS/NSData_Base64.framework",
+				"${BUILT_PRODUCTS_DIR}/TRVSMonitor-macOS/TRVSMonitor.framework",
+				"${BUILT_PRODUCTS_DIR}/Unirest-macOS/Unirest.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/NSData_Base64.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TRVSMonitor.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Unirest.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -2754,13 +2803,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E4372A7365929208FED58858 /* [CP] Copy Pods Resources */ = {
@@ -2864,7 +2916,6 @@
 				987383401C47B38800937212 /* CDTEncryptionKeychainManager.m in Sources */,
 				987383411C47B38800937212 /* TDPusher.m in Sources */,
 				987383421C47B38800937212 /* CDTReplicatorFactory.m in Sources */,
-				987383431C47B38800937212 /* GTMNSData+zlib.m in Sources */,
 				987383441C47B38800937212 /* CDTURLSession.m in Sources */,
 				987383451C47B38800937212 /* CDTDatastoreManager.m in Sources */,
 				987383461C47B38800937212 /* CDTMisc.m in Sources */,
@@ -3094,7 +3145,6 @@
 				98F77C5B1C43FCEE00515CC3 /* CDTEncryptionKeychainManager.m in Sources */,
 				98F77CCC1C43FCEE00515CC3 /* TDPusher.m in Sources */,
 				98F77C401C43FCEE00515CC3 /* CDTReplicatorFactory.m in Sources */,
-				98F77D071C43FDA700515CC3 /* GTMNSData+zlib.m in Sources */,
 				98F77C6F1C43FCEE00515CC3 /* CDTURLSession.m in Sources */,
 				98F77C2C1C43FCEE00515CC3 /* CDTDatastoreManager.m in Sources */,
 				98F77C351C43FCEE00515CC3 /* CDTMisc.m in Sources */,
