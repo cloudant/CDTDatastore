@@ -24,6 +24,7 @@
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <OHHTTPStubs/OHHTTPStubsResponse+JSON.h>
 #import <OHHTTPStubs/NSURLRequest+HTTPBodyTesting.h>
+#import "OHHTTPStubsHelper.h"
 #import "CDTLogging.h"
 #import "TDJSON.h"
 
@@ -44,54 +45,6 @@ static const NSString *testCookieHeaderValue =
 
 static const NSString *testCookieHeaderValue2 =
 @"IAMSession=dG9tYmxlbmNoOjU5NTM0QzgyOhqHa60IlqPmGR8vTVIK-tzhopMR";
-
-// helper to sequence a number of stubbed responses
-
-@interface OHHTTPStubsHelper : NSObject
-@property NSMutableArray<OHHTTPStubsResponseBlock> *responses;
-@property int currentResponse;
-
-- (id) init;
-- (void) addResponse:(OHHTTPStubsResponseBlock)responseBlock;
-- (void) doStubsForHost:(NSString*)host;
-@end
-
-@implementation OHHTTPStubsHelper
-
-- (id) init
-{
-    if (self = [super init]) {
-        _currentResponse = 0;
-        _responses = [NSMutableArray array];
-    }
-    return self;
-}
-
-- (void) addResponse:(OHHTTPStubsResponseBlock)responseBlock
-{
-    [_responses addObject:responseBlock];
-}
-- (void) doStubsForHost:(NSString*)host
-{
-    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *__nonnull request) {
-        return [[request.URL host] isEqualToString:host];
-    } withStubResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
-        if (_currentResponse < _responses.count) {
-            return [_responses objectAtIndex:_currentResponse++](request);
-        } else {
-            return [OHHTTPStubsResponse
-                    responseWithJSONObject:@{
-                                             @"error" : @"Failed",
-                                             @"reason" : @"More requests were made than expected by the tests."
-                                             }
-                    statusCode:555
-                    headers:@{}
-                    ];
-        }
-    }];
-}
-
-@end
 
 @interface CDTIAMSessionCookieInterceptorTests : CloudantSyncTests
 
@@ -184,8 +137,7 @@ NSDictionary *iamToken2;
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     [helper doStubsForHost:@"username.cloudant.com"];
@@ -275,16 +227,14 @@ NSDictionary *iamToken2;
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 2nd get resource successfully using cookie
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 3nd get resource fails, pretend cookie invalid by returning 401
@@ -318,8 +268,7 @@ NSDictionary *iamToken2;
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue2 isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
         
     }];
     [helper doStubsForHost:@"username1.cloudant.com"];
@@ -425,16 +374,14 @@ NSDictionary *iamToken2;
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 2nd get resource successfully using cookie
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 3rd get resource fails, pretend cookie invalid by returning 401
@@ -557,16 +504,14 @@ NSDictionary *iamToken2;
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 2nd get resource successfully using cookie
     [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
         XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
         XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
-        // TODO a more realistic object
-        return [OHHTTPStubsResponse responseWithJSONObject:@{} statusCode:200 headers:@{}];
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
     }];
     
     // 3rd get resource fails, cookie expired
@@ -629,6 +574,148 @@ NSDictionary *iamToken2;
     XCTAssert([IAMTokenHelper currentResponse] == 2);
     XCTAssert([helper currentResponse] == 6);
     
+}
+
+/**
+ * Test IAM token and cookie flow, where session is nearly expired and we pre-emptively renew.
+ * - GET a resource on the cloudant server
+ * - Cookie jar empty, so get IAM token followed by session cookie with short expiry time
+ * - GET now proceeds as normal, expected cookie value is sent in header
+ * - second GET on cloudant server, cookie is nearly expired so should renew
+ * - IAM token followed by session cookie, followed by replay of request with new cookie.
+ * - third GET on cloudant server with new valid cookie.
+ */
+
+- (void)testIAMInterceptorRenewsEarly
+{
+    OHHTTPStubsHelper *IAMTokenHelper = [[OHHTTPStubsHelper alloc] init];
+    
+    // IAM token
+    [IAMTokenHelper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        if ([request.HTTPMethod isEqualToString:@"POST"]) {
+            return [OHHTTPStubsResponse
+                    responseWithJSONObject:iamToken1
+                    statusCode:200
+                    headers:@{}];
+        } else {
+            XCTFail(@"Unexpected HTTP Method");
+            return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:400 headers:@{}];
+        }
+    }];
+    
+    // IAM token renewal
+    [IAMTokenHelper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        if ([request.HTTPMethod isEqualToString:@"POST"]) {
+            return [OHHTTPStubsResponse
+                    responseWithJSONObject:iamToken2
+                    statusCode:200
+                    headers:@{}];
+        } else {
+            XCTFail(@"Unexpected HTTP Method");
+            return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:400 headers:@{}];
+        }
+    }];
+    
+    [IAMTokenHelper doStubsForHost:@"iam.bluemix.net"];
+    
+    OHHTTPStubsHelper *helper = [[OHHTTPStubsHelper alloc] init];
+    
+    // call to _iam_session endpoint, return cookie in header with 1 minute life
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        
+        XCTAssert([request.HTTPMethod isEqualToString:@"POST"]);
+        XCTAssert([[TDJSON JSONObjectWithData:request.OHHTTPStubs_HTTPBody options:0 error:nil][@"access_token"] isEqualToString:iamToken1[@"access_token"]]);
+        XCTAssert([request.URL.lastPathComponent isEqualToString:@"_iam_session"]);
+        XCTAssert([request.allHTTPHeaderFields[@"Content-Type"] isEqualToString:@"application/json"]);
+        return [OHHTTPStubsResponse
+                responseWithJSONObject:@{
+                                         @"ok" : @(YES),
+                                         @"name" : @"username",
+                                         @"roles" : @[ @"_admin" ]
+                                         }
+                statusCode:200
+                headers:@{
+                          @"Set-Cookie" : [NSString
+                                           stringWithFormat:@"%@; Version=1; Path=/; HttpOnly; Max-Age=60",
+                                           testCookieHeaderValue]
+                          }];
+    }];
+    
+    // get resource successfully using cookie
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+        XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+    }];
+    
+    // renewal call to _iam_session endpoint, return cookie in header with 1 day life
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        
+        XCTAssert([request.HTTPMethod isEqualToString:@"POST"]);
+        XCTAssert([[TDJSON JSONObjectWithData:request.OHHTTPStubs_HTTPBody options:0 error:nil][@"access_token"] isEqualToString:iamToken2[@"access_token"]]);
+        XCTAssert([request.URL.lastPathComponent isEqualToString:@"_iam_session"]);
+        XCTAssert([request.allHTTPHeaderFields[@"Content-Type"] isEqualToString:@"application/json"]);
+        return [OHHTTPStubsResponse
+                responseWithJSONObject:@{
+                                         @"ok" : @(YES),
+                                         @"name" : @"username",
+                                         @"roles" : @[ @"_admin" ]
+                                         }
+                statusCode:200
+                headers:@{
+                          @"Set-Cookie" : [NSString
+                                           stringWithFormat:@"%@; Version=1; Path=/; HttpOnly; Max-Age=86400",
+                                           testCookieHeaderValue2]
+                          }];
+    }];
+    
+    // get resource successfully using new cookie
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([testCookieHeaderValue2 isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+        XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+    }];
+    
+    // get another resource successfully using new cookie
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([testCookieHeaderValue2 isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+        XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+    }];
+    
+    [helper doStubsForHost:@"username.cloudant.com"];
+    
+    CDTIAMSessionCookieInterceptor *interceptor =
+    [[CDTIAMSessionCookieInterceptor alloc] initWithAPIKey:@"apikey"];
+    // create a context with a request which we can use
+    NSURL *url = [NSURL URLWithString:@"http://username.cloudant.com"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread] requestInterceptors:@[interceptor] sessionConfigDelegate: nil];
+    
+    // Initial GET will get a cookie and resource
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task resume];
+    while ([task state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    // Second GET should renew cookie and get resource
+    CDTURLSessionTask *task2 = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task2 resume];
+    while ([task2 state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    // Third GET should just GET resource
+    CDTURLSessionTask *task3 = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task3 resume];
+    while ([task3 state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    XCTAssert([IAMTokenHelper currentResponse] == 2);
+    XCTAssert([helper currentResponse] == 5);
 }
 
 @end
