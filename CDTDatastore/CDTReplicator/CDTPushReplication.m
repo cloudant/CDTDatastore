@@ -17,7 +17,6 @@
 #import "CDTPushReplication.h"
 #import "CDTDatastore.h"
 #import "CDTSessionCookieInterceptor.h"
-#import "CDTIAMSessionCookieInterceptor.h"
 #import "CDTReplay429Interceptor.h"
 #import "TDMisc.h"
 #import "CDTLogging.h"
@@ -43,13 +42,6 @@
     return [[self alloc] initWithSource:source target:target username:username password:password];
 }
 
-+ (instancetype)replicationWithSource:(CDTDatastore *)source
-                               target:(NSURL *)target
-                            IAMAPIKey:(NSString *)IAMAPIKey
-{
-    return [[self alloc] initWithSource:source target:target IAMAPIKey:IAMAPIKey];
-}
-
 - (instancetype)initWithSource:(CDTDatastore *)source
                         target:(NSURL *)target
                       username:(NSString *)username
@@ -73,28 +65,6 @@
     }
     return self;
 }
-
-- (instancetype)initWithSource:(CDTDatastore *)source
-                        target:(NSURL *)target
-                     IAMAPIKey:(NSString *)IAMAPIKey
-{
-    if (self = [super initWithIAMAPIKey:IAMAPIKey]) {
-        NSURLComponents * targetComponents = [NSURLComponents componentsWithURL:target resolvingAgainstBaseURL:NO];
-        if(targetComponents.user && targetComponents.password){
-            CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"Credentials provided via the URL but IAM API key was provided, discarding URL credentials.");
-        }
-        CDTIAMSessionCookieInterceptor * cookieInterceptor = [[CDTIAMSessionCookieInterceptor alloc] initWithAPIKey:IAMAPIKey];
-        [self addInterceptor:cookieInterceptor];
-        
-        targetComponents.user = nil;
-        targetComponents.password = nil;
-        
-        _source = source;
-        _target = targetComponents.URL;
-    }
-    return self;
-}
-
 
 - (instancetype)copyWithZone:(NSZone *)zone
 {
