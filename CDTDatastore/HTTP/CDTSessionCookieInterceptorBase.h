@@ -26,18 +26,18 @@
 /** Whether it looks worthwhile for us to make the session request (no bad failures so far). */
 @property (nonatomic) BOOL shouldMakeSessionRequest;
 
-/** Current session cookie. */
-@property (nullable, strong, nonatomic) NSString *cookie;
-
-/** NSURLSession to make calls to _session using (shouldn't be same one we're intercepting). */
+/** NSURLSession to use to make calls to _session or _iam_session (shouldn't be same one we're intercepting). */
 @property (nonnull, nonatomic, strong) NSURLSession *urlSession;
 
+/** Current session cookie. */
+@property (nullable, nonatomic, strong) NSArray<NSHTTPCookie *> *cookies;
 
-- (nullable NSString *)startNewSessionAtURL:(nonnull NSURL *)url
+- (nullable NSArray<NSHTTPCookie *> *)startNewSessionAtURL:(nonnull NSURL *)url
                                    withBody:(nonnull NSData *)body
                                     session:(nonnull NSURLSession *)session
                       sessionStartedHandler:(BOOL (^_Nonnull)(NSData *_Nonnull data))sessionStartedHandler;
 
 - (nonnull NSURLSessionConfiguration*)customiseSessionConfig:(nonnull NSURLSessionConfiguration*)config;
 
+- (BOOL)hasValidCookieWithName:(nonnull NSString*)cookieName forRequestURL:(nonnull NSURL*)requestUrl;
 @end

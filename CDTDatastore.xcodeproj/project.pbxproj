@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		00049C35D4C6DF8171AF9AC8 /* Pods_base_tests_CDTDatastoreTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 992FED8F2AA3E2ADD7599045 /* Pods_base_tests_CDTDatastoreTests.framework */; };
 		1399B6CAACAB8F75EE125480 /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3809563FA5BF431C4EC8D3B5 /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTestsOSX.framework */; };
+		2E25F68D1F4C6DB900177ABA /* OHHTTPStubsHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E25F68C1F4C6DB900177ABA /* OHHTTPStubsHelper.m */; };
+		2E25F68E1F4C6E3D00177ABA /* OHHTTPStubsHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2E25F68C1F4C6DB900177ABA /* OHHTTPStubsHelper.m */; };
 		3567D22135DB02790BD939BA /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3567D43713667ABFE05C08F2 /* CDTDatastore+Replication.h in Headers */ = {isa = PBXBuildFile; fileRef = 3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3567DA2E9930DA1BFABB6617 /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
@@ -741,6 +743,8 @@
 		1053749380E7A10A270B91E4 /* Pods-base-CDTDatastoreOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-CDTDatastoreOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-base-CDTDatastoreOSX/Pods-base-CDTDatastoreOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		11828F46DDB99AC94990EF7B /* Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.release.xcconfig"; sourceTree = "<group>"; };
 		1970EE2354D3B1A67BBEE47B /* Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests.release.xcconfig"; sourceTree = "<group>"; };
+		2E25F68B1F4C6DB900177ABA /* OHHTTPStubsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OHHTTPStubsHelper.h; sourceTree = "<group>"; };
+		2E25F68C1F4C6DB900177ABA /* OHHTTPStubsHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OHHTTPStubsHelper.m; sourceTree = "<group>"; };
 		3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CDTDatastore+Replication.m"; sourceTree = "<group>"; };
 		3567D9F9C835096137DC8EF2 /* CDTDatastore+Replication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CDTDatastore+Replication.h"; sourceTree = "<group>"; };
 		3809563FA5BF431C4EC8D3B5 /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTestsOSX.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_base_raTests_CDTDatastoreReplicationAcceptanceTestsOSX.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1363,6 +1367,8 @@
 		98F77B441C43FC9F00515CC3 /* CDTDatastoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				2E25F68B1F4C6DB900177ABA /* OHHTTPStubsHelper.h */,
+				2E25F68C1F4C6DB900177ABA /* OHHTTPStubsHelper.m */,
 				987382FA1C47B1DD00937212 /* Helpers */,
 				98F77DFF1C44044000515CC3 /* Assets */,
 				98F77E061C44044000515CC3 /* Attachments */,
@@ -3037,6 +3043,7 @@
 				987385511C47B45600937212 /* CloudantSyncTests.m in Sources */,
 				987385521C47B45600937212 /* Tests.m in Sources */,
 				987385531C47B45600937212 /* CDTQSQLOnlyQueryExecutor.m in Sources */,
+				2E25F68E1F4C6E3D00177ABA /* OHHTTPStubsHelper.m in Sources */,
 				987385541C47B45600937212 /* CDTFetchChangesTests.m in Sources */,
 				987385561C47B45600937212 /* TDPusherTests.m in Sources */,
 				987385581C47B45600937212 /* CDTQQueryMatcher.m in Sources */,
@@ -3194,6 +3201,7 @@
 				980F22741CB818260075A843 /* CDTQIndexTests.m in Sources */,
 				980F22751CB818260075A843 /* CDTQIndexUpdaterTests.m in Sources */,
 				980F22761CB818260075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
+				2E25F68D1F4C6DB900177ABA /* OHHTTPStubsHelper.m in Sources */,
 				987AF7B61DE7274C00577DAC /* DatastoreEncryptionTests.m in Sources */,
 				980F22771CB818260075A843 /* CDTQPerformanceTests.m in Sources */,
 				8E705A971F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */,

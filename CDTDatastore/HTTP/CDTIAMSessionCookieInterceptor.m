@@ -72,20 +72,25 @@ static const NSInteger CDTIAMSessionCookieRequestTimeout = 600;
 - (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
 {
     if (self.shouldMakeSessionRequest) {
-        if (!self.cookie) {
+        BOOL hasCookie = [self hasValidCookieWithName:@"IAMSession" forRequestURL: context.request.URL];
+        if (!hasCookie) {
             // We don't have a cookie - first get the IAM bearer token
             NSData *bearerToken = [self getBearerToken];
+            // Now get the _iam_session cookie
             if (bearerToken != nil) {
                 [self setSessionRequestBody:bearerToken];
                 NSURLComponents *components =
                 [NSURLComponents componentsWithURL:context.request.URL resolvingAgainstBaseURL:NO];
                 components.path = @"/_iam_session";
                 NSURL *URL = [components URL];
-                self.cookie = [super startNewSessionAtURL:URL withBody:self.sessionRequestBody session:self.urlSession sessionStartedHandler:^(NSData * data){return [self hasSessionStarted:data];}];
+                self.cookies = [super startNewSessionAtURL:URL withBody:self.sessionRequestBody session:self.urlSession sessionStartedHandler:^(NSData * data){return [self hasSessionStarted:data];}];
+            } else {
+                // Wipe the cookies if we couldn't get a valid token
+                self.cookies = nil;
             }
         }
+        [context.request setAllHTTPHeaderFields: [NSHTTPCookie requestHeaderFieldsWithCookies:self.cookies]];
     }
-    [context.request setValue:self.cookie forHTTPHeaderField:@"Cookie"];
     return context;
 }
 
@@ -109,6 +114,7 @@ static const NSInteger CDTIAMSessionCookieRequestTimeout = 600;
                                       
                                       if (httpResp && httpResp.statusCode / 100 == 2) {
                                           token = data;
+                                          CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"Got IAM token");
                                       } else if (!httpResp) {
                                           // Network failure of some kind; often transient. Try again next time.
                                           CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"Error getting cookie response from the server at %@, error: %@",

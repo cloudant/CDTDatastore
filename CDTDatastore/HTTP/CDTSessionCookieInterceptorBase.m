@@ -44,6 +44,28 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
     return config;
 }
 
+- (BOOL)hasValidCookieWithName:(nonnull NSString*)cookieName forRequestURL:(nonnull NSURL*)requestUrl
+{
+    CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"Checking cookies.");
+    // Get the existing cookies
+    // Compare them to the current time and return YES if we should renew
+    NSDate *timeNow = [NSDate date];
+    for (NSHTTPCookie* c in _cookies)
+    {
+        if ([c.name isEqualToString: cookieName]) {
+            CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"Already have %@ cookie.", cookieName);
+            if ([c.expiresDate timeIntervalSinceDate: timeNow] > [@300.0 doubleValue]) {
+                // It is more than 5 minutes until the session expires
+                CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"%@ cookie is still valid.", cookieName);
+                return YES;
+            } else {
+                CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"%@ cookie is expired or expiring soon.", cookieName);
+            }
+        }
+    }
+    CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"Will attempt to get new %@ cookie.", cookieName);
+    return NO;
+}
 
 /**
  We assume a 401 means that the cookie we applied at request time was rejected. Therefore
@@ -53,8 +75,14 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
 - (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
 {
     if (context.response.statusCode == 401 && self.shouldMakeSessionRequest) {
-        self.cookie = nil;
+        // Clear the cookies as we are no longer authorized
+        _cookies = nil;
         context.shouldRetry = YES;
+    }
+    // A sliding window may send an early cookie refresh which may save us a _session round-trip
+    if (context.response.allHeaderFields[@"Set-Cookie"]) {
+        // Replace the cookies with any sent on the response
+        self.cookies = [NSHTTPCookie cookiesWithResponseHeaderFields: context.response.allHeaderFields forURL:context.request.URL];
     }
 
     return context;
@@ -68,7 +96,7 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
  If the request fails, this method will also set the `shouldMakeSessionRequest` property
  to `NO` if the error didn't look transient.
  */
-- (nullable NSString *)startNewSessionAtURL:(NSURL *)url
+- (nullable NSArray<NSHTTPCookie *> *)startNewSessionAtURL:(NSURL *)url
                                    withBody:(NSData *)body
                                     session:(NSURLSession *)session
                       sessionStartedHandler:(BOOL (^)(NSData *data))sessionStartedHandler
@@ -77,9 +105,11 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = @"POST";
     request.HTTPBody = body;
+    // We store the cookies ourselves so we shouldn't use the default handling
+    request.HTTPShouldHandleCookies = NO;
     
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    __block NSString *cookie = nil;
+    __block NSArray<NSHTTPCookie*> *cookies = nil;
     NSURLSessionDataTask *task = [session
                                   dataTaskWithRequest:request
                                   completionHandler:^(NSData *__nullable data, NSURLResponse *__nullable response,
@@ -88,10 +118,11 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
                                       NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)response;
                                       
                                       if (httpResp && httpResp.statusCode / 100 == 2) {
-                                          // Success! Get the cookie from the header if login succeeded.
+                                          // Success!
+                                          // Store the cookie value from the header
                                           if (data && sessionStartedHandler(data)) {
-                                              NSString *cookieHeader = httpResp.allHeaderFields[@"Set-Cookie"];
-                                              cookie = [cookieHeader componentsSeparatedByString:@";"][0];
+                                              cookies = [NSHTTPCookie cookiesWithResponseHeaderFields: httpResp.allHeaderFields forURL:request.URL];
+                                              CDTLogDebug(CDTREPLICATION_LOG_CONTEXT, @"Got cookie");
                                           }
                                       } else if (!httpResp) {
                                           // Network failure of some kind; often transient. Try again next time.
@@ -126,8 +157,7 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
     [task resume];
     dispatch_semaphore_wait(
                             sema, dispatch_time(DISPATCH_TIME_NOW, CDTSessionCookieRequestTimeout * NSEC_PER_SEC));
-    
-    return cookie;
+    return cookies;
 }
 
 @end
