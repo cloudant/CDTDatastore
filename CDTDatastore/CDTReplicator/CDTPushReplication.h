@@ -87,21 +87,6 @@ typedef BOOL (^CDTFilterBlock)(CDTDocumentRevision *__nonnull revision,
                              password:(nullable NSString *)password;
 
 /**
- * All CDTPushReplication objects must have a source and target.
- *
- * The CDTPushReplication uses an IAM API key to authenticate - see
- * https://console.bluemix.net/docs/services/Cloudant/guides/iam.html#ibm-cloud-identity-and-access-management
- * for more information about IAM.
- *
- * @param IAMAPIKey The IAM API key.
- * @return an initialsed instance of CDTAbstractReplication.
- */
-+ (instancetype)replicationWithSource:(CDTDatastore *)source
-                               target:(NSURL *)target
-                            IAMAPIKey:(NSString *)IAMAPIKey;
-
-
-/**
  @name Accessing the replication source and target
  */
 
