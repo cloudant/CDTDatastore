@@ -145,6 +145,32 @@ if ([replicator startWithError:&error]){
 }
 ```
 
+### Using with IAM
+
+You can omit a username and password from the source URL of a `CDTPullReplication`
+or the target URL of a `CDTPushReplication` and instead specify an IAM API key. For
+more information about configuring IAM and obtaining IAM API keys refer to the 
+[Cloudant documentation](https://console.bluemix.net/docs/services/Cloudant/guides/iam.html#ibm-cloud-identity-and-access-management).
+
+```objc
+#import <CloudantSync.h>
+NSString *s = @"https://abc123-example-bluemix.cloudant.com.cloudant.com/my_database";
+NSURL *remoteDatabaseURL = [NSURL URLWithString:s];
+CDTDatastore *datastore = [manager datastoreNamed:@"my_datastore"];
+
+// Create a replicator that replicates changes from a remote
+// database to the local one using an IAM API key.
+CDTPullReplication *pullReplication = [CDTPullReplication replicationWithSource:remoteDatabaseURL
+                                                                         target:datastore
+                                                                         IAMAPIKey:@"zxy0987654321"];
+
+// Create a replicator that replicates changes from the local datastore to a
+// remote database with an IAM API key.
+CDTPushReplication *pushReplication = [CDTPushReplication replicationWithSource:datastore
+                                                                         target:remoteDatabaseURL]
+                                                                         IAMAPIKey:@"zxy0987654321"];
+```
+
 ### Using a replication delegate
 
 Once you've created a `CDTReplicator` object, you probably don't want your main
