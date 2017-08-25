@@ -82,6 +82,21 @@ NS_ASSUME_NONNULL_BEGIN
                              password:(nullable NSString *)password;
 
 /**
+ * All CDTPullReplication objects must have a source and target.
+ *
+ * The CDTPullReplication uses an IAM API key to authenticate - see
+ * https://console.bluemix.net/docs/services/Cloudant/guides/iam.html#ibm-cloud-identity-and-access-management
+ * for more information about IAM.
+ *
+ * @param IAMAPIKey The IAM API key.
+ * @return an initialsed instance of CDTAbstractReplication.
+ */
++ (instancetype)replicationWithSource:(NSURL *)source
+                               target:(CDTDatastore *)target
+                            IAMAPIKey:(NSString *)IAMAPIKey;
+
+
+/**
  @name Accessing the replication source and target
  */
 
