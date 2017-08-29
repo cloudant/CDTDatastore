@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic, strong) NSMutableURLRequest *request;
 @property (nonatomic) BOOL shouldRetry;
 @property (nullable, readwrite, nonatomic, strong) NSHTTPURLResponse *response;
+@property (nullable, nonatomic, strong) NSData *responseData;
 
 /**
  * An immutable copy of the state dictionary for this context.

@@ -137,6 +137,28 @@ static const NSString *testCookieHeaderValue2 =
 }
 
 /**
+ * Test cookie flow, where cookie credential expires
+ * - GET a resource on the cloudant server
+ * - Cookie jar empty, so get session cookie
+ * - Verify that credentials expired with 403 HTTP response and cookie should renew
+ */
+- (void)test403CredentialsExpiredRenewal
+{
+    [self basic403Test:@"credentials_expired" withReason:@"session expired" expectedRequests:6];
+}
+
+/**
+ * Test cookie flow when 403 is not an error of "credentials_expired"
+ * - GET a resource on the cloudant server
+ * - Cookie jar empty, so get session cookie
+ * - Verify 403 HTTP response and cookie should not renew
+ */
+- (void)testNonExpiry403
+{
+    [self basic403Test:@"403_not_expired_test" withReason:@"example reason" expectedRequests:4];
+}
+
+/**
  * Test cookie flow, where a Set-Cookie header on a (non _session) response
  * pre-emptively renews the cookie.
  * - GET a resource on the cloudant server
@@ -322,6 +344,141 @@ static const NSString *testCookieHeaderValue2 =
     }
     
     XCTAssert([helper currentResponse] == 5);
+}
+
+- (void)basic403Test:(nonnull NSString *)error withReason:(NSString *)reason expectedRequests:(int)expectedRequests
+{
+    OHHTTPStubsHelper *helper = [[OHHTTPStubsHelper alloc] init];
+    
+    // task 1 - call to _session endpoint, return cookie in header
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([request.HTTPMethod isEqualToString:@"POST"]);
+        XCTAssert([request.URL.lastPathComponent isEqualToString:@"_session"]);
+        XCTAssert([request.allHTTPHeaderFields[@"Content-Type"] isEqualToString:@"application/x-www-form-urlencoded"]);
+        NSString *httpBody = [[NSString alloc] initWithData: request.OHHTTPStubs_HTTPBody encoding:NSUTF8StringEncoding];
+        XCTAssert([httpBody isEqualToString:@"name=username403&password=password"]);
+        return [OHHTTPStubsResponse
+                responseWithJSONObject:@{
+                                         @"ok" : @(YES),
+                                         @"name" : @"username",
+                                         @"roles" : @[ @"_admin" ]
+                                         }
+                statusCode:200
+                headers:@{
+                          @"Set-Cookie" : [NSString
+                                           stringWithFormat:@"%@; Version=1; Path=/; HttpOnly; Max-Age=86400",
+                                           testCookieHeaderValue]
+                          }];
+    }];
+    
+    // task 1 - get resource successfully using cookie
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+        XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+    }];
+    
+    // task 2 - get resource fails, pretend it expired by returning 403 status code and response
+    [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+        XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+        XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+        return [OHHTTPStubsResponse responseWithJSONObject:@{@"error": error,
+                                                             @"reason": reason}
+                                                statusCode:403 headers:@{}];
+    }];
+    
+    if([error isEqualToString:@"credentials_expired"]) {
+        // task 2 for "credentials_expired" case - call to _session endpoint to renew cookie
+        [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+            XCTAssertNil(request.allHTTPHeaderFields[@"Cookie"]);
+            XCTAssert([request.HTTPMethod isEqualToString:@"POST"]);
+            XCTAssert([request.URL.lastPathComponent isEqualToString:@"_session"]);
+            XCTAssert([request.allHTTPHeaderFields[@"Content-Type"] isEqualToString:@"application/x-www-form-urlencoded"]);
+            NSString *httpBody = [[NSString alloc] initWithData: request.OHHTTPStubs_HTTPBody encoding:NSUTF8StringEncoding];
+            XCTAssert([httpBody isEqualToString:@"name=username403&password=password"]);
+            return [OHHTTPStubsResponse
+                    responseWithJSONObject:@{
+                                             @"ok" : @(YES),
+                                             @"name" : @"username",
+                                             @"roles" : @[ @"_admin" ]
+                                             }
+                    statusCode:200
+                    headers:@{
+                              @"Set-Cookie" : [NSString
+                                               stringWithFormat:@"%@; Version=1; Path=/; HttpOnly; Max-Age=86400",
+                                               testCookieHeaderValue2]
+                              }];
+        }];
+        
+        // task 2 - get resource successfully using new cookie
+        [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+            XCTAssert([testCookieHeaderValue2 isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+            XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+            return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+        }];
+        
+        // task 3 - get resource successfully using new cookie
+        [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+            XCTAssert([testCookieHeaderValue2 isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+            XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+            return [OHHTTPStubsResponse responseWithJSONObject:@{@"ok" : @(YES)} statusCode:200 headers:@{}];
+        }];
+    } else {
+        // task 3 for "403_not_expired_test" case - get resource fails, cookie was not re-newed
+        [helper addResponse:^OHHTTPStubsResponse *__nonnull(NSURLRequest *__nonnull request) {
+            XCTAssert([testCookieHeaderValue isEqualToString: request.allHTTPHeaderFields[@"Cookie"]]);
+            XCTAssert([request.HTTPMethod isEqualToString:@"GET"]);
+            return [OHHTTPStubsResponse responseWithJSONObject:@{@"error": error,
+                                                                 @"reason": reason}
+                                                    statusCode:403 headers:@{}];
+        }];
+    }
+
+    
+    [helper doStubsForHost:@"username403.cloudant.com"];
+    
+    CDTSessionCookieInterceptor *interceptor =
+    [[CDTSessionCookieInterceptor alloc] initWithUsername:@"username403" password:@"password"];
+    // create a context with a request which we can use
+    NSURL *url = [NSURL URLWithString:@"http://username403.cloudant.com/somedb"];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread] requestInterceptors:@[interceptor] sessionConfigDelegate: nil];
+    
+    // Initial GET for all cases:
+    // GET _session -> 200 with cookie1
+    // GET somedb (with cookie1) -> 200
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task resume];
+    while ([task state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    
+    // Second GET for "credentials_expired" case:
+    // GET somedb (with cookie1) -> 403 "credentials_expired" error, then
+    // GET _session -> 200 with cookie2, finally
+    // GET somedb (with cookie2) -> 200
+    // OR for "403_not_expired_test" case:
+    // GET somedb (with cookie1) -> 403 "403_not_expired_test" error
+    CDTURLSessionTask *task2 = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task2 resume];
+    while ([task2 state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    // Third GET for "credentials_expired" case:
+    // GET somedb (with cookie2) -> 200
+    // OR for "403_not_expired_test" case:
+    // GET somedb (with cookie1) -> 403 "403_not_expired_test" error
+    CDTURLSessionTask *task3 = [session dataTaskWithRequest:request taskDelegate:nil];
+    [task3 resume];
+    while ([task3 state] != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:1.0];
+    }
+    
+    XCTAssertNotNil(interceptor.cookies);
+    XCTAssert([helper currentResponse] == expectedRequests);
 }
 
 @end

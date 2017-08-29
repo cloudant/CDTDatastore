@@ -51,7 +51,7 @@
 #pragma mark properties for the current request
 @property (nullable, nonatomic, strong) NSHTTPURLResponse *response;
 @property (nullable, nonatomic, strong) NSError * requestError;
-@property (nullable, nonatomic, strong) NSData * requestData;
+@property (nullable, nonatomic, strong) NSData * responseData;
 
 @end
 
@@ -125,7 +125,7 @@
     self.finished = NO;
     self.response = nil;
     self.requestError = nil;
-    self.requestData = nil;
+    self.responseData = nil;
     __block CDTHTTPInterceptorContext *ctx =
         [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]
                                                      state:self.contextState];
@@ -181,7 +181,7 @@
 }
 
 - (void)processData:(NSData*)data {
-    self.requestData = data;
+    self.responseData = data;
 }
 
 - (void)processResponse:(NSURLResponse *)response onThread:(NSThread *)thread
@@ -200,6 +200,7 @@
     [[CDTHTTPInterceptorContext alloc] initWithRequest:[self.request mutableCopy]
                                                  state:self.contextState];
     ctx.response = self.response;
+    ctx.responseData = self.responseData;
     
     
     for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
@@ -225,7 +226,7 @@
                              waitUntilDone:NO];
             [self.delegate performSelector:@selector(receivedData:)
                                   onThread:thread
-                                withObject:self.requestData
+                                withObject:self.responseData
                              waitUntilDone:NO];
         }
         self.finished = YES;

@@ -2,6 +2,7 @@
 
 ## Unreleased
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
+- [FIXED] Issue where cookie interceptor did not check for 403 HTTP response case.
 - [FIXED] Replaced the GoogleToolboxForMac files with the CocoaPod subspec.
 
 ## 1.2.1 (2017-04-07)
