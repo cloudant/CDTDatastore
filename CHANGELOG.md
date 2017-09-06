@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 1.2.2 (2017-09-06)
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
 - [FIXED] Issue where cookie interceptor did not check for 403 HTTP response case.
 - [FIXED] Replaced the GoogleToolboxForMac files with the CocoaPod subspec.
