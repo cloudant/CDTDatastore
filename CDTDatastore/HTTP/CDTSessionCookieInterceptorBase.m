@@ -74,11 +74,30 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
  */
 - (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
 {
-    if (context.response.statusCode == 401 && self.shouldMakeSessionRequest) {
+    bool retryAndAttemptNewSession = NO;
+    if (self.shouldMakeSessionRequest) {
+        if (context.response.statusCode == 401) {
+            retryAndAttemptNewSession = YES;
+        } else if (context.response.statusCode == 403) {
+            NSError *error = nil;
+            NSDictionary *statusCodeMessage = [NSJSONSerialization JSONObjectWithData:context.responseData
+                                                                              options:0
+                                                                                error:&error];
+            if(!error) {
+                NSString *http403Error = [statusCodeMessage objectForKey:@"error"];
+                if([http403Error isEqualToString:@"credentials_expired"]) {
+                   retryAndAttemptNewSession = YES;
+                }
+            }
+        }
+    }
+    
+    if (retryAndAttemptNewSession) {
         // Clear the cookies as we are no longer authorized
         _cookies = nil;
         context.shouldRetry = YES;
     }
+
     // A sliding window may send an early cookie refresh which may save us a _session round-trip
     if (context.response.allHeaderFields[@"Set-Cookie"]) {
         // Replace the cookies with any sent on the response
@@ -142,12 +161,25 @@ static const NSInteger CDTSessionCookieRequestTimeout = 600;
                                           self.shouldMakeSessionRequest = NO;
                                       } else {
                                           // Most other HTTP status codes are non-transient failures; don't retry.
-                                          CDTLogError(CDTREPLICATION_LOG_CONTEXT,
+                                          NSString *dataJsonResponse = [[NSString alloc] initWithData:data
+                                                                                             encoding:NSUTF8StringEncoding];
+                                          if(dataJsonResponse) {
+                                            CDTLogError(CDTREPLICATION_LOG_CONTEXT,
+                                                      @"Failed to get cookie from the server at %@, "
+                                                      @"response code %ld, response message: %@. Cookie "
+                                                      @"authentication will not be attempted again by this interceptor "
+                                                      @"object",
+                                                      url,
+                                                      (long)httpResp.statusCode,
+                                                      dataJsonResponse);
+                                          } else {
+                                            CDTLogError(CDTREPLICATION_LOG_CONTEXT,
                                                       @"Failed to get cookie from the server at %@, response code %ld. Cookie "
                                                       @"authentication will not be attempted again by this interceptor "
                                                       @"object",
                                                       url,
                                                       (long)httpResp.statusCode);
+                                          }
                                           self.shouldMakeSessionRequest = NO;
                                       }
                                       
