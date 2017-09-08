@@ -68,9 +68,13 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 }
 
 @NonCPS
-def isReleaseVersion(versionFile) {
-  def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION \"(.*)\"/
-  return versionMatcher.matches() && !versionMatcher.group(1).toUpperCase(Locale.ENGLISH).contains("SNAPSHOT")
+def getVersion(versionFile) {
+  def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION "(.*)"/
+  return versionMatcher[0][1]
+}
+
+def isReleaseVersion(version) {
+  return !version.toUpperCase(Locale.ENGLISH).contains("SNAPSHOT")
 }
 
 stage('Checkout') {
@@ -121,20 +125,29 @@ stage('Publish') {
         node {
             checkout scm // re-checkout to be able to git tag
 
-            // read the version name
+            // read the version string
             def versionFile = readFile('CDTDatastore/Version.h').trim()
+            def version = getVersion(versionFile)
 
             // if it is a release build then do the git tagging
-            if (isReleaseVersion(versionFile)) {
+            if (isReleaseVersion(version)) {
 
+                def inMessage = false
                 // Read the CHANGELOG.md to get the tag message
                 tagMessage = ''
+                // find the message following the first "##" header
                 for (line in readFile('CHANGELOG.md').readLines()) {
-                    if (!''.equals(line)) {
+                    if (line =~ /^##/) {
+                        if (!inMessage) {
+                            inMessage = true
+                            continue
+                        } else {
+                            break
+                        }
+                    }
+                    if (inMessage) {
                         // append the line to the tagMessage
                         tagMessage = "${tagMessage}${line}\n"
-                    } else {
-                        break
                     }
                 }
 
