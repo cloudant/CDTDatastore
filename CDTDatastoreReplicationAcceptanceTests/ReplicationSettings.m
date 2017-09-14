@@ -32,6 +32,11 @@
     return self;
 }
 
+-(NSString *) iamApiKey{
+    
+    return self.replicationSettings[@"TEST_COUCH_IAM_API_KEY"];
+}
+
 
 -(NSString *) host{
 
@@ -85,12 +90,16 @@
 }
 
 -(NSString *) authorization {
-    NSString *base64Creds;
-    if (self.username != nil && ![self.username isEqualToString:@""] ){
+    NSString *base64CredsOrIamKey;
+    if(self.iamApiKey) {
+        base64CredsOrIamKey = self.iamApiKey;
+    } else {
+      if (self.username != nil && ![self.username isEqualToString:@""] ){
         NSData *creds = [[NSString stringWithFormat:@"%@:%@", self.username, self.password]dataUsingEncoding:NSUTF8StringEncoding];
-        base64Creds = [NSString stringWithFormat:@"Basic %@", [creds base64EncodedStringWithOptions:0]];
+        base64CredsOrIamKey = [NSString stringWithFormat:@"Basic %@", [creds base64EncodedStringWithOptions:0]];
+      }
     }
-    return base64Creds;
+    return base64CredsOrIamKey;
 }
 
 @end

@@ -140,13 +140,40 @@
 
     NSDictionary* headers = @{@"accept": @"application/json",
                               @"content-type": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest postEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[bulk_url absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSJSONSerialization dataWithJSONObject:bulk_json
-                                                         options:0
-                                                           error:nil]];
-    }] asJson];
+    UNIHTTPJsonResponse* response = nil;
+    if(self.iamApiKey) {
+        NSDictionary* parameters = @{@"grant_type": @"urn:ibm:params:oauth:grant-type:apikey",
+                                     @"response_type": @"cloud_iam",
+                                     @"apikey": self.iamApiKey};
+        
+        // Get IAM access token
+        UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
+            [request setUrl:@"https://iam.ng.bluemix.net/oidc/token"];
+            [request setHeaders:headers];
+            [request setParameters:parameters];
+        }] asJson];
+        
+        XCTAssertNotNil([iamKeyResponse.body.object objectForKey:@"access_token"]);
+        
+        headers = @{@"accept": @"application/json",
+                    @"content-type": @"application/json",
+                    @"Authorization": [NSString stringWithFormat:@"Bearer %@",[iamKeyResponse.body.object objectForKey:@"access_token"]]};
+        response = [[UNIRest postEntity:^(UNIBodyRequest* request) {
+            [request setUrl:[bulk_url absoluteString]];
+            [request setHeaders:headers];
+            [request setBody:[NSJSONSerialization dataWithJSONObject:bulk_json
+                                                             options:0
+                                                               error:nil]];
+        }] asJson];
+    } else {
+        response = [[UNIRest postEntity:^(UNIBodyRequest* request) {
+            [request setUrl:[bulk_url absoluteString]];
+            [request setHeaders:headers];
+            [request setBody:[NSJSONSerialization dataWithJSONObject:bulk_json
+                                                             options:0
+                                                               error:nil]];
+        }] asJson];
+    }
     //    NSLog(@"%@", response.body.array);
     XCTAssertTrue([response.body.array count] == count, @"Remote db has wrong number of docs");
 }

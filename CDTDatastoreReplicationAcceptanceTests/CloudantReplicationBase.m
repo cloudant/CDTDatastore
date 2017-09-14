@@ -35,7 +35,11 @@
     
     // Configure BasicAuth header for UNIRest requests
     if (settings.authorization != nil) {
-        [UNIRest defaultHeader:@"Authorization" value: settings.authorization];
+        if(settings.iamApiKey) {
+           self.iamApiKey = settings.iamApiKey;
+        } else {
+            [UNIRest defaultHeader:@"Authorization" value: settings.authorization];
+        }
     }
     
 #ifdef USE_ENCRYPTION
@@ -118,11 +122,35 @@
     NSURL *remoteDatabaseURL = [instanceURL URLByAppendingPathComponent:name];
     
     NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+    UNIHTTPJsonResponse* response;
+    if(self.iamApiKey) {
+        NSDictionary* parameters = @{@"grant_type": @"urn:ibm:params:oauth:grant-type:apikey",
+                                   @"response_type": @"cloud_iam",
+                                   @"apikey": self.iamApiKey};
+
+        // Get IAM access token
+        UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
+            [request setUrl:@"https://iam.ng.bluemix.net/oidc/token"];
+            [request setHeaders:headers];
+            [request setParameters:parameters];
+        }] asJson];
+        
+        XCTAssertNotNil([iamKeyResponse.body.object objectForKey:@"access_token"]);
+        
+        headers = @{@"accept": @"application/json",
+                    @"Authorization": [NSString stringWithFormat:@"Bearer %@",[iamKeyResponse.body.object objectForKey:@"access_token"]]};
+        response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+            [request setUrl:[remoteDatabaseURL absoluteString]];
+            [request setHeaders:headers];
+            [request setBody:[NSData data]];
+        }] asJson];
+    } else {
+      response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         [request setUrl:[remoteDatabaseURL absoluteString]];
         [request setHeaders:headers];
         [request setBody:[NSData data]];
-    }] asJson];
+      }] asJson];
+    }
     XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
 }
 

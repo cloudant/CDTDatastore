@@ -17,6 +17,7 @@
 
 @property (nonatomic,strong) CDTDatastoreManager *factory;
 @property (nonatomic,strong) NSString *factoryPath;
+@property (nonatomic,strong) NSString *iamApiKey;
 
 @property (nonatomic, strong) id<CDTEncryptionKeyProvider> provider;
 
