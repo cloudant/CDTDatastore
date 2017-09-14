@@ -67,6 +67,44 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
     }
 }
 
+def iamBuildAndTest(nodeLabel, target, rakeEnv, encrypted) {
+    node(nodeLabel) {
+        // Clean the directory before un-stashing (removes old logs)
+        deleteDir()
+
+        // Unstash the source on this node
+        unstash name: 'source'
+
+        // Build and test
+        try {
+            // def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+            // if (encrypted == 'yes') {
+            //    envVariables.add('encrypted=yes')
+            // }
+            // withEnv(envVariables) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: 'DB_USER', passwordVariable: 'IAM_API_KEY']]) {
+                    // Install or update the pods
+                    if (target == 'sample') {
+                        podfile('Project')
+                    } else {
+                        podfile('.')
+                    }
+                    sh "rake ${target}"
+                }
+            // }
+        } finally {
+            // Note the sample build has no junit results or CDT*.log
+            if (target != 'sample') {
+                // Load the test results
+                junit 'build/reports/junit.xml'
+                // Archive the complete log in case more debugging needed
+                archiveArtifacts artifacts: '*CDTDatastore*.log'
+            }
+        }
+    }
+}
+
+
 @NonCPS
 def getVersion(versionFile) {
   def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION "(.*)"/
@@ -101,19 +139,11 @@ stage('BuildAndTest') {
                 buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
             }]
     // Add replication acceptance tests for the master branch
-    if (env.BRANCH_NAME == "master") {
+    // TODO remove after RA testing on test-branch
+    if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
       axes.putAll(
                   iosRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-                  },
-                  iosRATEncrypted: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
-                  },
-                  macosRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-                  },
-                  macosRATEncrypted: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+                      iamBuildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
                   })
     }
     parallel(axes)
