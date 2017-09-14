@@ -32,6 +32,11 @@
     return self;
 }
 
+-(NSString *) iamApiKey{
+    
+    return self.replicationSettings[@"TEST_COUCH_IAM_API_KEY"];
+}
+
 
 -(NSString *) host{
 

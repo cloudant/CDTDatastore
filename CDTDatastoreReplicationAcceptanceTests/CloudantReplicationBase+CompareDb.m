@@ -52,7 +52,9 @@
     NSInteger localCount = local.documentCount;
     
     // Check document count in the remote DB
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[databaseUrl absoluteString]];
         [request setHeaders:headers];
@@ -78,7 +80,8 @@
 -(BOOL) compareDocIdsAndCurrentRevs:(CDTDatastore*)local withDatabase:(NSURL*)databaseUrl
 {
     // Remote doc IDs
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     NSURL *all_docs = [databaseUrl URLByAppendingPathComponent:@"_all_docs"];
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[all_docs absoluteString]];
@@ -148,7 +151,8 @@
 
             // Remote revs for this doc
             NSMutableArray *remoteRevIdsAccumulator = [NSMutableArray array];
-            NSDictionary* headers = @{@"accept": @"application/json"};
+            NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+            headers[@"accept"] = @"application/json";
             NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:currentRevision.docId];
             NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
                 [request setUrl:[docUrl absoluteString]];
@@ -192,7 +196,8 @@
          }
          
          // Get the document, including attachments
-         NSDictionary* headers = @{@"accept": @"application/json"};
+         NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+         headers[@"accept"] = @"application/json";
          NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:document.docId];
          NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
              [request setUrl:[docUrl absoluteString]];

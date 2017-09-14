@@ -30,7 +30,7 @@ def podfile(podfileDir) {
     }
 }
 
-def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
+def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
     node(nodeLabel) {
         // Clean the directory before un-stashing (removes old logs)
         deleteDir()
@@ -40,13 +40,29 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+            def envVariables = []
+            def credsId = ''
+            def credsUser = ''
+            def credsPass = ''
+            def credsIam = ''
+            if (testIam == 'yes') {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
+                credsId = 'clientlibs-test'
+                credsUser = 'TEST_COUCH_USERNAME'
+                credsPass = 'TEST_COUCH_PASSWORD'
+                credsIam = 'TEST_COUCH_IAM_API_KEY'
+            } else {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+                credsId = 'couchdb'
+                credsUser = 'TEST_COUCH_USERNAME'
+                credsPass = 'TEST_COUCH_PASSWORD'
+            }
             if (encrypted == 'yes') {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'couchdb', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD']]) {
-                    // Install or update the pods
+                withCredentials([usernamePassword(credentialsId: credsId, usernameVariable: credsUser, passwordVariable: credsPass), string(credentialsId: 'clientlibs-test-iam', variable: credsIam)]) {
+                 // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
                     } else {
@@ -114,6 +130,12 @@ stage('BuildAndTest') {
                   },
                   macosRATEncrypted: {
                       buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+                  },                
+                  iosIamRAT: {
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
+                  },
+                  macosIamRAT: {
+                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'yes')
                   })
     }
     parallel(axes)

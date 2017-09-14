@@ -34,8 +34,15 @@
     self.remoteRootURL = [NSURL URLWithString:settings.serverURI];
     
     // Configure BasicAuth header for UNIRest requests
-    if (settings.authorization != nil) {
-        [UNIRest defaultHeader:@"Authorization" value: settings.authorization];
+    if(settings.iamApiKey) {
+        [UNIRest clearDefaultHeaders];
+        self.iamApiKey = settings.iamApiKey;
+        [UNIRest defaultHeader:@"Authorization"
+                         value:[NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]]];
+    } else {
+        if (settings.authorization != nil) {
+            [UNIRest defaultHeader:@"Authorization" value: settings.authorization];
+        }
     }
     
 #ifdef USE_ENCRYPTION
@@ -107,6 +114,26 @@
     return path;
 }
 
+/**
+ Get the IAM access token.  Used for CRUD helper methods.
+ */
+-(NSString *) getIAMBearerToken {
+    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSDictionary* parameters = @{@"grant_type": @"urn:ibm:params:oauth:grant-type:apikey",
+                                 @"response_type": @"cloud_iam",
+                                 @"apikey": self.iamApiKey};
+    
+    // Get IAM access token
+    UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
+        [request setUrl:@"https://iam.bluemix.net/oidc/token"];
+        [request setHeaders:headers];
+        [request setParameters:parameters];
+    }] asJson];
+    
+    XCTAssertNotNil([iamKeyResponse.body.object objectForKey:@"access_token"]);
+    return [iamKeyResponse.body.object objectForKey:@"access_token"];
+}
+
 #pragma mark Remote database operations
 
 /**
@@ -117,12 +144,14 @@
 {
     NSURL *remoteDatabaseURL = [instanceURL URLByAppendingPathComponent:name];
     
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[remoteDatabaseURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSData data]];
+    [request setUrl:[remoteDatabaseURL absoluteString]];
+    [request setHeaders:headers];
+    [request setBody:[NSData data]];
     }] asJson];
+    
     XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
 }
 
@@ -134,7 +163,8 @@
 {
     NSURL *remoteDatabaseURL = [instanceURL URLByAppendingPathComponent:name];
     
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
         [request setUrl:[remoteDatabaseURL absoluteString]];
         [request setHeaders:headers];
@@ -151,8 +181,9 @@
                             databaseURL:(NSURL*)dbUrl
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:docId];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         [request setUrl:[docURL absoluteString]];
         [request setHeaders:headers];
@@ -177,10 +208,11 @@
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:docId];
     NSString *contentLength = [NSString stringWithFormat:@"%lu", (unsigned long)data.length];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": contentType,
-                              @"If-Match": revId,
-                              @"Content-Length": contentLength};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = contentType;
+    headers[@"If-Match"] = revId;
+    headers[@"Content-Length"] = contentLength;
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
         [request setUrl:[attachmentURL absoluteString]];
@@ -200,9 +232,10 @@
                           databaseURL:(NSURL*)dbUrl
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:fromId];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json",
-                              @"Destination": toId};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
+    headers[@"Destination"] = toId;
     UNIHTTPJsonResponse* response;
     response = [[[UNIHTTPRequestWithBody alloc] initWithSimpleRequest:COPY
                                                                   url:[docURL absoluteString] 
@@ -213,5 +246,90 @@
     NSString *revId = [response.body.object objectForKey:@"rev"];
     return revId;
 }
+
+
+/**
+ Create a new replicator, and wait for replication from the remote database to complete.
+ */
+-(CDTReplicator *) pullFromRemote {
+    return [self pullFromRemoteWithFilter:nil params:nil];
+}
+
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
+{
+    CDTPullReplication *pull = nil;
+    if([self.iamApiKey length] != 0) {
+        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                  target:self.datastore
+                                               IAMAPIKey:self.iamApiKey];
+    } else {
+        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                  target:self.datastore];
+    }
+    pull.filter = filterName;
+    pull.filterParams = params;
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating from %@", [pull.source absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    return replicator;
+}
+
+/**
+ Create a new replicator, and wait for replication from the local database to complete.
+ */
+-(CDTReplicator *) pushToRemote {
+    return [self pushToRemoteWithFilter:nil params:nil];
+}
+
+/**
+ Create a new replicator, and wait for replication from the local database to complete.
+ */
+-(CDTReplicator *) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
+    CDTPushReplication *push = nil;
+    if([self.iamApiKey length] != 0) {
+        push = [CDTPushReplication replicationWithSource:self.datastore
+                                                  target:self.primaryRemoteDatabaseURL
+                                               IAMAPIKey:self.iamApiKey];
+    } else {
+        push = [CDTPushReplication replicationWithSource:self.datastore
+                                                  target:self.primaryRemoteDatabaseURL];
+    }
+    
+    push.filter = filter;
+    push.filterParams = params;
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (replicator.isActive) {
+        
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    
+    return replicator;
+}
+
 
 @end
