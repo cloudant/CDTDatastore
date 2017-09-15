@@ -24,6 +24,8 @@
 @property (nonatomic, strong) NSURL *remoteRootURL;
 @property (nonatomic, strong) NSString *remoteDbPrefix;
 
+-(NSString*)getIAMBearerToken;
+
 -(void) createRemoteDatabase:(NSString*)name
                  instanceURL:(NSURL*)rootURL;
 

@@ -111,6 +111,26 @@
     return path;
 }
 
+/**
+ Get the IAM access token.  Used for CRUD helper methods.
+ */
+-(NSString *) getIAMBearerToken {
+    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSDictionary* parameters = @{@"grant_type": @"urn:ibm:params:oauth:grant-type:apikey",
+                                 @"response_type": @"cloud_iam",
+                                 @"apikey": self.iamApiKey};
+    
+    // Get IAM access token
+    UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
+        [request setUrl:@"https://iam.ng.bluemix.net/oidc/token"];
+        [request setHeaders:headers];
+        [request setParameters:parameters];
+    }] asJson];
+    
+    XCTAssertNotNil([iamKeyResponse.body.object objectForKey:@"access_token"]);
+    return [iamKeyResponse.body.object objectForKey:@"access_token"];
+}
+
 #pragma mark Remote database operations
 
 /**
@@ -121,36 +141,17 @@
 {
     NSURL *remoteDatabaseURL = [instanceURL URLByAppendingPathComponent:name];
     
-    NSDictionary* headers = @{@"accept": @"application/json"};
-    UNIHTTPJsonResponse* response;
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     if(self.iamApiKey) {
-        NSDictionary* parameters = @{@"grant_type": @"urn:ibm:params:oauth:grant-type:apikey",
-                                   @"response_type": @"cloud_iam",
-                                   @"apikey": self.iamApiKey};
-
-        // Get IAM access token
-        UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
-            [request setUrl:@"https://iam.ng.bluemix.net/oidc/token"];
-            [request setHeaders:headers];
-            [request setParameters:parameters];
-        }] asJson];
-        
-        XCTAssertNotNil([iamKeyResponse.body.object objectForKey:@"access_token"]);
-        
-        headers = @{@"accept": @"application/json",
-                    @"Authorization": [NSString stringWithFormat:@"Bearer %@",[iamKeyResponse.body.object objectForKey:@"access_token"]]};
-        response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-            [request setUrl:[remoteDatabaseURL absoluteString]];
-            [request setHeaders:headers];
-            [request setBody:[NSData data]];
-        }] asJson];
-    } else {
-      response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
-        [request setUrl:[remoteDatabaseURL absoluteString]];
-        [request setHeaders:headers];
-        [request setBody:[NSData data]];
-      }] asJson];
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
+    UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
+    [request setUrl:[remoteDatabaseURL absoluteString]];
+    [request setHeaders:headers];
+    [request setBody:[NSData data]];
+    }] asJson];
+    
     XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Remote db create failed");
 }
 
@@ -162,7 +163,11 @@
 {
     NSURL *remoteDatabaseURL = [instanceURL URLByAppendingPathComponent:name];
     
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
         [request setUrl:[remoteDatabaseURL absoluteString]];
         [request setHeaders:headers];
@@ -179,8 +184,12 @@
                             databaseURL:(NSURL*)dbUrl
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:docId];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         [request setUrl:[docURL absoluteString]];
         [request setHeaders:headers];
@@ -205,10 +214,14 @@
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:docId];
     NSString *contentLength = [NSString stringWithFormat:@"%lu", (unsigned long)data.length];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": contentType,
-                              @"If-Match": revId,
-                              @"Content-Length": contentLength};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = contentType;
+    headers[@"If-Match"] = revId;
+    headers[@"Content-Length"] = contentLength;
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
         [request setUrl:[attachmentURL absoluteString]];
@@ -228,9 +241,13 @@
                           databaseURL:(NSURL*)dbUrl
 {
     NSURL *docURL = [dbUrl URLByAppendingPathComponent:fromId];
-    NSDictionary *headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json",
-                              @"Destination": toId};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
+    headers[@"Destination"] = toId;
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response;
     response = [[[UNIHTTPRequestWithBody alloc] initWithSimpleRequest:COPY
                                                                   url:[docURL absoluteString] 
