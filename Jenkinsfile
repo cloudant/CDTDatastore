@@ -77,12 +77,12 @@ def iamBuildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            // def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
-            // if (encrypted == 'yes') {
-            //    envVariables.add('encrypted=yes')
-            // }
-            // withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: 'DB_USER', passwordVariable: 'IAM_API_KEY']]) {
+            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
+            if (encrypted == 'yes') {
+                envVariables.add('encrypted=yes')
+            }
+            withEnv(envVariables) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: ‘DONT_NEED’, passwordVariable: 'TEST_COUCH_IAM_API_KEY']]) {
                     // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
@@ -91,7 +91,7 @@ def iamBuildAndTest(nodeLabel, target, rakeEnv, encrypted) {
                     }
                     sh "rake ${target}"
                 }
-            // }
+            }
         } finally {
             // Note the sample build has no junit results or CDT*.log
             if (target != 'sample') {
