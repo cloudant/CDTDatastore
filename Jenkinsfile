@@ -82,7 +82,7 @@ def iamBuildAndTest(nodeLabel, target, rakeEnv, encrypted) {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: ‘DONT_NEED’, passwordVariable: 'TEST_COUCH_IAM_API_KEY']]) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: ‘TEST_COUCH_USERNAME’, passwordVariable: 'TEST_COUCH_IAM_API_KEY']]) {
                     // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
