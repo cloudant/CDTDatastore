@@ -6,6 +6,8 @@
 	<string></string>
 	<key>TEST_COUCH_PASSWORD</key>
 	<string></string>
+	<key>TEST_COUCH_IAM_API_KEY</key>
+	<string></string>
 	<key>TEST_COUCH_HOST</key>
 	<string>localhost</string>
 	<key>TEST_COUCH_PORT</key>
