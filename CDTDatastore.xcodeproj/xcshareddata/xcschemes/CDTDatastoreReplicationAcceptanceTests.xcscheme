@@ -21,6 +21,11 @@
                BlueprintName = "CDTDatastoreReplicationAcceptanceTests"
                ReferencedContainer = "container:CDTDatastore.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "Attachments">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <AdditionalOptions>
