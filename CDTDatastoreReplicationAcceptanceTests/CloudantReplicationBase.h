@@ -7,8 +7,13 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "CDTPushReplication.h"
+
+
 
 @class CDTDatastoreManager;
+@class CDTReplicator;
+@class CDTReplicatorFactory;
 @protocol CDTEncryptionKeyProvider;
 
 @interface CloudantReplicationBase : XCTestCase
@@ -23,6 +28,11 @@
 
 @property (nonatomic, strong) NSURL *remoteRootURL;
 @property (nonatomic, strong) NSString *remoteDbPrefix;
+
+@property (nonatomic, strong) NSURL *primaryRemoteDatabaseURL;
+@property (nonatomic, strong) CDTDatastore *datastore;
+@property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
+
 
 -(NSString*)getIAMBearerToken;
 
@@ -46,5 +56,15 @@
 - (NSString*)copyRemoteDocumentWithId:(NSString*)fromId
                                  toId:(NSString*)toId
                           databaseURL:(NSURL*)dbUrl;
+
+-(CDTReplicator *) pullFromRemote;
+
+-(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params;
+
+-(CDTReplicator *) pushToRemote;
+
+-(CDTReplicator *) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params;
+
+
 
 @end
