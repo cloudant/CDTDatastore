@@ -54,7 +54,7 @@
     // Check document count in the remote DB
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
 
@@ -85,7 +85,7 @@
     // Remote doc IDs
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     NSURL *all_docs = [databaseUrl URLByAppendingPathComponent:@"_all_docs"];
@@ -159,7 +159,7 @@
             NSMutableArray *remoteRevIdsAccumulator = [NSMutableArray array];
             NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
             headers[@"accept"] = @"application/json";
-            if(self.iamApiKey) {
+            if([self.iamApiKey length] != 0) {
                 headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
             }
             NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:currentRevision.docId];
@@ -207,7 +207,7 @@
          // Get the document, including attachments
          NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
          headers[@"accept"] = @"application/json";
-         if(self.iamApiKey) {
+         if([self.iamApiKey length] != 0) {
              headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
          }
          NSURL *docUrl = [databaseUrl URLByAppendingPathComponent:document.docId];

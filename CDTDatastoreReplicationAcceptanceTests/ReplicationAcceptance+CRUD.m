@@ -141,7 +141,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
 
@@ -163,7 +163,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response;
@@ -196,7 +196,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[ @"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
@@ -217,7 +217,7 @@
     // Get the doc to find its rev
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
@@ -242,7 +242,7 @@
     // Check document count in the remote DB
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     return [[UNIRest get:^(UNISimpleRequest* request) {

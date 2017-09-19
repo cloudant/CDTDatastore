@@ -91,7 +91,7 @@
 
 -(NSString *) authorization {
     NSString *base64CredsOrIamKey;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         base64CredsOrIamKey = self.iamApiKey;
     } else {
       if (self.username != nil && ![self.username isEqualToString:@""] ){

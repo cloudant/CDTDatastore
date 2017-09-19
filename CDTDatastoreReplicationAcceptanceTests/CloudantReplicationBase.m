@@ -143,7 +143,7 @@
     
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
@@ -165,7 +165,7 @@
     
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
@@ -187,7 +187,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
@@ -219,7 +219,7 @@
     headers[@"content-type"] = contentType;
     headers[@"If-Match"] = revId;
     headers[@"Content-Length"] = contentLength;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
@@ -245,7 +245,7 @@
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
     headers[@"Destination"] = toId;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response;
@@ -270,7 +270,7 @@
 -(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
 {
     CDTPullReplication *pull = nil;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
                                                   target:self.datastore
                                                IAMAPIKey:self.iamApiKey];
@@ -311,7 +311,7 @@
  */
 -(CDTReplicator *) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
     CDTPushReplication *push = nil;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         push = [CDTPushReplication replicationWithSource:self.datastore
                                                   target:self.primaryRemoteDatabaseURL
                                                IAMAPIKey:self.iamApiKey];

@@ -95,7 +95,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"If-Match"] = revId;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
@@ -110,97 +110,101 @@
 #pragma mark Tests
 -(void)testSavedHttpAttachmentWithRemote
 {
-    //
-    // Add attachments to a document in the local store
-    //
-    
-    // Contains {attachmentName: attachmentContent} for later checking
-    NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
-    
-    NSError *error;
-    
-    NSString *docId = @"document1";
-    CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
-    rev.body = [@{ @"hello" : @12 } mutableCopy];
+    if([self.iamApiKey length] != 0) {
+        NSLog(@"IAM API key enabled, skipping test");
+    } else {
+        //
+        // Add attachments to a document in the local store
+        //
+        
+        // Contains {attachmentName: attachmentContent} for later checking
+        NSMutableDictionary *originalAttachments = [NSMutableDictionary dictionary];
+        
+        NSError *error;
+        
+        NSString *docId = @"document1";
+        CDTDocumentRevision *rev = [CDTDocumentRevision revisionWithDocId:docId];
+        rev.body = [@{ @"hello" : @12 } mutableCopy];
 
-    NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
-    NSString *content = @"blahblah";
-    NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *name = @"attachment";
-    CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:data
-                                                                          name:name
-                                                                          type:@"text/plain"];
-    [attachments setObject:attachment forKey:name];
-    
-    [originalAttachments setObject:data forKey:name];
+        NSMutableDictionary *attachments = [NSMutableDictionary dictionary];
+        NSString *content = @"blahblah";
+        NSData *originalData = [content dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *name = @"attachment";
+        CDTAttachment *attachment = [[CDTUnsavedDataAttachment alloc] initWithData:originalData
+                                                                              name:name
+                                                                              type:@"text/plain"];
+        [attachments setObject:attachment forKey:name];
+        
+        [originalAttachments setObject:originalData forKey:name];
 
-    rev.attachments = attachments;
-    rev = [self.datastore createDocumentFromRevision:rev error:&error];
+        rev.attachments = attachments;
+        rev = [self.datastore createDocumentFromRevision:rev error:&error];
 
-    XCTAssertNotNil(rev, @"Unable to add attachments to document");
-    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:1],
-                  @"Incorrect number of attachments");
-    
-    [self pushToRemote];
+        XCTAssertNotNil(rev, @"Unable to add attachments to document");
+        XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev equalTo:1],
+                      @"Incorrect number of attachments");
+        
+        [self pushToRemote];
 
-    rev.attachments = [@{} mutableCopy];
-    CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:rev error:&error];
+        rev.attachments = [@{} mutableCopy];
+        CDTDocumentRevision *rev2 = [self.datastore updateDocumentFromRevision:rev error:&error];
 
-    XCTAssertNotNil(rev2, @"Unable to add attachments to document");
-    XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev2 equalTo:0],
-                  @"Incorrect number of attachments");
-    
-    
-    //
-    // Push to remote
-    //
-    
-    [self pushToRemote];
+        XCTAssertNotNil(rev2, @"Unable to add attachments to document");
+        XCTAssertTrue([self isNumberOfAttachmentsForRevision:rev2 equalTo:0],
+                      @"Incorrect number of attachments");
+        
+        
+        //
+        // Push to remote
+        //
+        
+        [self pushToRemote];
 
-    
-    //check we can use the remote attachment class to get the attachments
-    
-    NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
-    NSURLComponents *docURLComponents = [NSURLComponents componentsWithURL:docURL resolvingAgainstBaseURL:NO];
-    docURLComponents.query = [NSString stringWithFormat:@"rev=%@",rev.revId];
-    docURL = [docURLComponents URL];
-    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
-    headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
-        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+        
+        //check we can use the remote attachment class to get the attachments
+        
+        NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
+        NSURLComponents *docURLComponents = [NSURLComponents componentsWithURL:docURL resolvingAgainstBaseURL:NO];
+        docURLComponents.query = [NSString stringWithFormat:@"rev=%@",rev.revId];
+        docURL = [docURLComponents URL];
+        NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+        headers[@"accept"] = @"application/json";
+        if([self.iamApiKey length] != 0) {
+            headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+        }
+        UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
+            [request setUrl:[docURL absoluteString]];
+            [request setHeaders:headers];
+        }] asJson];
+        
+        
+
+        
+        //
+        // Checks
+        //
+        
+        XCTAssertTrue([self compareDatastore:self.datastore withDatabase:self.primaryRemoteDatabaseURL],
+                      @"Local and remote database comparison failed");
+        
+        XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore
+                                                     withDatabase:self.primaryRemoteDatabaseURL],
+                      @"Local and remote database attachment comparison failed");
+        
+        NSDictionary *responseDict = response.body.JSONObject;
+
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        CDTDocumentRevision *remoteRevision = [CDTDocumentRevision createRevisionFromJson:responseDict forDocument:docURL error:&error];
+    #pragma clang diagnostic pop
+
+        XCTAssertNotNil(remoteRevision,@"Remote Revision was nil");
+        XCTAssertEqual(remoteRevision.attachments.count, 1,@"Remote attachments were not equal to 1");
+
+        CDTAttachment *remoteAttachment = remoteRevision.attachments.allValues[0];
+
+        XCTAssertEqualObjects(originalData, [remoteAttachment dataFromAttachmentContent],@"Attachment content was not equal");
     }
-    UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
-        [request setUrl:[docURL absoluteString]];
-        [request setHeaders:headers];
-    }] asJson];
-    
-    
-
-    
-    //
-    // Checks
-    //
-    
-    XCTAssertTrue([self compareDatastore:self.datastore withDatabase:self.primaryRemoteDatabaseURL],
-                  @"Local and remote database comparison failed");
-    
-    XCTAssertTrue([self compareAttachmentsForCurrentRevisions:self.datastore
-                                                 withDatabase:self.primaryRemoteDatabaseURL],
-                  @"Local and remote database attachment comparison failed");
-    
-    NSDictionary *responseDict = response.body.JSONObject;
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    CDTDocumentRevision *remoteRevision = [CDTDocumentRevision createRevisionFromJson:responseDict forDocument:docURL error:&error];
-#pragma clang diagnostic pop
-
-    XCTAssertNotNil(remoteRevision,@"Remote Revision was nil");
-    XCTAssertEqual(remoteRevision.attachments.count, 1,@"Remote attachments were not equal to 1");
-
-    CDTAttachment *remoteAttachment = remoteRevision.attachments.allValues[0];
-    
-    XCTAssertEqualObjects([@"blahblah" dataUsingEncoding:NSUTF8StringEncoding], [remoteAttachment dataFromAttachmentContent],@"Attachment content was not equal");
 }
 
 
@@ -353,27 +357,7 @@
     // Push to remote
     //
 
-    CDTReplicator *replicator =
-        [self.replicatorFactory onewaySourceDatastore:self.datastore targetURI:self.primaryRemoteDatabaseURL];
-
-    [replicator addObserver:self
-                 forKeyPath:@"tdReplicator"
-                    options:NSKeyValueObservingOptionNew
-                    context:NULL];
-
-    [replicator startWithError:nil];
-
-    // Time out test after 120 seconds
-    NSDate *start = [NSDate date];
-    while (replicator.isActive && ([[NSDate date] timeIntervalSinceDate:start] < 120)) {
-        [NSThread sleepForTimeInterval:1.0f];
-    }
-
-    if (replicator.isActive) {
-        XCTFail(@"Test timed out");
-    }
-
-    [replicator removeObserver:self forKeyPath:@"tdReplicator"];
+    [self pushToRemote];
 
     //
     // Checks
@@ -826,7 +810,7 @@
     // Should end up with revpos > generation number
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {

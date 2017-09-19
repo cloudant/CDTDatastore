@@ -33,6 +33,7 @@
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore.h"
 #import "CDTDocumentRevision.h"
+#import "CDTIAMSessionCookieInterceptor.h"
 #import "CDTPullReplication.h"
 #import "CDTPushReplication.h"
 #import "TDReplicator.h"
@@ -189,7 +190,7 @@
 -(CDTPullReplication *) testPullReplicator:(NSURL *)primaryRemoteDatabaseURL
                                     target:(CDTDatastore *)target {
     CDTPullReplication *pull = nil;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         if(primaryRemoteDatabaseURL) {
             pull = [CDTPullReplication replicationWithSource:primaryRemoteDatabaseURL
                                                       target:target
@@ -215,7 +216,7 @@
 -(CDTPushReplication *) testPushReplicator:(CDTDatastore *)source
                                     target:(NSURL *)primaryRemoteDatabaseURL {
     CDTPushReplication *push = nil;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         push = [CDTPushReplication replicationWithSource:source
                                                   target:primaryRemoteDatabaseURL
                                                IAMAPIKey:self.iamApiKey];
@@ -228,7 +229,7 @@
 
 -(CDTPushReplication *) testPushReplicator:(CDTDatastore *)source {
     CDTPushReplication *push = nil;
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         push = [CDTPushReplication replicationWithSource:source
                                                   target:self.primaryRemoteDatabaseURL
                                                IAMAPIKey:self.iamApiKey];
@@ -242,7 +243,7 @@
 - (void) testPullReplicationWithSource:(NSURL*) source
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
 {
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         [self.datastore pullReplicationWithSource:source IAMAPIKey:self.iamApiKey completionHandler:completionHandler];
     } else {
         [self.datastore pullReplicationWithSource:source username:nil password:nil completionHandler:completionHandler];
@@ -252,7 +253,7 @@
 - (void) testPushReplicationWithSource:(NSURL*) source
                      completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
 {
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         [self.datastore pullReplicationWithSource:source IAMAPIKey:self.iamApiKey completionHandler:completionHandler];
     } else {
         [self.datastore pullReplicationWithSource:source username:nil password:nil completionHandler:completionHandler];
@@ -262,7 +263,7 @@
 - (void) testPushReplicationWithTarget:(NSURL*) target
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
 {
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         [self.datastore pushReplicationWithTarget:target IAMAPIKey:self.iamApiKey completionHandler:completionHandler];
     } else {
         [self.datastore pushReplicationWithTarget:target username:nil password:nil completionHandler:completionHandler];
@@ -932,7 +933,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[ @"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
@@ -1032,7 +1033,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[ @"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
@@ -1113,7 +1114,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
 
@@ -1704,7 +1705,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
 
@@ -1748,7 +1749,7 @@
     NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
     headers[@"accept"] = @"application/json";
     headers[@"content-type"] = @"application/json";
-    if(self.iamApiKey) {
+    if([self.iamApiKey length] != 0) {
         headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
     }
     UNIHTTPJsonResponse *response = [[UNIRest get:^(UNISimpleRequest* request) {
@@ -1862,7 +1863,15 @@
         XCTFail(@"Should not be called");
     };
 
-    CDTURLSession *session = [[CDTURLSession alloc] init];
+    CDTURLSession *session = nil;
+    if([self.iamApiKey length] != 0) {
+        CDTIAMSessionCookieInterceptor *interceptor =
+        [[CDTIAMSessionCookieInterceptor alloc] initWithAPIKey:self.iamApiKey];
+        
+        session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread] requestInterceptors:@[interceptor] sessionConfigDelegate: nil];
+    } else {
+        session = [[CDTURLSession alloc] init];
+    }
 
     TDChangeTracker *changeTracker =
         [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
@@ -1971,6 +1980,69 @@
     }
     
     XCTAssertTrue(changeTrackerGotChanges);
+}
+
+-(void) testURLConnectionChangeTrackerWithRealRemoteAndIAMKey
+{
+    if([self.iamApiKey length] != 0) {
+    
+        __block BOOL changeTrackerStopped = NO;
+        __block BOOL changeTrackerGotChanges = NO;
+        unsigned int limitSize = 100;
+        
+        ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
+        
+        delegate.changesBlock = ^(NSArray *changes){
+            changeTrackerGotChanges = YES;
+            
+            NSUInteger changeCount = changes.count;
+            XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
+            //while the test above assures that changeCount > 0,
+            //there's no guarantee this is true in real-life, so
+            //that XCTAssertTrue is not included here.
+            
+            for (NSDictionary* change in changes) {
+                XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
+            }
+        };
+        
+        delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
+            changeTrackerStopped = YES;
+        };
+        
+        delegate.changeBlock = ^(NSDictionary *change) {
+            XCTFail(@"Should not be called");
+        };
+        
+        //NSURL *url = [self sharedDemoURL];
+        CDTIAMSessionCookieInterceptor *interceptor =
+        [[CDTIAMSessionCookieInterceptor alloc] initWithAPIKey:self.iamApiKey];
+        
+        CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread] requestInterceptors:@[interceptor] sessionConfigDelegate: nil];
+
+        TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
+                                                                                 mode:kOneShot
+                                                                            conflicts:YES
+                                                                         lastSequence:nil
+                                                                               client:delegate
+                                                                              session:session];
+        changeTracker.limit = limitSize;
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            [changeTracker start];
+            while(!changeTrackerStopped) {
+                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                         beforeDate:[NSDate distantFuture]];
+            }
+        });
+        
+        while (!changeTrackerStopped) {
+            [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                     beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
+        }
+        
+        XCTAssertTrue(changeTrackerGotChanges);
+    }
 }
 
 -(void) testURLConnectionChangeTrackerWithRealRemoteUsingAuthorizer
