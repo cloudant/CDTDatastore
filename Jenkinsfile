@@ -42,20 +42,23 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, iam) {
         try {
             def credsId = ''
             def credsPass = ''
+            def credsUser = ''
             if(iam == 'yes') {
-                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_CREDS_ID=testy023", "TEST_CREDS_PASS=TEST_COUCH_IAM_API_KEY"]
-                credsId = 'testy023'
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
+                credsId = 'iam-testy023'
                 credsPass = 'TEST_COUCH_IAM_API_KEY'
+                credsUser = 'XXX_DONTCARE'
             } else {
-                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_CREDS_ID=couchdb", "TEST_CREDS_PASS=TEST_COUCH_PASSWORD"]
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
                 credsId = 'couchdb'
                 credsPass = 'TEST_COUCH_PASSWORD'
+                credsUser = 'TEST_COUCH_USERNAME'
             }
             if (encrypted == 'yes') {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'TEST_CREDS_ID', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_CREDS_PASS']]) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: credsId, usernameVariable: credsUser, passwordVariable: credsPass]]) {
                     // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
