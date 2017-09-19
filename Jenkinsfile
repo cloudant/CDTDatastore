@@ -30,7 +30,7 @@ def podfile(podfileDir) {
     }
 }
 
-def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
+def buildAndTest(nodeLabel, target, rakeEnv, encrypted, iam) {
     node(nodeLabel) {
         // Clean the directory before un-stashing (removes old logs)
         deleteDir()
@@ -40,12 +40,22 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+            def credsId = ''
+            def credsPass = ''
+            if(iam == 'yes') {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_CREDS_ID=testy023", "TEST_CREDS_PASS=TEST_COUCH_IAM_API_KEY"]
+                credsId = 'testy023'
+                credsPass = 'TEST_COUCH_IAM_API_KEY'
+            } else {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_CREDS_ID=couchdb", "TEST_CREDS_PASS=TEST_COUCH_PASSWORD"]
+                credsId = 'couchdb'
+                credsPass = 'TEST_COUCH_PASSWORD'
+            }
             if (encrypted == 'yes') {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'couchdb', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD']]) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'TEST_CREDS_ID', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_CREDS_PASS']]) {
                     // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
@@ -66,44 +76,6 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
         }
     }
 }
-
-def iamBuildAndTest(nodeLabel, target, rakeEnv, encrypted) {
-    node(nodeLabel) {
-        // Clean the directory before un-stashing (removes old logs)
-        deleteDir()
-
-        // Unstash the source on this node
-        unstash name: 'source'
-
-        // Build and test
-        try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
-            if (encrypted == 'yes') {
-                envVariables.add('encrypted=yes')
-            }
-            withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'iam-testy023', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_IAM_API_KEY']]) {
-                    // Install or update the pods
-                    if (target == 'sample') {
-                        podfile('Project')
-                    } else {
-                        podfile('.')
-                    }
-                    sh "rake ${target}"
-                }
-            }
-        } finally {
-            // Note the sample build has no junit results or CDT*.log
-            if (target != 'sample') {
-                // Load the test results
-                junit 'build/reports/junit.xml'
-                // Archive the complete log in case more debugging needed
-                archiveArtifacts artifacts: '*CDTDatastore*.log'
-            }
-        }
-    }
-}
-
 
 @NonCPS
 def getVersion(versionFile) {
@@ -126,24 +98,28 @@ stage('Checkout') {
 stage('BuildAndTest') {
     def axes = [
             ios: {
-                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
-                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no', 'no')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no', 'yes')
+
+                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no', 'no')
+                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no', 'yes')
             },
             iosEncrypted: {
-                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes', 'no')
             },
             macos: {
-                buildAndTest('macos', 'testosx', 'OSX_DEST', 'no')
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'no', 'no')
             },
             macosEncrypted: {
-                buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes', 'no')
             }]
     // Add replication acceptance tests for the master branch
     // TODO remove after RA testing on test-branch
     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
       axes.putAll(
                   iosRAT: {
-                      iamBuildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'no')
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
                   })
     }
     parallel(axes)

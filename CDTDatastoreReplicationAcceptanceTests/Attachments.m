@@ -92,8 +92,12 @@
                    ofRevision:(NSString*)revId
                  fromDatabase:(NSURL*)remoteDbURL
 {
-    NSDictionary* headers = @{@"accept": @"application/json",
-                              @"If-Match": revId};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"If-Match"] = revId;
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
         NSURL *docURL = [remoteDbURL URLByAppendingPathComponent:docId];
         NSURL *attachmentURL = [docURL URLByAppendingPathComponent:attachmentName];
@@ -160,9 +164,14 @@
     NSURLComponents *docURLComponents = [NSURLComponents componentsWithURL:docURL resolvingAgainstBaseURL:NO];
     docURLComponents.query = [NSString stringWithFormat:@"rev=%@",rev.revId];
     docURL = [docURLComponents URL];
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     UNIHTTPJsonResponse* response = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[docURL absoluteString]];
-        [request setHeaders:@{@"accept": @"application/json"}];
+        [request setHeaders:headers];
     }] asJson];
     
     
@@ -815,7 +824,11 @@
     
     
     // Should end up with revpos > generation number
-    NSDictionary *headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    if(self.iamApiKey) {
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@",[self getIAMBearerToken]];
+    }
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[copiedDocURL absoluteString]];
         [request setHeaders:headers];

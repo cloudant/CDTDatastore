@@ -1186,7 +1186,7 @@
  * - Pull replicate back
  * - Compare DBs
  */
--(void) skip_testPushDeleteSomePull
+-(void) testPushDeleteSomePull
 {
     // Create docs in remote database
     NSLog(@"Creating local documents...");
@@ -1829,7 +1829,7 @@
 #pragma mark -- ChangeTracker tests
 
 
--(void) skip_testBasicURLConnectionChangeTracker
+-(void) testBasicURLConnectionChangeTracker
 {
     
     [self createRemoteDocs:1001]; //the extra 1 docment ensures that the last request to the
