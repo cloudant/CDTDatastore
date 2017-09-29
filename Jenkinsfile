@@ -30,7 +30,7 @@ def podfile(podfileDir) {
     }
 }
 
- def buildAndTest(nodeLabel, target, rakeEnv, encrypted, iam) {
+ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
      node(nodeLabel) {
          // Clean the directory before un-stashing (removes old logs)
          deleteDir()
@@ -43,7 +43,7 @@ def podfile(podfileDir) {
              def credsId = ''
              def credsPass = ''
              def credsUser = ''
-             envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=20", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
+             envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
              if (encrypted == 'yes') {
                  envVariables.add('encrypted=yes')
              }
@@ -91,41 +91,37 @@ stage('Checkout') {
 stage('BuildAndTest') {
     def axes = [
             ios: {
-                //buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no', 'no')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
 
-                //buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no', 'no')
+                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
             },
             iosEncrypted: {
-                //buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes', 'no')
-            },
-            iosIam: {
-                //buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes', 'yes')
-                //buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no', 'yes')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes')
             },
             macos: {
-                //buildAndTest('macos', 'testosx', 'OSX_DEST', 'no', 'no')
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'no')
             },
             macosEncrypted: {
-                //buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes', 'no')
+                buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
             }]
     // Add replication acceptance tests for the master branch
     // TODO remove after RA testing on test-branch
     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
       axes.putAll(
                   iosRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'no')
+                      //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'no')
                   },
                   iosIamRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
+                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
                   },
                   iosRATEncrypted: {
                       //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes', 'no')
                   },
                   macosRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'no')
+                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'no')
                   },
                   macosIamRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'yes')
+                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
                   },
                   macosRATEncrypted: {
                       //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes', 'no')
