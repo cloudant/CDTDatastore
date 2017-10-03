@@ -40,13 +40,50 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
             if (encrypted == 'yes') {
                 envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'couchdb', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD']]) {
                     // Install or update the pods
+                    if (target == 'sample') {
+                        podfile('Project')
+                    } else {
+                        podfile('.')
+                    }
+                    sh "rake ${target}"
+                }
+            }
+        } finally {
+            // Note the sample build has no junit results or CDT*.log
+            if (target != 'sample') {
+                // Load the test results
+                junit 'build/reports/junit.xml'
+                // Archive the complete log in case more debugging needed
+                archiveArtifacts artifacts: '*CDTDatastore*.log'
+            }
+        }
+    }
+}
+
+def buildAndIamTest(nodeLabel, target, rakeEnv, encrypted) {
+    node(nodeLabel) {
+        // Clean the directory before un-stashing (removes old logs)
+        deleteDir()
+
+        // Unstash the source on this node
+        unstash name: 'source'
+
+        // Build and test
+        try {
+            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
+            if (encrypted == 'yes') {
+             envVariables.add('encrypted=yes')
+            }
+            withEnv(envVariables) {
+                withCredentials([usernamePassword(credentialsId: 'clientlibs-test', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD'), string(credentialsId: 'clientlibs-test-iam', variable: 'TEST_COUCH_IAM_API_KEY')]) {
+                 // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
                     } else {
@@ -103,20 +140,35 @@ stage('BuildAndTest') {
     // Add replication acceptance tests for the master branch
     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
       axes.putAll(
-                  iosRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-                  },
-                  iosRATEncrypted: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
-                  },
-                  macosRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-                  },
-                  macosRATEncrypted: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
-                  })
+            iosRAT: {
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+            },
+            iosRATEncrypted: {
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
+            },
+            macosRAT: {
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+            },
+            macosRATEncrypted: {
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+            })
     }
     parallel(axes)
+}
+
+stage('BuildAndIamTest') {
+    def iamAxes = []
+    // Add replication acceptance tests for the master branch
+    if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
+      iamAxes.putAll(
+            iosIamRAT: {
+                buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+            },
+            macosIamRAT: {
+                buildAndIamTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+            })
+    }
+    parallel(iamAxes)
 }
 
 // Publish the master branch
