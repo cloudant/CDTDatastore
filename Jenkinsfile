@@ -154,13 +154,13 @@ stage('BuildAndTest') {
                 buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
             })
 
-      iamAxes.putAll(
+      iamAxes = [
             iosIamRAT: {
                 buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
             },
             macosIamRAT: {
                 buildAndIamTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-            })
+            }]
     }
     parallel(axes)
     parallel(iamAxes)
