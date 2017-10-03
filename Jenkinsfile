@@ -40,10 +40,7 @@ def podfile(podfileDir) {
  
          // Build and test
          try {
-             def credsId = ''
-             def credsPass = ''
-             def credsUser = ''
-             envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
+             def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
              if (encrypted == 'yes') {
                  envVariables.add('encrypted=yes')
              }
@@ -92,7 +89,6 @@ stage('BuildAndTest') {
     def axes = [
             ios: {
                 buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
-
                 buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
             },
             iosEncrypted: {
@@ -109,22 +105,22 @@ stage('BuildAndTest') {
     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
       axes.putAll(
                   iosRAT: {
-                      //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'no')
+                      //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
                   },
                   iosIamRAT: {
                       buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
                   },
                   iosRATEncrypted: {
-                      //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes', 'no')
+                      //buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
                   },
                   macosRAT: {
-                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'no')
+                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
                   },
                   macosIamRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
                   },
                   macosRATEncrypted: {
-                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes', 'no')
+                      //buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
                   })
     }
     parallel(axes)
