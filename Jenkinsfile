@@ -163,7 +163,8 @@ stage('BuildAndTest') {
             }]
     }
     parallel(axes)
-    parallel(iamAxes)
+    buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+    buildAndIamTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
 }
 
 // Publish the master branch
