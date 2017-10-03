@@ -80,18 +80,8 @@ task :replicationacceptanceosx do
   test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
 end
 
-desc "Run IAM-enabled replication acceptance tests for OS X"
-task :replicationacceptanceiamosx do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_OSX, OSX_DEST)
-end
-
 desc "Run the replication acceptance tests for iOS"
 task :replicationacceptanceios do
-  test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IPHONE_DEST)
-end
-
-desc "Run IAM-enabled replication acceptance tests for iOS"
-task :replicationacceptanceiamios do
   test(CDTDATASTORE_WS, REPLICATION_ACCEPTANCE_IOS, IPHONE_DEST)
 end
 
