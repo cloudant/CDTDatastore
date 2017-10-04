@@ -159,8 +159,10 @@ stage('BuildAndTest') {
             }
         ]
     }
-    parallel(axes)
-    parallel(iamAxes)
+    steps {
+        parallel(axes)
+        parallel(iamAxes)
+    }
 }
 
 // Publish the master branch
