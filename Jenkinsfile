@@ -153,16 +153,12 @@ stage('BuildAndTest') {
             macosRATEncrypted: {
                 buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
             })
-        iamAxes = [
-            iosIamRAT: {
-                buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-            }
-        ]
+            // Run IAM iOS RA test
+            buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+
     }
-    steps {
-        parallel(axes)
-        parallel(iamAxes)
-    }
+    parallel(axes)
+    
 }
 
 // Publish the master branch
