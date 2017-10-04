@@ -157,7 +157,7 @@ stage('BuildAndTest') {
     }
     parallel(axes)
     // Run IAM iOS RA test
-    buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+    // buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
     
 }
 
