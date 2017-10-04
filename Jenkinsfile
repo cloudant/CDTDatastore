@@ -30,7 +30,7 @@ def podfile(podfileDir) {
     }
 }
 
-def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
+def buildAndTest(nodeLabel, target, rakeEnv, encrypted, iam = 'no') {
     node(nodeLabel) {
         // Clean the directory before un-stashing (removes old logs)
         deleteDir()
@@ -40,56 +40,47 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_COUCH_N_DOCS=1000", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
-            if (encrypted == 'yes') {
-                envVariables.add('encrypted=yes')
-            }
-            withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'couchdb', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD']]) {
-                    // Install or update the pods
-                    if (target == 'sample') {
-                        podfile('Project')
-                    } else {
-                        podfile('.')
-                    }
-                    sh "rake ${target}"
+            def credsId = ''
+            def credsPass = ''
+            def credsUser = ''
+            def envVariables = []
+            if(iam == 'yes') {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=smithsz-test03.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10", "TEST_COUCH_IAM_API_KEY="]
+                credsId = 'iam-testy023'
+                credsPass = 'TEST_COUCH_IAM_API_KEY'
+                credsUser = 'XXX_DONTCARE'
+                if (encrypted == 'yes') {
+                    envVariables.add('encrypted=yes')
                 }
-            }
-        } finally {
-            // Note the sample build has no junit results or CDT*.log
-            if (target != 'sample') {
-                // Load the test results
-                junit 'build/reports/junit.xml'
-                // Archive the complete log in case more debugging needed
-                archiveArtifacts artifacts: '*CDTDatastore*.log'
-            }
-        }
-    }
-}
-
-def buildAndIamTest(nodeLabel, target, rakeEnv, encrypted) {
-    node(nodeLabel) {
-        // Clean the directory before un-stashing (removes old logs)
-        deleteDir()
-
-        // Unstash the source on this node
-        unstash name: 'source'
-
-        // Build and test
-        try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=1000", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
-            if (encrypted == 'yes') {
-             envVariables.add('encrypted=yes')
-            }
-            withEnv(envVariables) {
-                withCredentials([usernamePassword(credentialsId: 'clientlibs-test', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD'), string(credentialsId: 'clientlibs-test-iam', variable: 'TEST_COUCH_IAM_API_KEY')]) {
-                 // Install or update the pods
-                    if (target == 'sample') {
-                        podfile('Project')
-                    } else {
-                        podfile('.')
+                withEnv(envVariables) {
+                 withCredentials([usernamePassword(credentialsId: 'clientlibs-test', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD'), string(credentialsId: 'clientlibs-test-iam', variable: 'TEST_COUCH_IAM_API_KEY')]) {
+                        // Install or update the pods
+                        if (target == 'sample') {
+                            podfile('Project')
+                        } else {
+                            podfile('.')
+                        }
+                        sh "rake ${target}"
                     }
-                    sh "rake ${target}"
+                }
+            } else {
+                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_COUCH_IAM_API_KEY="]
+                credsId = 'couchdb'
+                credsPass = 'TEST_COUCH_PASSWORD'
+                credsUser = 'TEST_COUCH_USERNAME'
+                if (encrypted == 'yes') {
+                    envVariables.add('encrypted=yes')
+                }
+                withEnv(envVariables) {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: credsId, usernameVariable: credsUser, passwordVariable: credsPass]]) {
+                        // Install or update the pods
+                        if (target == 'sample') {
+                            podfile('Project')
+                        } else {
+                            podfile('.')
+                        }
+                        sh "rake ${target}"
+                    }
                 }
             }
         } finally {
@@ -143,22 +134,10 @@ stage('BuildAndTest') {
         axes.putAll(
             iosRAT: {
                 buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-            },
-            iosRATEncrypted: {
-                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
-            },
-            macosRAT: {
-                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-            },
-            macosRATEncrypted: {
-                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
             })
-
     }
-    parallel(axes)
-    // Run IAM iOS RA test
-    // buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-    
+    parallel(axes)    
 }
 
 // Publish the master branch
