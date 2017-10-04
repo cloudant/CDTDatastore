@@ -40,7 +40,7 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
+            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http", "TEST_COUCH_N_DOCS=1000", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
             if (encrypted == 'yes') {
                 envVariables.add('encrypted=yes')
             }
@@ -77,7 +77,7 @@ def buildAndIamTest(nodeLabel, target, rakeEnv, encrypted) {
 
         // Build and test
         try {
-            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=10", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
+            def envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https", "TEST_COUCH_N_DOCS=1000", "TEST_COUCH_LARGE_REV_TREE_SIZE=10"]
             if (encrypted == 'yes') {
              envVariables.add('encrypted=yes')
             }
@@ -153,11 +153,11 @@ stage('BuildAndTest') {
             macosRATEncrypted: {
                 buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
             })
-            // Run IAM iOS RA test
-            buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
 
     }
     parallel(axes)
+    // Run IAM iOS RA test
+    buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
     
 }
 
