@@ -82,7 +82,7 @@ def buildAndIamTest(nodeLabel, target, rakeEnv, encrypted) {
              envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'clientlibs-test-iam', usernameVariable: 'XXX_DONTCARE', passwordVariable: 'TEST_COUCH_IAM_API_KEY']]) {
+                withCredentials([usernamePassword(credentialsId: 'clientlibs-test', usernameVariable: 'TEST_COUCH_USERNAME', passwordVariable: 'TEST_COUCH_PASSWORD'), string(credentialsId: 'clientlibs-test-iam', variable: 'TEST_COUCH_IAM_API_KEY')]) {
                  // Install or update the pods
                     if (target == 'sample') {
                         podfile('Project')
@@ -140,7 +140,7 @@ stage('BuildAndTest') {
     def iamAxes = []
     // Add replication acceptance tests for the master branch
     if (env.BRANCH_NAME == "master" || env.BRANCH_NAME == "iam-testing") {
-      axes.putAll(
+        axes.putAll(
             iosRAT: {
                 buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
             },
@@ -153,19 +153,14 @@ stage('BuildAndTest') {
             macosRATEncrypted: {
                 buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
             })
-
-      iamAxes = [
+        iamAxes = [
             iosIamRAT: {
                 buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-            },
-            macosIamRAT: {
-                buildAndIamTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-            }]
+            }
+        ]
     }
     parallel(axes)
-    iosIamRAT: {
-        buildAndIamTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-    }
+    parallel(iamAxes)
 }
 
 // Publish the master branch
