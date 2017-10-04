@@ -240,7 +240,8 @@ do {
     print("Encountered an error: \(error)")
 }
 ```
-Read more in [the replication docs](https://github.com/cloudant/CDTDatastore/blob/master/doc/replication.md).
+Read more in [the replication docs](https://github.com/cloudant/CDTDatastore/blob/master/doc/replication.md)
+including how to use IAM authentication instead of username/password.
 
 ### Finding data
 

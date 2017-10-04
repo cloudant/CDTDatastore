@@ -15,7 +15,7 @@ SAMPLE_IOS = "Project"
 
 
 # Destinations
-IPHONE_DEST = (ENV["IPHONE_DEST"] == nil || ENV["IPHONE_DEST"] == "null") ? 'platform=iOS Simulator,OS=latest,name=iPhone 5' : ENV["IPHONE_DEST"]
+IPHONE_DEST = (ENV["IPHONE_DEST"] == nil || ENV["IPHONE_DEST"] == "null") ? 'platform=iOS Simulator,OS=latest,name=iPhone SE' : ENV["IPHONE_DEST"]
 OSX_DEST = (ENV["OSX_DEST"] == nil || ENV["IPHONE_DEST"] == "null") ? 'platform=OS X' : ENV["OSX_DEST"]
 
 #

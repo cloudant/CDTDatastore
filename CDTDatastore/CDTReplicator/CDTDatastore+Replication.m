@@ -70,6 +70,14 @@
     return [self replicatorWithReplication:push delegate:delegate error:error];
 }
 
+- (CDTReplicator *)pushReplicationTarget:(NSURL *)target
+                               IAMAPIKey:(NSString *)IAMAPIKey
+                            withDelegate:(NSObject <CDTReplicatorDelegate> *)delegate
+                                   error:(NSError *__autoreleasing *)error {
+    CDTPushReplication *push = [CDTPushReplication replicationWithSource:self target:target IAMAPIKey:IAMAPIKey];
+    return [self replicatorWithReplication:push delegate:delegate error:error];
+}
+
 - (CDTReplicator *)pullReplicationSource:(NSURL *)source
                                 username:(NSString*)username
                                 password:(NSString*)password
@@ -78,6 +86,16 @@
 
     CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:self username:username password:password];
 
+    return [self replicatorWithReplication:pull delegate:delegate error:error];
+}
+
+- (CDTReplicator *)pullReplicationSource:(NSURL *)source
+                                IAMAPIKey:(NSString *)IAMAPIKey
+                             withDelegate:(NSObject <CDTReplicatorDelegate> *)delegate
+                                   error:(NSError *__autoreleasing *)error {
+    
+    CDTPullReplication *pull = [CDTPullReplication replicationWithSource:source target:self IAMAPIKey:IAMAPIKey];
+    
     return [self replicatorWithReplication:pull delegate:delegate error:error];
 }
 
@@ -118,6 +136,23 @@
     }
 }
 
+- (void)pushReplicationWithTarget:(NSURL *)target
+                        IAMAPIKey:(NSString *)IAMAPIKey
+                completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
+{
+    NSError* error = nil;
+    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
+    CDTReplicator* replicator = [self pushReplicationTarget:target
+                                                  IAMAPIKey:IAMAPIKey
+                                               withDelegate:delegate error:&error];
+    if (!error){
+        [replicator startWithError:&error];
+    }
+    
+    if (error) {
+        completionHandler(error);
+    }
+}
 
 - (void) pullReplicationWithSource:(NSURL*) source
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
@@ -138,6 +173,22 @@
         [replicator startWithError:&error];
     }
 
+    if (error) {
+        completionHandler(error);
+    }
+}
+
+- (void) pullReplicationWithSource:(NSURL *)source
+                         IAMAPIKey:(NSString *)IAMAPIKey
+                 completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
+{
+    NSError* error = nil;
+    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
+    CDTReplicator* replicator = [self pullReplicationSource:source IAMAPIKey:IAMAPIKey withDelegate:delegate error:&error];
+    if (!error){
+        [replicator startWithError:&error];
+    }
+    
     if (error) {
         completionHandler(error);
     }
