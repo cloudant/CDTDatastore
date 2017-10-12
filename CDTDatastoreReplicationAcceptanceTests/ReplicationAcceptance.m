@@ -1585,8 +1585,79 @@
     }
 }
 
+// multi-threaded pull replication: small, but with conflicted revs
+-(void) testMultithreadedPullCancelHalfSmallWithConflicts
+{
+    [self doTestMultithreadedPullCancelHalf:10 nDocs:10 nRevs:4];
+}
+
+
+// multi-threaded pull replication: large, no conflicted revs
+-(void) testMultithreadedPullCancelHalfLargeNoConflicts
+{
+    [self doTestMultithreadedPullCancelHalf:50 nDocs:50 nRevs:1];
+}
+
+-(void) doTestMultithreadedPullCancelHalf:(int)nPulls
+                                    nDocs:(int)nDocs
+                                    nRevs:(int)nRevs
+{
+    NSMutableArray *dbs = [NSMutableArray array];
+    NSMutableArray<CDTReplicator*> *reps = [NSMutableArray array];
+
+    for (int i=0; i<nPulls; i++) {
+        NSString *dbname = [NSString stringWithFormat:@"%@-test-database-%@",
+                                          self.remoteDbPrefix,
+                                          [CloudantReplicationBase generateRandomString:5]];
+        dbs[i] = dbname;
+        NSURL *url = [self.remoteRootURL URLByAppendingPathComponent:dbname];
+        [self createRemoteDatabase:dbname instanceURL:self.remoteRootURL];
+        [self createRemoteDocs:nDocs at:url revs:nRevs];
+    }
+
+    // replicate all to one local datastore
+    for (int i=0; i<nPulls; i++) {
+        NSURL *url = [self.remoteRootURL URLByAppendingPathComponent:dbs[i]];
+        CDTPullReplication *pull = [CDTPullReplication replicationWithSource:url
+                                                                      target:self.datastore];
+        CDTReplicator *rep = [self.replicatorFactory oneWay:pull error:nil];
+        reps[i] = rep;
+        NSError *error;
+        XCTAssertTrue([rep startWithError:&error],
+                  @"Replicator started with error: %@", error);
+    }
+    
+    // wait for them to complete
+    for (int i=0; i<nPulls; i++) {
+        while (reps[i].isActive) {
+            [NSThread sleepForTimeInterval:1.0f];
+            NSLog(@" %d replicator %@ -> %@", i, reps[i].tdReplicator, [CDTReplicator stringForReplicatorState:reps[i].state]);
+            NSLog(@"    changes Processed: %ld", reps[i].changesProcessed);
+            // cancel half of the replications (it doesn't hurt to continually cancel them whilst we are waiting for the others to finish)
+            if (i%2 == 0) {
+                [reps[i] stop];
+            }
+        }
+    }
+
+    for (int i=0; i<nPulls; i++) {
+        while(reps[i].threadExecuting) {
+            [NSThread sleepForTimeInterval:1.0f];
+        }
+    }
+    
+    // delete remote dbs
+    for (int i=0; i<nPulls; i++) {
+        [self deleteRemoteDatabase:dbs[i] instanceURL:self.remoteRootURL];
+    }
+    
+    // at least half of the documents should have synced
+    // (if we are too late cancelling a replicator, it may sync)
+    XCTAssertTrue(self.datastore.documentCount >= nPulls*nDocs/2);
+}
+
 // this test is disabled because it causes too many build falures
--(void) xxxtestMultiThreadedReplication
+-(void) testMultiThreadedReplication
 {
     CDTPullReplication *pull = [self testPullReplicator:self.datastore];
     CDTReplicator *firstReplicator =  [self.replicatorFactory oneWay:pull error:nil];

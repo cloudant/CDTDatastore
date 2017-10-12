@@ -27,6 +27,7 @@
 -(void) createRemoteDocs:(NSInteger)count suffixFrom:(NSInteger)start;
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs;
 -(NSString*) createRemoteDocWithId:(NSString *)ddocid body:(NSDictionary*)ddocbody;
+-(void) createRemoteDocs:(NSInteger)count at:(NSURL*)url revs:(NSInteger)n_revs;
 
 -(NSString*) deleteRemoteDocWithId:(NSString *)docId;
 
