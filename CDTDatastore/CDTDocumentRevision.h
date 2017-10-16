@@ -64,23 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
                      sequence:(SequenceNumber)sequence;
 
 /**
- Creates an CDTDocumentRevision from JSON Data
- The json data is expected to come from
- Cloudant or a CouchDB instance.
- 
- @deprecated Method is deprecated and will be removed in 2.0, method was designed for a specific 
-             internal usecase.
-
- @param json JSON data to create an object from
- @param documentURL the url of the document
- @param error points to an NSError in case of error
-
- @return new CDTDocumentRevision instance
-*/
-+ (nullable CDTDocumentRevision *)createRevisionFromJson:(NSDictionary *)jsonDict
-                                             forDocument:(NSURL *)documentURL
-                                                   error:(NSError *__autoreleasing __nullable * __nullable)error __attribute__((deprecated));
-/**
  Create a new, blank revision which will have an ID generated on saving.
  */
 + (CDTDocumentRevision *)revision;
