@@ -52,4 +52,9 @@ abstract_target 'base' do
           platform :ios, '7.0'
         end
     end
+
+    post_install do | installer |
+        print "SQLCipher: link Pods/Headers/sqlite3.h"
+        system "mkdir -p Pods/Headers/Private && ln -s ../../SQLCipher/sqlite3.h Pods/Headers/Private"
+    end
 end
