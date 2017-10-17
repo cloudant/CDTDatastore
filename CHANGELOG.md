@@ -4,6 +4,7 @@
 - [NEW] Added API for upcoming IBM Cloud Identity and Access
   Management support for Cloudant on IBM Cloud. Note: IAM API key
   support is not yet enabled in the service.
+- [IMPROVED] Updated documentation by replacing deprecated Cloudant links with the latest bluemix.net links.
 - [FIXED] Crash when stopping replicators.
 - [FIXED] Threading issues in replicators.
 - [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method

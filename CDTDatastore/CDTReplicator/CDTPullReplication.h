@@ -127,11 +127,11 @@ NS_ASSUME_NONNULL_BEGIN
  See the Cloudant/CouchDB documentation on replication and filter functions.
 
  *
- [http://docs.cloudant.com/guides/replication/replication.html#filtered-replication](http://docs.cloudant.com/guides/replication/replication.html#filtered-replication)
+ [Cloudant filtered replication](https://console.bluemix.net/docs/services/Cloudant/api/advanced_replication.html#filtered-replication)
  *
- [http://docs.couchdb.org/en/latest/couchapp/ddocs.html#filter-functions](http://docs.couchdb.org/en/latest/couchapp/ddocs.html#filter-functions)
+ [CouchDB filter functions](http://docs.couchdb.org/en/latest/ddocs/ddocs.html#filter-functions)
  *
- [http://docs.couchdb.org/en/latest/json-structure.html#replication-settings](http://docs.couchdb.org/en/latest/json-structure.html#replication-settings)
+ [CouchDB replication settings](http://docs.couchdb.org/en/latest/json-structure.html#replication-settings)
 
  Filter functions in Cloudant/CouchDB are passed two arguments: a document revision and a
  request header.

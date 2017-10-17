@@ -250,7 +250,7 @@ Query documents using `NSDictionary` objects. These use the [Cloudant Query `sel
 syntax. Several features of Cloudant Query are not yet supported in this implementation.
 See below for more details.
 
-[sel]: https://docs.cloudant.com/api/cloudant-query.html#selector-syntax
+[sel]: https://console.bluemix.net/docs/services/Cloudant/api/cloudant_query.html#selector-syntax
 
 #### Equality and comparisons
 

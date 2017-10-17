@@ -87,6 +87,23 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
     }
 }
 
+def buildDocs() {
+    node('macos') {
+        // Clean the directory before un-stashing (removes old logs)
+        deleteDir()
+
+        // Unstash the source on this node
+        unstash name: 'source'
+
+        try {
+          sh "rake docs"
+        } finally {
+            // Archive the complete log in case more debugging needed
+            archiveArtifacts artifacts: '*CDTDatastore*.log'
+        }
+    }
+}
+
 @NonCPS
 def getVersion(versionFile) {
   def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION "(.*)"/
@@ -119,6 +136,9 @@ stage('BuildAndTest') {
             },
             macosEncrypted: {
                 buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
+            },
+            macosBuildDocs: {
+                buildDocs()
             },
             iosRAT: {
                 buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
