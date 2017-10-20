@@ -1,6 +1,8 @@
 # CDTDatastore CHANGELOG
 
 ## Unreleased
+- [NEW] Added support for authenticating with IAM API keys. See
+[Using with IAM](https://github.com/cloudant/CDTDatastore/blob/master/doc/replication.md#using-with-iam) for more details.
 - [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method `createRevisionFromJson` on `CDTDocumentRevision`.
 
 ## 1.2.2 (2017-09-06)

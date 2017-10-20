@@ -17,9 +17,6 @@
 
 @interface ReplicationAcceptance : CloudantReplicationBase
 
-@property (nonatomic, strong) CDTDatastore *datastore;
-@property (nonatomic, strong) CDTReplicatorFactory *replicatorFactory;
 
-@property (nonatomic, strong) NSURL *primaryRemoteDatabaseURL;
 
 @end

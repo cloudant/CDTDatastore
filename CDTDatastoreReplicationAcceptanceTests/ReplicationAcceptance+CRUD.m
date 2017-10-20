@@ -138,8 +138,10 @@
 
     NSURL *bulk_url = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:@"_bulk_docs"];
 
-    NSDictionary* headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
+
     UNIHTTPJsonResponse* response = [[UNIRest postEntity:^(UNIBodyRequest* request) {
         [request setUrl:[bulk_url absoluteString]];
         [request setHeaders:headers];
@@ -147,6 +149,7 @@
                                                          options:0
                                                            error:nil]];
     }] asJson];
+    
     //    NSLog(@"%@", response.body.array);
     XCTAssertTrue([response.body.array count] == count, @"Remote db has wrong number of docs");
 }
@@ -154,7 +157,9 @@
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs
 {
     NSString *revId;
-    NSDictionary* headers;
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[@"content-type"] = @"application/json";
     UNIHTTPJsonResponse* response;
     NSDictionary *dict = @{@"hello": @"world"};
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
@@ -163,9 +168,7 @@
 
     // Create revisions of document in remote store
     for (long i = 0; i < n_revs-1; i++) {
-        headers = @{@"accept": @"application/json",
-                    @"content-type": @"application/json",
-                    @"If-Match": revId};
+        headers[@"If-Match"] =  revId;
         response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
             [request setUrl:[docURL absoluteString]];
             [request setHeaders:headers];
@@ -183,9 +186,10 @@
 -(NSString*) createRemoteDocWithId:(NSString *)docId body:(NSDictionary*)body
 {
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
-    
-    NSDictionary* headers = @{@"accept": @"application/json",
-                              @"content-type": @"application/json"};
+
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
+    headers[ @"content-type"] = @"application/json";
     UNIHTTPJsonResponse* response = [[UNIRest putEntity:^(UNIBodyRequest* request) {
         [request setUrl:[docURL absoluteString]];
         [request setHeaders:headers];
@@ -202,7 +206,8 @@
     NSURL *docURL = [self.primaryRemoteDatabaseURL URLByAppendingPathComponent:docId];
     
     // Get the doc to find its rev
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     NSDictionary* json = [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[docURL absoluteString]];
         [request setHeaders:headers];;
@@ -212,7 +217,7 @@
     // Delete
     UNIHTTPJsonResponse* response = [[UNIRest delete:^(UNISimpleRequest* request) {
         [request setUrl:[docURL absoluteString]];
-        NSDictionary* headers = @{@"accept": @"application/json", @"If-Match": revId};
+        headers[@"If-Match"] = revId;
         [request setHeaders:headers];
     }] asJson];
     XCTAssertTrue([response.body.object objectForKey:@"ok"] != nil, @"Delete document failed");
@@ -223,7 +228,8 @@
 -(NSDictionary*) remoteDbMetadata
 {
     // Check document count in the remote DB
-    NSDictionary* headers = @{@"accept": @"application/json"};
+    NSMutableDictionary *headers = [[NSMutableDictionary alloc] init];
+    headers[@"accept"] = @"application/json";
     return [[UNIRest get:^(UNISimpleRequest* request) {
         [request setUrl:[self.primaryRemoteDatabaseURL absoluteString]];
         [request setHeaders:headers];

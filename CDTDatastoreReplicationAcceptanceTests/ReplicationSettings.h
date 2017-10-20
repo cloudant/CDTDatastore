@@ -18,6 +18,8 @@
 
 @property (readonly) NSNumber* largeRevTreeSize;
 
+@property (readonly) NSString* iamApiKey;
+
 /**
  * Note that the symbolic constants from DDLog.h can't be used in the plist file.
  * The following numbers should be used:
