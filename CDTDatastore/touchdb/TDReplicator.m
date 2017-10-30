@@ -298,8 +298,8 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         while ((!_replicatorStopped || _asyncTaskCount > 0) &&
                [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
-            ;
-        
+        ;
+
         // clear the reference to the db
         _db = nil;
         
@@ -409,27 +409,29 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void)stop
 {
-    if (!_running) return;
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STOPPING...", self);
-    [_batcher flushAll];
-    _continuous = NO;
-#if TARGET_OS_IPHONE
-    // Unregister for background transition notifications, on iOS:
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:UIApplicationDidEnterBackgroundNotification
-                                                  object:nil];
-#endif
-    [self stopRemoteRequests];
+    @synchronized(self) {
+        if (!_running) return;
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STOPPING...", self);
+        [_batcher flushAll];
+        _continuous = NO;
+    #if TARGET_OS_IPHONE
+        // Unregister for background transition notifications, on iOS:
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                        name:UIApplicationDidEnterBackgroundNotification
+                                                      object:nil];
+    #endif
+        [self stopRemoteRequests];
 
-    [NSObject cancelPreviousPerformRequestsWithTarget: self
-                                             selector: @selector(retryIfReady) object: nil];
+        [NSObject cancelPreviousPerformRequestsWithTarget: self
+                                                 selector: @selector(retryIfReady) object: nil];
 
-    //this just sets the isCanceled BOOL on the object. It's
-    //our responsibility to actually stop the thread.
-    [_replicatorThread cancel];
-    
-    if (_running && _asyncTaskCount == 0) {
-        [self stopped];
+        //this just sets the isCanceled BOOL on the object. It's
+        //our responsibility to actually stop the thread.
+        [_replicatorThread cancel];
+        
+        if (_running && _asyncTaskCount == 0) {
+            [self stopped];
+        }
     }
     
 }
@@ -923,7 +925,7 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                       if (rev) body[@"_rev"] = rev;
                       if (ID) body[@"_id"] = ID;
                       self.remoteCheckpoint = body;
-                      if (ID && [self.db saveCheckpointDocument:body error:nil]) {
+                      if (ID && ![self.db saveCheckpointDocument:body error:nil]) {
                           CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                                      @"Failed to save checkpoint to local database");
                       }

@@ -51,12 +51,14 @@
 #define kMaxNumberOfAttsSince 50u
 
 @interface TDPuller () <TDChangeTrackerClient>
+
+@property bool stopping;
+
 @end
 
 static NSString* joinQuotedEscaped(NSArray* strings);
 
 @implementation TDPuller
-
 
 - (instancetype)initWithDB:(TD_Database*)db
                     remote:(NSURL*)remote
@@ -71,6 +73,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
         _revsToPull = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
         _bulkGetRevs = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
         _bulkRevsToPull = [[NSMutableArray alloc] initWithCapacity:initialRevsCapacity];
+        _stopping = NO;
     }
     return self;
 }
@@ -80,18 +83,16 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void)beginReplicating
 {
-    // _bulk_get check starts an async task
-    [self asyncTaskStarted];
-
     __weak TDPuller* weakSelf = self;
     // check to see if _bulk_get endpoint is supported and then start replication
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    // how long to wait, in seconds, for our _bulk_get probe to return
+    int bulkGetProbeTimeout = 30;
     [self sendAsyncRequest:@"GET"
                       path:@"_bulk_get"
                       body:nil
               onCompletion:^(id result, NSError* error) {
-
                   __strong TDPuller* strongSelf = weakSelf;
-
                   switch(error.code) {
                       case 404:
                           // not found: _bulk_get not supported
@@ -103,16 +104,20 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                           [strongSelf setBulkGetSupported:true];
                           CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ Remote database supports _bulk_get", self);
                           break;
+                      default:
+                          [strongSelf setBulkGetSupported:false];
+                          CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Remote database returned unexpected status code %ld when trying to determine whether database supports _bulk_get. Defaulting to _bulk_get not supported.", self, error.code);
                   }
-                  
-                  // on completion...start the actual replication
-                  [strongSelf beginReplicatingInternal];
+                  dispatch_semaphore_signal(sema);
               }];
-}
+    long success = dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW,
+                                                               bulkGetProbeTimeout * NSEC_PER_SEC));
+    if (!success) {
+        [self setBulkGetSupported:false];
+        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Timed out trying to determine whether database supports _bulk_get. Defaulting to _bulk_get not supported.", self);
+    }
 
-- (void)beginReplicatingInternal
-{
-    
+    // on completion...start the actual replication
     if (!_downloadsToInsert) {
         // Note: This is a ref cycle, because the block has a (retained) reference to 'self',
         // and _downloadsToInsert retains the block, and of course I retain _downloadsToInsert.
@@ -132,11 +137,13 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     }
 
     _caughtUp = NO;
+    [self asyncTaskStarted];  // task: waiting to catch up
     [self startChangeTracker];
 }
 
 - (void)startChangeTracker
 {
+
     Assert(!_changeTracker);
     //continuous / longpoll modes are not supported or available at the CDT* level.
     //As such, the new TDURLConnectionChangeTracker also only supports one-shot query
@@ -182,6 +189,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void)stop
 {
+    _stopping = YES;
     if (!_running) return;
     if (_changeTracker) {
         _changeTracker.client = nil;  // stop it from calling my -changeTrackerStopped
@@ -192,10 +200,6 @@ static NSString* joinQuotedEscaped(NSArray* strings);
             [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -beginReplicating
     }
     _changeTracker = nil;
-    [_revsToPull removeAllObjects];
-    [_deletedRevsToPull removeAllObjects];
-    [_bulkRevsToPull removeAllObjects];
-    [_bulkGetRevs removeAllObjects];
     [super stop];
 
     [_downloadsToInsert flushAll];
@@ -206,7 +210,6 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // This is called if I've gone idle but some revisions failed to be pulled.
     // I should start the _changes feed over again, so I can retry all the revisions.
     [super retry];
-
     [_changeTracker stop];
     [self beginReplicating];
 }
@@ -214,6 +217,10 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 - (void)stopped
 {
     _downloadsToInsert = nil;
+    [_revsToPull removeAllObjects];
+    [_deletedRevsToPull removeAllObjects];
+    [_bulkRevsToPull removeAllObjects];
+    [_bulkGetRevs removeAllObjects];
     [super stopped];
 }
 
@@ -371,7 +378,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 // Start up some HTTP GETs, within our limit on the maximum simultaneous number
 - (void)pullRemoteRevisions
 {
-    while (_db && _httpConnectionCount < kMaxOpenHTTPConnections) {
+    while (!_stopping && _db && _httpConnectionCount < kMaxOpenHTTPConnections) {
         NSUInteger nBulk = MIN(_bulkGetRevs.count, kMaxRevsToGetInBulk);
         
         // Process from _bulkGetRevs first if there are any.
@@ -453,13 +460,13 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                                                    [strongSelf asyncTaskStarted];
                                                }
                                                
+                                               // Start another task if there are still revisions
+                                               // waiting to be pulled:
+                                               [strongSelf pullRemoteRevisions];
                                                // Note that we've finished this task:
                                                [strongSelf removeRemoteRequest:dl];
                                                [strongSelf asyncTasksFinished:1];
                                                --_httpConnectionCount;
-                                               // Start another task if there are still revisions
-                                               // waiting to be pulled:
-                                               [strongSelf pullRemoteRevisions];
                                            }];
     [self addRemoteRequest:dl];
     dl.authorizer = _authorizer;

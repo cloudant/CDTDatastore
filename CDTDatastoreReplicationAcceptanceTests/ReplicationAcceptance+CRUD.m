@@ -154,6 +154,43 @@
     XCTAssertTrue([response.body.array count] == count, @"Remote db has wrong number of docs");
 }
 
+-(void) createRemoteDocs:(NSInteger)count
+                      at:(NSURL*)url 
+                    revs:(NSInteger)n_revs
+{
+    NSMutableArray *docs = [NSMutableArray array];
+    NSUInteger currentIndex = 0;
+    for (long i = 1; i < count+1; i++) {
+        currentIndex++;
+        NSString *docId = [NSString stringWithFormat:@"%@", [CloudantReplicationBase generateRandomString:50]];
+        for (long r = 0; r < n_revs; r++) {
+            NSString *rev = [CloudantReplicationBase generateRandomString:50];
+            NSString *revId = [NSString stringWithFormat:@"1-%@", rev];
+            NSDictionary *dict = @{@"_id": docId,
+                                   @"_rev": revId,
+                                   @"_revisions": @{@"start": @1, @"ids": @[rev]},
+                                   @"hello": @"world",
+                                   @"docnum":[NSNumber numberWithLong:currentIndex]};
+            [docs addObject:dict];
+        }
+    }
+    
+    NSDictionary *bulk_json = @{@"docs": docs, @"new_edits": @(NO)};
+    
+    NSURL *bulk_url = [url URLByAppendingPathComponent:@"_bulk_docs"];
+    
+    NSDictionary* headers = @{@"accept": @"application/json",
+                              @"content-type": @"application/json"};
+    UNIHTTPJsonResponse* response = [[UNIRest postEntity:^(UNIBodyRequest* request) {
+        [request setUrl:[bulk_url absoluteString]];
+        [request setHeaders:headers];
+        [request setBody:[NSJSONSerialization dataWithJSONObject:bulk_json
+                                                         options:0
+                                                           error:nil]];
+    }] asJson];
+}
+
+
 -(void) createRemoteDocWithId:(NSString*)docId revs:(NSInteger)n_revs
 {
     NSString *revId;

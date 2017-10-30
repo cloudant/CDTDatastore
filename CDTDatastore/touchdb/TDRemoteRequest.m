@@ -132,10 +132,18 @@
 - (void)respondWithResult:(id)result error:(NSError *)error
 {
     Assert(result || error);
-    if(_onCompletion){
-        _onCompletion(result, error);
+    // swap onCompletion for nil atomically to avoid race conditions
+    // where onCompletion runs twice
+    TDRemoteRequestCompletionBlock localOnCompletion = nil;
+    @synchronized (self) {
+        if (_onCompletion) {
+            localOnCompletion = _onCompletion;
+            _onCompletion = nil;  // break cycles
+        }
     }
-    _onCompletion = nil;  // break cycles
+    if (localOnCompletion != nil) {
+        localOnCompletion(result, error);
+    }
 }
 
 - (void)startAfterDelay:(NSTimeInterval)delay
@@ -152,12 +160,9 @@
         [self.task cancel];
     }
     [self clearSession];
-    if (_onCompletion) {
-        NSError *error =
-            [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
-        [self respondWithResult:nil error:error];
-        _onCompletion = nil;  // break cycles
-    }
+    NSError *error =
+        [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCancelled userInfo:nil];
+    [self respondWithResult:nil error:error];
 }
 	
 - (void)cancelWithStatus:(int)status
