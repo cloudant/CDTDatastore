@@ -20,6 +20,8 @@
 
 @property (readonly) NSString* iamApiKey;
 
+@property (readonly) NSNumber* raSmall;
+
 /**
  * Note that the symbolic constants from DDLog.h can't be used in the plist file.
  * The following numbers should be used:

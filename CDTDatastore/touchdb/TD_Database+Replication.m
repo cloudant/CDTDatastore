@@ -100,22 +100,19 @@
     // 7 is the length of _local/
     remote = [remote substringFromIndex:7];
 
-    NSData *checkpointData = [TDJSON dataWithJSONObject:checkpoint options:0 error:&error];
-    if (error) {
+    NSData *checkpointData = [TDJSON dataWithJSONObject:checkpoint options:0 error:error];
+    if (!checkpointData) {
         return NO;
     }
 
+    __block bool result;
     [self.fmdbQueue inDatabase:^(FMDatabase *db) {
-      [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
+      result = [db executeUpdate:@"INSERT OR REPLACE INTO replicators (remote, push, "
                         @"last_sequence) VALUES (?, -1, ?)"
           withErrorAndBindings:error, remote, checkpointData];
     }];
 
-    if (error) {
-        return NO;
-    } else {
-        return YES;
-    }
+    return result;
 }
 
 + (NSString *)joinQuotedStrings:(NSArray *)strings

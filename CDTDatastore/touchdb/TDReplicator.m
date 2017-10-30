@@ -299,9 +299,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
                                         beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]])
         ;
-
-        // clear the reference to the db
-        _db = nil;
         
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"TDReplicator thread exiting");
 
@@ -438,22 +435,38 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void)stopped
 {
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STOPPED", self);
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Replication: %@ took %.3f sec; error=%@", self,
-            CFAbsoluteTimeGetCurrent() - _startTime, _error);
-    self.running = NO;
+    @synchronized(self) {
+        // only want stopped to run once
+        if (!_running) {
+            return;
+        }
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STOPPED", self);
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Replication: %@ took %.3f sec; error=%@", self,
+                CFAbsoluteTimeGetCurrent() - _startTime, _error);
+        self.running = NO;
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:TDReplicatorStoppedNotification
-                                                        object:self];
-    [self saveLastSequence];
+        [self saveLastSequence];
+        // wait for saveLastSequence to finish
+        // (we can't clear the reference to _db until we've saved the checkpoint to the database)
+        while (_savingCheckpoint) {
+            [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                     beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
+        }
 
-    _batcher = nil;
-    [_host stop];
-    _host = nil;
-    
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
-    _replicatorStopped = YES;
+        // post "stopped" notification after saving last sequence number so it's guaranteed to be
+        // up-to-date for anyone waiting on the replicator to stop
+        [[NSNotificationCenter defaultCenter] postNotificationName:TDReplicatorStoppedNotification
+                                                            object:self];
+        // clear the reference to the db
+        _db = nil;
+        _batcher = nil;
+        [_host stop];
+        _host = nil;
+
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"STOP %@", self);
+        [[NSNotificationCenter defaultCenter] removeObserver: self];
+        _replicatorStopped = YES;
+    }
 }
 
 -(BOOL) threadExecuting
@@ -879,17 +892,24 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ checkpointing sequence=%@", self, _lastSequence);
     NSMutableDictionary* body = [self.remoteCheckpoint mutableCopy];
 
-    // upgrade the replication doc to the new format.
-    if (body && !body[@"history"]) {
-        NSMutableArray<NSDictionary<NSString*, NSObject*>*>* history = [@[ @{
-            @"session_id" : [[NSUUID UUID] UUIDString],
-            @"recorded_seq" : body[@"lastSequence"]
-        } ] mutableCopy];
-        body[@"history"] = history;
-        body[@"replication_id_version"] = @(3);
-        body[@"session_id"] = history[0][@"session_id"];
-        body[@"source_last_seq"] = body[@"lastSequence"];
-        body[@"lastSequence"] = nil;
+    if (body) {
+        if (body[@"error"]) {
+            CDTLogError(CDTREPLICATION_LOG_CONTEXT, @"%@ error found when checkpointing sequence %@",
+                        self, body[@"error"]);
+            // clear body to force a new one to be created lower down
+            body = nil;
+        } else if (!body[@"history"]) {
+            // upgrade the replication doc to the new format.
+            NSMutableArray<NSDictionary<NSString*, NSObject*>*>* history = [@[ @{
+                @"session_id" : [[NSUUID UUID] UUIDString],
+                @"recorded_seq" : body[@"lastSequence"]
+            } ] mutableCopy];
+            body[@"history"] = history;
+            body[@"replication_id_version"] = @(3);
+            body[@"session_id"] = history[0][@"session_id"];
+            body[@"source_last_seq"] = body[@"lastSequence"];
+            body[@"lastSequence"] = nil;
+        }
     }
 
     if (!body) body = [NSMutableDictionary dictionary];
@@ -913,27 +933,35 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                       path:[@"_local/" stringByAppendingString:checkpointID]
                       body:body
               onCompletion:^(id response, NSError* error) {
-                  _savingCheckpoint = NO;
                   if (error) {
                       CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@: Unable to save remote checkpoint: %@",
                               self, error);
                       // TODO: If error is 401 or 403, and this is a pull, remember that remote is
                       // read-only and don't attempt to read its checkpoint next time.
                   } else if (_db) {
+                      CDTLogDebug(CDTREPLICATION_LOG_CONTEXT,
+                                    @"%@: Saving checkpoint to local database", self);
                       id rev = response[@"rev"];
                       id ID = response[@"id"];
                       if (rev) body[@"_rev"] = rev;
                       if (ID) body[@"_id"] = ID;
-                      self.remoteCheckpoint = body;
-                      if (ID && ![self.db saveCheckpointDocument:body error:nil]) {
+                      if (!ID) {
                           CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
-                                     @"Failed to save checkpoint to local database");
+                                     @"%@: Can't save checkpoint to local database because response doesn't contain id: %@",
+                                     self, response);
+                      }
+                      self.remoteCheckpoint = body;
+                      NSError *err;
+                      if (ID && ![self.db saveCheckpointDocument:body error:&err]) {
+                          CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                                     @"Failed to save checkpoint to local database. Error was %@", err);
                       }
                   }
 
                   CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,
                                 @"PUT last sequence %@ to checkpoint doc response: %@",
                                 _lastSequence, response);
+                  _savingCheckpoint = NO;
                   [self asyncTasksFinished:1];
                   if (_replicatorStopped) {
                       CDTLogVerbose(CDTREPLICATION_LOG_CONTEXT,

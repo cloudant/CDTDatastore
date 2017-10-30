@@ -32,11 +32,13 @@
     return self;
 }
 
--(NSString *) iamApiKey{
-    
-    return self.replicationSettings[@"TEST_COUCH_IAM_API_KEY"];
+-(NSString *) iamApiKey {
+    NSString *key = self.replicationSettings[@"TEST_COUCH_IAM_API_KEY"];
+    if (key == nil || [key length] == 0) {
+        return nil;
+    }
+    return key;
 }
-
 
 -(NSString *) host{
 
@@ -69,6 +71,10 @@
 
 -(NSNumber *) loggingLevel {
     return self.replicationSettings[@"TEST_COUCH_LOGGING_LEVEL"];
+}
+
+-(NSNumber *) raSmall {
+    return self.replicationSettings[@"TEST_COUCH_RA_SMALL"];
 }
 
 -(NSString *) serverURI {

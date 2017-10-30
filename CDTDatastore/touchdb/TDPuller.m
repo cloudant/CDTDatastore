@@ -85,9 +85,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 {
     __weak TDPuller* weakSelf = self;
     // check to see if _bulk_get endpoint is supported and then start replication
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    // how long to wait, in seconds, for our _bulk_get probe to return
-    int bulkGetProbeTimeout = 30;
+    __block bool done = NO;
     [self sendAsyncRequest:@"GET"
                       path:@"_bulk_get"
                       body:nil
@@ -108,13 +106,12 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                           [strongSelf setBulkGetSupported:false];
                           CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Remote database returned unexpected status code %ld when trying to determine whether database supports _bulk_get. Defaulting to _bulk_get not supported.", self, error.code);
                   }
-                  dispatch_semaphore_signal(sema);
+                  done = YES;
               }];
-    long success = dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW,
-                                                               bulkGetProbeTimeout * NSEC_PER_SEC));
-    if (!success) {
-        [self setBulkGetSupported:false];
-        CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Timed out trying to determine whether database supports _bulk_get. Defaulting to _bulk_get not supported.", self);
+    
+    while (!done) {
+        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
     }
 
     // on completion...start the actual replication
@@ -189,20 +186,22 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void)stop
 {
-    _stopping = YES;
-    if (!_running) return;
-    if (_changeTracker) {
-        _changeTracker.client = nil;  // stop it from calling my -changeTrackerStopped
-        [_changeTracker stop];
-        if (!_continuous)
-            [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -startChangeTracker
-        if (!_caughtUp)
-            [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -beginReplicating
-    }
-    _changeTracker = nil;
-    [super stop];
+    @synchronized(self) {
+        _stopping = YES;
+        if (!_running) return;
+        if (_changeTracker) {
+            _changeTracker.client = nil;  // stop it from calling my -changeTrackerStopped
+            [_changeTracker stop];
+            if (!_continuous)
+                [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -startChangeTracker
+            if (!_caughtUp)
+                [self asyncTasksFinished:1];  // balances -asyncTaskStarted in -beginReplicating
+        }
+        _changeTracker = nil;
+        [super stop];
 
-    [_downloadsToInsert flushAll];
+        [_downloadsToInsert flushAll];
+    }
 }
 
 - (void)retry
@@ -216,12 +215,18 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void)stopped
 {
-    _downloadsToInsert = nil;
-    [_revsToPull removeAllObjects];
-    [_deletedRevsToPull removeAllObjects];
-    [_bulkRevsToPull removeAllObjects];
-    [_bulkGetRevs removeAllObjects];
-    [super stopped];
+    @synchronized(self) {
+        // only want stopped to run once
+        if (!_running) {
+            return;
+        }
+        _downloadsToInsert = nil;
+        [_revsToPull removeAllObjects];
+        [_deletedRevsToPull removeAllObjects];
+        [_bulkRevsToPull removeAllObjects];
+        [_bulkGetRevs removeAllObjects];
+        [super stopped];
+    }
 }
 
 - (BOOL)goOnline

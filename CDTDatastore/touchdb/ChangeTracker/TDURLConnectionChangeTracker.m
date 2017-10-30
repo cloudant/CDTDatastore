@@ -70,43 +70,44 @@ static const float kChangeQueuePollingRate = 0.1f;
 
 - (BOOL)start
 {
-    if (self.task) return NO;
-    
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting...", [self class]);
-    [super start];
-    
-    NSURL* url = self.changesFeedURL;
-    self.request = [[NSMutableURLRequest alloc] initWithURL:url];
-    self.request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
-    self.request.HTTPMethod = @"GET";
-    
-    // Add headers from my .requestHeaders property:
-    for(NSString *key in self.requestHeaders) {
-        [self.request setValue:self.requestHeaders[key] forHTTPHeaderField:key];
-    }
-    
-    NSArray *requestHeadersKeys = [self.requestHeaders allKeys];
+    @synchronized (self) {
+        if (self.task) return NO;
 
-    if (self.authorizer) {
-        NSString* authHeader = [self.authorizer authorizeURLRequest:self.request forRealm:nil];
-        if (authHeader) {
-            if ([requestHeadersKeys containsObject:@"Authorization"]) {
-                CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Overwriting 'Authorization' header with "
-                           @"value %@", self, authHeader);
-            }
-            [self.request setValue: authHeader forHTTPHeaderField:@"Authorization"];
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Starting...", [self class]);
+        [super start];
+
+        NSURL* url = self.changesFeedURL;
+        self.request = [[NSMutableURLRequest alloc] initWithURL:url];
+        self.request.cachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
+        self.request.HTTPMethod = @"GET";
+
+        // Add headers from my .requestHeaders property:
+        for(NSString *key in self.requestHeaders) {
+            [self.request setValue:self.requestHeaders[key] forHTTPHeaderField:key];
         }
+
+        NSArray *requestHeadersKeys = [self.requestHeaders allKeys];
+
+        if (self.authorizer) {
+            NSString* authHeader = [self.authorizer authorizeURLRequest:self.request forRealm:nil];
+            if (authHeader) {
+                if ([requestHeadersKeys containsObject:@"Authorization"]) {
+                    CDTLogWarn(CDTREPLICATION_LOG_CONTEXT, @"%@ Overwriting 'Authorization' header with "
+                               @"value %@", self, authHeader);
+                }
+                [self.request setValue: authHeader forHTTPHeaderField:@"Authorization"];
+            }
+        }
+
+        self.task = [self.session dataTaskWithRequest:self.request taskDelegate:self];
+
+        [self.task resume];
+
+        self.inputBuffer = [NSMutableData dataWithCapacity:0];
+
+        self.startTime = [NSDate date];
+        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, TDCleanURLtoString(url));
     }
-    
-    self.task = [self.session dataTaskWithRequest:self.request taskDelegate:self];
-
-    [self.task resume];
-    
-    self.inputBuffer = [NSMutableData dataWithCapacity:0];
-        
-    self.startTime = [NSDate date];
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Started... <%@>", self, TDCleanURLtoString(url));
-
     return YES;
 }
 
@@ -121,14 +122,16 @@ static const float kChangeQueuePollingRate = 0.1f;
 
 - (void)stop
 {
-    [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                             selector:@selector(start)
-                                               object:nil];  // cancel pending retries
-    if (self.task) {
-        CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: stop", [self class]);
-        [self clearConnection];
+    @synchronized (self) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                                 selector:@selector(start)
+                                                   object:nil];  // cancel pending retries
+        if (self.task) {
+            CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: stop", [self class]);
+            [self clearConnection];
+        }
+        [super stop];
     }
-    [super stop];
 }
 
 - (void)retryOrError:(NSError*)error
