@@ -40,19 +40,23 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
 
         // Build and test
         try {
-            def envVariables = []
+            def envVariables = ["TEST_COUCH_LOGGING_LEVEL=31"]
+            // On non-master only run the "small" RA tests
+            if (env.BRANCH_NAME != "master") {
+                envVariables += ["TEST_COUCH_N_DOCS=20","TEST_COUCH_LARGE_REV_TREE_SIZE=1","TEST_COUCH_RA_SMALL=true"]
+            }
             def credsId = ''
             def credsUser = ''
             def credsPass = ''
             def credsIam = ''
             if (testIam == 'yes') {
-                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
+                envVariables += ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=clientlibs-test.cloudant.com", "TEST_COUCH_PORT=443", "TEST_COUCH_HTTP=https"]
                 credsId = 'clientlibs-test'
                 credsUser = 'TEST_COUCH_USERNAME'
                 credsPass = 'TEST_COUCH_PASSWORD'
                 credsIam = 'TEST_COUCH_IAM_API_KEY'
             } else {
-                envVariables = ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+                envVariables += ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
                 credsId = 'couchdb'
                 credsUser = 'TEST_COUCH_USERNAME'
                 credsPass = 'TEST_COUCH_PASSWORD'
@@ -115,29 +119,26 @@ stage('BuildAndTest') {
             },
             macosEncrypted: {
                 buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
-            }]
-    // Add replication acceptance tests for the master branch
-    if (env.BRANCH_NAME == "master") {
-      axes.putAll(
-                  iosRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-                  },
-                  iosRATEncrypted: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
-                  },
-                  macosRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
-                  },
-                  macosRATEncrypted: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
-                  },                
-                  iosIamRAT: {
-                      buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
-                  },
-                  macosIamRAT: {
-                      buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'yes')
-                  })
-    }
+            },
+            iosRAT: {
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
+            },
+            iosRATEncrypted: {
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
+            },
+            macosRAT: {
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+            },
+            macosRATEncrypted: {
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
+            },                
+            iosIamRAT: {
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
+            },
+            macosIamRAT: {
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'yes')
+            }
+    ]
     parallel(axes)
 }
 

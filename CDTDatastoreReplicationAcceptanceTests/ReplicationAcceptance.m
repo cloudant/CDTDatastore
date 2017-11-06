@@ -98,6 +98,10 @@
  Rev tree size for "large rev tree" tests.
  */
 @property NSUInteger largeRevTreeSize;
+/**
+ Are we running the "small" set of RA tests?
+ */
+@property BOOL raSmall;
 
 @end
 
@@ -144,6 +148,7 @@
     // otherwise default to 'large' values
     self.n_docs = [ra nDocs] != nil ? [[ra nDocs] integerValue] : 10000;
     self.largeRevTreeSize = [ra largeRevTreeSize] != nil ? [[ra largeRevTreeSize] integerValue] : 1500;
+    self.raSmall = [ra raSmall] != nil ? [[ra raSmall] boolValue] : FALSE;
     
     // Set up logging if required
     NSNumber *loggingLevel = [ra loggingLevel];
@@ -1656,9 +1661,12 @@
     XCTAssertTrue(self.datastore.documentCount >= nPulls*nDocs/2);
 }
 
-// this test is disabled because it causes too many build falures
 -(void) testMultiThreadedReplication
 {
+    if (self.raSmall) {
+        NSLog(@"skipping test because it's not part of the RA small run");
+        return;
+    }
     CDTPullReplication *pull = [self testPullReplicator:self.datastore];
     CDTReplicator *firstReplicator =  [self.replicatorFactory oneWay:pull error:nil];
     
@@ -1756,8 +1764,11 @@
     }
     
     //now explicitly check equality between local and remote checkpoint docs.
-
     TD_Database *tdb = self.datastore.database;
+    
+    //see https://github.com/cloudant/CDTDatastore/issues/395
+    [NSThread sleepForTimeInterval:1.0f];
+
 
     NSDictionary *localLastSequence = [tdb checkpointDocumentWithID:checkpointDocId];
 
@@ -1800,6 +1811,9 @@
     //now explicitly check equality between local and remote checkpoint docs.
     TD_Database *tdb = self.datastore.database;
 
+    //see https://github.com/cloudant/CDTDatastore/issues/395
+    [NSThread sleepForTimeInterval:1.0f];
+    
     NSDictionary *localLastSequence = [tdb checkpointDocumentWithID:checkpointDocId];
 
     //make sure the remote database has the appropriate document
@@ -1824,6 +1838,11 @@
 
 - (void)testSemaphoreCountsCorrectly
 {
+    if (self.raSmall) {
+        NSLog(@"skipping test because it's not part of the RA small run");
+        return;
+    }
+
     MyTestDelegate *del = [[MyTestDelegate alloc] init];
     
     CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
