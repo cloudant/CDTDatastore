@@ -1,9 +1,12 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
-- [NEW] Added support for authenticating with IAM API keys. See
-[Using with IAM](https://github.com/cloudant/CDTDatastore/blob/master/doc/replication.md#using-with-iam) for more details.
+## 2.0.0 (2017-11-07)
+- [NEW] Added API for upcoming IBM Cloud Identity and Access
+  Management support for Cloudant on IBM Cloud. Note: IAM API key
+  support is not yet enabled in the service.
 - [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method `createRevisionFromJson` on `CDTDocumentRevision`.
+- [FIXED] Crash when stopping replicators.
+- [FIXED] Threading issues in replicators.
 
 ## 1.2.2 (2017-09-06)
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
