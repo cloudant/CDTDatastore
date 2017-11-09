@@ -91,7 +91,7 @@ end
 
 desc "Build docs and install to Xcode"
 task :docs do
-  system("appledoc --keep-intermediate-files --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -i Classes/vendor -i Classes/common/touchdb Classes/")
+  system("appledoc --keep-intermediate-files --project-name CDTDatastore --project-company Cloudant -o build/docs --company-id com.cloudant -i CDTDatastore/vendor/ -i CDTDatastore/touchdb/ CDTDatastore")
 end
 
 #

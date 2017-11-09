@@ -331,10 +331,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     }
     
     //Set default value for reset to NO
-    //More details: http://docs.couchdb.org/en/1.6.1/query-server/protocol.html
+    //More details: http://docs.couchdb.org/en/latest/query-server/protocol.html
     repl.reset = NO;
     //Cloudant's default value is no heartbeat
-    //More details: https://docs.cloudant.com/database.html
+    //More details: https://console.bluemix.net/docs/services/Cloudant/api/replication.html#replication
     repl.heartbeat = nil;
     
     // Headers are validated before being put in properties

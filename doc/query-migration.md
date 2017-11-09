@@ -82,7 +82,7 @@ To:
 
 - Query options like `offset`, `limit`, and `sort` are now handled by `-find:skip:limit:fields:sort:`.  `offset` is now known as `skip` and a new query option to perform field projection is now also available.
 
-[2]: https://docs.cloudant.com/api.html#cloudant-query
+[2]: https://console.bluemix.net/docs/services/Cloudant/api/cloudant_query.html#query
 [3]: http://docs.mongodb.org/manual/tutorial/query-documents/
 
 ## Migration Path
