@@ -55,6 +55,10 @@
 
 @end
 
+NSString *const CDTURLSessionTaskErrorDomain = @"CDTURLSessionTaskErrorDomain";
+static const int requestInterceptorCancelledError = 1;
+static const int responseInterceptorCancelledError = 2;
+
 @implementation CDTURLSessionTask
 
 - (instancetype)init
@@ -91,6 +95,11 @@
     NSURLSessionTask *t = self.inProgressTask;
     if (!t) {
         self.inProgressTask = [self makeRequest];
+        // task can be nil, if interceptor returns nil (logging and error raising will have happened in makeRequest)
+        if (self.inProgressTask == nil) {
+            self.finished = YES;
+            return;
+        }
     }
     CDTLogVerbose(CDTTD_REMOTE_REQUEST_CONTEXT, @"Waiting on asyncTaskMonitor");
     [self.session waitForFreeSlot];
@@ -120,7 +129,7 @@
 
 #pragma mark Helpers
 
-- (nonnull NSURLSessionDataTask *)makeRequest
+- (NSURLSessionDataTask *)makeRequest
 {
     self.finished = NO;
     self.response = nil;
@@ -133,8 +142,21 @@
     // We make sure all objects support `interceptRequestInContext:` during init.
     for (NSObject<CDTHTTPInterceptor> *obj in self.requestInterceptors) {
         ctx = [obj interceptRequestInContext:ctx];
+        if (ctx == nil) {
+            // if interceptor returns nil, log an error, send the requestDidError message, and exit early
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"Aborting request because interceptor %@ returned nil",
+                       obj);
+            NSError *err = [NSError errorWithDomain:CDTURLSessionTaskErrorDomain
+                                               code:requestInterceptorCancelledError
+                                           userInfo:@{@"message": [NSString stringWithFormat:@"Task was cancelled by request interceptor %@ returning nil", obj]}];
+            [self.delegate performSelector:@selector(requestDidError:)
+                                  onThread:[NSThread currentThread]
+                                withObject:err
+                             waitUntilDone:NO];
+            return nil;
+        }
     }
-
+    
     // Update self.request with the updated request modified by any interceptors.
     self.request = ctx.request;
 
@@ -202,9 +224,22 @@
     ctx.response = self.response;
     ctx.responseData = self.responseData;
     
-    
     for (NSObject<CDTHTTPInterceptor> *obj in self.responseInterceptors) {
         ctx = [obj interceptResponseInContext:ctx];
+        if (ctx == nil) {
+            // if interceptor returns nil, log an error, send the requestDidError message, and exit early
+            CDTLogWarn(CDTTD_REMOTE_REQUEST_CONTEXT, @"Aborting response interceptors because interceptor %@ returned nil",
+                       obj);
+            NSError *err = [NSError errorWithDomain:CDTURLSessionTaskErrorDomain
+                                               code:responseInterceptorCancelledError
+                                           userInfo:@{@"message": [NSString stringWithFormat:@"Task was cancelled by response interceptor %@ returning nil", obj]}];
+            [self.delegate performSelector:@selector(requestDidError:)
+                                  onThread:thread
+                                withObject:err
+                             waitUntilDone:NO];
+            self.finished = YES;
+            return;
+        }
     }
     
     if (ctx.shouldRetry && self.remainingRetries > 0) {
