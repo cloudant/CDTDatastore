@@ -38,13 +38,25 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
         // Unstash the source on this node
         unstash name: 'source'
 
+        // log name is based on whether we're encrypted and what the target is
+        def logName = "CDTDatastore"
+        if (encrypted == "yes") {
+            logName += "Encrypted"
+        }
+        if (testIam == "yes") {
+            logName += "Iam"
+        }
+        logName += "_${target}.log"
+        def envVariables = ["TEST_COUCH_LOGGING_LEVEL=31","LOG_NAME=${logName}"]
+        
+        // On non-master only run the "small" RA tests
+        if (env.BRANCH_NAME != "master") {
+            envVariables += ["TEST_COUCH_N_DOCS=20","TEST_COUCH_LARGE_REV_TREE_SIZE=1","TEST_COUCH_RA_SMALL=true"]
+        }
+
         // Build and test
         try {
-            def envVariables = ["TEST_COUCH_LOGGING_LEVEL=31"]
-            // On non-master only run the "small" RA tests
-            if (env.BRANCH_NAME != "master") {
-                envVariables += ["TEST_COUCH_N_DOCS=20","TEST_COUCH_LARGE_REV_TREE_SIZE=1","TEST_COUCH_RA_SMALL=true"]
-            }
+            
             def credsId = ''
             def credsUser = ''
             def credsPass = ''
@@ -81,7 +93,7 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
                 // Load the test results
                 junit 'build/reports/junit.xml'
                 // Archive the complete log in case more debugging needed
-                archiveArtifacts artifacts: '*CDTDatastore*.log'
+                archiveArtifacts artifacts: logName
             }
         }
     }
@@ -95,11 +107,12 @@ def buildDocs() {
         // Unstash the source on this node
         unstash name: 'source'
 
+        def logName = "CDTDatastore_buildDocs.log"
         try {
-          sh "rake docs"
+          sh "rake docs | tee ${logName}"
         } finally {
             // Archive the complete log in case more debugging needed
-            archiveArtifacts artifacts: '*CDTDatastore*.log'
+            archiveArtifacts artifacts: logName
         }
     }
 }
