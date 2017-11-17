@@ -108,7 +108,8 @@ end
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
   settings = "GCC_PREPROCESSOR_DEFINITIONS='${inherited} ENCRYPT_DATABASE=1'" unless !ENV["encrypted"]
-  logName = (ENV["encrypted"] ? "Encrypted" : "") + "#{scheme}.log"
+  # if jenkins passed us a log name, use that, otherwise default to "#{scheme}.log"
+  logName = (ENV["LOG_NAME"] == nil ? "#{scheme}.log" : ENV["LOG_NAME"])
   return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} test | tee #{logName} | xcpretty -r junit; exit ${PIPESTATUS[0]}")
 end
 
