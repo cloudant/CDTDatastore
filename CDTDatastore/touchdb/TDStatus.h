@@ -14,7 +14,8 @@ typedef NS_ENUM(NSInteger, TDInternalErrors) {
     /**
      * TDReplicator: local database deleted during replication
      */
-    TDReplicatorErrorLocalDatabaseDeleted  = 1001
+    TDReplicatorErrorLocalDatabaseDeleted  = 1001,
+    TDReplicatorErrorNetworkOffline = 1002
 };
 
 /** TouchDB internal status/error codes. Superset of HTTP status codes. */

@@ -493,6 +493,11 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     if (!_online) return NO;
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: Going offline", self);
     _online = NO;
+    NSString *msg = @"Replication stopped because the reachability tracker determined the device was offline.";
+    NSDictionary *userInfo = @{NSLocalizedDescriptionKey: NSLocalizedString(msg, nil)};
+    self.error = [NSError errorWithDomain:TDInternalErrorDomain
+                                                      code:TDReplicatorErrorNetworkOffline
+                                                  userInfo:userInfo];
     [self stopRemoteRequests];
     [self postProgressChanged];
     return YES;

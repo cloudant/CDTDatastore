@@ -548,6 +548,46 @@
 }
 
 /**
+ Test that a replication goes into the correct error state when the network goes offline
+ */
+-(void) testPullLotsOfOneRevDocumentsGoesOffline {
+    
+    NSLog(@"Creating documents...");
+    
+    [self createRemoteDocs:self.n_docs];
+    
+    CDTPullReplication *pull = nil;
+    if([self.iamApiKey length] != 0) {
+        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                  target:self.datastore
+                                               IAMAPIKey:self.iamApiKey];
+    } else {
+        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                  target:self.datastore];
+    }
+    
+    NSError *error;
+    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
+    XCTAssertNil(error, @"%@",error);
+    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    
+    NSLog(@"Replicating from %@", [pull.source absoluteString]);
+    if (![replicator startWithError:&error]) {
+        XCTFail(@"CDTReplicator -startWithError: %@", error);
+    }
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+        // calling goOffline simulates the network connection being dropped
+        [[replicator tdReplicator] goOffline];
+    }
+    
+    XCTAssertEqual([replicator state], CDTReplicatorStateError);
+    XCTAssertEqual([replicator error].code, TDReplicatorErrorNetworkOffline);
+}
+
+/**
  Test temporarily disabled - it's too sensitive to timing and too prone to failure
  */
 -(void) XXXtestPullErrorsWhenLocalDatabaseIsDeleted
