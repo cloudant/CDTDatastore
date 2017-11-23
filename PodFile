@@ -1,8 +1,7 @@
 use_frameworks!
 
 if ENV["encrypted"]
-    MRDatabaseContentChecker = "MRDatabaseContentChecker/SQLCipher"
-    FMDB = "FMDB/SQLCipher"
+    raise 'Encryption is not supported. Please unset the "encrypted" environment variable'
 else
     MRDatabaseContentChecker = "MRDatabaseContentChecker"
     FMDB = "FMDB"
@@ -11,7 +10,6 @@ end
 abstract_target 'base' do
     pod FMDB, '= 2.6'
     pod 'CocoaLumberjack', '~> 2.0'
-    pod 'SQLCipher/fts', '~> 3.1.0' if ENV["encrypted"]
     pod 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
 
     target :CDTDatastore do
@@ -51,10 +49,5 @@ abstract_target 'base' do
         target :CDTDatastoreReplicationAcceptanceTests do
           platform :ios, '7.0'
         end
-    end
-
-    post_install do | installer |
-        print "SQLCipher: link Pods/Headers/sqlite3.h"
-        system "mkdir -p Pods/Headers/Private && ln -s ../../SQLCipher/sqlite3.h Pods/Headers/Private"
     end
 end
