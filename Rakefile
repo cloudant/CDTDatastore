@@ -101,14 +101,14 @@ end
 # Runs `build` target for workspace/scheme/destination
 def run_build(workspace, scheme, destination)
   # build using xcpretty as otherwise it's very verbose when running tests
-  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} build | xcpretty; exit ${PIPESTATUS[0]}")
+  return system("xcodebuild -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' build | xcpretty; exit ${PIPESTATUS[0]}")
 end
 
 # Runs `test` target for workspace/scheme/destination
 def run_tests(workspace, scheme, destination)
   # if jenkins passed us a log name, use that, otherwise default to "#{scheme}.log"
   logName = (ENV["LOG_NAME"] == nil ? "#{scheme}.log" : ENV["LOG_NAME"])
-  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' #{settings} test | tee #{logName} | xcpretty -r junit; exit ${PIPESTATUS[0]}")
+  return system("xcodebuild -verbose -workspace #{workspace} -scheme '#{scheme}' -destination '#{destination}' test | tee #{logName} | xcpretty -r junit; exit ${PIPESTATUS[0]}")
 end
 
 def test(workspace, scheme, destination)
