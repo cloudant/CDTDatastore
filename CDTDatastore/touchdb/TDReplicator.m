@@ -376,14 +376,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     [[NSNotificationCenter defaultCenter] postNotificationName:TDReplicatorStartedNotification
                                                         object:self];
 
-#if TARGET_OS_IPHONE
-    // Register for foreground/background transition notifications, on iOS:
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(appBackgrounding:)
-                                                 name:UIApplicationDidEnterBackgroundNotification
-                                               object:nil];
-#endif
-
     _online = NO;
 
     // Start reachability checks. (This creates another ref cycle, because
@@ -411,12 +403,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
         CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@ STOPPING...", self);
         [_batcher flushAll];
         _continuous = NO;
-    #if TARGET_OS_IPHONE
-        // Unregister for background transition notifications, on iOS:
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:UIApplicationDidEnterBackgroundNotification
-                                                      object:nil];
-    #endif
         [self stopRemoteRequests];
 
         [NSObject cancelPreviousPerformRequestsWithTarget: self
@@ -538,15 +524,6 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     else if (host.reachabilityKnown)
         [self goOffline];
 }
-
-#if TARGET_OS_IPHONE
-- (void)appBackgrounding:(NSNotification*)n
-{
-    CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"%@: App going into background", self);
-    // Danger: This is called on the main thread!
-    [self performSelector:@selector(stop) onThread:_thread withObject:nil waitUntilDone:NO];
-}
-#endif
 
 - (void)updateActive
 {

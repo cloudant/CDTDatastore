@@ -9,6 +9,15 @@
 - [FIXED] Threading issues in replicators.
 - [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method
   `createRevisionFromJson` on `CDTDocumentRevision`.
+- [BREAKING CHANGE] On iOS, replicators no longer stop when the app is
+  backgrounded. To revert to the existing behaviour, your app should
+  over-ride
+  the
+  [`applicationDidEnterBackground`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622997-applicationdidenterbackground?language=objc) method
+  or register for
+  the
+  [`UIApplicationDidEnterBackgroundNotification`](https://developer.apple.com/documentation/uikit/uiapplicationdidenterbackgroundnotification?language=objc) notification,
+  and call `stop` on the replicator.
 
 ## 1.2.2 (2017-09-06)
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
