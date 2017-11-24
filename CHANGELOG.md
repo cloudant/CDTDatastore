@@ -9,7 +9,7 @@
 - [FIXED] Threading issues in replicators.
 - [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method
   `createRevisionFromJson` on `CDTDocumentRevision`.
-- [BREAKING] On iOS, replicators no longer stop when the app is
+- [BREAKING CHANGE] On iOS, replicators no longer stop when the app is
   backgrounded. To revert to the existing behaviour, your app should
   over-ride
   the
