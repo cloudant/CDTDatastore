@@ -18,6 +18,9 @@
   the
   [`UIApplicationDidEnterBackgroundNotification`](https://developer.apple.com/documentation/uikit/uiapplicationdidenterbackgroundnotification?language=objc) notification,
   and call `stop` on the replicator.
+- [FIXED] Added status code `TDReplicatorErrorNetworkOffline` -
+  replicators will go into an error state with this error code if the
+  network goes offline, instead of appearing to complete normally.
 
 ## 1.2.2 (2017-09-06)
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
