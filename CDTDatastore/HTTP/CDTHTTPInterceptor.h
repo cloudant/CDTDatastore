@@ -25,7 +25,7 @@
  *
  *  @return the context for this interception
  **/
-- (nonnull CDTHTTPInterceptorContext*)interceptRequestInContext:(nonnull CDTHTTPInterceptorContext*)context;
+- (nullable CDTHTTPInterceptorContext*)interceptRequestInContext:(nonnull CDTHTTPInterceptorContext*)context;
 
 /**
  *  Intercepts a response before it is returned to the request initiator
@@ -34,7 +34,7 @@
  *
  *  @return the context for this interception
  **/
-- (nonnull CDTHTTPInterceptorContext*)interceptResponseInContext:
+- (nullable CDTHTTPInterceptorContext*)interceptResponseInContext:
     (nonnull CDTHTTPInterceptorContext*)context;
 
 @end

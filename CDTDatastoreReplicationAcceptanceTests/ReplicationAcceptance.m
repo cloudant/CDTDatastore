@@ -71,6 +71,33 @@
 @property (nonatomic) int timesGotResponse;
 @end
 
+
+@interface NilReturningRequestHTTPInterceptor : NSObject <CDTHTTPInterceptor>
+
+@end
+
+@implementation NilReturningRequestHTTPInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
+{
+    return nil;
+}
+
+@end
+
+@interface NilReturningResponseHTTPInterceptor : NSObject <CDTHTTPInterceptor>
+
+@end
+
+@implementation NilReturningResponseHTTPInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
+{
+    return nil;
+}
+
+@end
+
 /**
  Expose TDReplicator to access remoteCheckpointDocID method
  and return the doc ID for the checkpoint document.
@@ -2271,5 +2298,51 @@
     
     XCTAssertFalse(changeTrackerGotChanges);
 }
+
+- (void)testReplicationRunsNilReturningRequestInterceptor
+{
+    // only replicate 1 doc
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:1];
+    
+    NilReturningRequestHTTPInterceptor *interceptor = [[NilReturningRequestHTTPInterceptor alloc] init];
+    CDTPullReplication *pull = [self testPullReplicator:self.datastore];
+    [pull addInterceptor:interceptor];
+    
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:pull error:nil];
+    
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [replicator startWithError:nil];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    XCTAssertEqual(replicator.state, CDTReplicatorStateError);
+}
+
+- (void)testReplicationRunsNilReturningResponseInterceptor
+{
+    // only replicate 1 doc
+    NSLog(@"Creating documents...");
+    [self createRemoteDocs:1];
+    
+    NilReturningResponseHTTPInterceptor *interceptor = [[NilReturningResponseHTTPInterceptor alloc] init];
+    CDTPullReplication *pull = [self testPullReplicator:self.datastore];
+    [pull addInterceptor:interceptor];
+    
+    CDTReplicator *replicator = [self.replicatorFactory oneWay:pull error:nil];
+    
+    NSLog(@"Replicating from %@", self.primaryRemoteDatabaseURL);
+    [replicator startWithError:nil];
+    
+    while (replicator.isActive) {
+        [NSThread sleepForTimeInterval:1.0f];
+        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+    }
+    XCTAssertEqual(replicator.state, CDTReplicatorStateError);
+}
+
+
 
 @end

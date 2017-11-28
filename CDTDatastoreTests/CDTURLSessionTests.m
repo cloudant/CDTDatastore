@@ -48,12 +48,12 @@
     return self;
 }
 
-- (nonnull CDTHTTPInterceptorContext *)interceptRequestInContext:(nonnull CDTHTTPInterceptorContext *)context {
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(nonnull CDTHTTPInterceptorContext *)context {
     self.timesRequestIntercepted++;
     return context;
 }
 
-- (nonnull CDTHTTPInterceptorContext *)interceptResponseInContext:
+- (CDTHTTPInterceptorContext *)interceptResponseInContext:
     (nonnull CDTHTTPInterceptorContext *)context
 {
     self.timesResponseIntercepted++;
@@ -85,7 +85,7 @@
     return self;
 }
 
-- (nonnull CDTHTTPInterceptorContext *)interceptResponseInContext:
+- (CDTHTTPInterceptorContext *)interceptResponseInContext:
     (nonnull CDTHTTPInterceptorContext *)context
 {
     if (self.numberOfRetriesRemaining > 0) {
@@ -98,10 +98,63 @@
 
 @end
 
+@interface NilReturningRequestHTTPInterceptor : NSObject <CDTHTTPInterceptor>
+
+@end
+
+@implementation NilReturningRequestHTTPInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptRequestInContext:(CDTHTTPInterceptorContext *)context
+{
+    return nil;
+}
+
+@end
+
 @interface CDTURLSessionTests : CloudantSyncTests <CDTNSURLSessionConfigurationDelegate>
 
 @end
 
+
+@interface NilReturningResponseHTTPInterceptor : NSObject <CDTHTTPInterceptor>
+
+@end
+
+@implementation NilReturningResponseHTTPInterceptor
+
+- (CDTHTTPInterceptorContext *)interceptResponseInContext:(CDTHTTPInterceptorContext *)context
+{
+    return nil;
+}
+
+@end
+
+@interface CountingDelegate : NSObject<CDTURLSessionTaskDelegate>
+
+@property int responses;
+
+@property int errors;
+
+@property XCTestExpectation *errorExpectation;
+
+@end
+
+@implementation CountingDelegate
+
+- (void)receivedData:(nullable NSData *)data {
+    // empty
+}
+
+- (void)receivedResponse:(nullable NSURLResponse *)response {
+    _responses++;
+}
+
+- (void)requestDidError:(nullable NSError *)error {
+    _errors++;
+    [_errorExpectation fulfill];
+}
+
+@end
 
 @implementation CDTURLSessionTests
 
@@ -131,7 +184,7 @@
                                                      sessionConfigDelegate:self];
 
     NSURLRequest *request =
-        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
 
     CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
@@ -151,7 +204,7 @@
                                                      sessionConfigDelegate:self];
 
     NSURLRequest *request =
-        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
 
     CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
@@ -173,7 +226,7 @@
                                                      sessionConfigDelegate:self];
 
     NSURLRequest *request =
-        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
 
     CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
@@ -197,7 +250,7 @@
                                                      sessionConfigDelegate:self];
 
     NSURLRequest *request =
-        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://localhost:5984"]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
 
     CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:nil];
 
@@ -216,6 +269,74 @@
 - (void)customiseNSURLSessionConfiguration:(nonnull NSURLSessionConfiguration *)config
 {
     config.timeoutIntervalForResource=1.0;
+}
+
+
+
+- (void)testFailingRequestInterceptor
+{
+    NilReturningRequestHTTPInterceptor *nilReturningInterceptor = [[NilReturningRequestHTTPInterceptor alloc] init];
+    CDTCountingHTTPRequestInterceptor *countingInterceptor = [[CDTCountingHTTPRequestInterceptor alloc] init];
+
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[nilReturningInterceptor, countingInterceptor]
+                                                     sessionConfigDelegate:self];
+    
+    NSURLRequest *request =
+    [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
+    
+    CountingDelegate *del = [[CountingDelegate alloc] init];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"requestDidError called"];
+    del.errorExpectation = expectation;
+
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
+    XCTAssertEqual(NSURLSessionTaskStateSuspended, task.state);
+
+    [task resume];
+    
+    [NSThread sleepForTimeInterval:1.0f];
+    XCTAssertEqual(NSURLSessionTaskStateSuspended, task.state);
+    // assert on interceptors
+    XCTAssertEqual(0, countingInterceptor.timesRequestIntercepted);
+    XCTAssertEqual(0, countingInterceptor.timesResponseIntercepted);
+    // assert on delegate
+    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    XCTAssertEqual(1, del.errors);
+    XCTAssertEqual(0, del.responses);
+}
+
+- (void)testFailingResponseInterceptor
+{
+    NilReturningResponseHTTPInterceptor *nilReturningInterceptor = [[NilReturningResponseHTTPInterceptor alloc] init];
+    CDTCountingHTTPRequestInterceptor *countingInterceptor = [[CDTCountingHTTPRequestInterceptor alloc] init];
+
+    CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread]
+                                                       requestInterceptors:@[nilReturningInterceptor, countingInterceptor]
+                                                     sessionConfigDelegate:self];
+    
+    NSURLRequest *request =
+    [NSURLRequest requestWithURL:[NSURL URLWithString:@"http://examples.cloudant.com"]];
+    
+    CountingDelegate *del = [[CountingDelegate alloc] init];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"requestDidError called"];
+    del.errorExpectation = expectation;
+
+    CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
+    XCTAssertEqual(NSURLSessionTaskStateSuspended, task.state);
+    
+    [task resume];
+    
+    while (task.state != NSURLSessionTaskStateCompleted) {
+        [NSThread sleepForTimeInterval:0.1f];
+    }
+    // assert on interceptors
+    // request was intercepted by counting interceptor but response wasn't because nil interceptor stopped processing
+    XCTAssertEqual(1, countingInterceptor.timesRequestIntercepted);
+    XCTAssertEqual(0, countingInterceptor.timesResponseIntercepted);
+    // assert on delegate
+    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    XCTAssertEqual(1, del.errors);
+    XCTAssertEqual(0, del.responses);
 }
 
 @end

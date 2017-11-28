@@ -60,6 +60,19 @@ A example of a HTTP interceptor:
 
 ```
 
+It is possible for interceptors to return a `nil` context, to signal
+an error condition:
+
+- When returning `nil` from `interceptRequestInContext`, a warning
+  message will be logged, no more interceptors will run, and the
+  request will not be made. The replication will be put into the
+  `CDTReplicatorStateError` state.
+  
+- When returning `nil` from `interceptResponseInContext`, a warning
+  message will be logged, no more interceptors will run, and the
+  response from the server will be discarded. The replication will be
+  put into the `CDTReplicatorStateError` state.
+
 In order to add an HTTP interceptor to a replication, you call the `-addInterceptor:` or
 `-addInterceptors:` method.
 
