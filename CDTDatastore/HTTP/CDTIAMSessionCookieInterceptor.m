@@ -55,7 +55,7 @@ static const NSInteger CDTIAMSessionCookieRequestTimeout = 600;
         
         _IAMTokenURL = [NSURL URLWithString:[[NSProcessInfo processInfo]environment][@"CDT_IAM_TOKEN_URL"]];
         if (_IAMTokenURL == nil) {
-            _IAMTokenURL = [NSURL URLWithString:@"https://iam.bluemix.net/oidc/token"];
+            _IAMTokenURL = [NSURL URLWithString:@"https://iam.bluemix.net/identity/token"];
         }
     }
     return self;

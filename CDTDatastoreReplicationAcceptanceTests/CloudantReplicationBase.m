@@ -125,7 +125,7 @@
     
     // Get IAM access token
     UNIHTTPJsonResponse* iamKeyResponse = [[UNIRest post:^(UNISimpleRequest *request) {
-        [request setUrl:@"https://iam.bluemix.net/oidc/token"];
+        [request setUrl:@"https://iam.bluemix.net/identity/token"];
         [request setHeaders:headers];
         [request setParameters:parameters];
     }] asJson];
