@@ -257,33 +257,38 @@
 
 -(CDTReplicator *) pullFromRemoteWithFilter:(NSString*)filterName params:(NSDictionary*)params
 {
-    CDTPullReplication *pull = nil;
-    if([self.iamApiKey length] != 0) {
-        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
-                                                  target:self.datastore
-                                               IAMAPIKey:self.iamApiKey];
-    } else {
-        pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
-                                                  target:self.datastore];
-    }
-    pull.filter = filterName;
-    pull.filterParams = params;
     
-    NSError *error;
-    CDTReplicator *replicator =  [self.replicatorFactory oneWay:pull error:&error];
-    XCTAssertNil(error, @"%@",error);
-    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+    CDTReplicator *replicator;
+    int n = 10; // how many times to try replicating
     
-    NSLog(@"Replicating from %@", [pull.source absoluteString]);
-    if (![replicator startWithError:&error]) {
-        XCTFail(@"CDTReplicator -startWithError: %@", error);
-    }
-    
-    while (replicator.isActive) {
-        [NSThread sleepForTimeInterval:1.0f];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
-    
+    do {
+        CDTPullReplication *pull = nil;
+        if([self.iamApiKey length] != 0) {
+            pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                      target:self.datastore
+                                                   IAMAPIKey:self.iamApiKey];
+        } else {
+            pull = [CDTPullReplication replicationWithSource:self.primaryRemoteDatabaseURL
+                                                      target:self.datastore];
+        }
+        pull.filter = filterName;
+        pull.filterParams = params;
+        
+        NSError *error;
+        replicator =  [self.replicatorFactory oneWay:pull error:&error];
+        XCTAssertNil(error, @"%@",error);
+        XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+        NSLog(@"Replicating from %@", [pull.source absoluteString]);
+        if (![replicator startWithError:&error]) {
+            XCTFail(@"CDTReplicator -startWithError: %@", error);
+        }
+        while (replicator.isActive) {
+            [NSThread sleepForTimeInterval:1.0f];
+            NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+        }
+        NSLog(@"*** Replicator ended with error = %@", replicator.error);
+    } while (replicator.error != nil && n-- > 0);
+
     return replicator;
 }
 
@@ -298,36 +303,42 @@
  Create a new replicator, and wait for replication from the local database to complete.
  */
 -(CDTReplicator *) pushToRemoteWithFilter:(CDTFilterBlock)filter params:(NSDictionary*)params{
-    CDTPushReplication *push = nil;
-    if([self.iamApiKey length] != 0) {
-        push = [CDTPushReplication replicationWithSource:self.datastore
-                                                  target:self.primaryRemoteDatabaseURL
-                                               IAMAPIKey:self.iamApiKey];
-    } else {
-        push = [CDTPushReplication replicationWithSource:self.datastore
-                                                  target:self.primaryRemoteDatabaseURL];
-    }
     
-    push.filter = filter;
-    push.filterParams = params;
-    
-    NSError *error;
-    CDTReplicator *replicator =  [self.replicatorFactory oneWay:push error:&error];
-    XCTAssertNil(error, @"%@",error);
-    XCTAssertNotNil(replicator, @"CDTReplicator is nil");
-    
-    NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
-    if (![replicator startWithError:&error]) {
-        XCTFail(@"CDTReplicator -startWithError: %@", error);
-    }
-    
-    while (replicator.isActive) {
+    CDTReplicator *replicator;
+    int n = 10; // how many times to try replicating
+
+    do {
+        CDTPushReplication *push = nil;
+        if([self.iamApiKey length] != 0) {
+            push = [CDTPushReplication replicationWithSource:self.datastore
+                                                      target:self.primaryRemoteDatabaseURL
+                                                   IAMAPIKey:self.iamApiKey];
+        } else {
+            push = [CDTPushReplication replicationWithSource:self.datastore
+                                                      target:self.primaryRemoteDatabaseURL];
+        }
         
-        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
-        NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
-    }
-    
+        push.filter = filter;
+        push.filterParams = params;
+        
+        NSError *error;
+        replicator =  [self.replicatorFactory oneWay:push error:&error];
+        XCTAssertNil(error, @"%@",error);
+        XCTAssertNotNil(replicator, @"CDTReplicator is nil");
+
+        NSLog(@"Replicating to %@", [self.primaryRemoteDatabaseURL absoluteString]);
+        if (![replicator startWithError:&error]) {
+            XCTFail(@"CDTReplicator -startWithError: %@", error);
+        }
+        while (replicator.isActive) {
+            
+            [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
+                                     beforeDate: [NSDate dateWithTimeIntervalSinceNow:1.0]];
+            NSLog(@" -> %@", [CDTReplicator stringForReplicatorState:replicator.state]);
+        }
+        NSLog(@"*** Replicator ended with error = %@", replicator.error);
+    } while (replicator.error != nil && n-- > 0);
+
     return replicator;
 }
 
