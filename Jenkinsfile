@@ -117,6 +117,24 @@ def buildDocs() {
     }
 }
 
+def podLibLint() {
+    node('macos') {
+        // Clean the directory before un-stashing (removes old logs)
+        deleteDir()
+        
+        // Unstash the source on this node
+        unstash name: 'source'
+        
+        def logName = "podliblint.log"
+        try {
+            sh "rake podliblint | tee ${logName}"
+        } finally {
+            // Archive the complete log in case more debugging needed
+            archiveArtifacts artifacts: logName
+        }
+    }
+}
+
 @NonCPS
 def getVersion(versionFile) {
   def versionMatcher = versionFile =~ /#define CLOUDANT_SYNC_VERSION "(.*)"/
@@ -152,6 +170,9 @@ stage('BuildAndTest') {
             },
             macosBuildDocs: {
                 buildDocs()
+            },
+            macosPodLibLint: {
+                podLibLint()
             },
             iosRAT: {
                 buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
