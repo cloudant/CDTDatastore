@@ -1,14 +1,18 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 2.0.0 (2018-02-14)
 - [NEW] Added API for upcoming IBM Cloud Identity and Access
   Management support for Cloudant on IBM Cloud. Note: IAM API key
   support is not yet enabled in the service.
-- [IMPROVED] Updated documentation by replacing deprecated Cloudant links with the latest bluemix.net links.
+- [NEW] Interceptors can return `nil` to signal an error
+  condition. See
+  [the interceptor documentation](doc/httpinterceptors.md) for more
+  details.
 - [FIXED] Crash when stopping replicators.
 - [FIXED] Threading issues in replicators.
-- [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method
-  `createRevisionFromJson` on `CDTDocumentRevision`.
+- [FIXED] Added status code `TDReplicatorErrorNetworkOffline` -
+  replicators will go into an error state with this error code if the
+  network goes offline, instead of appearing to complete normally.
 - [BREAKING CHANGE] On iOS, replicators no longer stop when the app is
   backgrounded. To revert to the existing behaviour, your app should
   over-ride
@@ -18,13 +22,9 @@
   the
   [`UIApplicationDidEnterBackgroundNotification`](https://developer.apple.com/documentation/uikit/uiapplicationdidenterbackgroundnotification?language=objc) notification,
   and call `stop` on the replicator.
-- [FIXED] Added status code `TDReplicatorErrorNetworkOffline` -
-  replicators will go into an error state with this error code if the
-  network goes offline, instead of appearing to complete normally.
-- [NEW] Interceptors can return `nil` to signal an error
-  condition. See
-  [the interceptor documentation](doc/httpinterceptors.md) for more
-  details.
+- [REMOVED] Removed deprecated class `CDTSavedHTTPAttachment` and method
+  `createRevisionFromJson` on `CDTDocumentRevision`.
+- [IMPROVED] Updated documentation by replacing deprecated Cloudant links with the latest bluemix.net links.
 
 ## 1.2.2 (2017-09-06)
 - [IMPROVED] Added pre-emptive session renewal when within 5 minutes of expiry.
