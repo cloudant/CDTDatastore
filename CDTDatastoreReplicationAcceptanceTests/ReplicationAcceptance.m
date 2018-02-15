@@ -1261,7 +1261,7 @@
     // delete some of the remote docs
     // (remote deletes are really slow so we only do a small proportion)
     NSLog(@"Deleting remote docs...");
-    for (int i = 1; i < self.n_docs/10; i++) {
+    for (int i = 1; i <= self.n_docs/10; i++) {
         NSString *docId = [NSString stringWithFormat:@"doc-%i", i];
         [self deleteRemoteDocWithId:docId];
     }
