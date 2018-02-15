@@ -173,7 +173,7 @@
     
     // Set values of n_docs and largeRevTreeSize from ReplicationSettings.plist if available
     // otherwise default to 'large' values
-    self.n_docs = [ra nDocs] != nil ? [[ra nDocs] integerValue] : 10000;
+    self.n_docs = [ra nDocs] != nil ? [[ra nDocs] integerValue] : 2500;
     self.largeRevTreeSize = [ra largeRevTreeSize] != nil ? [[ra largeRevTreeSize] integerValue] : 1500;
     self.raSmall = [ra raSmall] != nil ? [[ra raSmall] boolValue] : FALSE;
     

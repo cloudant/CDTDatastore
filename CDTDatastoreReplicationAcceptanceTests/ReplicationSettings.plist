@@ -19,7 +19,7 @@
 	<key>TEST_COUCH_LOGGING_LEVEL</key>
 	<integer>0</integer>
 	<key>TEST_COUCH_N_DOCS</key>
-	<integer>10000</integer>
+	<integer>2500</integer>
 	<key>TEST_COUCH_LARGE_REV_TREE_SIZE</key>
 	<integer>1500</integer>
 </dict>
