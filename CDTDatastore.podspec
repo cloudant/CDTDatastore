@@ -34,34 +34,14 @@ Pod::Spec.new do |s|
 
   s.default_subspec = 'standard'
 
-  ['standard', 'SQLCipher'].each do |subspec_label|
-      s.subspec subspec_label do |sp|
-
-        sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
-        sp.private_header_files = 'CDTDatastore/touchdb/*.h'
-
-        sp.source_files = 'CDTDatastore/**/*.{h,m}'
-
-        sp.exclude_files = 'CDTDatastore/vendor/MYUtilities/*.{h,m}'
-
-        sp.dependency 'CDTDatastore/common-dependencies'
-
-        if subspec_label == 'standard'
-          sp.library = 'sqlite3', 'z'
-          sp.dependency 'FMDB', '= 2.6'
-        else
-          sp.xcconfig = { 'OTHER_CFLAGS' => '$(inherited) -DENCRYPT_DATABASE' }
-          sp.library = 'z'
-          sp.dependency 'FMDB/SQLCipher', '= 2.6'
-
-          # Some CDTDatastore classes use SQLite functions, therefore we have
-          # to include 'SQLCipher' although 'FMDB/SQLCipher' also depends on it
-          # or they will not compile (linker will not find some symbols).
-          # Also, we have to force cocoapods to configure SQLCipher with support
-          # for FTS.
-          sp.dependency 'SQLCipher/fts', '~> 3.1.0'
-        end
-    end
+  s.subspec 'standard' do |sp|
+    sp.prefix_header_contents = '#import "CollectionUtils.h"', '#import "Logging.h"', '#import "Test.h"', '#import "CDTMacros.h"'
+    sp.private_header_files = 'CDTDatastore/touchdb/*.h'
+    sp.source_files = 'CDTDatastore/**/*.{h,m}'
+    sp.exclude_files = 'CDTDatastore/vendor/MYUtilities/*.{h,m}'
+    sp.library = 'sqlite3', 'z'
+    sp.dependency 'CDTDatastore/common-dependencies'
+    sp.dependency 'FMDB', '= 2.6'
   end
 
   s.subspec 'common-dependencies' do |sp|

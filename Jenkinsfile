@@ -30,7 +30,7 @@ def podfile(podfileDir) {
     }
 }
 
-def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
+def buildAndTest(nodeLabel, target, rakeEnv, testIam='no') {
     node(nodeLabel) {
         // Clean the directory before un-stashing (removes old logs)
         deleteDir()
@@ -38,11 +38,8 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
         // Unstash the source on this node
         unstash name: 'source'
 
-        // log name is based on whether we're encrypted and what the target is
+        // log name is based on what the target is
         def logName = "CDTDatastore"
-        if (encrypted == "yes") {
-            logName += "Encrypted"
-        }
         if (testIam == "yes") {
             logName += "Iam"
         }
@@ -72,9 +69,6 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
                 credsId = 'couchdb'
                 credsUser = 'TEST_COUCH_USERNAME'
                 credsPass = 'TEST_COUCH_PASSWORD'
-            }
-            if (encrypted == 'yes') {
-                envVariables.add('encrypted=yes')
             }
             withEnv(envVariables) {
                 withCredentials([usernamePassword(credentialsId: credsId, usernameVariable: credsUser, passwordVariable: credsPass), string(credentialsId: 'clientlibs-test-iam', variable: credsIam)]) {
@@ -156,17 +150,11 @@ stage('Checkout') {
 stage('BuildAndTest') {
     def axes = [
             ios: {
-                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'no')
-                buildAndTest('ios', 'sample', 'IPHONE_DEST', 'no')
-            },
-            iosEncrypted: {
-                buildAndTest('ios', 'testios', 'IPHONE_DEST', 'yes')
+                buildAndTest('ios', 'testios', 'IPHONE_DEST')
+                buildAndTest('ios', 'sample', 'IPHONE_DEST')
             },
             macos: {
-                buildAndTest('macos', 'testosx', 'OSX_DEST', 'no')
-            },
-            macosEncrypted: {
-                buildAndTest('macos', 'testosx', 'OSX_DEST', 'yes')
+                buildAndTest('macos', 'testosx', 'OSX_DEST')
             },
             macosBuildDocs: {
                 buildDocs()
@@ -175,22 +163,16 @@ stage('BuildAndTest') {
                 podLibLint()
             },
             iosRAT: {
-                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no')
-            },
-            iosRATEncrypted: {
-                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST')
             },
             macosRAT: {
-                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no')
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST')
             },
-            macosRATEncrypted: {
-                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
-            },                
             iosIamRAT: {
-                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
+                buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'yes')
             },
             macosIamRAT: {
-                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'no', 'yes')
+                buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
             }
     ]
     parallel(axes)
