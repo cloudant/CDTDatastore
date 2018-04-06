@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
        ...
      }
  */
-- (NSDictionary<NSString *, NSArray<NSString *> *> *)listIndexes;
+- (NSDictionary<NSString *, NSDictionary *> *)listIndexes;
 
 /**
  Add a single, possibly compound, index for the given field names.
