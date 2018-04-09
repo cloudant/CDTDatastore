@@ -21,6 +21,8 @@
 		8E2DDDF91D1BEFBE00673564 /* CDTReplay429Interceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */; };
 		8E2DDDFA1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
 		8E2DDDFB1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
+		8E6D540E207B7191006FF35F /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D540D207B7191006FF35F /* SwiftTests.swift */; };
+		8E6D540F207B7191006FF35F /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D540D207B7191006FF35F /* SwiftTests.swift */; };
 		8E705A8B1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
 		8E705A8C1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
 		8E705A8E1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */; };
@@ -758,6 +760,9 @@
 		880C1D944A8E097B9021DF85 /* Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-base-tests-CDTDatastoreTestsOSX/Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTReplay429Interceptor.h; sourceTree = "<group>"; };
 		8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplay429Interceptor.m; sourceTree = "<group>"; };
+		8E6D540B207B7190006FF35F /* CDTDatastoreTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CDTDatastoreTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		8E6D540C207B7190006FF35F /* CDTDatastoreTestsOSX-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CDTDatastoreTestsOSX-Bridging-Header.h"; sourceTree = "<group>"; };
+		8E6D540D207B7191006FF35F /* SwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTests.swift; sourceTree = "<group>"; };
 		8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTIAMSessionCookieInterceptor.m; sourceTree = "<group>"; };
 		8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTIAMSessionCookieInterceptor.h; sourceTree = "<group>"; };
 		8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTSessionCookieInterceptorBase.h; sourceTree = "<group>"; };
@@ -1432,6 +1437,9 @@
 				98F77E6C1C44044000515CC3 /* Utils */,
 				98F77B451C43FC9F00515CC3 /* CDTDatastoreTests.m */,
 				98F77B471C43FC9F00515CC3 /* Info.plist */,
+				8E6D540D207B7191006FF35F /* SwiftTests.swift */,
+				8E6D540B207B7190006FF35F /* CDTDatastoreTests-Bridging-Header.h */,
+				8E6D540C207B7190006FF35F /* CDTDatastoreTestsOSX-Bridging-Header.h */,
 			);
 			path = CDTDatastoreTests;
 			sourceTree = "<group>";
@@ -2359,6 +2367,9 @@
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "IBM Corporation";
 				TargetAttributes = {
+					987385221C47B45600937212 = {
+						LastSwiftMigration = 0930;
+					};
 					988D2E5D1DA6B13900E05262 = {
 						CreatedOnToolsVersion = 8.0;
 						ProvisioningStyle = Automatic;
@@ -2378,6 +2389,7 @@
 					};
 					98F77B3F1C43FC9F00515CC3 = {
 						CreatedOnToolsVersion = 7.2;
+						LastSwiftMigration = 0930;
 					};
 					98F77D2B1C44028700515CC3 = {
 						CreatedOnToolsVersion = 7.2;
@@ -3035,6 +3047,7 @@
 				987385461C47B45600937212 /* DatastoreCRUD.m in Sources */,
 				987385471C47B45600937212 /* CDTDatastoreQueryTests.m in Sources */,
 				9873854A1C47B45600937212 /* CDTChangedDictionaryTests.m in Sources */,
+				8E6D540F207B7191006FF35F /* SwiftTests.swift in Sources */,
 				9873854B1C47B45600937212 /* CDTChangedArrayTests.m in Sources */,
 				9873854C1C47B45600937212 /* DBQueryUtils.m in Sources */,
 				9873854D1C47B45600937212 /* TD_RevisionTests.m in Sources */,
@@ -3199,6 +3212,7 @@
 				980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */,
 				980F22731CB818260075A843 /* CDTQIndexManagerTests.m in Sources */,
 				980F22741CB818260075A843 /* CDTQIndexTests.m in Sources */,
+				8E6D540E207B7191006FF35F /* SwiftTests.swift in Sources */,
 				980F22751CB818260075A843 /* CDTQIndexUpdaterTests.m in Sources */,
 				980F22761CB818260075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
 				2E25F68D1F4C6DB900177ABA /* OHHTTPStubsHelper.m in Sources */,
@@ -3429,6 +3443,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 880C1D944A8E097B9021DF85 /* Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @executable_path/../Frameworks @loader_path/../Frameworks";
@@ -3436,6 +3451,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "CDTDatastoreTests/CDTDatastoreTestsOSX-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -3443,6 +3461,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 58D9EAB81B994FD15D5FBCE4 /* Pods-base-tests-CDTDatastoreTestsOSX.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks @executable_path/../Frameworks @loader_path/../Frameworks";
@@ -3450,6 +3469,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				SWIFT_OBJC_BRIDGING_HEADER = "CDTDatastoreTests/CDTDatastoreTestsOSX-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -3679,11 +3700,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C5D893F16D9AE1D27F28C6F6 /* Pods-base-tests-CDTDatastoreTests.debug.xcconfig */;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CDTDatastoreTests/CDTDatastoreTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -3691,11 +3715,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 00A609A6C10F2A6835BF22B3 /* Pods-base-tests-CDTDatastoreTests.release.xcconfig */;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_MODULES = YES;
 				INFOPLIST_FILE = CDTDatastoreTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cloudant.CDTDatastoreTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "CDTDatastoreTests/CDTDatastoreTests-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
