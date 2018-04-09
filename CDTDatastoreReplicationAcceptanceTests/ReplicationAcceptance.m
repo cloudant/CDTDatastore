@@ -1922,7 +1922,7 @@
     
     for (int i=0;i<nRequests;i++) {
         NSURLRequest *request =
-        [NSURLRequest requestWithURL:[self sharedDemoURL]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://examples.cloudant.com/animaldb"]];
         CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
         [tasks addObject:task];
     }
@@ -1946,7 +1946,7 @@
     del.timesGotResponse = 0;
     for (int i=0;i<nRequests;i++) {
         NSURLRequest *request =
-        [NSURLRequest requestWithURL:[self sharedDemoURL]];
+        [NSURLRequest requestWithURL:[NSURL URLWithString:@"https://examples.cloudant.com/animaldb"]];
         CDTURLSessionTask *task = [session dataTaskWithRequest:request taskDelegate:del];
         [tasks addObject:task];
     }
@@ -2041,216 +2041,6 @@
     XCTAssertTrue(changeTrackerGotChanges);
 }
 
-
--(NSURL*)sharedDemoURL {
-    // Shared database for demo purposes -- anyone can put stuff here...
-    NSString *username = @"iessidesseepromanownessi";
-    NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
-    NSString *db_name = @"shared_todo_sample";
-    
-    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
-                     username,
-                     password,
-                     db_name];
-    return [NSURL URLWithString:url];
-}
-
--(NSURL*)badCredentialsDemoURL {
-    // Shared database for demo purposes -- anyone can put stuff here...
-    NSString *username = @"iessidesseepromanownessi";
-    NSString *password = @"badpassword";
-    NSString *db_name = @"shared_todo_sample";
-    
-    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
-                     username,
-                     password,
-                     db_name];
-    return [NSURL URLWithString:url];
-}
-
--(void) testURLConnectionChangeTrackerWithRealRemote
-{
-    
-    __block BOOL changeTrackerStopped = NO;
-    __block BOOL changeTrackerGotChanges = NO;
-    unsigned int limitSize = 100;
-    
-    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
-    
-    delegate.changesBlock = ^(NSArray *changes){
-        changeTrackerGotChanges = YES;
-        
-        NSUInteger changeCount = changes.count;
-        XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
-        //while the test above assures that changeCount > 0,
-        //there's no guarantee this is true in real-life, so
-        //that XCTAssertTrue is not included here.
-        
-        for (NSDictionary* change in changes) {
-            XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
-        }
-    };
-    
-    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
-        changeTrackerStopped = YES;
-    };
-    
-    delegate.changeBlock = ^(NSDictionary *change) {
-        XCTFail(@"Should not be called");
-    };
-    
-    NSURL *url = [self sharedDemoURL];
-    CDTURLSession *session = [[CDTURLSession alloc] init];
-    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
-                                                                             mode:kOneShot
-                                                                        conflicts:YES
-                                                                     lastSequence:nil
-                                                                           client:delegate
-                                                                          session:session];
-    changeTracker.limit = limitSize;
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        [changeTracker start];
-        while(!changeTrackerStopped) {
-            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                     beforeDate:[NSDate distantFuture]];
-        }
-    });
-    
-    while (!changeTrackerStopped) {
-        [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                 beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
-    }
-    
-    XCTAssertTrue(changeTrackerGotChanges);
-}
-
--(void) testURLConnectionChangeTrackerWithRealRemoteAndIAMKey
-{
-    if([self.iamApiKey length] != 0) {
-    
-        __block BOOL changeTrackerStopped = NO;
-        __block BOOL changeTrackerGotChanges = NO;
-        unsigned int limitSize = 100;
-        
-        ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
-        
-        delegate.changesBlock = ^(NSArray *changes){
-            changeTrackerGotChanges = YES;
-            
-            NSUInteger changeCount = changes.count;
-            XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
-            //while the test above assures that changeCount > 0,
-            //there's no guarantee this is true in real-life, so
-            //that XCTAssertTrue is not included here.
-            
-            for (NSDictionary* change in changes) {
-                XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
-            }
-        };
-        
-        delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
-            changeTrackerStopped = YES;
-        };
-        
-        delegate.changeBlock = ^(NSDictionary *change) {
-            XCTFail(@"Should not be called");
-        };
-        
-        CDTIAMSessionCookieInterceptor *interceptor =
-        [[CDTIAMSessionCookieInterceptor alloc] initWithAPIKey:self.iamApiKey];
-        
-        CDTURLSession *session = [[CDTURLSession alloc] initWithCallbackThread:[NSThread currentThread] requestInterceptors:@[interceptor] sessionConfigDelegate: nil];
-
-        TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:self.primaryRemoteDatabaseURL
-                                                                                 mode:kOneShot
-                                                                            conflicts:YES
-                                                                         lastSequence:nil
-                                                                               client:delegate
-                                                                              session:session];
-        changeTracker.limit = limitSize;
-        
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-            [changeTracker start];
-            while(!changeTrackerStopped) {
-                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                         beforeDate:[NSDate distantFuture]];
-            }
-        });
-        
-        while (!changeTrackerStopped) {
-            [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode
-                                     beforeDate: [NSDate dateWithTimeIntervalSinceNow:0.1]];
-        }
-        
-        XCTAssertTrue(changeTrackerGotChanges);
-    }
-}
-
--(void) testURLConnectionChangeTrackerWithRealRemoteUsingAuthorizer
-{
-    
-    __block BOOL changeTrackerStopped = NO;
-    __block BOOL changeTrackerGotChanges = NO;
-    unsigned int limitSize = 100;
-    
-    ChangeTrackerDelegate *delegate = [[ChangeTrackerDelegate alloc] init];
-    
-    delegate.changesBlock = ^(NSArray *changes){
-        changeTrackerGotChanges = YES;
-        
-        NSUInteger changeCount = changes.count;
-        XCTAssertTrue(changeCount <= limitSize, @"Too many changes.");
-        //while the test above assures that changeCount > 0,
-        //there's no guarantee this is true in real-life, so
-        //that XCTAssertTrue is not included here.
-        
-        for (NSDictionary* change in changes) {
-            XCTAssertNotNil(change[@"seq"], @"no seq in %@", change);
-        }
-    };
-    
-    delegate.stoppedBlock = ^(TDChangeTracker *tracker) {
-        changeTrackerStopped = YES;
-    };
-    
-    delegate.changeBlock = ^(NSDictionary *change) {
-        XCTFail(@"Should not be called");
-    };
-    
-    NSURL *url = [NSURL URLWithString:@"https://mikerhodescloudant.cloudant.com/shared_todo_sample"];
-    CDTURLSession *session = [[CDTURLSession alloc] init];
-    TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
-                                                                             mode:kOneShot
-                                                                        conflicts:YES
-                                                                     lastSequence:nil
-                                                                           client:delegate
-                                                                          session:session];
-    changeTracker.limit = limitSize;
-    
-    NSURLCredential *cred = [NSURLCredential credentialWithUser: [[self sharedDemoURL] user]
-                                                       password: [[self sharedDemoURL] password]
-                                                    persistence: NSURLCredentialPersistenceForSession];
-    TDBasicAuthorizer *auth = [[TDBasicAuthorizer alloc] initWithCredential:cred];
-    
-    changeTracker.authorizer = auth;
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        [changeTracker start];
-        while(!changeTrackerStopped) {
-            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                     beforeDate:[NSDate distantFuture]];
-        }
-    });
-    
-    while (!changeTrackerStopped) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:5.0f]];
-    }
-    
-    XCTAssertTrue(changeTrackerGotChanges);
-}
-
 -(void) testURLConnectionChangeTrackerWithBadCredentials
 {
     
@@ -2272,8 +2062,16 @@
         XCTFail(@"Should not be called");
     };
     
-    NSURL *url = [self badCredentialsDemoURL];
-
+    NSURLComponents *comp = [NSURLComponents componentsWithURL:[self primaryRemoteDatabaseURL] resolvingAgainstBaseURL:FALSE];
+    if (comp.user == nil) {
+        NSLog(@"Skipping test since admin party is used with this server");
+        return;
+    }
+    // set nonsense values for user/pass
+    [comp setUser:@"aaaa"];
+    [comp setPassword:@"bbbb"];
+    NSURL *url = [comp URL];
+    
     CDTURLSession *session = [[CDTURLSession alloc] init];
     TDChangeTracker *changeTracker = [[TDChangeTracker alloc] initWithDatabaseURL:url
                                                                              mode:kOneShot
