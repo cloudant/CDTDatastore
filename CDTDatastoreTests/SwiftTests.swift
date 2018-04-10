@@ -26,9 +26,12 @@ public class SwiftTests : CloudantSyncTests {
             let rev = CDTDocumentRevision()
             rev.body = NSMutableDictionary(dictionary: ["hello":"world"])
             try store.createDocument(from: rev)
-            store.ensureIndexed(["hello"])
+            store.ensureIndexed(["hello"], withName: "index")
             let indexes = store.listIndexes()
-            print ("Indexes \(indexes)")
+            XCTAssertEqual(indexes["index"]!["type"] as! String, "json")
+            XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("_id"))
+            XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("_rev"))
+            XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("hello"))
         } catch {
             XCTFail("Test failed with \(error)")
         }
