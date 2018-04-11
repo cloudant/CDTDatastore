@@ -63,6 +63,14 @@ $ pod install
 $ open Project.xcworkspace
 ```
 
+In order to run the sample project, edit the URL defined in
+`CDTViewController.m`: in `replicatorURL`. Change this to the
+credentials for your own account and database, ensuring you have
+`_reader`, `_writer`, and `_replicator` permissions.
+
+Once running you will be able to edit "to-do" items in the app and in
+your Cloudant database and replicate these changes in both directions.
+
 ## Running the tests
 
 See [CONTRIBUTING](CONTRIBUTING.md).
