@@ -3,6 +3,7 @@
 //  Project
 //
 //  Created by Michael Rhodes on 03/12/2013.
+//  Copyright © 2018 IBM Corp. All rights reserved.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -46,18 +47,9 @@
 
 - (NSURL *)replicatorURL
 {
-    // Shared database for demo purposes -- anyone can put stuff here...
-    NSString *username = @"iessidesseepromanownessi";
-    NSString *password = @"Y1GFiXSJ0trIonovEj3dhvSK";
-    NSString *db_name = @"shared_todo_sample";
-
-    NSString *cleanURL = [NSString
-        stringWithFormat:@"https://%@:*****@mikerhodescloudant.cloudant.com/%@", username, db_name];
-    NSLog(@"%@", cleanURL);
-
-    NSString *url = [NSString stringWithFormat:@"https://%@:%@@mikerhodescloudant.cloudant.com/%@",
-                                               username, password, db_name];
-    return [NSURL URLWithString:url];
+    // IMPORTANT: replace the strings in <angle brackets> with the credentials for your own account
+    // and database
+    return [NSURL URLWithString:@"https://<username>:<password>@<account>.cloudant.com/<database>"];
 }
 
 #pragma mark Data managment
