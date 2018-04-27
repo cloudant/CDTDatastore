@@ -1,5 +1,9 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+- [FIXED] Bug which prevented `find` queries from executing
+  successfully against indexes with certain names.
+
 ## 2.0.1 (2018-04-12)
 - [FIXED] Header declaration of `listIndexes()`. This prevented this
   method from being called from Swift code.

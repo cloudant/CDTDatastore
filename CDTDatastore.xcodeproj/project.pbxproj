@@ -23,6 +23,8 @@
 		8E2DDDFB1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
 		8E6D540E207B7191006FF35F /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D540D207B7191006FF35F /* SwiftTests.swift */; };
 		8E6D540F207B7191006FF35F /* SwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D540D207B7191006FF35F /* SwiftTests.swift */; };
+		8E6D541120930F00006FF35F /* CDTQIndexNameTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D541020930F00006FF35F /* CDTQIndexNameTests.m */; };
+		8E6D541220930F4E006FF35F /* CDTQIndexNameTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E6D541020930F00006FF35F /* CDTQIndexNameTests.m */; };
 		8E705A8B1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
 		8E705A8C1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */; };
 		8E705A8E1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */; };
@@ -763,6 +765,7 @@
 		8E6D540B207B7190006FF35F /* CDTDatastoreTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CDTDatastoreTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		8E6D540C207B7190006FF35F /* CDTDatastoreTestsOSX-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CDTDatastoreTestsOSX-Bridging-Header.h"; sourceTree = "<group>"; };
 		8E6D540D207B7191006FF35F /* SwiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftTests.swift; sourceTree = "<group>"; };
+		8E6D541020930F00006FF35F /* CDTQIndexNameTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CDTQIndexNameTests.m; sourceTree = "<group>"; };
 		8E705A8A1F0CE58500FF0219 /* CDTIAMSessionCookieInterceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTIAMSessionCookieInterceptor.m; sourceTree = "<group>"; };
 		8E705A8D1F0CE5B200FF0219 /* CDTIAMSessionCookieInterceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTIAMSessionCookieInterceptor.h; sourceTree = "<group>"; };
 		8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTSessionCookieInterceptorBase.h; sourceTree = "<group>"; };
@@ -1382,6 +1385,7 @@
 				98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */,
 				98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */,
 				98F77E0D1C44044000515CC3 /* CDTQIndexManagerTests.m */,
+				8E6D541020930F00006FF35F /* CDTQIndexNameTests.m */,
 				98F77E0E1C44044000515CC3 /* CDTQIndexTests.m */,
 				98F77E0F1C44044000515CC3 /* CDTQIndexUpdaterTests.m */,
 				98F77E101C44044000515CC3 /* CDTQInvalidQuerySyntax.m */,
@@ -3011,6 +3015,7 @@
 				980F22891CB818530075A843 /* CDTQIndexTests.m in Sources */,
 				980F228A1CB818530075A843 /* CDTQIndexUpdaterTests.m in Sources */,
 				980F228B1CB818530075A843 /* CDTQInvalidQuerySyntax.m in Sources */,
+				8E6D541220930F4E006FF35F /* CDTQIndexNameTests.m in Sources */,
 				980F228C1CB818530075A843 /* CDTQPerformanceTests.m in Sources */,
 				980F228D1CB818530075A843 /* CDTQQueryExecutorTests.m in Sources */,
 				980F228E1CB818530075A843 /* CDTQQuerySortTests.m in Sources */,
@@ -3251,6 +3256,7 @@
 				987AF7B91DE7274C00577DAC /* TD_DatabaseEncryptionTests.m in Sources */,
 				98F77EAA1C44044000515CC3 /* CDTQMatcherQueryExecutor.m in Sources */,
 				98F77EB61C44044000515CC3 /* TDMiscTests.m in Sources */,
+				8E6D541120930F00006FF35F /* CDTQIndexNameTests.m in Sources */,
 				98F77EB21C44044000515CC3 /* TD_DatabaseTests.m in Sources */,
 				98F77E911C44044000515CC3 /* DatastoreManagerTests.m in Sources */,
 				98F77EBA1C44044000515CC3 /* TDMultiStreamWriterTests.m in Sources */,
