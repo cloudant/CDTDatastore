@@ -2,6 +2,7 @@
 //  CDTQQueryExecutor.m
 //
 //  Created by Mike Rhodes on 2014-09-29
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -395,7 +396,7 @@ const NSUInteger kSmallResultSetSizeThreshold = 500;
     }
 
     NSString *sql =
-        [NSString stringWithFormat:@"SELECT DISTINCT _id FROM %@ %@ ORDER BY %@;", indexTable,
+        [NSString stringWithFormat:@"SELECT DISTINCT _id FROM \"%@\" %@ ORDER BY %@;", indexTable,
                                    whereClause, [orderClauses componentsJoinedByString:@", "]];
     return [CDTQSqlParts partsForSql:sql parameters:parameters];
 }

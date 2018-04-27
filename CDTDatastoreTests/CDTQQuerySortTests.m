@@ -164,7 +164,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_a "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_a\" "
                                         @"WHERE _id IN (?, ?) ORDER BY \"name\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal([smallDocIdSet allObjects]);
@@ -176,7 +176,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\" "
                                         @"WHERE _id IN (?, ?) ORDER BY \"y\" DESC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal([smallDocIdSet allObjects]);
@@ -192,7 +192,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\" "
                                         @"WHERE _id IN (?, ?) ORDER BY \"y\" ASC, \"x\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal([smallDocIdSet allObjects]);
@@ -204,7 +204,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\" "
                                         @"WHERE _id IN (?, ?) ORDER BY \"y\" DESC, \"x\" DESC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal([smallDocIdSet allObjects]);
@@ -216,7 +216,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\" "
                                         @"WHERE _id IN (?, ?) ORDER BY \"y\" DESC, \"x\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal([smallDocIdSet allObjects]);
@@ -236,7 +236,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_a  "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_a\"  "
                                         @"ORDER BY \"name\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal(@[]);
@@ -248,7 +248,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b  "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\"  "
                                         @"ORDER BY \"y\" DESC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal(@[]);
@@ -264,7 +264,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b  "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\"  "
                                         @"ORDER BY \"y\" ASC, \"x\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal(@[]);
@@ -276,7 +276,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b  "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\"  "
                                         @"ORDER BY \"y\" DESC, \"x\" DESC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal(@[]);
@@ -288,7 +288,7 @@ SpecBegin(CDTQQueryExecutorSorting)
                                                                    usingOrder:order
                                                                       indexes:indexes];
 
-                        NSString *sql = @"SELECT DISTINCT _id FROM _t_cloudant_sync_query_index_b  "
+                        NSString *sql = @"SELECT DISTINCT _id FROM \"_t_cloudant_sync_query_index_b\"  "
                                         @"ORDER BY \"y\" DESC, \"x\" ASC;";
                         expect(parts.sqlWithPlaceholders).to.equal(sql);
                         expect(parts.placeholderValues).to.equal(@[]);
