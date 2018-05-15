@@ -33,7 +33,6 @@
     free(tempDirectoryNameCString);
     
     NSError *error;
-    NSError *__autoreleasing *error2;
     CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
     @autoreleasepool{
         
@@ -68,10 +67,10 @@
     // called when this test method exits).
     @autoreleasepool{
         // delete datastore
-        [factory deleteDatastoreNamed:@"test" error:error2];
-        XCTAssertTrue(error2 == nil);
-        NSArray *contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:factoryPath error:error2];
-        XCTAssertTrue(error2 == nil);
+        [factory deleteDatastoreNamed:@"test" error:&error];
+        XCTAssertNil(error);
+        NSArray *contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:factoryPath error:&error];
+        XCTAssertNil(error);
         XCTAssertEqual([contents count], 0);
     }
 }
