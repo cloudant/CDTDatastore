@@ -57,6 +57,8 @@
 #import <CloudantSync.h>
 #import <FMDB/FMDB.h>
 
+#import <objc/runtime.h>
+
 NSString *const CDTQIndexManagerErrorDomain = @"CDTIndexManagerErrorDomain";
 
 NSString *const kCDTQIndexTablePrefix = @"_t_cloudant_sync_query_index_";
@@ -124,6 +126,10 @@ static const int VERSION = 2;
 {
     // close the database.
     [self.database close];
+    // remove the datastore's association with us, otherwise it will
+    // become invalid since it's a weak reference
+    objc_setAssociatedObject(self.datastore, @selector(CDTQManager), nil,
+                             OBJC_ASSOCIATION_ASSIGN);
 }
 
 #pragma mark List indexes

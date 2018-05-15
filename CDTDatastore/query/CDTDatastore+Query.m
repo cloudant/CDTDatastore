@@ -24,8 +24,13 @@
     {
         if (objc_getAssociatedObject(self, @selector(CDTQManager)) == nil) {
             CDTQIndexManager *m = [CDTQIndexManager managerUsingDatastore:self error:nil];
+            // NB: we make a weak reference here so that we don't
+            // cause retain cycles, since the CDTQIndexManager also
+            // has a reference to us which is passed in when it is
+            // constructed. This association is cleared in
+            // [CDTQIndexManager dealloc].
             objc_setAssociatedObject(self, @selector(CDTQManager), m,
-                                     OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                                     OBJC_ASSOCIATION_ASSIGN);
         }
     }
 
