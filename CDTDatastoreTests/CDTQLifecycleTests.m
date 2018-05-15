@@ -49,9 +49,7 @@
             [datastore createDocumentFromRevision:document
                                             error:&error];
             XCTAssertNil(error);
-        }
-        // multiple invocations of create/get index in tight loop
-        for (int i=0; i<10;i++) {
+            // ensure indexed within loop
             [datastore ensureIndexed:@[@"hello"] withName:@"index"];
         }
         CDTQResultSet *rs = [datastore find:@{@"hello":@"world"}];
@@ -112,9 +110,7 @@
             [datastore createDocumentFromRevision:document
                                             error:&error];
             XCTAssertNil(error);
-        }
-        // multiple invocations of create/get index in tight loop
-        for (int i=0; i<10;i++) {
+            // ensure indexed within loop
             [datastore ensureIndexed:@[@"hello"] withName:@"index"];
         }
         CDTQResultSet *rs = [datastore find:@{@"hello":@"world"}];
