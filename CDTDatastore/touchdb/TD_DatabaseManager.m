@@ -197,12 +197,14 @@ static NSCharacterSet* kIllegalNameChars;
 }
 
 - (void) close {
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
-    for (TD_Database* db in _databases.allValues) {
-        [db close];
+    @synchronized(self) {
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
+        for (TD_Database* db in _databases.allValues) {
+            [db close];
+        }
+        [_databases removeAllObjects];
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
     }
-    [_databases removeAllObjects];
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
 }
 
 @end
