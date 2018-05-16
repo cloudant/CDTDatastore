@@ -55,12 +55,6 @@ extern NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName;
  */
 - (TD_Database*)databaseNamed:(NSString*)name;
 
-/**
- * Returns a database that was previously allocated with 'databaseNamed:'.
- * Be aware that the database may or may not be open.
- */
-- (TD_Database*)cachedDatabaseNamed:(NSString*)name;
-
 - (BOOL)deleteDatabaseNamed:(NSString*)name error:(NSError *__autoreleasing *)error;
 
 @property (readonly) NSArray* allDatabaseNames;
