@@ -125,6 +125,7 @@
             fdCount = bufferSize / PROC_PIDLISTFD_SIZE;
             // as observed in testing, this should never go above 8, but we'll set a conservative limit of 100 to allow some breathing room
             XCTAssertTrue(fdCount < 100);
+            free(fdInfo);
         }
     }
     XCTAssertEqual([ds documentCount], n);
