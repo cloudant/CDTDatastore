@@ -145,6 +145,29 @@
 }
 #endif
 
+// test disabled because it takes a few minutes to run
+// re-enable to check for regressions in synchronisation of _databases dictionary in TD_DatabaseManager
+- (void) xxxTestDatastoreGetThreaded {
+    // store the TD_Database pointers, to ensure we always get the same one
+    NSMutableSet *dss = [NSMutableSet set];
+    int n = 200000;
+    // spawn `n` threads to simultaneously retrieve the same datastore
+    dispatch_group_t group = dispatch_group_create();
+    for (int i=0; i<n; i++) {
+        dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0),
+                             ^(void){
+                                 NSError *err;
+                                 CDTDatastore *ds = [self.factory datastoreNamed:@"test" error:&err];
+                                 // add the TD_Database to the set
+                                 [dss addObject:[ds database]];
+                                 XCTAssertNil(err);
+                             });
+    }
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    // we should only ever get one TD_Database pointer
+    XCTAssertEqual([dss count], 1);
+}
+
 @end
 
 
