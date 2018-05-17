@@ -3,6 +3,7 @@
 //  TouchDB
 //
 //  Created by Jens Alfke on 3/22/12.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
@@ -123,66 +124,63 @@ static NSCharacterSet* kIllegalNameChars;
 
 - (TD_Database*)databaseNamed:(NSString*)name
 {
-    TD_Database* db = [self cachedDatabaseNamed:name];
-    if (!db) {
-        NSString* path = [self pathForName:name];
-        if (!path) {
-            CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Database name not valid");
-        } else {
-            db = [[TD_Database alloc] initWithPath:path];
-            if (_options.readOnly && !db.exists) {
-                CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Read-only db does not exist. Return nil");
-                
-                db = nil;
+    @synchronized(self) {
+        TD_Database* db = _databases[name];
+        if (!db) {
+            NSString* path = [self pathForName:name];
+            if (!path) {
+                CDTLogError(CDTDATASTORE_LOG_CONTEXT, @"Database name not valid");
             } else {
-                db.name = name;
-                db.readOnly = _options.readOnly;
-                
-                _databases[name] = db;
+                db = [[TD_Database alloc] initWithPath:path];
+                if (_options.readOnly && !db.exists) {
+                    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"Read-only db does not exist. Return nil");
+                    
+                    db = nil;
+                } else {
+                    db.name = name;
+                    db.readOnly = _options.readOnly;
+                    
+                    _databases[name] = db;
+                }
             }
         }
+        
+        return db;
     }
-    
-    return db;
-}
-
-- (TD_Database*)cachedDatabaseNamed:(NSString*)name
-{
-    TD_Database* db = _databases[name];
-    
-    return db;
 }
 
 - (BOOL)deleteDatabaseNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    BOOL success = NO;
-
-    TD_Database *db = [self cachedDatabaseNamed:name];
-    if (db) {
-        // Do not simply delete the files, use instance method
-        success = [db deleteDatabase:error];
-        if (success) {
-            // Release cache
-            [_databases removeObjectForKey:name];
+    @synchronized(self) {
+        BOOL success = NO;
+        
+        TD_Database *db = _databases[name];
+        if (db) {
+            // Do not simply delete the files, use instance method
+            success = [db deleteDatabase:error];
+            if (success) {
+                // Release cache
+                [_databases removeObjectForKey:name];
+            }
+        } else {
+            // Database not loaded in memory. Delete the files
+            NSString *path = [self pathForName:name];
+            if (path) {
+                success = [TD_Database deleteClosedDatabaseAtPath:path error:error];
+            } else if (error) {
+                NSDictionary *userInfo = @{
+                                           NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
+                                           NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
+                                           NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
+                                           };
+                *error = [NSError errorWithDomain:kTD_DatabaseManagerErrorDomain
+                                             code:kTD_DatabaseManagerErrorCodeInvalidName
+                                         userInfo:userInfo];
+            }
         }
-    } else {
-        // Database not loaded in memory. Delete the files
-        NSString *path = [self pathForName:name];
-        if (path) {
-            success = [TD_Database deleteClosedDatabaseAtPath:path error:error];
-        } else if (error) {
-            NSDictionary *userInfo = @{
-                NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't delete database.", nil),
-                NSLocalizedFailureReasonErrorKey : NSLocalizedString(@"Invalid name?", nil),
-                NSLocalizedRecoverySuggestionErrorKey : NSLocalizedString(@"Invalid name?", nil)
-            };
-            *error = [NSError errorWithDomain:kTD_DatabaseManagerErrorDomain
-                                         code:kTD_DatabaseManagerErrorCodeInvalidName
-                                     userInfo:userInfo];
-        }
+        
+        return success;
     }
-
-    return success;
 }
 
 - (NSArray*)allDatabaseNames
@@ -200,12 +198,14 @@ static NSCharacterSet* kIllegalNameChars;
 }
 
 - (void) close {
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
-    for (TD_Database* db in _databases.allValues) {
-        [db close];
+    @synchronized(self) {
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSING %@ ...", self);
+        for (TD_Database* db in _databases.allValues) {
+            [db close];
+        }
+        [_databases removeAllObjects];
+        CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
     }
-    [_databases removeAllObjects];
-    CDTLogInfo(CDTDATASTORE_LOG_CONTEXT, @"CLOSED %@", self);
 }
 
 @end

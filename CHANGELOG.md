@@ -3,6 +3,8 @@
 ## Unreleased
 - [FIXED] Bug which prevented CDTDatastore instances from being closed after calling index/query
   methods.
+- [FIXED] Race condition which under some circumstances could return different `CDTDatastore`
+  instances for the same open database.
 
 ## 2.0.2 (2018-04-30)
 - [FIXED] Bug which prevented `find` queries from executing

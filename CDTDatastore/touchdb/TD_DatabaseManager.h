@@ -3,6 +3,7 @@
 //  TouchDB
 //
 //  Created by Jens Alfke on 3/22/12.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
@@ -54,12 +55,6 @@ extern NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName;
  * return a database or nil if it is not possible to create a new instance
  */
 - (TD_Database*)databaseNamed:(NSString*)name;
-
-/**
- * Returns a database that was previously allocated with 'databaseNamed:'.
- * Be aware that the database may or may not be open.
- */
-- (TD_Database*)cachedDatabaseNamed:(NSString*)name;
 
 - (BOOL)deleteDatabaseNamed:(NSString*)name error:(NSError *__autoreleasing *)error;
 
