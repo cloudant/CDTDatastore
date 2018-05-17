@@ -20,8 +20,11 @@
 #import "TDInternal.h"
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
-#import <libproc.h>
-#import <sys/proc_info.h>
+// for testDatastoreClosesFilehandles
+#if TARGET_OS_OSX
+    #import <libproc.h>
+    #import <sys/proc_info.h>
+#endif
 @interface DatastoreManagerTests : CloudantSyncTests
 
 @end
@@ -97,6 +100,8 @@
     }
 }
 
+// this can only run on macOS because it uses proc_pidinfo which is not available on iOS
+#if TARGET_OS_OSX
 - (void) testDatastoreClosesFilehandles {
     // repeatedly obtain the same datastore in a loop, adding documents to it and calling
     // ensureIndexed on each iteration, check that we have not excessively leaked filehandles, which
@@ -138,6 +143,7 @@
     }
     XCTAssertEqual([ds documentCount], n);
 }
+#endif
 
 @end
 
