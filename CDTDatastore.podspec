@@ -14,7 +14,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "CDTDatastore"
-  s.version      = "2.0.2"
+  s.version      = "2.0.3"
   s.summary      = "CDTDatastore is a document datastore which syncs."
   s.description  = <<-DESC
                     CDTDatastore is a JSON document datastore which speaks the
