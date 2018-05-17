@@ -23,6 +23,7 @@
 		27C1CDE8184E2D9C000604EF /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C1CDCA184E2D9C000604EF /* UIKit.framework */; };
 		27C1CDF0184E2D9C000604EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 27C1CDEE184E2D9C000604EF /* InfoPlist.strings */; };
 		27C1CDF2184E2D9C000604EF /* ProjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CDF1184E2D9C000604EF /* ProjectTests.m */; };
+		41B66F2B2081040700C06940 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 41B66F292081040700C06940 /* Launch Screen.storyboard */; };
 		51C5FFF765FDE4968D2D1BF4 /* Pods_Project.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEA79BC6B5900D01C198798A /* Pods_Project.framework */; };
 /* End PBXBuildFile section */
 
@@ -58,6 +59,7 @@
 		27C1CDED184E2D9C000604EF /* ProjectTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ProjectTests-Info.plist"; sourceTree = "<group>"; };
 		27C1CDEF184E2D9C000604EF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		27C1CDF1184E2D9C000604EF /* ProjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProjectTests.m; sourceTree = "<group>"; };
+		41B66F2A2081040700C06940 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "Base.lproj/Launch Screen.storyboard"; sourceTree = "<group>"; };
 		621CD83AE51E6D0F61B20539 /* Pods-Project.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Project.release.xcconfig"; path = "Pods/Target Support Files/Pods-Project/Pods-Project.release.xcconfig"; sourceTree = "<group>"; };
 		6CF7CD6E9CDD31FC50E9722B /* Pods-Project.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Project.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Project/Pods-Project.debug.xcconfig"; sourceTree = "<group>"; };
 		9F954F9E18AB5B5A00368057 /* libPods-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libPods-ios.a"; path = "../Tests/Pods/build/Debug-iphoneos/libPods-ios.a"; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				27C1CDD5184E2D9C000604EF /* CDTAppDelegate.h */,
 				27C1CDD6184E2D9C000604EF /* CDTAppDelegate.m */,
 				27C1CDD8184E2D9C000604EF /* Main.storyboard */,
+				41B66F292081040700C06940 /* Launch Screen.storyboard */,
 				27C1CDDB184E2D9C000604EF /* CDTViewController.h */,
 				27C1CDDC184E2D9C000604EF /* CDTViewController.m */,
 				27C1CDDE184E2D9C000604EF /* Images.xcassets */,
@@ -266,6 +269,7 @@
 			files = (
 				27C1CDDF184E2D9C000604EF /* Images.xcassets in Resources */,
 				27C1CDD1184E2D9C000604EF /* InfoPlist.strings in Resources */,
+				41B66F2B2081040700C06940 /* Launch Screen.storyboard in Resources */,
 				27C1CDDA184E2D9C000604EF /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -287,9 +291,18 @@
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-Project/Pods-Project-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CDTDatastore/CDTDatastore.framework",
+				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
+				"${BUILT_PRODUCTS_DIR}/FMDB/FMDB.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CDTDatastore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FMDB.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -302,13 +315,16 @@
 			files = (
 			);
 			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
 			);
 			name = "[CP] Check Pods Manifest.lock";
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Project-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FAFE0C0908533A384F9323D2 /* [CP] Copy Pods Resources */ = {
@@ -382,6 +398,14 @@
 				27C1CDEF184E2D9C000604EF /* en */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		41B66F292081040700C06940 /* Launch Screen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				41B66F2A2081040700C06940 /* Base */,
+			);
+			name = "Launch Screen.storyboard";
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -463,7 +487,6 @@
 			baseConfigurationReference = 6CF7CD6E9CDD31FC50E9722B /* Pods-Project.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Project/Project-Prefix.pch";
 				INFOPLIST_FILE = "Project/Project-Info.plist";
@@ -479,7 +502,6 @@
 			baseConfigurationReference = 621CD83AE51E6D0F61B20539 /* Pods-Project.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Project/Project-Prefix.pch";
 				INFOPLIST_FILE = "Project/Project-Info.plist";
