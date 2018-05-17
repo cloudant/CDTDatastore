@@ -2,6 +2,8 @@
 //  CDTQIndexManager.m
 //
 //  Created by Mike Rhodes on 2014-09-27
+//
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
