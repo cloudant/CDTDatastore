@@ -4,7 +4,7 @@
 //
 //  Created by Rhys Short on 17/12/2014.
 //
-//  Copyright © 2016 IBM Corporation. All rights reserved.
+//  Copyright © 2016, 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -98,8 +98,9 @@
 }
 
 - (void) testDatastoreClosesFilehandles {
-    // repeatedly obtain the same datastore in a loop, adding documents to it and calling ensureIndexed
-    // on each iteration, check that we have not excessively leaked filehandles, which would  indicate that the datastore and indexmanager are not being dealloc'd correctly
+    // repeatedly obtain the same datastore in a loop, adding documents to it and calling
+    // ensureIndexed on each iteration, check that we have not excessively leaked filehandles, which
+    // would indicate that the datastore and indexmanager are not being dealloc'd correctly
     int n = 1000;
     CDTDatastore *ds;
     for (int i=0; i<n; i++) {
@@ -119,13 +120,20 @@
             // buffer size is bytes, we want number of processes
             struct proc_fdinfo *fdInfo = (struct proc_fdinfo *)malloc(bufferSize);
             int fdCount = bufferSize / PROC_PIDLISTFD_SIZE;
-            // now call with the buffer to get the actual number of processes (may be lower than buffer size)
+            // now call with the buffer to get the actual number of processes (may be lower than
+            // buffer size)
             bufferSize = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, fdInfo, fdCount);
+            free(fdInfo);
             // buffer size is bytes, we want number of processes
             fdCount = bufferSize / PROC_PIDLISTFD_SIZE;
-            // as observed in testing, this should never go above 8, but we'll set a conservative limit of 100 to allow some breathing room
-            XCTAssertTrue(fdCount < 100);
-            free(fdInfo);
+            // as observed in testing, this should never go above 8, but we'll set a conservative
+            // limit of 100 to allow some breathing room
+            bool fdLimitExceeded = fdCount >= 100;
+            XCTAssertTrue(!fdLimitExceeded);
+            if (fdLimitExceeded) {
+                // exit early if we are already above the FD limit
+                return;
+            }
         }
     }
     XCTAssertEqual([ds documentCount], n);
