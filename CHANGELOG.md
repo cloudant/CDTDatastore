@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 2.0.3 (2018-05-17)
 - [FIXED] Bug which prevented CDTDatastore instances from being closed after calling index/query
   methods.
 - [FIXED] Race condition which under some circumstances could return different `CDTDatastore`
