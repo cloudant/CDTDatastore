@@ -3,6 +3,7 @@
 //
 //  Created by Rhys Short on 19/11/2014.
 //
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -24,8 +25,13 @@
     {
         if (objc_getAssociatedObject(self, @selector(CDTQManager)) == nil) {
             CDTQIndexManager *m = [CDTQIndexManager managerUsingDatastore:self error:nil];
+            // NB: we make a weak reference here so that we don't
+            // cause retain cycles, since the CDTQIndexManager also
+            // has a reference to us which is passed in when it is
+            // constructed. This association is cleared in
+            // [CDTQIndexManager dealloc].
             objc_setAssociatedObject(self, @selector(CDTQManager), m,
-                                     OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                                     OBJC_ASSOCIATION_ASSIGN);
         }
     }
 

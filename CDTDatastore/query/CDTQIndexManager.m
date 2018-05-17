@@ -2,6 +2,8 @@
 //  CDTQIndexManager.m
 //
 //  Created by Mike Rhodes on 2014-09-27
+//
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //  Copyright (c) 2014 Cloudant. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -56,6 +58,8 @@
 
 #import <CloudantSync.h>
 #import <FMDB/FMDB.h>
+
+#import <objc/runtime.h>
 
 NSString *const CDTQIndexManagerErrorDomain = @"CDTIndexManagerErrorDomain";
 
@@ -124,6 +128,10 @@ static const int VERSION = 2;
 {
     // close the database.
     [self.database close];
+    // remove the datastore's association with us, otherwise it will
+    // become invalid since it's a weak reference
+    objc_setAssociatedObject(self.datastore, @selector(CDTQManager), nil,
+                             OBJC_ASSOCIATION_ASSIGN);
 }
 
 #pragma mark List indexes

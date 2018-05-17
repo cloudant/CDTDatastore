@@ -17,6 +17,8 @@
 		3567DB3346B03BED878BC14F /* CDTDatastore+Replication.m in Sources */ = {isa = PBXBuildFile; fileRef = 3567D4C1BDD33D0148CA9FF2 /* CDTDatastore+Replication.m */; };
 		8836FBAB2706816C58690495 /* Pods_base_CDTDatastoreOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D03C1BA0A7DA75BFAF80CC8 /* Pods_base_CDTDatastoreOSX.framework */; };
 		888D25163DAC0158BEAC19FF /* Pods_base_tests_CDTDatastoreTestsOSX.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04DFF5124D5BD3161681174C /* Pods_base_tests_CDTDatastoreTestsOSX.framework */; };
+		8E19D00920A9C6BC0012F346 /* CDTQLifecycleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E19D00820A9C6BC0012F346 /* CDTQLifecycleTests.m */; };
+		8E19D00B20A9D0BB0012F346 /* CDTQLifecycleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E19D00820A9C6BC0012F346 /* CDTQLifecycleTests.m */; };
 		8E2DDDF81D1BEFBE00673564 /* CDTReplay429Interceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8E2DDDF91D1BEFBE00673564 /* CDTReplay429Interceptor.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */; };
 		8E2DDDFA1D1BEFBE00673564 /* CDTReplay429Interceptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */; };
@@ -760,6 +762,7 @@
 		780DA1CE0B016A2CE9A8458C /* Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
 		85F3ECA4D5FB8EA5B31B14F1 /* Pods-base-CDTDatastoreOSX.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-CDTDatastoreOSX.release.xcconfig"; path = "Pods/Target Support Files/Pods-base-CDTDatastoreOSX/Pods-base-CDTDatastoreOSX.release.xcconfig"; sourceTree = "<group>"; };
 		880C1D944A8E097B9021DF85 /* Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; path = "Pods/Target Support Files/Pods-base-tests-CDTDatastoreTestsOSX/Pods-base-tests-CDTDatastoreTestsOSX.debug.xcconfig"; sourceTree = "<group>"; };
+		8E19D00820A9C6BC0012F346 /* CDTQLifecycleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CDTQLifecycleTests.m; sourceTree = "<group>"; };
 		8E2DDDF61D1BEFBE00673564 /* CDTReplay429Interceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTReplay429Interceptor.h; sourceTree = "<group>"; };
 		8E2DDDF71D1BEFBE00673564 /* CDTReplay429Interceptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTReplay429Interceptor.m; sourceTree = "<group>"; };
 		8E6D540B207B7190006FF35F /* CDTDatastoreTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CDTDatastoreTests-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -1389,6 +1392,7 @@
 				98F77E0E1C44044000515CC3 /* CDTQIndexTests.m */,
 				98F77E0F1C44044000515CC3 /* CDTQIndexUpdaterTests.m */,
 				98F77E101C44044000515CC3 /* CDTQInvalidQuerySyntax.m */,
+				8E19D00820A9C6BC0012F346 /* CDTQLifecycleTests.m */,
 				98F77E111C44044000515CC3 /* CDTQPerformanceTests.m */,
 				98F77E121C44044000515CC3 /* CDTQQueryExecutorTests.m */,
 				98F77E131C44044000515CC3 /* CDTQQuerySortTests.m */,
@@ -3018,6 +3022,7 @@
 				8E6D541220930F4E006FF35F /* CDTQIndexNameTests.m in Sources */,
 				980F228C1CB818530075A843 /* CDTQPerformanceTests.m in Sources */,
 				980F228D1CB818530075A843 /* CDTQQueryExecutorTests.m in Sources */,
+				8E19D00B20A9D0BB0012F346 /* CDTQLifecycleTests.m in Sources */,
 				980F228E1CB818530075A843 /* CDTQQuerySortTests.m in Sources */,
 				980F228F1CB818530075A843 /* CDTQQuerySqlTranslatorTests.m in Sources */,
 				980F22901CB818530075A843 /* CDTQTextSearchTests.m in Sources */,
@@ -3213,6 +3218,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E19D00920A9C6BC0012F346 /* CDTQLifecycleTests.m in Sources */,
 				980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */,
 				980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */,
 				980F22731CB818260075A843 /* CDTQIndexManagerTests.m in Sources */,
