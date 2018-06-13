@@ -48,7 +48,7 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
         }
         logName += "_${target}.log"
         def envVariables = ["TEST_COUCH_LOGGING_LEVEL=31","LOG_NAME=${logName}"]
-        
+
         // On non-master only run the "small" RA tests
         if (env.BRANCH_NAME != "master") {
             envVariables += ["TEST_COUCH_N_DOCS=20","TEST_COUCH_LARGE_REV_TREE_SIZE=1","TEST_COUCH_RA_SMALL=true"]
@@ -56,7 +56,7 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
 
         // Build and test
         try {
-            
+
             def credsId = ''
             def credsUser = ''
             def credsPass = ''
@@ -121,10 +121,10 @@ def podLibLint() {
     node('macos') {
         // Clean the directory before un-stashing (removes old logs)
         deleteDir()
-        
+
         // Unstash the source on this node
         unstash name: 'source'
-        
+
         def logName = "podliblint.log"
         try {
             sh "rake podliblint | tee ${logName}"
@@ -185,7 +185,7 @@ stage('BuildAndTest') {
             },
             macosRATEncrypted: {
                 buildAndTest('macos', 'replicationacceptanceosx', 'OSX_DEST', 'yes')
-            },                
+            },
             iosIamRAT: {
                 buildAndTest('ios', 'replicationacceptanceios', 'IPHONE_DEST', 'no', 'yes')
             },
