@@ -14,6 +14,8 @@
  * and limitations under the License.
  */
 
+properties([buildDiscarder(logRotator(numToKeepStr: '10'))])
+
 def podfile(podfileDir) {
     // Lock the pod repo and update the pod
 
