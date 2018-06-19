@@ -29,5 +29,5 @@ Got a 400 bad request
 - Version(s) that are affected by this issue.
     > 2.0.2
 - iOS/macOS version
-    >macOS 10.13.1
+    > macOS 10.13.1
 -->
