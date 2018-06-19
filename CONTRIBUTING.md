@@ -1,6 +1,19 @@
-# Contributing to CDTDatastore
+# Contributing
 
-## Developer Certificate of Origin
+## Issues
+
+Please [read these guidelines](http://ibm.biz/cdt-issue-guide) before opening an issue.
+If you still need to open an issue then we ask that you complete the template as
+fully as possible.
+
+## Pull requests
+
+We welcome pull requests, but ask contributors to keep in mind the following:
+
+* Only PRs with the template completed will be accepted
+* We will not accept PRs for user specific functionality
+
+### Developer Certificate of Origin
 
 In order for us to accept pull-requests, the contributor must sign-off a
 [Developer Certificate of Origin (DCO)](DCO1.1.txt). This clarifies the
@@ -13,56 +26,9 @@ Please read the agreement and acknowledge it by ticking the appropriate box in t
 
 - [x] Tick to sign-off your agreement to the Developer Certificate of Origin (DCO) 1.1
 
-## Setting up your environment
+## General information
 
-You have probably got most of these set up already, but starting from scratch
-you'll need:
-
-* Xcode
-* Xcode command line tools
-* Cocoapods (minimum version 1.0.0 beta 2)
-* Homebrew (optional, but useful)
-* xcpretty (optional)
-
-First, download Xcode from the app store or [ADC][adc].
-
-When this is installed, install the command line tools. The simplest way is:
-
-```bash
-xcode-select --install
-```
-
-Install homebrew using the [guide on the homebrew site][homebrew].
-
-Install cocoapods using the [guide on their site][cpinstall].
-
-Note that we currently require a pre-release version of cocoapods, so
-your install options will look something like this:
-
-```bash
-sudo gem install cocoapods --pre
-```
-
-Finally, if you want to build from the command line, install [xcpretty][xcpretty],
-which makes the `xcodebuild` output more readable.
-
-It's a gem:
-
-```bash
-sudo gem install xcpretty
-```
-
-[adc]: http://developer.apple.com/
-[xcpretty]: https://github.com/mneorr/XCPretty
-[homebrew]: http://brew.sh
-[cpinstall]: http://guides.cocoapods.org/using/index.html
-
-## Coding guidelines
-
-The house style is [documented](doc/style-guide.md). There's information there on using
-`clang-format` to automatically use the right format.
-
-## Getting started with the project
+### Getting started with the project
 
 The main workspace is `CDTDatastore.xcworkspace` in the root of the
 checkout. This contains everything needed to develop and test the
@@ -132,6 +98,76 @@ First, make sure you add them to the right group within the `CDTDatastore` group
 When adding files to the workspace, make sure to keep the groups in the
 workspace up to date with the file locations on the file system.
 
+### Coding guidelines
+
+The house style is [documented](doc/style-guide.md). There's information there on using
+`clang-format` to automatically use the right format.
+
+## Requirements
+
+### Setting up your environment
+
+You have probably got most of these set up already, but starting from scratch
+you'll need:
+
+* Xcode
+* Xcode command line tools
+* Cocoapods (minimum version 1.0.0 beta 2)
+* Homebrew (optional, but useful)
+* xcpretty (optional)
+
+First, download Xcode from the app store or [ADC][adc].
+
+When this is installed, install the command line tools. The simplest way is:
+
+```bash
+xcode-select --install
+```
+
+Install homebrew using the [guide on the homebrew site][homebrew].
+
+Install cocoapods using the [guide on their site][cpinstall].
+
+Note that we currently require a pre-release version of cocoapods, so
+your install options will look something like this:
+
+```bash
+sudo gem install cocoapods --pre
+```
+
+Finally, if you want to build from the command line, install [xcpretty][xcpretty],
+which makes the `xcodebuild` output more readable.
+
+It's a gem:
+
+```bash
+sudo gem install xcpretty
+```
+
+[adc]: http://developer.apple.com/
+[xcpretty]: https://github.com/mneorr/XCPretty
+[homebrew]: http://brew.sh
+[cpinstall]: http://guides.cocoapods.org/using/index.html
+
+## Building
+
+### With Encryption
+
+Add the `ENCRYPT_DATABASE=1` environment variable.
+
+### Documentation
+
+Install [appledocs][appledocs].
+
+Use `rake docs` to build the docs and install into Xcode.
+
+As the `appledocs` docs themselves are down, here's a
+[good introduction to the format](http://www.cocoanetics.com/2011/11/amazing-apple-like-documentation/).
+
+[appledocs]: http://gentlebytes.com/appledoc/
+
+## Testing
+
 ### Tests and encryption tests
 
 It is possible to combine `CDTDatastore` with [SQLCipher][SQLCipher] to generate
@@ -152,17 +188,6 @@ to run the tests with encryption support, use the rakefile.
 [SQLCipher]: https://www.zetetic.net/sqlcipher/
 [FMDB]: https://github.com/ccgus/fmdb
 [CDTEncryptionKeyProvider]: Classes/common/Encryption/CDTEncryptionKeyProvider.h
-
-### Documentation
-
-Install [appledocs][appledocs].
-
-Use `rake docs` to build the docs and install into Xcode.
-
-As the `appledocs` docs themselves are down, here's a
-[good introduction to the format](http://www.cocoanetics.com/2011/11/amazing-apple-like-documentation/).
-
-[appledocs]: http://gentlebytes.com/appledoc/
 
 ### Using xcodebuild and xcpretty to run the tests
 
@@ -209,7 +234,6 @@ Environment Variable | Purpose | Default
 `TEST_COUCH_USERNAME` | CouchDB account username |
 `TEST_COUCH_PASSWORD` | CouchDB account Password |
 
-
 Example
 
 ```bash
@@ -222,18 +246,3 @@ $ export TEST_COUCH_PASSWORD=apassword
 $ xcodebuild -workspace ReplicationAcceptance.xcworkspace -scheme RA_Tests_OSX -destination 'platform=OS X' test | xcpretty
 
 ```
-
-## Contributing your changes
-
-We follow a fairly standard procedure:
-
-* Fork the CDTDatastore repo into your own account, clone to your machine.
-* Create a branch with your changes on (`git checkout -b my-new-feature`)
-  * Make sure to update the CHANGELOG and CONTRIBUTORS before sending a PR.
-  * All contributions must include tests.
-  * Try to follow the style of the code around the code you
-    are adding -- the project contains source code from a few places with
-    slightly differing styles.
-* Commit your changes (`git commit -am 'Add some feature'`)
-* Push to the branch (`git push origin my-new-feature`)
-* Issue a PR for this to our repo.
