@@ -4,6 +4,7 @@
 //
 //  Created by Michael Rhodes on 04/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -26,6 +27,8 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 @interface CDTDatastoreManager ()
 
+@property NSMutableDictionary<NSString*, CDTDatastore*> *openDatastores;
+
 @end
 
 @implementation CDTDatastoreManager
@@ -34,6 +37,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 {
     self = [super init];
     if (self) {
+        _openDatastores = [NSMutableDictionary dictionary];
         _manager =
             [[TD_DatabaseManager alloc] initWithDirectory:directoryPath options:nil error:outError];
         if (!_manager) {
@@ -55,72 +59,110 @@ NSString *const CDTExtensionsDirName = @"_extensions";
        withEncryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
                            error:(NSError *__autoreleasing *)error
 {
-    //    if (![TD_Database isValidDatabaseName:name]) {
-    //      Not a public method yet
-    //    }
-
-    CDTDatastore *datastore = nil;
-
-    NSString *errorReason = nil;
-    TD_Database *db = [self.manager databaseNamed:name];
-    if (db) {
-        datastore = [[CDTDatastore alloc] initWithManager:self database:db encryptionKeyProvider:provider];
-
-        if (!datastore) {
-            errorReason = NSLocalizedString(@"Wrong key?", nil);
+    @synchronized (self) {
+        CDTDatastore *datastore = _openDatastores[name];
+        if (datastore != nil) {
+            NSLog(@"returning already open CDTDatastore %@", name);
+            return datastore;
         }
-    } else {
-        errorReason = NSLocalizedString(@"Invalid name?", nil);
-    }
+        NSLog(@"opening new CDTDatastore %@", name);
 
-    if (!datastore && error) {
-        NSDictionary *userInfo = @{
-            NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't create database.", nil),
-            NSLocalizedFailureReasonErrorKey : errorReason,
-            NSLocalizedRecoverySuggestionErrorKey : errorReason
-        };
-        *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:400 userInfo:userInfo];
+        
+        NSString *errorReason = nil;
+        TD_Database *db = [self.manager databaseNamed:name];
+        if (db) {
+            datastore = [[CDTDatastore alloc] initWithManager:self database:db encryptionKeyProvider:provider];
+            
+            if (!datastore) {
+                errorReason = NSLocalizedString(@"Wrong key?", nil);
+            }
+        } else {
+            errorReason = NSLocalizedString(@"Invalid name?", nil);
+        }
+        
+        if (!datastore && error) {
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey : NSLocalizedString(@"Couldn't create database.", nil),
+                                       NSLocalizedFailureReasonErrorKey : errorReason,
+                                       NSLocalizedRecoverySuggestionErrorKey : errorReason
+                                       };
+            *error = [NSError errorWithDomain:CDTDatastoreErrorDomain code:400 userInfo:userInfo];
+        }
+        
+        if (datastore != nil) {
+            _openDatastores[name] = datastore;
+        }
+        return datastore;
+        
     }
+}
 
-    return datastore;
+- (void)closeDatastoreNamed:(NSString *)name {
+    @synchronized (self) {
+        NSLog(@"closing CDTDatastore %@", name);
+        CDTDatastore *ds = _openDatastores[name];
+        if (ds == nil) {
+            // this may not be an issue if delete was already called and it was removed there
+            NSLog(@"warning can't find CDTDatastore to close %@", name);
+            return;
+        }
+        [[ds database] close];
+        [_openDatastores removeObjectForKey:name];
+    }
+}
+
+- (void)dealloc {
+    NSLog(@"dealloc CDTDatastoreManager");
+    /*
+    for (CDTDatastore *ds in _openDatastores) {
+        [[ds database] close];
+    }*/
+    [_openDatastores removeAllObjects];
+    _manager = nil;
 }
 
 - (BOOL)deleteDatastoreNamed:(NSString *)name error:(NSError *__autoreleasing *)error
 {
-    // first delete the SQLite database and any attachments
-    NSError *localError = nil;
-    BOOL success = [self.manager deleteDatabaseNamed:name error:&localError];
-    if (!success && error) {
-        if ([localError.domain isEqualToString:kTD_DatabaseManagerErrorDomain] &&
-            (localError.code == kTD_DatabaseManagerErrorCodeInvalidName)) {
-            localError = [NSError errorWithDomain:CDTDatastoreErrorDomain
-                                             code:404
-                                         userInfo:localError.userInfo];
+    @synchronized (self) {
+        // first delete the SQLite database and any attachments
+        NSError *localError = nil;
+        BOOL success = [self.manager deleteDatabaseNamed:name error:&localError];
+        if (!success && error) {
+            if ([localError.domain isEqualToString:kTD_DatabaseManagerErrorDomain] &&
+                (localError.code == kTD_DatabaseManagerErrorCodeInvalidName)) {
+                localError = [NSError errorWithDomain:CDTDatastoreErrorDomain
+                                                 code:404
+                                             userInfo:localError.userInfo];
+            }
+            
+            *error = localError;
         }
         
-        *error = localError;
-    }
-    
-    if (success) {
-        // delete any cloudant extensions
-        NSString *dbPath = [self.manager pathForName:name];;
-        NSString *extPath = [dbPath stringByDeletingLastPathComponent];
-        extPath = [extPath
-                   stringByAppendingPathComponent:[name stringByAppendingString:CDTExtensionsDirName]];
-        
-        NSFileManager *fm = [NSFileManager defaultManager];
-        
-        BOOL isDirectory;
-        BOOL extenstionsExists = [fm fileExistsAtPath:extPath isDirectory:&isDirectory];
-        if (extenstionsExists && isDirectory) {
-            success = [fm removeItemAtPath:extPath error:&localError];
-            if (!success && error) {
-                *error = localError;
+        if (success) {
+            // delete any cloudant extensions
+            // remove the open datastore: this ensures that any associated index manager has -dealloc
+            // called on it _before_ we attempt to delete its underlying database
+            NSLog(@"calling close from delete %@", name);
+            [_openDatastores removeObjectForKey:name];
+            NSString *dbPath = [self.manager pathForName:name];;
+            NSString *extPath = [dbPath stringByDeletingLastPathComponent];
+            extPath = [extPath
+                       stringByAppendingPathComponent:[name stringByAppendingString:CDTExtensionsDirName]];
+            
+            NSFileManager *fm = [NSFileManager defaultManager];
+            
+            BOOL isDirectory;
+            BOOL extenstionsExists = [fm fileExistsAtPath:extPath isDirectory:&isDirectory];
+            if (extenstionsExists && isDirectory) {
+                success = [fm removeItemAtPath:extPath error:&localError];
+                if (!success && error) {
+                    *error = localError;
+                }
             }
         }
+        
+        return success;
     }
-    
-    return success;
 }
 
 - (NSArray* /* NSString */) allDatastores

@@ -27,6 +27,7 @@ abstract_target 'base' do
         pod 'Expecta'
         pod 'OCMock'
         pod 'OHHTTPStubs'
+        pod 'RSSwizzle'
         pod MRDatabaseContentChecker, :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 
         target :CDTDatastoreTests do

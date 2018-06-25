@@ -4,6 +4,7 @@
 //
 //  Created by Enrique de la Torre Fernandez on 13/03/2015.
 //  Copyright (c) 2015 Cloudant. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -116,6 +117,9 @@
 
     NSString *dbName = @"testdatastoremanager_alreadyopen";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:nilProvider error:nil];
+    
+    // Close
+    [self.factory closeDatastoreNamed:dbName];
 
     // Test
     XCTAssertThrows([self.factory datastoreNamed:dbName withEncryptionKeyProvider:nil error:nil],
@@ -130,6 +134,9 @@
 
     NSString *dbName = @"testdatastoremanager_alreadyopennonencryptdb";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:nilProvider error:nil];
+    
+    // Close
+    [self.factory closeDatastoreNamed:dbName];
 
     // Get datastore
     CDTHelperFixedKeyProvider *fixedProvider = [CDTHelperFixedKeyProvider provider];
@@ -175,6 +182,9 @@
     NSString *dbName = @"testdatastoremanager_alreadyopenencryptdb";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
 
+    // Close
+    [self.factory closeDatastoreNamed:dbName];
+    
     // Get datastore
     CDTEncryptionKeyNilProvider *nilProvider = [CDTEncryptionKeyNilProvider provider];
 
@@ -195,6 +205,9 @@
     NSString *dbName = @"testdatastoremanager_encryptdbwrongkey_again";
     [self.factory datastoreNamed:dbName withEncryptionKeyProvider:fixedProvider error:nil];
 
+    // Close
+    [self.factory closeDatastoreNamed:dbName];
+    
     // Get datastore
     CDTHelperFixedKeyProvider *otherProvider = [fixedProvider negatedProvider];
 

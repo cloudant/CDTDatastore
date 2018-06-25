@@ -1,5 +1,10 @@
 # CDTDatastore CHANGELOG
 
+## Unreleased
+- [NEW] Add method `-closeDatastoreNamed:` on `CDTDatastoreManager`.
+- [FIXED] Fix issue where repeated calls to `-datastoreNamed:error:` on `CDTDatastoreManager` for
+  the same datastore could cause crashes or failures.
+
 ## 2.0.3 (2018-05-17)
 - [FIXED] Bug which prevented CDTDatastore instances from being closed after calling index/query
   methods.

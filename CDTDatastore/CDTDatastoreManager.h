@@ -4,6 +4,7 @@
 //
 //  Created by Michael Rhodes on 04/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -60,6 +61,7 @@ extern NSString *__nonnull const CDTDatastoreErrorDomain;
 
  */
 - (BOOL)deleteDatastoreNamed:(nonnull NSString *)name error:(NSError *__autoreleasing __nullable * __nullable)error;
+- (void)closeDatastoreNamed:(nonnull NSString *)name;
 
 /**
  

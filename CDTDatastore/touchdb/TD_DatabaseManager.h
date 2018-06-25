@@ -64,9 +64,9 @@ extern NSUInteger const kTD_DatabaseManagerErrorCodeInvalidName;
 - (void)close;
 
 
-#if DEBUG  // made public for testing (Adam Cox, Cloudant. 2014-1-20)
+// made public for testing (Adam Cox, Cloudant. 2014-1-20)
 + (TD_DatabaseManager*)createEmptyAtPath:(NSString*)path;
 + (TD_DatabaseManager*)createEmptyAtTemporaryPath:(NSString*)name;
-#endif
+
 
 @end

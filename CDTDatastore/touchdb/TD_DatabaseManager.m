@@ -50,7 +50,6 @@ static NSCharacterSet* kIllegalNameChars;
     }
 }
 
-#if DEBUG
 + (TD_DatabaseManager*)createEmptyAtPath:(NSString*)path
 {
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
@@ -65,7 +64,6 @@ static NSCharacterSet* kIllegalNameChars;
 {
     return [self createEmptyAtPath:[NSTemporaryDirectory() stringByAppendingPathComponent:name]];
 }
-#endif
 
 - (id)initWithDirectory:(NSString*)dirPath
                 options:(const TD_DatabaseManagerOptions*)options

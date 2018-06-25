@@ -399,9 +399,8 @@ both over thirty _and_ named `mike`:
 
 ### Executing queries
 
-To find documents matching a query, use the `CDTQIndexManager` objects `-find:`
-function. Use the returned object's `-enumerateObjectsUsingBlock:` method to iterate
-over the results:
+To find documents matching a query, use the `-find:` method. Use the returned object's
+`-enumerateObjectsUsingBlock:` method to iterate over the results:
 
 ```objc
 CDTQResultSet *result = [ds find:query];

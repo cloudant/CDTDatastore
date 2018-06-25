@@ -127,11 +127,8 @@ static const int VERSION = 2;
 - (void)dealloc
 {
     // close the database.
+    NSLog(@"dealloc CDTQIndexManager");
     [self.database close];
-    // remove the datastore's association with us, otherwise it will
-    // become invalid since it's a weak reference
-    objc_setAssociatedObject(self.datastore, @selector(CDTQManager), nil,
-                             OBJC_ASSOCIATION_ASSIGN);
 }
 
 #pragma mark List indexes
