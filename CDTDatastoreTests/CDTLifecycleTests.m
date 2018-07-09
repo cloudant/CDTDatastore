@@ -18,6 +18,7 @@
 #import "FMDatabaseQueue.h"
 
 #include <sys/stat.h>
+#include <sys/mman.h>
 
 @protocol CDTEncryptionKeyProvider;
 
