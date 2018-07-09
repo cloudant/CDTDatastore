@@ -21,12 +21,9 @@
 
 static int cdtDatastoreDeallocCount;
 static int cdtqIndexManagerDeallocCount;
-static int cdtDatastoreManagerDeallocCount;
 
 static int cdtDatastoreInitCount;
 static int cdtqIndexManagerInitCount;
-static int cdtDatastoreManagerInitCount;
-
 
 @interface CDTLifecycleTests : XCTestCase
 @end
@@ -36,11 +33,9 @@ static int cdtDatastoreManagerInitCount;
 -(void)setUp {
     cdtDatastoreDeallocCount = 0;
     cdtqIndexManagerDeallocCount = 0;
-    cdtDatastoreManagerDeallocCount = 0;
 
     cdtDatastoreInitCount = 0;
     cdtqIndexManagerInitCount = 0;
-    cdtDatastoreManagerInitCount = 0;
 }
 
 +(void)setUp
@@ -48,7 +43,6 @@ static int cdtDatastoreManagerInitCount;
     // "swizzle" dealloc for these classes by incrementing our counter and then calling the original method:
     // - CDTDatastore
     // - CDTQIndexManager
-    // - CDTDatastoreManager
     RSSwizzleInstanceMethod(CDTDatastore,
                             NSSelectorFromString(@"dealloc"),
                             RSSWReturnType(void),
@@ -65,15 +59,6 @@ static int cdtDatastoreManagerInitCount;
                             RSSWReplacement({
         // increment
         cdtqIndexManagerDeallocCount++;
-        RSSWCallOriginal();
-    }), 0, NULL);
-    RSSwizzleInstanceMethod(CDTDatastoreManager,
-                            NSSelectorFromString(@"dealloc"),
-                            RSSWReturnType(void),
-                            RSSWArguments(),
-                            RSSWReplacement({
-        // increment
-        cdtDatastoreManagerDeallocCount++;
         RSSWCallOriginal();
     }), 0, NULL);
 
