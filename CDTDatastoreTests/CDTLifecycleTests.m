@@ -255,8 +255,6 @@ static int cdtqIndexManagerInitCount;
     NSString *factoryPath = [[NSFileManager defaultManager]
                              stringWithFileSystemRepresentation:tempDirectoryNameCString
                              length:strlen(result)];
-    free(tempDirectoryNameCString);
-    
     NSError *error;
     CDTDatastoreManager *factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
     // assign to ds1 inside an autoreleasepool so our pointer doesn't hang on to it
@@ -269,6 +267,12 @@ static int cdtqIndexManagerInitCount;
     // assert that the following message is not output:
     // "BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use"
     // close redirected file
+
+    // append the test name to the redirected stderr, for two reasons:
+    // - we can make a positive assertion on this string and thus check that the redirection worked
+    // - under some circumstances (in release mode), mmap can fail on an empty file
+    fprintf(stderr, "testDeletingDatastoreDeletesIndexManagerAfterClosingFilehandle\n");
+    fflush(stderr);
     fclose (stderr_redir);
     // reassign stderr to correct fd for subsequent tests
     stderr = fdopen(stderr_orig, "a");
@@ -277,10 +281,16 @@ static int cdtqIndexManagerInitCount;
     stat(stderr_redir_filename, &st);
     int fd = open(stderr_redir_filename, O_RDONLY, 0);
     void *stderr_redirect_buf = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    // assert redirected log file contains test name
+    XCTAssert(strstr(stderr_redirect_buf,
+                     "testDeletingDatastoreDeletesIndexManagerAfterClosingFilehandle") != NULL,
+              "The redirected stderr log file should contain the test name");
+    // assert redirected log file does not contain error string
     XCTAssert(strstr(stderr_redirect_buf,
                      "BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use") == NULL,
               "The redirected stderr log file should not contain the \"BUG IN CLIENT\" error string");
     // free resources
+    free(tempDirectoryNameCString);
     free(stderr_redir_filename);
     munmap(stderr_redirect_buf, st.st_size);
     close(fd);
