@@ -138,7 +138,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
             // delete any cloudant extensions
             // remove the open datastore: this ensures that any associated index manager has -dealloc
             // called on it _before_ we attempt to delete its underlying database
-            NSLog(@"calling close from delete %@", name);
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"calling close from delete %@", name);
             [_openDatastores removeObjectForKey:name];
             NSString *dbPath = [self.manager pathForName:name];;
             NSString *extPath = [dbPath stringByDeletingLastPathComponent];
