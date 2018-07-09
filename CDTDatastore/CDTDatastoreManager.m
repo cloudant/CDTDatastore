@@ -16,8 +16,8 @@
 
 #import "CDTDatastoreManager.h"
 #import "CDTDatastore+EncryptionKey.h"
-
 #import "CDTEncryptionKeyNilProvider.h"
+#import "CDTLogging.h"
 
 #import "TD_DatabaseManager.h"
 #import "TD_Database.h"
@@ -62,10 +62,10 @@ NSString *const CDTExtensionsDirName = @"_extensions";
     @synchronized (self) {
         CDTDatastore *datastore = _openDatastores[name];
         if (datastore != nil) {
-            NSLog(@"returning already open CDTDatastore %@", name);
+            CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"returning already open CDTDatastore %@", name);
             return datastore;
         }
-        NSLog(@"opening new CDTDatastore %@", name);
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"opening new CDTDatastore %@", name);
 
         
         NSString *errorReason = nil;
@@ -99,11 +99,11 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (void)closeDatastoreNamed:(NSString *)name {
     @synchronized (self) {
-        NSLog(@"closing CDTDatastore %@", name);
+        CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"closing CDTDatastore %@", name);
         CDTDatastore *ds = _openDatastores[name];
         if (ds == nil) {
             // this may not be an issue if delete was already called and it was removed there
-            NSLog(@"warning can't find CDTDatastore to close %@", name);
+            CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"can't find CDTDatastore to close %@", name);
             return;
         }
         [[ds database] close];
@@ -112,7 +112,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 }
 
 - (void)dealloc {
-    NSLog(@"dealloc CDTDatastoreManager");
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc CDTDatastoreManager %@", self);
     /*
     for (CDTDatastore *ds in _openDatastores) {
         [[ds database] close];

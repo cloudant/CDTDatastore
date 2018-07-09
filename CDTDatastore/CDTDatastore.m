@@ -96,7 +96,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 - (void)dealloc {
     _database = nil;
-    NSLog(@"dealloc CDTDatastore");
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc CDTDatastore %@", self);
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 

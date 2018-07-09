@@ -127,7 +127,7 @@ static const int VERSION = 2;
 - (void)dealloc
 {
     // close the database.
-    NSLog(@"dealloc CDTQIndexManager");
+    CDTLogDebug(CDTQ_LOGGING_CONTEXT, @"-dealloc CDTQIndexManager %@", self);
     [self.database close];
 }
 

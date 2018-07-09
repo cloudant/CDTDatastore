@@ -642,9 +642,9 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (void)dealloc
 {
-    NSLog(@"dealloc td_database");
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc TD_Database %@", self);
     if (self.isOpen) {
-        // Warn(@"%@ dealloced without being closed first!", self);
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"dealloced without being closed first! %@", self);
         [self close];
     }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
