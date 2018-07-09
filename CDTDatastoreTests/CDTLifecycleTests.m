@@ -17,6 +17,8 @@
 #import "FMDatabase.h"
 #import "FMDatabaseQueue.h"
 
+#include <sys/stat.h>
+
 @protocol CDTEncryptionKeyProvider;
 
 static int cdtDatastoreDeallocCount;
@@ -241,7 +243,14 @@ static int cdtqIndexManagerInitCount;
     strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
     
     char *result = mkdtemp(tempDirectoryNameCString);
-    
+
+    // duplicate stderr fd so we can re-use it later
+    int stderr_orig = dup(2);
+    // redirect stderr to temporary file
+    char *stderr_redir_filename;
+    asprintf(&stderr_redir_filename, "%s/%s", tempDirectoryNameCString, "stderr.redirect.txt");
+    FILE *stderr_redir = freopen(stderr_redir_filename, "w", stderr);
+
     NSString *factoryPath = [[NSFileManager defaultManager]
                              stringWithFileSystemRepresentation:tempDirectoryNameCString
                              length:strlen(result)];
@@ -255,9 +264,25 @@ static int cdtqIndexManagerInitCount;
         XCTAssertNil(error);
         [ds1 updateAllIndexes];
     }
-    // currently there is no way to assert on this - watch the log and check that the following message is not output:
-    // "BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use"
     [factory deleteDatastoreNamed:@"test" error:&error];
+    // assert that the following message is not output:
+    // "BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use"
+    // close redirected file
+    fclose (stderr_redir);
+    // reassign stderr to correct fd for subsequent tests
+    stderr = fdopen(stderr_orig, "a");
+    // mmap the redirected file to search for string
+    struct stat st;
+    stat(stderr_redir_filename, &st);
+    int fd = open(stderr_redir_filename, O_RDONLY, 0);
+    void *stderr_redirect_buf = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    XCTAssert(strstr(stderr_redirect_buf,
+                     "BUG IN CLIENT OF libsqlite3.dylib: database integrity compromised by API violation: vnode unlinked while in use") == NULL,
+              "The redirected stderr log file should not contain the \"BUG IN CLIENT\" error string");
+    // free resources
+    free(stderr_redir_filename);
+    munmap(stderr_redirect_buf, st.st_size);
+    close(fd);
 }
 
 @end
