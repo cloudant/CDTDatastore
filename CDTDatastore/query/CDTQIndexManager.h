@@ -13,6 +13,9 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+// NB: These methods are for internal use only. For index and query functionality, use the methods
+// available in the CDTDatastore Query category, by importing the CDTDatastore+Query.h header.
+
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
