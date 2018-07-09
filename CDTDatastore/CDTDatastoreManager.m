@@ -113,10 +113,6 @@ NSString *const CDTExtensionsDirName = @"_extensions";
 
 - (void)dealloc {
     CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc CDTDatastoreManager %@", self);
-    /*
-    for (CDTDatastore *ds in _openDatastores) {
-        [[ds database] close];
-    }*/
     [_openDatastores removeAllObjects];
     _manager = nil;
 }
