@@ -21,6 +21,7 @@ public class SwiftTests : CloudantSyncTests {
 
     // test that the result of listIndexes() is correctly bridged from obj-c to swift
     public func testListIndexes() {
+        autoreleasepool { () -> Void in
         do {
             let store = try factory.datastoreNamed("my_ds")
             let rev = CDTDocumentRevision()
@@ -32,9 +33,13 @@ public class SwiftTests : CloudantSyncTests {
             XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("_id"))
             XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("_rev"))
             XCTAssertTrue((indexes["index"]!["fields"] as! Array<String>).contains("hello"))
-        } catch {
+            }
+
+         catch {
             XCTFail("Test failed with \(error)")
         }
+        }
+        print("done")
     }
     
 }

@@ -6,6 +6,7 @@
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 
 #import <Foundation/Foundation.h>
 
@@ -64,9 +65,7 @@
 - (void)addInput:(id)input length:(UInt64)length;
 - (void)opened;
 
-#if DEBUG
 - (id)initWithBufferSize:(NSUInteger)
     bufferSize;  // added to public interface for testing. Adam Cox (Cloudant) 2014-1-17
-#endif
 
 @end

@@ -22,6 +22,8 @@
 
 - (CDTDatastore*)create_datastore;
 
+@property CDTDatastoreManager *manager;
+
 @end
 
 @implementation CDTAppDelegate
@@ -78,7 +80,13 @@
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-
+    
+    // Explicitly close the Datastore. For the purposes of our application, this is not strictly
+    // necessary since the Datastore Manager will automatically close all datastores when it is
+    // deallocated. In applications which open large numbers of Datastores it may be necessary to
+    // explicitly close Datastores after use to avoid exhaustion of file handles and other native
+    // resources.
+    [self.manager closeDatastoreNamed:@"todo_items"];
 }
 
 /**
@@ -118,7 +126,7 @@
     
     NSString *path = [storeURL path];
     
-    CDTDatastoreManager *manager = [[CDTDatastoreManager alloc] initWithDirectory:path
+    self.manager = [[CDTDatastoreManager alloc] initWithDirectory:path
                                                                             error:&outError];
     
     if (nil != outError) {
@@ -126,7 +134,7 @@
         exit(1);
     }
 
-    CDTDatastore *datastore = [manager datastoreNamed:@"todo_items" error:&outError];
+    CDTDatastore *datastore = [self.manager datastoreNamed:@"todo_items" error:&outError];
 
     if (nil != outError) {
         NSLog(@"Error creating datastore: %@", outError);

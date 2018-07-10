@@ -4,6 +4,7 @@
 //
 //  Created by Michael Rhodes on 02/07/2013.
 //  Copyright (c) 2013 Cloudant. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -42,7 +43,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @property (nonatomic, strong, readonly) id<CDTEncryptionKeyProvider> keyProvider;
 
-@property (readonly) CDTDatastoreManager *manager;
+@property (readonly, weak) CDTDatastoreManager *manager;
 - (void)TDdbChanged:(NSNotification *)n;
 - (BOOL)validateBodyDictionary:(NSDictionary *)body error:(NSError *__autoreleasing *)error;
 
@@ -93,7 +94,11 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     return self;
 }
 
-- (void)dealloc { [[NSNotificationCenter defaultCenter] removeObserver:self]; }
+- (void)dealloc {
+    _database = nil;
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc CDTDatastore %@", self);
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 #pragma mark Properties
 

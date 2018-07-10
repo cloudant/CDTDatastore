@@ -37,6 +37,8 @@
 		8E705A951F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */; };
 		8E705A971F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */; };
 		8E705A981F0E348F00FF0219 /* CDTIAMSessionCookieInterceptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */; };
+		8EFE944220E3A58F00B1C9F5 /* CDTLifecycleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EFE944120E3A58F00B1C9F5 /* CDTLifecycleTests.m */; };
+		8EFE944320E3A58F00B1C9F5 /* CDTLifecycleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EFE944120E3A58F00B1C9F5 /* CDTLifecycleTests.m */; };
 		90D44B38BE0B6F0F5E18F462 /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FF78267FE761ABB49CEB76BB /* Pods_base_raTests_CDTDatastoreReplicationAcceptanceTests.framework */; };
 		980F22711CB818260075A843 /* CDTQFilterFieldsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0B1C44044000515CC3 /* CDTQFilterFieldsTest.m */; };
 		980F22721CB818260075A843 /* CDTQIndexCreatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 98F77E0C1C44044000515CC3 /* CDTQIndexCreatorTests.m */; };
@@ -774,6 +776,7 @@
 		8E705A901F0D360700FF0219 /* CDTSessionCookieInterceptorBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTSessionCookieInterceptorBase.h; sourceTree = "<group>"; };
 		8E705A911F0D360700FF0219 /* CDTSessionCookieInterceptorBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTSessionCookieInterceptorBase.m; sourceTree = "<group>"; };
 		8E705A961F0E325200FF0219 /* CDTIAMSessionCookieInterceptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTIAMSessionCookieInterceptorTests.m; sourceTree = "<group>"; };
+		8EFE944120E3A58F00B1C9F5 /* CDTLifecycleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CDTLifecycleTests.m; sourceTree = "<group>"; };
 		987382FB1C47B1DD00937212 /* CDTHelperFixedKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperFixedKeyProvider.h; sourceTree = "<group>"; };
 		987382FC1C47B1DD00937212 /* CDTHelperFixedKeyProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CDTHelperFixedKeyProvider.m; sourceTree = "<group>"; };
 		987382FD1C47B1DD00937212 /* CDTHelperOneUseKeyProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CDTHelperOneUseKeyProvider.h; sourceTree = "<group>"; };
@@ -1448,6 +1451,7 @@
 				8E6D540D207B7191006FF35F /* SwiftTests.swift */,
 				8E6D540B207B7190006FF35F /* CDTDatastoreTests-Bridging-Header.h */,
 				8E6D540C207B7190006FF35F /* CDTDatastoreTestsOSX-Bridging-Header.h */,
+				8EFE944120E3A58F00B1C9F5 /* CDTLifecycleTests.m */,
 			);
 			path = CDTDatastoreTests;
 			sourceTree = "<group>";
@@ -2195,7 +2199,6 @@
 				987383681C47B38800937212 /* Frameworks */,
 				9873836C1C47B38800937212 /* Headers */,
 				987383E81C47B38800937212 /* Resources */,
-				AAAFAA23FD102B2DE14164E5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2216,7 +2219,6 @@
 				9888EC061C512CA500E58783 /* Set Replication Settings */,
 				987385171C47B45300937212 /* Resources */,
 				AAFAB4E1487C11AE991A84B6 /* [CP] Embed Pods Frameworks */,
-				E4372A7365929208FED58858 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2236,7 +2238,6 @@
 				987385641C47B45600937212 /* Frameworks */,
 				987385681C47B45600937212 /* Resources */,
 				7F8DF32603F19F1A42B0D9AA /* [CP] Embed Pods Frameworks */,
-				3DA143B09B058961AC58AD47 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2309,7 +2310,6 @@
 				98F77B321C43FC9F00515CC3 /* Frameworks */,
 				98F77B331C43FC9F00515CC3 /* Headers */,
 				98F77B341C43FC9F00515CC3 /* Resources */,
-				74DB0EF2149B218BDE20C6D5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2330,7 +2330,6 @@
 				98F77B3E1C43FC9F00515CC3 /* Resources */,
 				987385FB1C49657A00937212 /* CopyFiles */,
 				46CB91A9A17B58E6709D1B46 /* [CP] Embed Pods Frameworks */,
-				DB896BECD3E80D5E28DA1622 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 				987385FA1C49655000937212 /* PBXBuildRule */,
@@ -2353,7 +2352,6 @@
 				9888EC091C512CF800E58783 /* Set Replication Settings */,
 				98F77D2A1C44028700515CC3 /* Resources */,
 				1037323DDF182E4A373CC77F /* [CP] Embed Pods Frameworks */,
-				FCFFBE629E5DB7844595CA06 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -2589,21 +2587,6 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		3DA143B09B058961AC58AD47 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-tests-CDTDatastoreTestsOSX/Pods-base-tests-CDTDatastoreTestsOSX-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		46CB91A9A17B58E6709D1B46 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2618,6 +2601,7 @@
 				"${BUILT_PRODUCTS_DIR}/MRDatabaseContentChecker-iOS/MRDatabaseContentChecker.framework",
 				"${BUILT_PRODUCTS_DIR}/OCMock-iOS/OCMock.framework",
 				"${BUILT_PRODUCTS_DIR}/OHHTTPStubs-iOS/OHHTTPStubs.framework",
+				"${BUILT_PRODUCTS_DIR}/RSSwizzle-iOS/RSSwizzle.framework",
 				"${BUILT_PRODUCTS_DIR}/Specta-iOS/Specta.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -2629,26 +2613,12 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MRDatabaseContentChecker.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OCMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OHHTTPStubs.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RSSwizzle.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Specta.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-tests-CDTDatastoreTests/Pods-base-tests-CDTDatastoreTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		74DB0EF2149B218BDE20C6D5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-CDTDatastore/Pods-base-CDTDatastore-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		754C5939D1D74685677B9518 /* [CP] Check Pods Manifest.lock */ = {
@@ -2683,6 +2653,7 @@
 				"${BUILT_PRODUCTS_DIR}/MRDatabaseContentChecker-macOS/MRDatabaseContentChecker.framework",
 				"${BUILT_PRODUCTS_DIR}/OCMock-macOS/OCMock.framework",
 				"${BUILT_PRODUCTS_DIR}/OHHTTPStubs-macOS/OHHTTPStubs.framework",
+				"${BUILT_PRODUCTS_DIR}/RSSwizzle-macOS/RSSwizzle.framework",
 				"${BUILT_PRODUCTS_DIR}/Specta-macOS/Specta.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -2694,6 +2665,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MRDatabaseContentChecker.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OCMock.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OHHTTPStubs.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RSSwizzle.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Specta.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2765,21 +2737,6 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/buildplist.sh\"";
 		};
-		AAAFAA23FD102B2DE14164E5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-CDTDatastoreOSX/Pods-base-CDTDatastoreOSX-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		AAFAB4E1487C11AE991A84B6 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2808,21 +2765,6 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DB896BECD3E80D5E28DA1622 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-tests-CDTDatastoreTests/Pods-base-tests-CDTDatastoreTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		DE64C5C18FA0A3DCA885795D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -2839,36 +2781,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E4372A7365929208FED58858 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTestsOSX-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FCFFBE629E5DB7844595CA06 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests/Pods-base-raTests-CDTDatastoreReplicationAcceptanceTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -3046,6 +2958,7 @@
 				987385371C47B45600937212 /* CDTQMatcherIndexManager.m in Sources */,
 				987385381C47B45600937212 /* TDMultipartWriterTests.m in Sources */,
 				987385391C47B45600937212 /* TD_DatabaseManagerTests.m in Sources */,
+				8EFE944320E3A58F00B1C9F5 /* CDTLifecycleTests.m in Sources */,
 				9873853B1C47B45600937212 /* TDCollateJSONTests.m in Sources */,
 				9873853C1C47B45600937212 /* CDTQMatcherQueryExecutor.m in Sources */,
 				9873853E1C47B45600937212 /* TDMiscTests.m in Sources */,
@@ -3266,6 +3179,7 @@
 				98F77EB21C44044000515CC3 /* TD_DatabaseTests.m in Sources */,
 				98F77E911C44044000515CC3 /* DatastoreManagerTests.m in Sources */,
 				98F77EBA1C44044000515CC3 /* TDMultiStreamWriterTests.m in Sources */,
+				8EFE944220E3A58F00B1C9F5 /* CDTLifecycleTests.m in Sources */,
 				987AF7B51DE7274C00577DAC /* CloudantTests+EncryptionTests.m in Sources */,
 				98F77EA71C44044000515CC3 /* CDTQEitherMatcher.m in Sources */,
 				98F77E901C44044000515CC3 /* DatastoreCRUD.m in Sources */,

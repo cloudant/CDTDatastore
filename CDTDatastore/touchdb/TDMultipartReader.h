@@ -6,6 +6,7 @@
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright(c) 2014 Cloudant, Inc.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 
 #import <Foundation/Foundation.h>
 @protocol TDMultipartReaderDelegate;
@@ -41,10 +42,8 @@
     You can call this from your -appendToPart and/or -finishedPart overrides. */
 @property (readonly) NSDictionary* headers;
 
-#if DEBUG
 - (NSData*)
     boundary;  // made public to be used in external test framework. Adam Cox (Cloudant) 2014-1-17
-#endif
 
 @end
 

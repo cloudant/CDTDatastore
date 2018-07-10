@@ -14,6 +14,9 @@
 //  either express or implied. See the License for the specific language governing permissions
 //  and limitations under the License.
 
+// NB: These methods are for internal use only. For index and query functionality, use the methods
+// available in the CDTDatastore Query category, by importing the CDTDatastore+Query.h header.
+
 //
 // The metadata for an index is represented in the database table as follows:
 //
@@ -127,11 +130,8 @@ static const int VERSION = 2;
 - (void)dealloc
 {
     // close the database.
+    CDTLogDebug(CDTQ_LOGGING_CONTEXT, @"-dealloc CDTQIndexManager %@", self);
     [self.database close];
-    // remove the datastore's association with us, otherwise it will
-    // become invalid since it's a weak reference
-    objc_setAssociatedObject(self.datastore, @selector(CDTQManager), nil,
-                             OBJC_ASSOCIATION_ASSIGN);
 }
 
 #pragma mark List indexes

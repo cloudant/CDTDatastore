@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -79,14 +80,12 @@
 }
 
 // This is ONLY FOR TESTS (see TDMultipartDownloader.m)
-#if DEBUG
 - (id)attachmentWriterForAttachment:(NSDictionary*)attachment
 {
     NSString* digest = $castIf(NSString, attachment[@"digest"]);
     if (!digest) return nil;
     return _pendingAttachmentsByDigest[digest];
 }
-#endif
 
 /**
  Pulls a "follows" attachment from the writer's pending store

@@ -8,7 +8,7 @@
 // Modified by Michael Rhodes, 2013
 // Copyright (c) 2013 Cloudant, Inc. All rights reserved.
 //
-// Copyright © 2017 IBM Corporation. All rights reserved.
+// Copyright © 2017, 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -642,8 +642,9 @@ static BOOL removeItemIfExists(NSString* path, NSError** outError)
 
 - (void)dealloc
 {
+    CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"-dealloc TD_Database %@", self);
     if (self.isOpen) {
-        // Warn(@"%@ dealloced without being closed first!", self);
+        CDTLogWarn(CDTDATASTORE_LOG_CONTEXT, @"dealloced without being closed first! %@", self);
         [self close];
     }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
