@@ -247,10 +247,10 @@ static int cdtqIndexManagerInitCount;
 
     // duplicate stderr fd so we can re-use it later
     int stderr_orig = dup(2);
-    // redirect stderr to temporary file
+    // reassign stderr to temporary file
     char *stderr_redir_filename;
     asprintf(&stderr_redir_filename, "%s/%s", tempDirectoryNameCString, "stderr.redirect.txt");
-    FILE *stderr_redir = freopen(stderr_redir_filename, "w", stderr);
+    stderr = fopen (stderr_redir_filename, "w");
 
     NSString *factoryPath = [[NSFileManager defaultManager]
                              stringWithFileSystemRepresentation:tempDirectoryNameCString
@@ -273,7 +273,6 @@ static int cdtqIndexManagerInitCount;
     // - under some circumstances (in release mode), mmap can fail on an empty file
     fprintf(stderr, "testDeletingDatastoreDeletesIndexManagerAfterClosingFilehandle\n");
     fflush(stderr);
-    fclose (stderr_redir);
     // reassign stderr to correct fd for subsequent tests
     stderr = fdopen(stderr_orig, "a");
     // mmap the redirected file to search for string
