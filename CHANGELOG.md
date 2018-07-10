@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## Unreleased
+## 2.1.0 (2018-07-10)
 - [NEW] Add method `-closeDatastoreNamed:` on `CDTDatastoreManager`.
 - [FIXED] Fix issue where repeated calls to `-datastoreNamed:error:` on `CDTDatastoreManager` for
   the same datastore could cause crashes or failures.

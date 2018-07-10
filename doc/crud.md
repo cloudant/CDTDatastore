@@ -68,8 +68,32 @@ let ds2 = try manager.datastoreNamed("other_datastore")
 
 These datastores are persisted to disk between application runs.
 
-The `CDTDatabaseManager` handles creating and initialising non-existent
+The `CDTDatastoreManager` handles creating and initialising non-existent
 datastores, so the object returned is ready for reading and writing.
+
+Calling `datastoreNamed` on an already open datastore will return the same reference to that
+datastore.
+
+Datastores are held open for as long as they are needed and are automatically closed when the
+`CDTDatastoreManager` is deallocated. This will typically happen at the end of the program or
+earlier (for instance if `autoreleasepool`s are used or the manager is explicitly set to `nil`).
+
+In applications which open large numbers of Datastores it may be necessary to explicitly close
+datastores after use to avoid exhaustion of file handles and other native resources.
+
+To close a datastore:
+
+Objective-C:
+
+```objc
+[manager closeDatastoreNamed:@"my_datastore"];
+```
+
+Swift:
+
+```swift
+manager.closeDatastoreNamed("my_datastore");
+```
 
 To delete a datastore and all associated data (i.e., attachments and
 extension data such as indexes (see [query.md](query.md)):
