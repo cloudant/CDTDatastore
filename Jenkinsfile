@@ -198,54 +198,12 @@ stage('BuildAndTest') {
     parallel(axes)
 }
 
-// Publish the master branch
+// Publish if needed (e.g. for master branch release build)
 stage('Publish') {
-    if (env.BRANCH_NAME == "master") {
-        node {
-            checkout scm // re-checkout to be able to git tag
-
-            // read the version string
-            def versionFile = readFile('CDTDatastore/Version.h').trim()
-            def version = getVersion(versionFile)
-
-            // if it is a release build then do the git tagging
-            if (isReleaseVersion(version)) {
-
-                def inMessage = false
-                // Read the CHANGELOG.md to get the tag message
-                tagMessage = ''
-                // find the message following the first "##" header
-                for (line in readFile('CHANGELOG.md').readLines()) {
-                    if (line =~ /^##/) {
-                        if (!inMessage) {
-                            inMessage = true
-                            continue
-                        } else {
-                            break
-                        }
-                    }
-                    if (inMessage) {
-                        // append the line to the tagMessage
-                        tagMessage = "${tagMessage}${line}\n"
-                    }
-                }
-
-                // Use git to tag the release at the version
-                try {
-                    // Awkward workaround until resolution of https://issues.jenkins-ci.org/browse/JENKINS-28335
-                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'github-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']]) {
-                        sh "git config user.email \"nomail@hursley.ibm.com\""
-                        sh "git config user.name \"Jenkins CI\""
-                        sh "git config credential.username ${env.GIT_USERNAME}"
-                        sh "git config credential.helper '!echo password=\$GIT_PASSWORD; echo'"
-                        sh "git tag -a ${version} -m '${tagMessage}'"
-                        sh "git push origin ${version}"
-                    }
-                } finally {
-                    sh "git config --unset credential.username"
-                    sh "git config --unset credential.helper"
-                }
-            }
-        }
-    }
+  gitTagAndPublish {
+    versionFile='CDTDatastore/Version.h'
+    changesFile='CHANGELOG.md'
+    isDraft=true
+    releaseApiUrl='https://api.github.com/repos/cloudant/CDTDatastore/releases'
+  }
 }
