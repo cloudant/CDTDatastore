@@ -10,13 +10,7 @@
 
 #import <FMDB/FMDB.h>
 
-#ifdef GNUSTEP
-#import <openssl/md5.h>
-#import <openssl/sha.h>
-#else
-#define COMMON_DIGEST_FOR_OPENSSL
 #import <CommonCrypto/CommonDigest.h>
-#endif
 
 #import "CDTEncryptionKeyProvider.h"
 #import "CDTBlobReader.h"
@@ -31,7 +25,7 @@ typedef NS_ENUM(NSInteger, CDTBlobStoreError) {
 /** Key identifying a data blob. This happens to be a SHA-1 digest. */
 typedef struct TDBlobKey
 {
-    uint8_t bytes[SHA_DIGEST_LENGTH];
+    uint8_t bytes[CC_SHA1_DIGEST_LENGTH];
 } TDBlobKey;
 
 /** A persistent content-addressable store for arbitrary-size data blobs.
@@ -109,7 +103,7 @@ typedef struct TDBlobKey
 
 typedef struct
 {
-    uint8_t bytes[MD5_DIGEST_LENGTH];
+    uint8_t bytes[CC_MD5_DIGEST_LENGTH];
 } TDMD5Key;
 
 /** Lets you stream a large attachment to a TDBlobStore asynchronously, e.g. from a network
@@ -120,8 +114,8 @@ typedef struct
     NSString* _tempPath;
     id<CDTBlobWriter> _blobWriter;
     UInt64 _length;
-    SHA_CTX _shaCtx;
-    MD5_CTX _md5Ctx;
+    CC_SHA1_CTX _shaCtx;
+    CC_MD5_CTX _md5Ctx;
     TDBlobKey _blobKey;
     TDMD5Key _MD5Digest;
 }

@@ -118,7 +118,7 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
             NSData *keyData = dataFromHexadecimalString(hexKey);
 
             TDBlobKey key;
-            [keyData getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+            [keyData getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
             NSString *blobFilename = [r stringForColumn:TDDatabaseBlobFilenamesColumnFilename];
 
@@ -204,8 +204,8 @@ NSString *const TDDatabaseBlobFilenamesFileExtension = @"blob";
 
 + (NSString *)generateRandomBlobFilename
 {
-    uint8_t randBytes[SHA_DIGEST_LENGTH];
-    arc4random_buf(randBytes, SHA_DIGEST_LENGTH);
+    uint8_t randBytes[CC_SHA1_DIGEST_LENGTH];
+    arc4random_buf(randBytes, CC_SHA1_DIGEST_LENGTH);
     
     NSString *randStr = TDHexFromBytes(randBytes, sizeof(randBytes));
     

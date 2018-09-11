@@ -33,12 +33,7 @@
 
 #import "CDTLogging.h"
 
-#ifdef GNUSTEP
-#import <openssl/sha.h>
-#else
-#define COMMON_DIGEST_FOR_OPENSSL
 #import <CommonCrypto/CommonDigest.h>
-#endif
 
 NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
 
@@ -91,28 +86,28 @@ NSString* const TD_DatabaseChangeNotification = @"TD_DatabaseChange";
     // Generate a digest for this revision based on the previous revision ID, document JSON,
     // and attachment digests. This doesn't need to be secure; we just need to ensure that this
     // code consistently generates the same ID given equivalent revisions.
-    MD5_CTX ctx;
-    unsigned char digestBytes[MD5_DIGEST_LENGTH];
-    MD5_Init(&ctx);
+    CC_MD5_CTX ctx;
+    unsigned char digestBytes[CC_MD5_DIGEST_LENGTH];
+    CC_MD5_Init(&ctx);
 
     NSData* prevIDUTF8 = [prevID dataUsingEncoding:NSUTF8StringEncoding];
     NSUInteger length = prevIDUTF8.length;
     if (length > 0xFF) return nil;
     uint8_t lengthByte = length & 0xFF;
-    MD5_Update(&ctx, &lengthByte, 1);  // prefix with length byte
-    if (length > 0) MD5_Update(&ctx, prevIDUTF8.bytes, length);
+    CC_MD5_Update(&ctx, &lengthByte, 1);  // prefix with length byte
+    if (length > 0) CC_MD5_Update(&ctx, prevIDUTF8.bytes, length);
 
     uint8_t deletedByte = rev.deleted != NO;
-    MD5_Update(&ctx, &deletedByte, 1);
+    CC_MD5_Update(&ctx, &deletedByte, 1);
 
     for (NSString* attName in [attachments.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
         TD_Attachment* attachment = attachments[attName];
-        MD5_Update(&ctx, &attachment->blobKey, sizeof(attachment->blobKey));
+        CC_MD5_Update(&ctx, &attachment->blobKey, sizeof(attachment->blobKey));
     }
 
-    MD5_Update(&ctx, json.bytes, json.length);
+    CC_MD5_Update(&ctx, json.bytes, json.length);
 
-    MD5_Final(digestBytes, &ctx);
+    CC_MD5_Final(digestBytes, &ctx);
     NSString* digest = TDHexFromBytes(digestBytes, sizeof(digestBytes));
     return [NSString stringWithFormat:@"%u-%@", generation + 1, digest];
 }
