@@ -164,7 +164,7 @@
       NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01);
 
       TDBlobKey key;
-      [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+      [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
       filename =
           [TD_Database generateAndInsertFilenameBasedOnKey:key intoBlobFilenamesTableInDatabase:db];
@@ -183,7 +183,7 @@
       NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_01);
 
       TDBlobKey key;
-      [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+      [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
       filename = [TD_Database generateAndInsertRandomFilenameBasedOnKey:key
                                        intoBlobFilenamesTableInDatabase:db];
@@ -204,7 +204,7 @@
       NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_03);
 
       TDBlobKey key;
-      [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+      [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
       resultFirstInsert =
           [TD_Database insertFilename:filename withKey:key intoBlobFilenamesTableInDatabase:db];
@@ -215,7 +215,7 @@
       NSData *data = dataFromHexadecimalString(TDDATABASEBLOBFILENAMESTESTS_SHA1DIGEST_04);
 
       TDBlobKey key;
-      [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+      [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
       resultSecondInsert =
           [TD_Database insertFilename:filename withKey:key intoBlobFilenamesTableInDatabase:db];
