@@ -1,5 +1,8 @@
 # CDTDatastore CHANGELOG
 
+## 2.1.1 (Unreleased)
+- [FIXED] Unknown type and undeclared identifier issues with common crypto includes.
+
 ## 2.1.0 (2018-07-10)
 - [NEW] Add method `-closeDatastoreNamed:` on `CDTDatastoreManager`.
 - [FIXED] Fix issue where repeated calls to `-datastoreNamed:error:` on `CDTDatastoreManager` for
