@@ -4,6 +4,7 @@
 //
 //  Created by Jens Alfke on 1/13/12.
 //  Copyright (c) 2012 Couchbase, Inc. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -20,14 +21,8 @@
 #import "CollectionUtils.h"
 #import <errno.h>
 
-#ifdef GNUSTEP
-#import <openssl/sha.h>
-#import <uuid/uuid.h>  // requires installing "uuid-dev" package on Ubuntu
-#else
-#define COMMON_DIGEST_FOR_OPENSSL
 #import <CommonCrypto/CommonDigest.h>
 #import <CommonCrypto/CommonHMAC.h>
-#endif
 
 NSString* TDCreateUUID()
 {
@@ -54,31 +49,31 @@ NSString* TDCreateUUID()
 
 NSData* TDSHA1Digest(NSData* input)
 {
-    unsigned char digest[SHA_DIGEST_LENGTH];
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, input.bytes, input.length);
-    SHA1_Final(digest, &ctx);
+    unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1_CTX ctx;
+    CC_SHA1_Init(&ctx);
+    CC_SHA1_Update(&ctx, input.bytes, input.length);
+    CC_SHA1_Final(digest, &ctx);
     return [NSData dataWithBytes:&digest length:sizeof(digest)];
 }
 
 NSData* TDSHA256Digest(NSData* input)
 {
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256_CTX ctx;
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, input.bytes, input.length);
-    SHA256_Final(digest, &ctx);
+    unsigned char digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256_CTX ctx;
+    CC_SHA256_Init(&ctx);
+    CC_SHA256_Update(&ctx, input.bytes, input.length);
+    CC_SHA256_Final(digest, &ctx);
     return [NSData dataWithBytes:&digest length:sizeof(digest)];
 }
 
 NSString* TDHexSHA1Digest(NSData* input)
 {
-    unsigned char digest[SHA_DIGEST_LENGTH];
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, input.bytes, input.length);
-    SHA1_Final(digest, &ctx);
+    unsigned char digest[CC_SHA1_DIGEST_LENGTH];
+    CC_SHA1_CTX ctx;
+    CC_SHA1_Init(&ctx);
+    CC_SHA1_Update(&ctx, input.bytes, input.length);
+    CC_SHA1_Final(digest, &ctx);
     return TDHexFromBytes(&digest, sizeof(digest));
 }
 
@@ -93,14 +88,14 @@ NSString* TDHexFromBytes(const void* bytes, size_t length)
 
 NSData* TDHMACSHA1(NSData* key, NSData* data)
 {
-    UInt8 hmac[SHA_DIGEST_LENGTH];
+    UInt8 hmac[CC_SHA1_DIGEST_LENGTH];
     CCHmac(kCCHmacAlgSHA1, key.bytes, key.length, data.bytes, data.length, &hmac);
     return [NSData dataWithBytes:hmac length:sizeof(hmac)];
 }
 
 NSData* TDHMACSHA256(NSData* key, NSData* data)
 {
-    UInt8 hmac[SHA256_DIGEST_LENGTH];
+    UInt8 hmac[CC_SHA256_DIGEST_LENGTH];
     CCHmac(kCCHmacAlgSHA256, key.bytes, key.length, data.bytes, data.length, &hmac);
     return [NSData dataWithBytes:hmac length:sizeof(hmac)];
 }

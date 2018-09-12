@@ -143,7 +143,7 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -215,7 +215,7 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -275,7 +275,7 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -377,13 +377,13 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
 
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -475,13 +475,13 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
 
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -610,13 +610,13 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameImage = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
         
         data = dataFromHexadecimalString(@"3FF2989BCCF52150BBA806BAE1DB2E0B06AD6F88");
 
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filenameText = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -699,7 +699,7 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];
@@ -774,7 +774,7 @@
         NSData *data = dataFromHexadecimalString(@"D55F9AC778BAF2256FA4DE87AAC61F590EBE66E0");
         
         TDBlobKey key;
-        [data getBytes:key.bytes length:SHA_DIGEST_LENGTH];
+        [data getBytes:key.bytes length:CC_SHA1_DIGEST_LENGTH];
 
         filename = [TD_Database filenameForKey:key inBlobFilenamesTableInDatabase:db];
     }];

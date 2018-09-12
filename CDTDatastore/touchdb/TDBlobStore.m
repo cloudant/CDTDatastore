@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
 //  Modifications for this distribution by Cloudant, Inc., Copyright (c) 2014 Cloudant, Inc.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
 //  except in compliance with the License. You may obtain a copy of the License at
@@ -81,10 +82,10 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     NSCParameterAssert(blob);
 
     TDBlobKey key;
-    SHA_CTX ctx;
-    SHA1_Init(&ctx);
-    SHA1_Update(&ctx, blob.bytes, blob.length);
-    SHA1_Final(key.bytes, &ctx);
+    CC_SHA1_CTX ctx;
+    CC_SHA1_Init(&ctx);
+    CC_SHA1_Update(&ctx, blob.bytes, blob.length);
+    CC_SHA1_Final(key.bytes, &ctx);
 
     return key;
 }
@@ -289,8 +290,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     self = [super init];
     if (self) {
         _store = store;
-        SHA1_Init(&_shaCtx);
-        MD5_Init(&_md5Ctx);
+        CC_SHA1_Init(&_shaCtx);
+        CC_MD5_Init(&_md5Ctx);
 
         // Open a temporary file in the store's temporary directory:
         NSString* filename = [TDCreateUUID() stringByAppendingPathExtension:@"blobtmp"];
@@ -312,8 +313,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
     [_blobWriter appendData:data];
     NSUInteger dataLen = data.length;
     _length += dataLen;
-    SHA1_Update(&_shaCtx, data.bytes, dataLen);
-    MD5_Update(&_md5Ctx, data.bytes, dataLen);
+    CC_SHA1_Update(&_shaCtx, data.bytes, dataLen);
+    CC_MD5_Update(&_md5Ctx, data.bytes, dataLen);
 }
 
 - (void)closeFile
@@ -326,8 +327,8 @@ NSString *const CDTBlobStoreErrorDomain = @"CDTBlobStoreErrorDomain";
 {
     Assert(_blobWriter, @"Already finished");
     [self closeFile];
-    SHA1_Final(_blobKey.bytes, &_shaCtx);
-    MD5_Final(_MD5Digest.bytes, &_md5Ctx);
+    CC_SHA1_Final(_blobKey.bytes, &_shaCtx);
+    CC_MD5_Final(_MD5Digest.bytes, &_md5Ctx);
 }
 
 - (NSString*)MD5DigestString
