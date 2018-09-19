@@ -1,6 +1,6 @@
 # CDTDatastore CHANGELOG
 
-## 2.1.1 (Unreleased)
+## 2.1.1 (2018-09-19)
 - [FIXED] Unknown type and undeclared identifier issues with common crypto includes.
 
 ## 2.1.0 (2018-07-10)
