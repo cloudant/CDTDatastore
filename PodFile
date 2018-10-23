@@ -15,7 +15,7 @@ abstract_target 'base' do
     pod 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
 
     target :CDTDatastore do
-        platform :ios, '7.0'
+        platform :ios, '8.0'
     end
     target :CDTDatastoreOSX do
         platform :osx, '10.9'
@@ -31,7 +31,7 @@ abstract_target 'base' do
         pod MRDatabaseContentChecker, :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 
         target :CDTDatastoreTests do
-            platform :ios, '7.0'
+            platform :ios, '8.0'
         end
 
         target :CDTDatastoreTestsOSX do
@@ -50,7 +50,7 @@ abstract_target 'base' do
         end
 
         target :CDTDatastoreReplicationAcceptanceTests do
-          platform :ios, '7.0'
+          platform :ios, '8.0'
         end
     end
 

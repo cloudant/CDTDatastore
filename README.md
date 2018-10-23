@@ -53,7 +53,7 @@ The [Overview](#overview) section below has examples in both Objective-C and Swi
 
 ## Example project
 
-There is an example project in the `Project` folder, for iOS 7. To get
+There is an example project in the `Project` folder, for iOS 8.0. To get
 this up and running independently of the main codebase, a Podfile is
 included:
 
