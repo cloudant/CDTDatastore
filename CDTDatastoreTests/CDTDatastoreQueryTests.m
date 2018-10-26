@@ -4,7 +4,15 @@
 //
 //  Created by Rhys Short on 19/11/2014.
 //  Copyright (c) 2014 Michael Rhodes. All rights reserved.
+//  Copyright © 2018 IBM Corporation. All rights reserved.
 //
+//  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+//  except in compliance with the License. You may obtain a copy of the License at
+//    http://www.apache.org/licenses/LICENSE-2.0
+//  Unless required by applicable law or agreed to in writing, software distributed under the
+//  License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+//  either express or implied. See the License for the specific language governing permissions
+//  and limitations under the License.
 
 #import <CDTDatastore/CDTDatastore+Query.h>
 #import <CDTDatastore/CDTLogging.h>
@@ -21,133 +29,161 @@ SpecBegin(CDTDatastoreQuery) describe(@"When using datastore query", ^{
     __block CDTDatastore *ds;
 
     beforeEach(^{
-        // Create a new CDTDatastoreFactory at a temp path
+        @autoreleasepool {
+            // Create a new CDTDatastoreFactory at a temp path
 
-        NSString *tempDirectoryTemplate = [NSTemporaryDirectory()
-            stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
-        const char *tempDirectoryTemplateCString = [tempDirectoryTemplate fileSystemRepresentation];
-        char *tempDirectoryNameCString = (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
-        strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
+            NSString *tempDirectoryTemplate = [NSTemporaryDirectory()
+                stringByAppendingPathComponent:@"cloudant_sync_ios_tests.XXXXXX"];
+            const char *tempDirectoryTemplateCString = [tempDirectoryTemplate fileSystemRepresentation];
+            char *tempDirectoryNameCString = (char *)malloc(strlen(tempDirectoryTemplateCString) + 1);
+            strcpy(tempDirectoryNameCString, tempDirectoryTemplateCString);
 
-        char *result = mkdtemp(tempDirectoryNameCString);
-        expect(result).to.beTruthy();
+            char *result = mkdtemp(tempDirectoryNameCString);
+            expect(result).to.beTruthy();
 
-        factoryPath = [[NSFileManager defaultManager]
-            stringWithFileSystemRepresentation:tempDirectoryNameCString
-                                        length:strlen(result)];
-        free(tempDirectoryNameCString);
+            factoryPath = [[NSFileManager defaultManager]
+                stringWithFileSystemRepresentation:tempDirectoryNameCString
+                                            length:strlen(result)];
+            free(tempDirectoryNameCString);
 
-        NSError *error;
-        factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
+            NSError *error;
+            factory = [[CDTDatastoreManager alloc] initWithDirectory:factoryPath error:&error];
 
-        ds = [factory datastoreNamed:@"test" error:nil];
-        expect(ds).toNot.beNil();
+            ds = [factory datastoreNamed:@"test" error:nil];
+            expect(ds).toNot.beNil();
 
-        // create some docs
+            // create some docs
 
-        CDTDocumentRevision *rev;
+            CDTDocumentRevision *rev;
 
-        rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
-        rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
-        [ds createDocumentFromRevision:rev error:nil];
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike12"];
+            rev.body = [@{ @"name" : @"mike", @"age" : @12, @"pet" : @"cat" } mutableCopy];
+            [ds createDocumentFromRevision:rev error:nil];
 
-        rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
-        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
-        [ds createDocumentFromRevision:rev error:nil];
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike34"];
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dog" } mutableCopy];
+            [ds createDocumentFromRevision:rev error:nil];
 
-        rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
-        rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
-        [ds createDocumentFromRevision:rev error:nil];
+            rev = [CDTDocumentRevision revisionWithDocId:@"mike72"];
+            rev.body = [@{ @"name" : @"mike", @"age" : @67, @"pet" : @"cat" } mutableCopy];
+            [ds createDocumentFromRevision:rev error:nil];
 
-        [ds ensureIndexed:@[ @"name" ] withName:@"index name"];
+            [ds ensureIndexed:@[ @"name" ] withName:@"index name"];
+        }
     });
 
     afterEach(^{
-        // Delete the databases we used
-        factory = nil;
-        NSError *error;
-        [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:&error];
+        @autoreleasepool {
+            // Delete the databases we used
+            NSError *error;
+            factory = nil;
+            ds = nil;
+            [[NSFileManager defaultManager] removeItemAtPath:factoryPath error:&error];
+        }
     });
 
     it(@"creates different index managers for different datastores", ^{
-        CDTDatastore *ds2 = [factory datastoreNamed:@"test2" error:nil];
-        expect([ds2 ensureIndexed:@[ @"name", @"age" ] withName:@"pet"]).toNot.beNil();
+        @autoreleasepool {
+            CDTDatastore *ds2 = [factory datastoreNamed:@"test2" error:nil];
+            expect([ds2 ensureIndexed:@[ @"name", @"age" ] withName:@"pet"]).toNot.beNil();
 
-        CDTQIndexManager *im = objc_getAssociatedObject(ds, NSSelectorFromString(@"CDTQManager"));
-        CDTQIndexManager *im2 = objc_getAssociatedObject(ds2, NSSelectorFromString(@"CDTQManager"));
+            CDTQIndexManager *im = objc_getAssociatedObject(ds, NSSelectorFromString(@"CDTQManager"));
+            CDTQIndexManager *im2 = objc_getAssociatedObject(ds2, NSSelectorFromString(@"CDTQManager"));
 
-        expect([im listIndexes]).toNot.equal([im2 listIndexes]);
+            expect([im listIndexes]).toNot.equal([im2 listIndexes]);
+        }
     });
-
+    
     it(@"can find documents", ^{
-        NSDictionary *query = @{ @"name" : @"mike" };
-        CDTQResultSet *results = [ds find:query];
-        expect(results).toNot.beNil();
-        expect([results.documentIds count]).to.equal(3);
+        @autoreleasepool {
+            NSDictionary *query = @{ @"name" : @"mike" };
+            CDTQResultSet *results = [ds find:query];
+            expect(results).toNot.beNil();
+            expect([results.documentIds count]).to.equal(3);
+        }
     });
-
+    
     it(@"can find documents with all params", ^{
-        NSDictionary *query = @{ @"name" : @"mike" };
-        CDTQResultSet *results = [ds find:query skip:0 limit:NSUIntegerMax fields:nil sort:nil];
-        expect(results).toNot.beNil();
-        expect([results.documentIds count]).to.equal(3);
+        @autoreleasepool {
+            NSDictionary *query = @{ @"name" : @"mike" };
+            CDTQResultSet *results = [ds find:query skip:0 limit:NSUIntegerMax fields:nil sort:nil];
+            expect(results).toNot.beNil();
+            expect([results.documentIds count]).to.equal(3);
+        }
     });
     
     it(@"can find documents and ignore non-existent documents", ^{
-        NSDictionary *query = @{ @"_id" : @{ @"$in" : @[@"mike12", @"mike34", @"mike72", @"mike-not-found"] } };
-        CDTQResultSet *results = [ds find:query];
-        expect(results).toNot.beNil();
-        expect([results.documentIds count]).to.equal(3);
+        @autoreleasepool {
+            NSDictionary *query = @{ @"_id" : @{ @"$in" : @[@"mike12", @"mike34", @"mike72", @"mike-not-found"] } };
+            CDTQResultSet *results = [ds find:query];
+            expect(results).toNot.beNil();
+            expect([results.documentIds count]).to.equal(3);
+        }
     });
-
+    
     it(@" can delete an index", ^{
-        [ds ensureIndexed:@[ @"name", @"address" ] withName:@"basic"];
-        expect([ds listIndexes][@"basic"]).toNot.beNil();
-
-        [ds deleteIndexNamed:@"basic"];
-        expect([ds listIndexes][@"basic"]).to.beNil();
+        @autoreleasepool {
+            [ds ensureIndexed:@[ @"name", @"address" ] withName:@"basic"];
+            expect([ds listIndexes][@"basic"]).toNot.beNil();
+            
+            [ds deleteIndexNamed:@"basic"];
+            expect([ds listIndexes][@"basic"]).to.beNil();
+        }
     });
-
+    
     it(@"can list indexes", ^{
-        NSDictionary *indexes = [ds listIndexes];
-        expect(indexes).toNot.beNil();
-        expect([indexes count]).to.equal(1);
+        @autoreleasepool {
+            NSDictionary *indexes = [ds listIndexes];
+            expect(indexes).toNot.beNil();
+            expect([indexes count]).to.equal(1);
+        }
     });
-
+    
     it(@"can update indexes", ^{
-        NSDictionary *query = @{ @"name" : @"mike" };
-        CDTQResultSet *results = [ds find:query];
-        expect(results).toNot.beNil();
-        CDTDocumentRevision *rev = [CDTDocumentRevision revision];
-        rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" } mutableCopy];
-        [ds createDocumentFromRevision:rev error:nil];
-        expect([ds updateAllIndexes]).to.beTruthy();
+        @autoreleasepool {
+            NSDictionary *query = @{ @"name" : @"mike" };
+            CDTQResultSet *results = [ds find:query];
+            expect(results).toNot.beNil();
+            CDTDocumentRevision *rev = [CDTDocumentRevision revision];
+            rev.body = [@{ @"name" : @"mike", @"age" : @34, @"pet" : @"dolhpin" } mutableCopy];
+            [ds createDocumentFromRevision:rev error:nil];
+            expect([ds updateAllIndexes]).to.beTruthy();
+        }
     });
-
+    
     it(@"can create a text index", ^{
-      NSString *indexName =
-          [ds ensureIndexed:@[ @"name" ] withName:@"text_idx" ofType:CDTQIndexTypeText];
-      expect(indexName).to.equal(@"text_idx");
+        @autoreleasepool {
+            
+            NSString *indexName =
+            [ds ensureIndexed:@[ @"name" ] withName:@"text_idx" ofType:CDTQIndexTypeText];
+            expect(indexName).to.equal(@"text_idx");
+        }
     });
-
+    
     it(@"can create an index with a space in it's name", ^{
-      NSString *indexName =
-          [ds ensureIndexed:@[ @"name" ] withName:@"my index" ofType:CDTQIndexTypeJSON];
-      expect(indexName).to.equal(@"my index");
+        @autoreleasepool {
+            NSString *indexName =
+            [ds ensureIndexed:@[ @"name" ] withName:@"my index" ofType:CDTQIndexTypeJSON];
+            expect(indexName).to.equal(@"my index");
+        }
     });
-
+    
     it(@"can create a text index with defined settings", ^{
-      NSString *indexName = [ds ensureIndexed:@[ @"name" ]
-                                     withName:@"text_idx"
-                                       ofType:CDTQIndexTypeText
-                                     settings:@{
-                                         @"tokenize" : @"porter"
-                                     }];
-      expect(indexName).to.equal(@"text_idx");
+        @autoreleasepool {
+            NSString *indexName = [ds ensureIndexed:@[ @"name" ]
+                                           withName:@"text_idx"
+                                             ofType:CDTQIndexTypeText
+                                           settings:@{
+                                                      @"tokenize" : @"porter"
+                                                      }];
+            expect(indexName).to.equal(@"text_idx");
+        }
     });
-
+    
     it(@"can check if text search is enabled", ^{
-        expect([ds isTextSearchEnabled]).to.equal(@YES);
+        @autoreleasepool {
+            expect([ds isTextSearchEnabled]).to.equal(@YES);
+        }
     });
     
 });
