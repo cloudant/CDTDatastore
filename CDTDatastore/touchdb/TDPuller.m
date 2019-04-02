@@ -3,7 +3,7 @@
 //  TouchDB
 //
 //  Created by Jens Alfke on 12/2/11.
-//  Copyright © 2017 IBM Corp. All rights reserved.
+//  Copyright © 2017, 2019 IBM Corp. All rights reserved.
 //
 //  Copyright (c) 2011 Couchbase, Inc. All rights reserved.
 //
@@ -434,7 +434,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     // been added since the latest revisions we have locally.
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#GET
     // See: http://wiki.apache.org/couchdb/HTTP_Document_API#Getting_Attachments_With_a_Document
-    NSString* path = $sprintf(@"%@?rev=%@&revs=true&attachments=true", TDEscapeID(rev.docID),
+    NSString* path = $sprintf(@"%@?rev=%@&latest=true&revs=true&attachments=true", TDEscapeID(rev.docID),
                               TDEscapeID(rev.revID));
     NSArray* knownRevs = [_db getPossibleAncestorRevisionIDs:rev limit:kMaxNumberOfAttsSince];
     if (knownRevs.count > 0)
@@ -504,7 +504,7 @@ static NSString* joinQuotedEscaped(NSArray* strings);
     __weak TDPuller* weakSelf = self;
 
     [self sendAsyncRequest:@"POST"
-                      path:@"_bulk_get?revs=true&attachments=true"
+                      path:@"_bulk_get?latest=true&revs=true&attachments=true"
                       body:requestBody
               onCompletion:^(id result, NSError* error) {
                   __strong TDPuller* strongSelf = weakSelf;
