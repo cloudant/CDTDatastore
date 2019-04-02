@@ -1,6 +1,7 @@
 # CDTDatastore CHANGELOG
 
 ## Unreleased
+- [FIXED] Set latest=true when fetching remote document revisions.
 - [UPGRADED] iOS target platform to 8.0
 
 ## 2.1.1 (2018-09-19)
