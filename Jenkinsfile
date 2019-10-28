@@ -70,7 +70,7 @@ def buildAndTest(nodeLabel, target, rakeEnv, encrypted, testIam='no') {
                 credsPass = 'TEST_COUCH_PASSWORD'
                 credsIam = 'TEST_COUCH_IAM_API_KEY'
             } else {
-                envVariables += ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
+                envVariables += ["${rakeEnv}=${env.DEST_PLATFORM}", "TEST_COUCH_HOST=cloudantsync002.bristol-victoria.uk.ibm.com", "TEST_COUCH_PORT=5984", "TEST_COUCH_HTTP=http"]
                 credsId = 'couchdb'
                 credsUser = 'TEST_COUCH_USERNAME'
                 credsPass = 'TEST_COUCH_PASSWORD'
