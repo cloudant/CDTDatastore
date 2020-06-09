@@ -10,7 +10,7 @@ end
 
 abstract_target 'base' do
     pod FMDB, '= 2.6'
-    pod 'CocoaLumberjack', '~> 2.0'
+    pod 'CocoaLumberjack', '~> 3.6.1'
     pod 'SQLCipher/fts', '~> 3.1.0' if ENV["encrypted"]
     pod 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
 
@@ -18,7 +18,7 @@ abstract_target 'base' do
         platform :ios, '8.0'
     end
     target :CDTDatastoreOSX do
-        platform :osx, '10.9'
+        platform :osx, '10.10'
     end
 
     abstract_target 'tests' do
@@ -35,7 +35,7 @@ abstract_target 'base' do
         end
 
         target :CDTDatastoreTestsOSX do
-            platform :osx, '10.9'
+            platform :osx, '10.10'
         end
 
     end
@@ -46,7 +46,7 @@ abstract_target 'base' do
         pod 'NSData+Base64'
 
         target :CDTDatastoreReplicationAcceptanceTestsOSX do
-            platform :osx, '10.9'
+            platform :osx, '10.10'
         end
 
         target :CDTDatastoreReplicationAcceptanceTests do
