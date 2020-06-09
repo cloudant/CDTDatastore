@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/cloudant/CDTDatastore.git", :tag => s.version.to_s }
 
   s.ios.deployment_target = '8.0'
-  s.osx.deployment_target = '10.9'
+  s.osx.deployment_target = '10.10'
 
   s.requires_arc = true
 
@@ -68,7 +68,7 @@ Pod::Spec.new do |s|
     sp.frameworks = 'SystemConfiguration'
 
     sp.dependency 'CDTDatastore/no-arc'
-    sp.dependency 'CocoaLumberjack', '~> 2.0'
+    sp.dependency 'CocoaLumberjack', '~> 3.6'
     sp.dependency 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
   end
 
