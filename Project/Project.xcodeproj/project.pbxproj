@@ -482,7 +482,7 @@
 				GCC_PREFIX_HEADER = "Project/Project-Prefix.pch";
 				INFOPLIST_FILE = "Project/Project-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-com.cloudant.--PRODUCT-NAME-rfc1034identifier--";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cloudant.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
@@ -501,7 +501,7 @@
 				GCC_PREFIX_HEADER = "Project/Project-Prefix.pch";
 				INFOPLIST_FILE = "Project/Project-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-com.cloudant.--PRODUCT-NAME-rfc1034identifier--";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.cloudant.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				WRAPPER_EXTENSION = app;
