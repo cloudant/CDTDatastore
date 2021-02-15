@@ -71,8 +71,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
         NSString *errorReason = nil;
         TD_Database *db = [self.manager databaseNamed:name];
         if (db) {
-            datastore = [[CDTDatastore alloc] initWithManager:self database:db encryptionKeyProvider:provider];
-            
+            datastore = [[CDTDatastore alloc] initWithManager:self database:db encryptionKeyProvider:provider directory: [self.manager directory]];
             if (!datastore) {
                 errorReason = NSLocalizedString(@"Wrong key?", nil);
             }
@@ -140,7 +139,7 @@ NSString *const CDTExtensionsDirName = @"_extensions";
             // called on it _before_ we attempt to delete its underlying database
             CDTLogDebug(CDTDATASTORE_LOG_CONTEXT, @"calling close from delete %@", name);
             [_openDatastores removeObjectForKey:name];
-            NSString *dbPath = [self.manager pathForName:name];;
+            NSString *dbPath = [self.manager pathForName:name];
             NSString *extPath = [dbPath stringByDeletingLastPathComponent];
             extPath = [extPath
                        stringByAppendingPathComponent:[name stringByAppendingString:CDTExtensionsDirName]];

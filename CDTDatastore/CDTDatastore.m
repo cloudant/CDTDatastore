@@ -33,6 +33,7 @@
 #import <FMDB/FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 #import <FMDB/FMDatabaseQueue.h>
+#import <UIKit/UIKit.h>
 #import <sqlite3.h>
 
 #import "Version.h"
@@ -42,6 +43,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 @interface CDTDatastore ()
 
 @property (nonatomic, strong, readonly) id<CDTEncryptionKeyProvider> keyProvider;
+@property UIBackgroundTaskIdentifier *backgroundTaskIdentifier;
 
 @property (readonly, weak) CDTDatastoreManager *manager;
 - (void)TDdbChanged:(NSNotification *)n;
@@ -52,20 +54,25 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 @implementation CDTDatastore
 
 @synthesize database = _database;
+@synthesize directory = _directory;
+@synthesize delegate;
 
 + (NSString *)versionString { return @CLOUDANT_SYNC_VERSION; }
 
-- (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database
+int runningProcess;
+
+- (instancetype)initWithManager:(CDTDatastoreManager *)manager database:(TD_Database *)database directory: (NSString *)directory
 {
     CDTEncryptionKeyNilProvider *provider = [CDTEncryptionKeyNilProvider provider];
 
-    return [self initWithManager:manager database:database encryptionKeyProvider:provider];
+    return [self initWithManager:manager database:database encryptionKeyProvider:provider directory:directory];
 }
 
 // Public init method defined in CDTDatastore+EncryptionKey.h
 - (instancetype)initWithManager:(CDTDatastoreManager *)manager
-					   database:(TD_Database *)database
+                       database:(TD_Database *)database
           encryptionKeyProvider:(id<CDTEncryptionKeyProvider>)provider
+                      directory: (NSString *)directory
 {
     NSParameterAssert(manager);
     Assert(provider, @"Key provider is mandatory. Supply a CDTNilEncryptionKeyProvider instead.");
@@ -78,21 +85,140 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             _manager = manager;
             _database = database;
             _keyProvider = provider;
+            _directory = directory;
 
             NSString *dir = [[database path] stringByDeletingLastPathComponent];
             NSString *name = [database name];
             _extensionsDir = [dir
-                stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_extensions", name]];
+                              stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_extensions", name]];
 
             [[NSNotificationCenter defaultCenter] addObserver:self
                                                      selector:@selector(TDdbChanged:)
                                                          name:TD_DatabaseChangeNotification
                                                        object:database];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataDidBecomeAvailable:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataWillBecomeUnavailable:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
+
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackgroundNotification:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForegroundNotification:) name:UIApplicationWillEnterForegroundNotification object:nil];
+
+
+            [self encryptFile:NSFileProtectionCompleteUnlessOpen];
         }
     }
 
     return self;
 }
+
+//MARK: - Will be called when user unlock the device, so we will change encryption policy to CompleteUnlessOpen.
+-(void)applicationProtectedDataDidBecomeAvailable:(NSNotification*)note {
+    NSLog(@"applicationProtectedDataDidBecomeAvailable");
+    [self encryptFile:NSFileProtectionCompleteUnlessOpen];
+}
+
+//MARK: - Will be called when user Lock the device, so we will change encryption policy to Complete.
+-(void)applicationProtectedDataWillBecomeUnavailable:(NSNotification*)note {
+    NSLog(@"applicationProtectedDataWillBecomeUnavailable");
+    if (runningProcess > 0) {
+        [self encryptFile:NSFileProtectionCompleteUnlessOpen];
+    } else {
+        [self encryptFile:NSFileProtectionComplete];
+    }
+}
+
+//MARK:- Will be called when application is about to terminate, we can change policy in that case.
+-(void)applicationWillTerminateNotification:(NSNotification*)note {
+    [self encryptFile:NSFileProtectionComplete];
+}
+
+-(void)applicationDidEnterBackgroundNotification:(NSNotification*)note {
+    if (runningProcess > 0) {
+        self.backgroundTaskIdentifier =
+        [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+            [self encryptFile:NSFileProtectionComplete];
+            if (self.backgroundTaskIdentifier != nil) {
+                [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskIdentifier];
+                self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+            }
+        }];
+
+        // MARK: - iOS only allows apps to run it's tasks max 30 seconds in case you want to perform something when app is already in background.
+        [NSTimer scheduledTimerWithTimeInterval:30 repeats:false block:^(NSTimer * _Nonnull timer) {
+            [self encryptFile:NSFileProtectionComplete];
+        }];
+    }
+}
+
+-(void)applicationWillEnterForegroundNotification:(NSNotification*)note {
+    if (self.backgroundTaskIdentifier != nil) {
+        [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskIdentifier];
+        self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
+    [self encryptFile:NSFileProtectionComplete];
+}
+
+-(void)addNewTask {
+    runningProcess += 1;
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground, runningProcess == 1) {
+        [self applicationDidEnterBackgroundNotification: nil];
+    }
+}
+
+-(void)removeOneTask {
+    if (runningProcess > 0) {
+        runningProcess -= 1;
+    }
+}
+
+-(void)encrypt: (NSDictionary*) attributes {
+    NSString *dbPath = self.directory;
+    if ([[NSFileManager defaultManager] fileExistsAtPath: dbPath]) {
+        NSURL *dbURL = [NSURL URLWithString: dbPath];
+        NSError *error;
+        [[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath: [dbURL path] error:&error];
+        NSFileProtectionType currentProtection = [self isProtectedItemAtURL:dbURL];
+    }
+}
+
+-(void)encryptFile: (NSFileProtectionType)type {
+    NSDictionary *attributes = nil;
+#if TARGET_OS_IPHONE
+    if (@available(iOS 9.0, *)) {
+        attributes = @{NSFileProtectionKey : type};
+        [self encrypt:attributes];
+    }
+#endif
+}
+
+- (NSFileProtectionType) isProtectedItemAtURL:(NSURL *)URL {
+    NSFileProtectionType result = nil;
+    NSDictionary    *attributes                 = nil;
+    NSString        *protectionAttributeValue   = nil;
+    NSFileManager   *fileManager                = nil;
+    NSError *error;
+
+    fileManager = [[NSFileManager alloc] init];
+    attributes = [fileManager attributesOfItemAtPath:[URL path] error:&error];
+    if (attributes != nil){
+        protectionAttributeValue = [attributes valueForKey:NSFileProtectionKey];
+        result = protectionAttributeValue;
+        NSLog(@"Active File Protection - %@", protectionAttributeValue);
+    }
+    return result;
+}
+
+- (NSFileProtectionType)appliedProtectionPolicyOnDb {
+    NSString *dbPath = self.directory;
+    if ([[NSFileManager defaultManager] fileExistsAtPath: dbPath]) {
+        NSURL *dbURL = [NSURL URLWithString: dbPath];
+        NSFileProtectionType currentProtection = [self isProtectedItemAtURL:dbURL];
+        return currentProtection;
+    } else {
+        return nil;
+    }
+}
+
 
 - (void)dealloc {
     _database = nil;
@@ -197,7 +323,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     TDStatus status;
     TD_Revision *rev =
-        [self.database getDocumentWithID:docId revisionID:revId options:0 status:&status];
+    [self.database getDocumentWithID:docId revisionID:revId options:0 status:&status];
     if (TDStatusIsError(status)) {
         if (error) {
             *error = TDStatusToNSError(status, nil);
@@ -214,11 +340,11 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     }
 
     CDTDocumentRevision *revision = [[CDTDocumentRevision alloc] initWithDocId:rev.docID
-                                               revisionId:rev.revID
-                                                     body:rev.body.properties
-                                                  deleted:rev.deleted
-                                              attachments:attachmentsDict
-                                                 sequence:rev.sequence];
+                                                                    revisionId:rev.revID
+                                                                          body:rev.body.properties
+                                                                       deleted:rev.deleted
+                                                                   attachments:attachmentsDict
+                                                                      sequence:rev.sequence];
 
     return revision;
 }
@@ -233,11 +359,11 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSArray *result = [NSArray array];
     TDContentOptions contentOptions = kTDIncludeLocalSeq;
     struct TDQueryOptions query = {.limit = UINT_MAX,
-                                   .inclusiveEnd = YES,
-                                   .skip = 0,
-                                   .descending = NO,
-                                   .includeDocs = YES,
-                                   .content = contentOptions};
+        .inclusiveEnd = YES,
+        .skip = 0,
+        .descending = NO,
+        .includeDocs = YES,
+        .content = contentOptions};
 
     // This method must loop to get around the fact that conflicted documents
     // contribute more than one row in the query -getDocsWithIDs:options: uses,
@@ -254,7 +380,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             NSString *revId = row[@"value"][@"rev"];
 
             TD_Revision *revision =
-                [[TD_Revision alloc] initWithDocID:docId revID:revId deleted:NO];
+            [[TD_Revision alloc] initWithDocID:docId revID:revId deleted:NO];
             revision.body = [[TD_Body alloc] initWithProperties:row[@"doc"]];
             revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
 
@@ -290,10 +416,10 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     NSMutableArray *result = [NSMutableArray array];
     struct TDQueryOptions query = {.limit = UINT_MAX,
-                                   .inclusiveEnd = YES,
-                                   .skip = 0,
-                                   .descending = NO,
-                                   .includeDocs = NO};
+        .inclusiveEnd = YES,
+        .skip = 0,
+        .descending = NO,
+        .includeDocs = NO};
 
     NSDictionary *dictResults;
     do {
@@ -314,10 +440,10 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                         descending:(BOOL)descending
 {
     struct TDQueryOptions query = {.limit = (unsigned)limit,
-                                   .inclusiveEnd = YES,
-                                   .skip = (unsigned)offset,
-                                   .descending = descending,
-                                   .includeDocs = YES};
+        .inclusiveEnd = YES,
+        .skip = (unsigned)offset,
+        .descending = descending,
+        .includeDocs = YES};
     return [self allDocsQuery:nil options:&query];
 }
 
@@ -357,7 +483,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         BOOL deleted = (BOOL)[row[@"value"][@"deleted"] boolValue];
 
         TD_Revision *revision =
-            [[TD_Revision alloc] initWithDocID:docId revID:revId deleted:deleted];
+        [[TD_Revision alloc] initWithDocID:docId revID:revId deleted:deleted];
         revision.sequence = [row[@"doc"][@"_local_seq"] longLongValue];
 
         // Deleted documents won't have a `doc` field
@@ -430,7 +556,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             if (error) {
                 NSInteger code = 400;
                 NSString *reason = @"Bodies may not contain _ prefixed fields. "
-                                    "Use CDTDocumentRevision properties.";
+                "Use CDTDocumentRevision properties.";
                 NSString *description = [NSString stringWithFormat:@"%li %@", (long)code, reason];
                 NSDictionary *userInfo = @{
                     NSLocalizedFailureReasonErrorKey : reason,
@@ -468,12 +594,12 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 {
     __block BOOL result = YES;
     [attachments
-        enumerateKeysAndObjectsUsingBlock:^(NSString *key, CDTAttachment *obj, BOOL *stop) {
-          if (![key isEqualToString:obj.name]) {
-              result = NO;
-              *stop = YES;
-          }
-        }];
+     enumerateKeysAndObjectsUsingBlock:^(NSString *key, CDTAttachment *obj, BOOL *stop) {
+        if (![key isEqualToString:obj.name]) {
+            result = NO;
+            *stop = YES;
+        }
+    }];
     return result;
 }
 
@@ -497,9 +623,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     if (![self validateAttachments:revision.attachments]) {
         CDTLogWarn(
-            CDTDATASTORE_LOG_CONTEXT,
-            @"Attachments dictionary is not keyed by attachment name. "
-             "When accessing attachments on saved revisions they will be keyed by attachment name");
+                   CDTDATASTORE_LOG_CONTEXT,
+                   @"Attachments dictionary is not keyed by attachment name. "
+                   "When accessing attachments on saved revisions they will be keyed by attachment name");
     }
 
     if (![self ensureDatabaseOpen]) {
@@ -512,9 +638,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     // convert CDTMutableDocument to TD_Revision
 
     // we know it shouldn't have a TD_revision behind it, since its a create
-
+    [self encryptFile: NSFileProtectionCompleteUnlessOpen];
     TD_Revision *converted =
-        [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:false];
+    [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:false];
     converted.body = [[TD_Body alloc] initWithProperties:revision.body];
 
     // dowload attachments to the blob store
@@ -526,14 +652,14 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             // check if thae attachment has been saved to blobstore, if not save it
             if (![attachment isKindOfClass:[CDTSavedAttachment class]]) {
                 NSDictionary *attachmentData =
-                    [self streamAttachmentToBlobStore:attachment error:error];
+                [self streamAttachmentToBlobStore:attachment error:error];
                 if (attachmentData != nil) {
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                            @"Error reading %@ from stream for doc <%@, %@>, rolling back",
-                            attachment.name, converted.docID, converted.revID);
+                               @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                               attachment.name, converted.docID, converted.revID);
                     return nil;
                 }
             } else {
@@ -551,12 +677,13 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
         TDStatus status;
         TD_Revision *new = [datastore.database putRevision : converted prevRevisionID
-                            : nil allowConflict : NO status : &status database : db];
+                                                           : nil allowConflict : NO status : &status database : db];
 
         if (TDStatusIsError(status)) {
             *error = TDStatusToNSError(status, nil);
             *rollback = YES;
             saved = nil;
+            [self encryptFile:NSFileProtectionComplete];
             return;
         } else {
             saved = [[CDTDocumentRevision alloc] initWithDocId:new.docID
@@ -621,6 +748,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
         [[NSNotificationCenter defaultCenter] postNotificationName:CDTDatastoreChangeNotification
                                                             object:self
                                                           userInfo:userInfo];
+        [self encryptFile:NSFileProtectionComplete];
     }
     return saved;
 }
@@ -639,7 +767,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
                 NSLocalizedRecoverySuggestionErrorKey : recovery
             };
             *error =
-                [NSError errorWithDomain:TDHTTPErrorDomain code:kTDStatusBadRequest userInfo:info];
+            [NSError errorWithDomain:TDHTTPErrorDomain code:kTDStatusBadRequest userInfo:info];
         }
         return nil;
     }
@@ -658,9 +786,9 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     if (![self validateAttachments:revision.attachments]) {
         CDTLogWarn(
-            CDTDATASTORE_LOG_CONTEXT,
-            @"Attachments dictionary is not keyed by attachment name. "
-             "When accessing attachments on saved revisions they will be keyed by attachment name");
+                   CDTDATASTORE_LOG_CONTEXT,
+                   @"Attachments dictionary is not keyed by attachment name. "
+                   "When accessing attachments on saved revisions they will be keyed by attachment name");
     }
 
     if (![self ensureDatabaseOpen]) {
@@ -684,14 +812,14 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
             // otherwise add it to the array to copy it to the new revision
             if (![attachment isKindOfClass:[CDTSavedAttachment class]]) {
                 NSDictionary *attachmentData =
-                    [self streamAttachmentToBlobStore:attachment error:error];
+                [self streamAttachmentToBlobStore:attachment error:error];
                 if (attachmentData != nil) {
                     [downloadedAttachments addObject:attachmentData];
                 } else {  // Error downloading the attachment, bail
                     // error out variable set by -stream...
                     CDTLogWarn(CDTDATASTORE_LOG_CONTEXT,
-                            @"Error reading %@ from stream for doc <%@, %@>, rolling back",
-                            attachment.name, converted.docID, converted.revID);
+                               @"Error reading %@ from stream for doc <%@, %@>, rolling back",
+                               attachment.name, converted.docID, converted.revID);
                     return nil;
                 }
             } else {
@@ -784,7 +912,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
     TDStatus status;
     TD_Revision *new = [self.database putRevision : revision prevRevisionID : prevRev allowConflict
-                        : NO status : &status database : db];
+                                                  : NO status : &status database : db];
     if (TDStatusIsError(status)) {
         if (error) {
             *error = TDStatusToNSError(status, nil);
@@ -815,7 +943,7 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     NSString *prevRevisionID = revision.revId;
 
     TD_Revision *td_revision =
-        [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:YES];
+    [[TD_Revision alloc] initWithDocID:revision.docId revID:nil deleted:YES];
     TDStatus status;
     TD_Revision *new = [self.database putRevision:td_revision
                                    prevRevisionID:prevRevisionID
@@ -844,19 +972,19 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
     [self.database.fmdbQueue inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
         FMResultSet *result = [db executeQueryWithFormat:@"SELECT revs.revid FROM docs,revs WHERE \
-        revs.doc_id = docs.doc_id AND docs.docid = %@ AND deleted = 0 AND revs.sequence \
-        NOT IN (SELECT DISTINCT parent FROM revs WHERE parent NOT NULL)",
-                                                         docId];
+                               revs.doc_id = docs.doc_id AND docs.docid = %@ AND deleted = 0 AND revs.sequence \
+                               NOT IN (SELECT DISTINCT parent FROM revs WHERE parent NOT NULL)",
+                               docId];
 
         while ([result next]) {
             NSString *revId = [result stringForColumn:@"revid"];
             CDTDocumentRevision *deleted;
 
             TD_Revision *td_revision =
-                [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:YES];
+            [[TD_Revision alloc] initWithDocID:docId revID:nil deleted:YES];
             TDStatus status;
             TD_Revision *new = [weakself.database putRevision : td_revision prevRevisionID
-                                : revId allowConflict : NO status : &status database : db];
+                                                              : revId allowConflict : NO status : &status database : db];
 
             if (TDStatusIsError(status)) {
                 *error = TDStatusToNSError(status, nil);

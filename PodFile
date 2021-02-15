@@ -26,7 +26,7 @@ abstract_target 'base' do
         pod 'Specta'
         pod 'Expecta'
         pod 'OCMock'
-        pod 'OHHTTPStubs'
+        pod 'OHHTTPStubs', '~> 8.0.0'
         pod 'RSSwizzle'
         pod MRDatabaseContentChecker, :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 

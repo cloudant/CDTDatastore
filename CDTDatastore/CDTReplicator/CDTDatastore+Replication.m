@@ -166,10 +166,17 @@
                 completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
 {
     NSError* error = nil;
-    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
+    CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:^(NSError * err) {
+        [self encryptFile:NSFileProtectionCompleteUnlessOpen];
+        [self removeOneTask];
+        [self.delegate didRecieveResponseWith:err datastore:self];
+    }];
+
     CDTReplicator* replicator = [self pullReplicationSource:source
                                                       username:username password:password withDelegate:delegate error:&error];
-    if (!error){
+    if (!error) {
+        [self encryptFile:NSFileProtectionComplete];
+        [self addNewTask];
         [replicator startWithError:&error];
     }
 

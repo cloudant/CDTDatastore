@@ -57,11 +57,20 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @see CDTDocumentRevision
  *
  */
+
+@protocol DatastoreDelegate <NSObject>
+@optional
+- (void)didRecieveResponseWith:(NSError*_Nullable)error datastore: (CDTDatastore*_Nullable)store;
+@end
+
 @interface CDTDatastore : NSObject
 
 @property (nonnull, nonatomic, strong, readonly) TD_Database *database;
 
 + (nonnull NSString *)versionString;
+
+@property (nonnull, strong) NSString *directory;
+@property (nonatomic, weak) id <DatastoreDelegate> _Nullable _Nullable delegate;
 
 /**
  *
@@ -71,8 +80,8 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @param database the database where this datastore should save documents.
  *
  */
-- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;
-
+//- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;
+- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database directory: (nonnull NSString *)directory;
 /**
  * The number of document in the datastore.
  */
@@ -240,4 +249,21 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @param error will point to an NSError object in the case of an error
  */
 - (BOOL)compactWithError:(NSError *__autoreleasing __nullable * __nullable)error;
+
+/**
+ *
+ * This function will be used to set default encryption policy before starting any operation and after finishing an operation on DB. Eg. - Default policy we've set is before starting an operation on DB NSFileProtectionCompleteUnlessOpen before starting any operation on DB and we set NSFileProtectionComplete after finishing the operation on DB.
+ * @param before Policy that should be set BEFORE starting an operation on DB
+ * @param after Policy that should be set AFTER finishing an operation on DB
+ *
+ */
+//-(void)setEncryptionBeforeStartingProcess: (NSFileProtectionType _Nonnull )before afterFinishProcess: (NSFileProtectionType _Nullable )after;
+
+-(void)encryptFile: (NSFileProtectionType _Nonnull)type;
+
+- (NSFileProtectionType _Nullable)appliedProtectionPolicyOnDb;
+
+-(void)addNewTask;
+
+-(void)removeOneTask;
 @end
