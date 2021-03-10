@@ -96,13 +96,14 @@ int runningProcess;
                                                      selector:@selector(TDdbChanged:)
                                                          name:TD_DatabaseChangeNotification
                                                        object:database];
+/*
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataDidBecomeAvailable:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataWillBecomeUnavailable:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
 
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackgroundNotification:) name:UIApplicationDidEnterBackgroundNotification object:nil];
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForegroundNotification:) name:UIApplicationWillEnterForegroundNotification object:nil];
-
+*/
 
             [self encryptFile:NSFileProtectionCompleteUnlessOpen];
         }
@@ -111,6 +112,10 @@ int runningProcess;
     return self;
 }
 
+
+// Commenting below App life cycle functions as we've implemented different modes that are conflicting functionality with below these functions.
+
+/*
 //MARK: - Will be called when user unlock the device, so we will change encryption policy to CompleteUnlessOpen.
 -(void)applicationProtectedDataDidBecomeAvailable:(NSNotification*)note {
     NSLog(@"applicationProtectedDataDidBecomeAvailable");
@@ -137,24 +142,13 @@ int runningProcess;
         self.backgroundTaskIdentifier =
         [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
             [self encryptFile:NSFileProtectionComplete];
-            if (self.backgroundTaskIdentifier != nil) {
-                [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskIdentifier];
-                self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-
-        // MARK: - iOS only allows apps to run it's tasks max 30 seconds in case you want to perform something when app is already in background.
-        [NSTimer scheduledTimerWithTimeInterval:30 repeats:false block:^(NSTimer * _Nonnull timer) {
-            [self encryptFile:NSFileProtectionComplete];
+            [self endBackgroundTaskIfAny];
         }];
     }
 }
 
 -(void)applicationWillEnterForegroundNotification:(NSNotification*)note {
-    if (self.backgroundTaskIdentifier != nil) {
-        [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskIdentifier];
-        self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    }
+    [self endBackgroundTaskIfAny];
     [self encryptFile:NSFileProtectionComplete];
 }
 
@@ -170,6 +164,7 @@ int runningProcess;
         runningProcess -= 1;
     }
 }
+*/
 
 -(void)encrypt: (NSDictionary*) attributes {
     NSString *dbPath = self.directory;
@@ -177,7 +172,6 @@ int runningProcess;
         NSURL *dbURL = [NSURL URLWithString: dbPath];
         NSError *error;
         [[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath: [dbURL path] error:&error];
-        NSFileProtectionType currentProtection = [self isProtectedItemAtURL:dbURL];
     }
 }
 
@@ -216,6 +210,57 @@ int runningProcess;
         return currentProtection;
     } else {
         return nil;
+    }
+}
+
+-(void)endBackgroundTaskIfAny {
+    if (self.backgroundTaskIdentifier != nil) {
+        [[UIApplication sharedApplication] endBackgroundTask: self.backgroundTaskIdentifier];
+        self.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
+}
+
+-(void)beginBackgroundTask {
+    self.backgroundTaskIdentifier =
+    [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        [self endBackgroundTaskIfAny];
+    }];
+}
+
+-(void)setMode1 {
+    [self startTimerWithDuration: 10];
+}
+
+-(void)setMode2 {
+    [self startTimerWithDuration: 20];
+}
+
+-(void)setBackgroundMode {
+    [self beginBackgroundTask];
+    [self startTimerWithDuration: 30];
+}
+
+-(void)startTimerWithDuration: (NSTimeInterval)seconds {
+    [self encryptFile: NSFileProtectionCompleteUnlessOpen];
+    [NSTimer scheduledTimerWithTimeInterval:seconds repeats:false block:^(NSTimer * _Nonnull timer) {
+        [self encryptFile: NSFileProtectionComplete];
+        [self endBackgroundTaskIfAny];
+    }];
+}
+
+///  This function will help to set Encryption MODE. Set a mode according to your need.
+/// @param mode - It's a ENUM value that users can set from predefined enum cases.
+-(void)setEncryptionMode: (EncryptionModes)mode {
+    switch(mode) {
+        case mode1:
+            [self setMode1];
+            break;
+        case mode2:
+            [self setMode2];
+            break;
+        case background:
+            [self setBackgroundMode];
+            break;
     }
 }
 

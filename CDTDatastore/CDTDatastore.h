@@ -70,7 +70,32 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
 + (nonnull NSString *)versionString;
 
 @property (nonnull, strong) NSString *directory;
-@property (nonatomic, weak) id <DatastoreDelegate> _Nullable _Nullable delegate;
+@property (nonatomic, weak) id <DatastoreDelegate> _Nullable delegate;
+
+
+
+
+/**
+ * Encryption Modes allowed at present.
+ *
+ * @param mode1  Apps are guaranteed to complete syncing within 10 seconds, it will set NSFileProtectionType to CompleteUnlessOpen till 10 seconds finishes. After 10 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ *
+ * @param mode2  Apps cannot complete syncing within 10 seconds and need more time, Mode2 will give 20 seconds timeframe to finish any running syncing. After 20 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ *
+ * @param Background Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
+ *
+*/
+//enum EncryptionModes {
+//    mode1,
+//    mode2,
+//    background
+//};
+
+typedef NS_ENUM(NSUInteger, EncryptionModes) {
+    mode1 = 1,
+    mode2 = 2,
+    background = 3
+};
 
 /**
  *
@@ -250,20 +275,22 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  */
 - (BOOL)compactWithError:(NSError *__autoreleasing __nullable * __nullable)error;
 
-/**
- *
- * This function will be used to set default encryption policy before starting any operation and after finishing an operation on DB. Eg. - Default policy we've set is before starting an operation on DB NSFileProtectionCompleteUnlessOpen before starting any operation on DB and we set NSFileProtectionComplete after finishing the operation on DB.
- * @param before Policy that should be set BEFORE starting an operation on DB
- * @param after Policy that should be set AFTER finishing an operation on DB
- *
- */
-//-(void)setEncryptionBeforeStartingProcess: (NSFileProtectionType _Nonnull )before afterFinishProcess: (NSFileProtectionType _Nullable )after;
-
+/// This function will help to set FILE Protection manually by users.
+/// @param type Its FileProtection Type Enum provided by Apple, user can pass any Protection case whatever they need to set on there files.
 -(void)encryptFile: (NSFileProtectionType _Nonnull)type;
 
+///  This function will help to set Encryption MODE. Set a mode according to your need.
+/// @param mode - It's a ENUM value that users can set from predefined enum cases.
+-(void)setEncryptionMode: (EncryptionModes)mode;
+
+/// This funtion will return the current applied file protection policy on files.
 - (NSFileProtectionType _Nullable)appliedProtectionPolicyOnDb;
 
+/// These below two functionsare being used internally only to manage tasks pool.
+/// This function will increase the runningProcess variable count by 1. runningProcess is an internal Integer variable declared in CDTDatastore.m class, we're using it to check if we've any running process at the time when we're moving app to background. If we have any ongoing process that could
+/*
 -(void)addNewTask;
 
 -(void)removeOneTask;
+ */
 @end

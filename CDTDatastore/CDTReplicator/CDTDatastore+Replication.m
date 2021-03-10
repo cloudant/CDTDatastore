@@ -167,16 +167,14 @@
 {
     NSError* error = nil;
     CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:^(NSError * err) {
-        [self encryptFile:NSFileProtectionCompleteUnlessOpen];
-        [self removeOneTask];
+ //       [self removeOneTask];
         [self.delegate didRecieveResponseWith:err datastore:self];
     }];
 
     CDTReplicator* replicator = [self pullReplicationSource:source
                                                       username:username password:password withDelegate:delegate error:&error];
-    if (!error) {
-        [self encryptFile:NSFileProtectionComplete];
-        [self addNewTask];
+    if (!error) { 
+//        [self addNewTask];
         [replicator startWithError:&error];
     }
 

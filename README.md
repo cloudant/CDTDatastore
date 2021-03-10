@@ -286,6 +286,52 @@ has more features than the previous implementation.  For details about
 migrating to a 0.16.0+ indexing and query version from a previous version
 see [Index and Querying Migration](https://github.com/cloudant/CDTDatastore/blob/master/doc/query-migration.md).
 
+
+### File Encryption Modes
+
+You can set a MODE from available options. Setting any mode will ensure the file protection that you want to apply on your files before starting and after finishing any operation on the files.
+There are 4 types of File protections available in iOS categorised by the key "NSFileProtectionType", and below are the different types of file protection -
+
+### **NSFileProtectionComplete** -  The file is stored in an encrypted format on disk and cannot be read from or written to while the device is locked or booting.
+
+### **NSFileProtectionCompleteUnlessOpen** - The file is stored in an encrypted format on disk after it is closed.
+
+### **NSFileProtectionCompleteUntilFirstUserAuthentication** - The file is an encrypted format on disk and cannot be accessed until after the device has booted.
+
+### **NSFIleProtectionNone** - The file has no special protections associated with it.
+
+By Default value for **NSFileProtectionType** is **NSFileProtectionCompleteUntilFirstUserAuthentication**, that user can change at any point of time.
+
+
+In CDTDatastore framework, we have given 3 types of MODES that will help to set encryptions with some different behaviours. Below are the available modes -
+
+### **mode1** - User can use this mode in case Apps are guaranteed to complete syncing within 10 seconds, it will set NSFileProtectionType to CompleteUnlessOpen till 10 seconds finishes. After 10 seconds it will be change the NSFileProtectionType to Complete automatically and any running sycing  won't be able to access Files in background.
+
+### **mode2** - User can use this mode in case Apps cannot finish syncing within 10 seconds and need more time. Mode2 will give 20 seconds timeframe to finish any running syncing. After 20 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files in background.
+
+### **background** User can use this mode in case Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation in background. After 30 seconds it will be change NSFileProtectionType to Complete automatically and any running operation won't be able to access files after that.
+
+## How to Use Encryption Modes
+To use encryption modes in application, user need to call below function with the help of CDTDatastore object - 
+
+```objc
+# -(void)setEncryptionMode: (EncryptionModes)mode;'
+
+and you can call encryption function like this with the help of datastore object in OBJECTIVE C -
+
+# [datastore setEncryptionMode: mode1];
+You can replace mode1 with any other available mode.
+```
+
+
+```swift
+you can call encryption function like this with the help of datastore object in SWIFT -
+
+# dataStore.setEncryptionMode(.mode1)
+You can replace mode1 with any other available mode.
+```
+
+
 ### Conflicts
 
 An obvious repercussion of being able to replicate documents about the place

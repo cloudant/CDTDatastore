@@ -135,7 +135,6 @@
     }
 
     CDTDatastore *datastore = [self.manager datastoreNamed:@"todo_items" error:&outError];
-    [datastore setEncryptionBeforeStartingProcess:NSFileProtectionNone afterFinishProcess:NSFileProtectionCompleteUnlessOpen];
     if (nil != outError) {
         NSLog(@"Error creating datastore: %@", outError);
         exit(1);
