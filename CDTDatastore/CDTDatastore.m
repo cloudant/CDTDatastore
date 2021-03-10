@@ -250,8 +250,8 @@ int runningProcess;
 
 ///  This function will help to set Encryption MODE. Set a mode according to your need.
 /// @param mode - It's a ENUM value that users can set from predefined enum cases.
--(void)setEncryptionMode: (EncryptionModes)mode {
-    switch(mode) {
+-(void)setProtectionLevel: (OTFProtectionLevel)level {
+    switch(level) {
         case mode1:
             [self setMode1];
             break;

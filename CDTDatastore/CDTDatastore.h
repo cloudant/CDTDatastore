@@ -85,13 +85,8 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @param Background Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
  *
 */
-//enum EncryptionModes {
-//    mode1,
-//    mode2,
-//    background
-//};
 
-typedef NS_ENUM(NSUInteger, EncryptionModes) {
+typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
     mode1 = 1,
     mode2 = 2,
     background = 3
@@ -279,9 +274,9 @@ typedef NS_ENUM(NSUInteger, EncryptionModes) {
 /// @param type Its FileProtection Type Enum provided by Apple, user can pass any Protection case whatever they need to set on there files.
 -(void)encryptFile: (NSFileProtectionType _Nonnull)type;
 
-///  This function will help to set Encryption MODE. Set a mode according to your need.
+///  This function will help to set Protection level. Set a mode according to your need.
 /// @param mode - It's a ENUM value that users can set from predefined enum cases.
--(void)setEncryptionMode: (EncryptionModes)mode;
+-(void)setProtectionLevel: (OTFProtectionLevel)level;
 
 /// This funtion will return the current applied file protection policy on files.
 - (NSFileProtectionType _Nullable)appliedProtectionPolicyOnDb;
