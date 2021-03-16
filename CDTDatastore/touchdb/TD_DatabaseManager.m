@@ -75,11 +75,17 @@ static NSCharacterSet* kIllegalNameChars;
         _databases = [[NSMutableDictionary alloc] init];
         _options = options ? *options : kTD_DatabaseManagerDefaultOptions;
 
+        NSDictionary *attributes = nil;
+        #if TARGET_OS_IPHONE
+        if (@available(iOS 9.0, *)) {
+            attributes = @{NSFileProtectionKey : NSFileProtectionCompleteUnlessOpen};
+        }
+       #endif
         // Create the directory but don't fail if it already exists:
         NSError* error;
         if (![[NSFileManager defaultManager] createDirectoryAtPath:_dir
                                        withIntermediateDirectories:NO
-                                                        attributes:nil
+                                                        attributes:attributes
                                                              error:&error]) {
             BOOL isDir;
             if (!TDIsFileExistsError(error) ||

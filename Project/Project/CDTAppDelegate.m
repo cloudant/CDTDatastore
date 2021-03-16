@@ -135,7 +135,6 @@
     }
 
     CDTDatastore *datastore = [self.manager datastoreNamed:@"todo_items" error:&outError];
-
     if (nil != outError) {
         NSLog(@"Error creating datastore: %@", outError);
         exit(1);

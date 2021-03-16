@@ -31,9 +31,14 @@
  */
 - (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager
                        database:(nonnull TD_Database *)database
-          encryptionKeyProvider:(nullable id<CDTEncryptionKeyProvider>)provider;
+          encryptionKeyProvider:(nonnull id<CDTEncryptionKeyProvider>)provider
+                               directory: (nonnull NSString *)directory;
 
-/**
+/*- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager
+                       database:(nonnull TD_Database *)database
+          encryptionKeyProvider:(nullable id<CDTEncryptionKeyProvider>)provider;
+*/
+/*
  * Return the key provider used to encrypt the datastore
  */
 - (nullable id<CDTEncryptionKeyProvider>)encryptionKeyProvider;

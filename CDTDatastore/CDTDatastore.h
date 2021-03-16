@@ -57,11 +57,40 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @see CDTDocumentRevision
  *
  */
+
+@protocol DatastoreDelegate <NSObject>
+@optional
+- (void)didRecieveResponseWith:(NSError*_Nullable)error datastore: (CDTDatastore*_Nullable)store;
+@end
+
 @interface CDTDatastore : NSObject
 
 @property (nonnull, nonatomic, strong, readonly) TD_Database *database;
 
 + (nonnull NSString *)versionString;
+
+@property (nonnull, strong) NSString *directory;
+@property (nonatomic, weak) id <DatastoreDelegate> _Nullable delegate;
+
+
+
+
+/**
+ * Encryption Modes allowed at present.
+ *
+ * @param mode1  Apps are guaranteed to complete syncing within 10 seconds, it will set NSFileProtectionType to CompleteUnlessOpen till 10 seconds finishes. After 10 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ *
+ * @param mode2  Apps cannot complete syncing within 10 seconds and need more time, Mode2 will give 20 seconds timeframe to finish any running syncing. After 20 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ *
+ * @param Background Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
+ *
+*/
+
+typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
+    mode1 = 1,
+    mode2 = 2,
+    background = 3
+};
 
 /**
  *
@@ -71,8 +100,8 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @param database the database where this datastore should save documents.
  *
  */
-- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;
-
+//- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;
+- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database directory: (nonnull NSString *)directory;
 /**
  * The number of document in the datastore.
  */
@@ -240,4 +269,23 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @param error will point to an NSError object in the case of an error
  */
 - (BOOL)compactWithError:(NSError *__autoreleasing __nullable * __nullable)error;
+
+/// This function will help to set FILE Protection manually by users.
+/// @param type Its FileProtection Type Enum provided by Apple, user can pass any Protection case whatever they need to set on there files.
+-(void)encryptFile: (NSFileProtectionType _Nonnull)type;
+
+///  This function will help to set Protection level. Set a mode according to your need.
+/// @param mode - It's a ENUM value that users can set from predefined enum cases.
+-(void)setProtectionLevel: (OTFProtectionLevel)level;
+
+/// This funtion will return the current applied file protection policy on files.
+- (NSFileProtectionType _Nullable)appliedProtectionPolicyOnDb;
+
+/// These below two functionsare being used internally only to manage tasks pool.
+/// This function will increase the runningProcess variable count by 1. runningProcess is an internal Integer variable declared in CDTDatastore.m class, we're using it to check if we've any running process at the time when we're moving app to background. If we have any ongoing process that could
+/*
+-(void)addNewTask;
+
+-(void)removeOneTask;
+ */
 @end
