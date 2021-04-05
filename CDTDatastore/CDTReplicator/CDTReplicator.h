@@ -258,4 +258,35 @@ initWithTDDatabaseManager:(nonnull TD_DatabaseManager *)dbManager
  */
 @property (nullable, nonatomic, readonly) NSError *error;
 
+/** Completion Block to return results. It returns two values Response and Error. Both are optional objects and can have nil value.*/
+typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response, NSError* __nullable error);
+
+
+/**
+ This test function will be used to test end point _local/{docId} .
+ We're assuming to get an response in return of this api. and not an error.
+ @param completionHandler A completion hanlder to return the response we got from the API call.
+ */
+-(void)testEndPointLocal:(ReplicatorTestCompletionHandler) completionHandler;
+
+
+/**
+ This function is created to be used in Test Cases.
+ It simply tests the _revs_diff API call
+ and returns it's response in completion block.
+
+ @param completionHandler A completion handler to return the response we got from the API call.
+*/
+-(void)testRevsDiff: (ReplicatorTestCompletionHandler) completionHandler;
+
+
+/**
+ This function is created to be used in Test Cases.
+ It simply tests the _bulk_docs API call
+ and returns it's response in completion block.
+
+ @param completionHandler A completion handler to return the response we got from the API call.
+ */
+-(void)testUploadBulkDocs: (ReplicatorTestCompletionHandler) completionHandler;
+
 @end

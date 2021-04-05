@@ -222,12 +222,20 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
 
 - (void) startWithTaskGroup:(dispatch_group_t)taskGroup {
     
+    [self startReplicationThread:taskGroup] ;
+    [self performSelector:@selector(checkIfNotCanceledThenStart)
+                 onThread:_replicatorThread
+               withObject:nil
+            waitUntilDone:NO];
+}
+
+-(void) startReplicationThread:(dispatch_group_t)taskGroup {
     if(_replicatorThread){
         return;
     }
-    
+
     self.running = YES;
-    
+
     if (taskGroup) {
         dispatch_group_enter(taskGroup);
     }
@@ -236,16 +244,10 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
                                                   object: taskGroup];
     CDTLogInfo(CDTREPLICATION_LOG_CONTEXT, @"Starting TDReplicator thread %@ ...", _replicatorThread);
     [_replicatorThread start];
-    
+
     [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(databaseWasDeleted:)
                                                  name: TD_DatabaseWillBeDeletedNotification
                                                object: _db];
-
-    [self performSelector:@selector(checkIfNotCanceledThenStart)
-                 onThread:_replicatorThread
-               withObject:nil
-            waitUntilDone:NO];
-    
 }
 
 -(void) checkIfNotCanceledThenStart
@@ -675,6 +677,11 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     // could have undefined value).
     __weak TDReplicator* weakSelf = self;
     __block TDRemoteJSONRequest* req = nil;
+    if (!self.session) {
+        self.session = [[CDTURLSession alloc] initWithCallbackThread:_replicatorThread
+                                                 requestInterceptors:self.interceptors
+                                               sessionConfigDelegate:self.sessionConfigDelegate];
+    }
     req = [[TDRemoteJSONRequest alloc] initWithSession:self.session method:method
                                                   URL:url
                                                  body:body
@@ -744,8 +751,19 @@ NSString* TDReplicatorStartedNotification = @"TDReplicatorStarted";
     return TDHexSHA1Digest([TDCanonicalJSON canonicalData:spec]);
 }
 
-- (void)fetchRemoteCheckpointDoc
-{
+- (void)testEndPointLocal:(ReplicatorTestCompletionHandler) completionHandler {
+    NSString* checkpointID = self.remoteCheckpointDocID;
+    [self asyncTaskStarted];
+    [self sendAsyncRequest:@"GET" path:[@"_local/" stringByAppendingString:checkpointID]
+                      body:nil
+              onCompletion:^(id response, NSError* error) {
+        // Got the response:
+        completionHandler(response, error);
+        [self asyncTasksFinished:1];
+    }];
+}
+
+- (void)fetchRemoteCheckpointDoc {
     _lastSequenceChanged = NO;
     NSString* checkpointID = self.remoteCheckpointDocID;
     NSDictionary<NSString*, NSObject*>* localCheckpoint =

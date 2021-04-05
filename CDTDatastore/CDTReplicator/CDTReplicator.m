@@ -287,6 +287,81 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
     return YES;
 }
 
+// MARK: - DB Proxy API's functions for Test cases.
+- (void)testEndPointLocal:(ReplicatorTestCompletionHandler) completionHandler {
+    if (self.tdReplicator == nil) {
+        NSError *localError;
+        self.tdReplicator =
+            [self buildTDReplicatorFromConfiguration:&localError];
+        if (localError) {
+            completionHandler(nil, localError);
+            return;
+        }
+    }
+
+    if (!self.tdReplicator.isPush) {
+        self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
+        [self.tdReplicator startReplicationThread: nil];
+        [self.tdReplicator testEndPointLocal: completionHandler];
+    } else {
+        NSMutableDictionary *details = [NSMutableDictionary dictionary];
+        [details setValue:@"⛔️ _local API is not implemented in Push Replication. Please use Pull Replication to test this API." forKey:NSLocalizedDescriptionKey];
+        NSError *error = [[NSError alloc] initWithDomain:@"com.cdtreplication" code:400 userInfo:details];
+        completionHandler(nil, error);
+    }
+
+}
+
+-(void)testRevsDiff: (ReplicatorTestCompletionHandler) completionHandler {
+    if (self.tdReplicator == nil) {
+        NSError *localError;
+        self.tdReplicator =
+            [self buildTDReplicatorFromConfiguration:&localError];
+        if (localError) {
+            completionHandler(nil, localError);
+            return;
+        }
+    }
+
+    if (self.tdReplicator.isPush) {
+        self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
+        [self.tdReplicator startReplicationThread: nil];
+        TDPusher *tdpusher = (TDPusher *)self.tdReplicator;
+        [tdpusher testRevsDiff:completionHandler];
+    } else {
+        NSMutableDictionary* details = [NSMutableDictionary dictionary];
+        [details setValue:@"⛔️ _revs_diff API not implemented in Pull Replication. Please use Push Replication to test this API." forKey:NSLocalizedDescriptionKey];
+        NSError *error = [[NSError alloc] initWithDomain:@"com.cdtreplication" code:400 userInfo: details];
+        completionHandler(nil, error);
+    }
+
+}
+
+-(void) testUploadBulkDocs: (ReplicatorTestCompletionHandler) completionHandler {
+    if (self.tdReplicator == nil) {
+        NSError *localError;
+        self.tdReplicator = [self buildTDReplicatorFromConfiguration:&localError];
+        if (localError) {
+            completionHandler(nil, localError);
+            return;
+        }
+    }
+
+    if (self.tdReplicator.isPush) {
+        self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
+        [self.tdReplicator startReplicationThread:nil];
+        TDPusher *tdpusher = (TDPusher*)self.tdReplicator;
+
+        [tdpusher testUploadBulkDocs:completionHandler];
+    } else {
+        NSMutableDictionary *details = [NSMutableDictionary dictionary];
+        [details setValue:@"⛔️ _bulk_docs API not implemented in Pull replication. Please use Push Replication to test this API." forKey:NSLocalizedDescriptionKey];
+        NSError *error = [[NSError alloc] initWithDomain:@"com.cdtreplication" code:400 userInfo:details];
+        completionHandler(nil, error);
+    }
+}
+// MARK: -
+
 /**
  Builds a TDReplicator object from a CDTPush/PullReplication configuration.
  */

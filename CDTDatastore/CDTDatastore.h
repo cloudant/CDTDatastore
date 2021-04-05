@@ -15,6 +15,7 @@
 
 #import <Foundation/Foundation.h>
 #import "CDTDatastoreManager.h"
+#import "CDTNSURLSessionConfigurationDelegate.h"
 
 @class CDTDocumentRevision;
 @class FMDatabase;
@@ -57,12 +58,6 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  * @see CDTDocumentRevision
  *
  */
-
-@protocol DatastoreDelegate <NSObject>
-@optional
-- (void)didRecieveResponseWith:(NSError*_Nullable)error datastore: (CDTDatastore*_Nullable)store;
-@end
-
 @interface CDTDatastore : NSObject
 
 @property (nonnull, nonatomic, strong, readonly) TD_Database *database;
@@ -70,7 +65,6 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
 + (nonnull NSString *)versionString;
 
 @property (nonnull, strong) NSString *directory;
-@property (nonatomic, weak) id <DatastoreDelegate> _Nullable delegate;
 
 
 
@@ -78,18 +72,18 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
 /**
  * Encryption Modes allowed at present.
  *
- * @param mode1  Apps are guaranteed to complete syncing within 10 seconds, it will set NSFileProtectionType to CompleteUnlessOpen till 10 seconds finishes. After 10 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ * @param RunToCompletionWithin10Seconds Apps are guaranteed to complete syncing within 10 seconds, it will set NSFileProtectionType to CompleteUnlessOpen till 10 seconds finishes. After 10 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
  *
- * @param mode2  Apps cannot complete syncing within 10 seconds and need more time, Mode2 will give 20 seconds timeframe to finish any running syncing. After 20 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
+ * @param RunToCompletionBeyond10Seconds Apps cannot complete syncing within 10 seconds and need more time, RunToCompletionBeyond10Seconds will give 20 seconds timeframe to finish any running syncing. After 20 seconds it will be change to NSFileProtectionType to Complete automatically and any running syncing won't be able to access Files if application is in background.
  *
- * @param Background Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
+ * @param BackgroundMode Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
  *
 */
 
 typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
-    mode1 = 1,
-    mode2 = 2,
-    background = 3
+    RunToCompletionWithin10Seconds = 1,
+    RunToCompletionBeyond10Seconds = 2,
+    BackgroundMode = 3
 };
 
 /**
@@ -280,6 +274,20 @@ typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
 
 /// This funtion will return the current applied file protection policy on files.
 - (NSFileProtectionType _Nullable)appliedProtectionPolicyOnDb;
+
+/**
+ * Set the delegate for handling customisation of the NSURLSession
+ * used during replication.
+ *
+ * This allows the setting of specific options on the NSURLSessionConfiguration
+ * to control the replication - e.g. replication only when on Wifi would be
+ * achieved by setting the NSURLSessionConfiguration's allowsCellularAccess
+ * attribute to 'NO'.
+ *
+ * @see CDTNSURLSessionConfigurationDelegate
+ */
+
+@property (nullable, nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
 
 /// These below two functionsare being used internally only to manage tasks pool.
 /// This function will increase the runningProcess variable count by 1. runningProcess is an internal Integer variable declared in CDTDatastore.m class, we're using it to check if we've any running process at the time when we're moving app to background. If we have any ongoing process that could

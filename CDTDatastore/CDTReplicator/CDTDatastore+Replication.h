@@ -100,15 +100,17 @@ NS_ASSUME_NONNULL_BEGIN
  Asynchronously pushes data in this datastore to the server.
 
  @param target            The URL of the remote database to push the data to.
- @param completionHandler A block to call when the replication completes or errors.
+ @param replicator            The replicator to push the replication with.
  @param username          The username to authenticate with.
  @param password          The password to authenticate with.
+ @param completionHandler A block to call when the replication completes or errors.
  */
-- (void) pushReplicationWithTarget:(NSURL*) target
-                          username:(nullable NSString*) username
-                          password:(nullable NSString*) password
-                 completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
-NS_SWIFT_NAME(push(to:username:password:completionHandler:));
+- (void)pushReplicationWithTarget:(NSURL *)target
+                       replicator: (nullable CDTReplicator *)replicator
+                         username:(NSString *)username
+                         password:(NSString *)password
+                completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
+NS_SWIFT_NAME(push(to:replicator:username:password:completionHandler:));
 
 /**
  Asynchronously pushes data in this datastore to the server.
@@ -126,15 +128,17 @@ NS_SWIFT_NAME(push(to:IAMAPIKey:completionHandler:));
  Asynchronously pull data from a remote server to this local datastore.
 
  @param source            The URL of the remote database from which to pull data.
+ @param replicator            The replicator to pull the replication with. 
  @param completionHandler A block to call when the replication completes or errors.
  @param username          The username to authenticate with.
  @param password          The password to authenticate with.
  */
 - (void) pullReplicationWithSource:(NSURL*) source
+                        replicator: (nullable CDTReplicator *) replicator
                           username:(nullable NSString*) username
                           password:(nullable NSString*) password
                  completionHandler:(void (^ __nonnull)(NSError* __nullable)) completionHandler
-NS_SWIFT_NAME(pull(from:username:password:completionHandler:));
+NS_SWIFT_NAME(pull(from:replicator:username:password:completionHandler:));
 
 /**
  Asynchronously pull data from a remote server to this local datastore.

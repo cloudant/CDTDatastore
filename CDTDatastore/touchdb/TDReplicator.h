@@ -140,4 +140,17 @@ extern NSString* TDReplicatorStoppedNotification;
 /** Exposed for testing. Returns the doc ID for the checkpoint document. */
 - (NSString *)remoteCheckpointDocID;
 
+/** Completion Block to return results. It returns two values Response and Error. Both are optional objects and can have nil value.*/
+typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response, NSError* __nullable error);
+
+
+/**
+ This test function will be used to test end point _local/{docId} .
+ We're assuming to get an response in return of this api. and not an error.
+ @param completionHandler A completion hanlder to return the response we got from the API call.
+ */
+- (void)testEndPointLocal:(ReplicatorTestCompletionHandler) completionHandler;
+
+
+-(void) startReplicationThread:(dispatch_group_t _Nonnull )taskGroup;
 @end

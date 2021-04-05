@@ -55,7 +55,6 @@ NSString *const CDTDatastoreChangeNotification = @"CDTDatastoreChangeNotificatio
 
 @synthesize database = _database;
 @synthesize directory = _directory;
-@synthesize delegate;
 
 + (NSString *)versionString { return @CLOUDANT_SYNC_VERSION; }
 
@@ -96,15 +95,6 @@ int runningProcess;
                                                      selector:@selector(TDdbChanged:)
                                                          name:TD_DatabaseChangeNotification
                                                        object:database];
-/*
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataDidBecomeAvailable:) name:UIApplicationProtectedDataDidBecomeAvailable object:nil];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationProtectedDataWillBecomeUnavailable:) name:UIApplicationProtectedDataWillBecomeUnavailable object:nil];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillTerminateNotification:) name:UIApplicationWillTerminateNotification object:nil];
-
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackgroundNotification:) name:UIApplicationDidEnterBackgroundNotification object:nil];
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForegroundNotification:) name:UIApplicationWillEnterForegroundNotification object:nil];
-*/
-
             [self encryptFile:NSFileProtectionCompleteUnlessOpen];
         }
     }
@@ -227,11 +217,11 @@ int runningProcess;
     }];
 }
 
--(void)setMode1 {
+-(void)setRunToCompletionModeWithin10Sec {
     [self startTimerWithDuration: 10];
 }
 
--(void)setMode2 {
+-(void)setRunToCompletionBeyond10Sec {
     [self startTimerWithDuration: 20];
 }
 
@@ -241,9 +231,11 @@ int runningProcess;
 }
 
 -(void)startTimerWithDuration: (NSTimeInterval)seconds {
+    NSLog(@"Encryption mode changed NSFileProtectionCompleteUnlessOpen");
     [self encryptFile: NSFileProtectionCompleteUnlessOpen];
     [NSTimer scheduledTimerWithTimeInterval:seconds repeats:false block:^(NSTimer * _Nonnull timer) {
         [self encryptFile: NSFileProtectionComplete];
+        NSLog(@"Encryption mode changed NSFileProtectionComplete");
         [self endBackgroundTaskIfAny];
     }];
 }
@@ -252,13 +244,13 @@ int runningProcess;
 /// @param mode - It's a ENUM value that users can set from predefined enum cases.
 -(void)setProtectionLevel: (OTFProtectionLevel)level {
     switch(level) {
-        case mode1:
-            [self setMode1];
+        case RunToCompletionWithin10Seconds:
+            [self setRunToCompletionModeWithin10Sec];
             break;
-        case mode2:
-            [self setMode2];
+        case RunToCompletionBeyond10Seconds:
+            [self setRunToCompletionBeyond10Sec];
             break;
-        case background:
+        case BackgroundMode:
             [self setBackgroundMode];
             break;
     }

@@ -281,6 +281,19 @@
               }];
 }
 
+// MARK: - These are the testing functions to test DB Proxy API's, We're passing empty parameters here just to check if the API's are working fine and not giving any kind of errors.
+
+- (void)testRevsDiff: (ReplicatorTestCompletionHandler) completionHandler {
+    // We're passing empty dictionary in body parameter for testing purpose. It should return empty response in result but should not return an error.
+    [self sendAsyncRequest:@"POST" path:@"_revs_diff" body:$mdict() onCompletion:completionHandler];
+}
+
+-(void) testUploadBulkDocs: (ReplicatorTestCompletionHandler) completionHandler {
+    // We're passing an empty Array in body parameter for testing purpose only. It should return an empty response in result but should not return an error.
+    NSArray *docsToEdit = [[NSArray alloc] init];
+    [self sendAsyncRequest:@"POST" path:@"_bulk_docs" body:$dict({ @"docs", docsToEdit }, { @"new_edits", $false }) onCompletion:completionHandler];
+}
+
 /**
  Upload documents to the remote using _bulk_docs.
 
