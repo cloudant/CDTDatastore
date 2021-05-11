@@ -126,12 +126,6 @@
     NSError* error = nil;
     CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
     replicator.delegate = delegate;
-    /*
-     CDTReplicator* replicator = [self pushReplicationTarget:target
-                                                      username:username
-                                                      password:password
-                                                  withDelegate:delegate error:&error];
-     */
     if (self.sessionConfigDelegate != nil) {
         replicator.sessionConfigDelegate = self.sessionConfigDelegate;
     }
@@ -176,12 +170,6 @@
 {
     NSError* error = nil;
     CDTDatastoreReplicationDelegate* delegate = [[CDTDatastoreReplicationDelegate alloc] initWithCompletionHandler:completionHandler];
-
-    /*
-     CDTReplicator* replicator = [self pullReplicationSource:source
-                                                       username:username password:password withDelegate:delegate error:&error];
-     */
-
     replicator.delegate = delegate;
 
     if (self.sessionConfigDelegate != nil) {

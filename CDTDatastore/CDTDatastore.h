@@ -95,7 +95,6 @@ typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
  * @param database the database where this datastore should save documents.
  *
  */
-//- (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database;
 - (nullable instancetype)initWithManager:(nonnull CDTDatastoreManager *)manager database:(nonnull TD_Database *)database directory: (nonnull NSString *)directory;
 /**
  * The number of document in the datastore.
