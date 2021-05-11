@@ -80,15 +80,20 @@ static NSString* joinQuotedEscaped(NSArray* strings);
 
 - (void)dealloc { [_changeTracker stop]; }
 
+- (void)testBulkGet:(NSDictionary* _Nullable )requestBody handler:(ReplicatorTestCompletionHandler) completionHandler {
+    [self sendAsyncRequest:@"POST" path:@"_bulk_get" body:requestBody onCompletion:completionHandler];
+}
 
 - (void)beginReplicating
 {
     __weak TDPuller* weakSelf = self;
     // check to see if _bulk_get endpoint is supported and then start replication
+    NSArray* keys = [NSArray array];
+    NSDictionary *requestBody = @{@"docs": keys};
     __block bool done = NO;
-    [self sendAsyncRequest:@"GET"
+    [self sendAsyncRequest:@"POST"
                       path:@"_bulk_get"
-                      body:nil
+                      body:requestBody
               onCompletion:^(id result, NSError* error) {
                   __strong TDPuller* strongSelf = weakSelf;
                   switch(error.code) {

@@ -105,10 +105,10 @@ NS_ASSUME_NONNULL_BEGIN
  @param password          The password to authenticate with.
  @param completionHandler A block to call when the replication completes or errors.
  */
-- (void)pushReplicationWithTarget:(NSURL *)target
+- (void)pushReplicationWithTarget:(NSURL * _Nullable)target
                        replicator: (nullable CDTReplicator *)replicator
-                         username:(NSString *)username
-                         password:(NSString *)password
+                         username:(NSString * _Nullable)username
+                         password:(NSString * _Nullable)password
                 completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
 NS_SWIFT_NAME(push(to:replicator:username:password:completionHandler:));
 

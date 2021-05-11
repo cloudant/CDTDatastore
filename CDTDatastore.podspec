@@ -14,7 +14,7 @@ EOT
 
 Pod::Spec.new do |s|
   s.name         = "CDTDatastore"
-  s.version      = "2.1.2-SNAPSHOT"
+  s.version      = "0.0.1"
   s.summary      = "CDTDatastore is a document datastore which syncs."
   s.description  = <<-DESC
                     CDTDatastore is a JSON document datastore which speaks the
@@ -25,14 +25,14 @@ Pod::Spec.new do |s|
   s.homepage     = "http://github.com/cloudant/CDTDatastore"
   s.license      = {:type => 'Apache, Version 2.0', :text => license}
   s.author       = { "Cloudant, Inc." => "support@cloudant.com" }
-  s.source       = { :git => "https://github.com/cloudant/CDTDatastore.git", :tag => s.version.to_s }
+  s.source       = { :git => "https://github.com/HippocratesTech/CDTDatastore", :tag => s.version }
 
-  s.ios.deployment_target = '8.0'
-  s.osx.deployment_target = '10.9'
-
+  s.ios.deployment_target = '9.0'
+  s.osx.deployment_target = '10.5'
   s.requires_arc = true
 
   s.default_subspec = 'standard'
+  s.dependency 'OTFToolBox/Core'
 
   ['standard', 'SQLCipher'].each do |subspec_label|
       s.subspec subspec_label do |sp|

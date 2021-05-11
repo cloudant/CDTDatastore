@@ -15,13 +15,13 @@
 @protocol TDAuthorizer;
 
 /** Posted when replicator starts running. */
-extern NSString* TDReplicatorStartedNotification;
+extern NSString* _Nullable TDReplicatorStartedNotification;
 
 /** Posted when changesProcessed or changesTotal changes. */
-extern NSString* TDReplicatorProgressChangedNotification;
+extern NSString* _Nullable TDReplicatorProgressChangedNotification;
 
 /** Posted when replicator stops running. */
-extern NSString* TDReplicatorStoppedNotification;
+extern NSString* _Nullable TDReplicatorStoppedNotification;
 
 /** Abstract base class for push or pull replications. */
 @interface TDReplicator : NSObject {
@@ -52,31 +52,31 @@ extern NSString* TDReplicatorStoppedNotification;
     TDReachability* _host;
 }
 
-+ (NSString*)progressChangedNotification;
-+ (NSString*)stoppedNotification;
++ (NSString*_Nullable)progressChangedNotification;
++ (NSString*_Nullable)stoppedNotification;
 
-- (instancetype)initWithDB:(TD_Database*)db
-                    remote:(NSURL*)remote
+- (instancetype _Nullable )initWithDB:(TD_Database*_Nullable)db
+                               remote:(NSURL*_Nullable)remote
                       push:(BOOL)push
                 continuous:(BOOL)continuous
-              interceptors:(NSArray*)interceptors;
+                         interceptors:(NSArray*_Nullable)interceptors;
 
-@property (weak, readonly) TD_Database* db;
-@property (readonly) NSURL* remote;
+@property (weak, readonly) TD_Database* _Nullable db;
+@property (readonly) NSURL* _Nullable remote;
 @property (readonly) BOOL isPush;
 @property (readonly) BOOL continuous;
-@property (copy) NSString* filterName;
-@property (copy) NSDictionary* filterParameters;
-@property (copy) NSArray* docIDs;
+@property (copy) NSString* _Nullable filterName;
+@property (copy) NSDictionary* _Nullable filterParameters;
+@property (copy) NSArray* _Nullable docIDs;
 
 /** Whether to ignore saved changes feed checkpoints */
 @property (nonatomic) BOOL reset;
 
 /** Heartbeat value used for _changes requests during pull (in ms) */
-@property (nonatomic) NSNumber* heartbeat;
+@property (nonatomic) NSNumber* _Nullable heartbeat;
 
-@property (nonatomic, strong,readonly) CDTURLSession *session;
-@property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> *sessionConfigDelegate;
+@property (nonatomic, strong,readonly) CDTURLSession * _Nullable session;
+@property (nonatomic, weak) NSObject<CDTNSURLSessionConfigurationDelegate> * _Nullable sessionConfigDelegate;
 
 /** Access to the replicator's NSThread execution state.*/
 /** NSThread.executing*/
@@ -87,12 +87,12 @@ extern NSString* TDReplicatorStoppedNotification;
 -(BOOL) threadCanceled;
 
 /** Optional dictionary of headers to be added to all requests to remote servers. */
-@property (copy) NSDictionary* requestHeaders;
+@property (copy) NSDictionary* _Nullable requestHeaders;
 
-@property (strong) id<TDAuthorizer> authorizer;
+@property (strong) id<TDAuthorizer> _Nullable authorizer;
 
 /** Do these two replicators have identical settings? */
-- (bool)hasSameSettingsAs:(TDReplicator*)other;
+- (bool)hasSameSettingsAs:(TDReplicator*_Nullable)other;
 
 /** Starts the replicator.
     Replicators run asynchronously so nothing will happen until later.
@@ -100,7 +100,7 @@ extern NSString* TDReplicatorStoppedNotification;
 
     @param taskGroup The dispatch_group_t to make the replicators part of.
  */
-- (void)startWithTaskGroup:(dispatch_group_t)taskGroup;
+- (void)startWithTaskGroup:(dispatch_group_t _Nullable )taskGroup;
 
 /** Request to stop the replicator.
     Any pending asynchronous operations will be canceled.
@@ -122,10 +122,10 @@ extern NSString* TDReplicatorStoppedNotification;
 /** Latest error encountered while replicating.
     This is set to nil when starting. It may also be set to nil by the client if desired.
     Not all errors are fatal; if .running is still true, the replicator will retry. */
-@property (strong, nonatomic) NSError* error;
+@property (strong, nonatomic) NSError* _Nullable error;
 
 /** A unique-per-process string identifying this replicator instance. */
-@property (copy, nonatomic) NSString* sessionID;
+@property (copy, nonatomic) NSString* _Nullable sessionID;
 
 /** Number of changes (docs or other metadata) transferred so far. */
 @property (readonly, nonatomic) NSUInteger changesProcessed;
@@ -135,10 +135,10 @@ extern NSString* TDReplicatorStoppedNotification;
 @property (readonly, nonatomic) NSUInteger changesTotal;
 
 /** JSON-compatible array of status info about active remote HTTP requests. */
-@property (readonly) NSArray* activeRequestsStatus;
+@property (readonly) NSArray* _Nullable activeRequestsStatus;
 
 /** Exposed for testing. Returns the doc ID for the checkpoint document. */
-- (NSString *)remoteCheckpointDocID;
+- (NSString *_Nullable)remoteCheckpointDocID;
 
 /** Completion Block to return results. It returns two values Response and Error. Both are optional objects and can have nil value.*/
 typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response, NSError* __nullable error);
@@ -151,6 +151,12 @@ typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response
  */
 - (void)testEndPointLocal:(ReplicatorTestCompletionHandler) completionHandler;
 
+/**
+ This test function will be used to test end point _bulk_get .
+ We're assuming to get an response in return of this api. and not an error.
+ @param completionHandler A completion hanlder to return the response we got from the API call.
+ */
+- (void)testBulkGet:(NSDictionary* _Nullable)requestBody handler:(ReplicatorTestCompletionHandler) completionHandler;
 
 -(void) startReplicationThread:(dispatch_group_t _Nonnull )taskGroup;
 @end

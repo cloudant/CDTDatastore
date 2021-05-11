@@ -16,7 +16,7 @@
 #import <Foundation/Foundation.h>
 #import "CDTDatastoreManager.h"
 #import "CDTNSURLSessionConfigurationDelegate.h"
-
+#import <OTFToolBoxCore/OTFToolBoxCore-Swift.h>
 @class CDTDocumentRevision;
 @class FMDatabase;
 
@@ -78,13 +78,14 @@ extern NSString * __nonnull const CDTDatastoreChangeNotification;
  *
  * @param BackgroundMode Apps need to periodically run in the background to do things such as automatic syncs. It will give 30 seconds timeframe to finish any operation  in the background. After 30 seconds it will be change to NSFileProtectionType to Complete automatically and any running operation won't be able to access Files because application is in background.
  *
-*/
+
 
 typedef NS_ENUM(NSUInteger, OTFProtectionLevel) {
     RunToCompletionWithin10Seconds = 1,
     RunToCompletionBeyond10Seconds = 2,
     BackgroundMode = 3
 };
+ */
 
 /**
  *

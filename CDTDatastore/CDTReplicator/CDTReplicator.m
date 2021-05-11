@@ -301,7 +301,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
     if (!self.tdReplicator.isPush) {
         self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
-        [self.tdReplicator startReplicationThread: nil];
+        [self replicationWith:nil andReplicator:self.tdReplicator];
         [self.tdReplicator testEndPointLocal: completionHandler];
     } else {
         NSMutableDictionary *details = [NSMutableDictionary dictionary];
@@ -310,6 +310,25 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         completionHandler(nil, error);
     }
 
+}
+
+-(void)testBulkGet:(NSDictionary* _Nullable)requestBody handler:(ReplicatorTestCompletionHandler) completionHandler {
+    if (self.tdReplicator == nil) {
+        NSError *localError;
+        self.tdReplicator = [self buildTDReplicatorFromConfiguration: &localError];
+
+        if (localError) {
+            completionHandler(nil, localError);
+            return;
+        }
+
+        if (!self.tdReplicator.isPush) {
+            self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
+            [self replicationWith:nil andReplicator:self.tdReplicator];
+            TDPuller *puller = (TDPuller *)self.tdReplicator;
+            [puller testBulkGet:requestBody handler:completionHandler];
+        }
+    }
 }
 
 -(void)testRevsDiff: (ReplicatorTestCompletionHandler) completionHandler {
@@ -325,7 +344,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
     if (self.tdReplicator.isPush) {
         self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
-        [self.tdReplicator startReplicationThread: nil];
+        [self replicationWith:nil andReplicator:self.tdReplicator];
         TDPusher *tdpusher = (TDPusher *)self.tdReplicator;
         [tdpusher testRevsDiff:completionHandler];
     } else {
@@ -334,7 +353,10 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
         NSError *error = [[NSError alloc] initWithDomain:@"com.cdtreplication" code:400 userInfo: details];
         completionHandler(nil, error);
     }
+}
 
+-(void)replicationWith: (dispatch_group_t)taskGroup andReplicator:(TDReplicator *)replicator {
+    [replicator startReplicationThread: taskGroup];
 }
 
 -(void) testUploadBulkDocs: (ReplicatorTestCompletionHandler) completionHandler {
@@ -349,7 +371,7 @@ static NSString *const CDTReplicatorErrorDomain = @"CDTReplicatorErrorDomain";
 
     if (self.tdReplicator.isPush) {
         self.tdReplicator.sessionConfigDelegate = self.sessionConfigDelegate;
-        [self.tdReplicator startReplicationThread:nil];
+        [self replicationWith:nil andReplicator:self.tdReplicator];
         TDPusher *tdpusher = (TDPusher*)self.tdReplicator;
 
         [tdpusher testUploadBulkDocs:completionHandler];

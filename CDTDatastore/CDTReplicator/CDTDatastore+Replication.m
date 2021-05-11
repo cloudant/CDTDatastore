@@ -117,10 +117,10 @@
     [self pushReplicationWithTarget:target replicator:nil username:nil password:nil completionHandler:completionHandler];
 }
 
-- (void)pushReplicationWithTarget:(NSURL *)target
+- (void)pushReplicationWithTarget:(NSURL *_Nullable)target
                        replicator: (CDTReplicator *)replicator
-                         username:(NSString *)username
-                         password:(NSString *)password
+                         username:(NSString *_Nullable)username
+                         password:(NSString *_Nullable)password
                 completionHandler:(void (^ __nonnull)(NSError *__nullable))completionHandler
 {
     NSError* error = nil;

@@ -244,13 +244,13 @@ int runningProcess;
 /// @param mode - It's a ENUM value that users can set from predefined enum cases.
 -(void)setProtectionLevel: (OTFProtectionLevel)level {
     switch(level) {
-        case RunToCompletionWithin10Seconds:
+        case OTFProtectionLevelRunToCompletionWithIn10Seconds:
             [self setRunToCompletionModeWithin10Sec];
             break;
-        case RunToCompletionBeyond10Seconds:
+        case OTFProtectionLevelRunToCompletionBeyond10Seconds:
             [self setRunToCompletionBeyond10Sec];
             break;
-        case BackgroundMode:
+        case OTFProtectionLevelBackgroundMode:
             [self setBackgroundMode];
             break;
     }

@@ -1,3 +1,5 @@
+source 'https://github.com/HippocratesTech/OTFCocoapodSpecs.git'
+
 use_frameworks!
 
 if ENV["encrypted"]
@@ -13,13 +15,14 @@ abstract_target 'base' do
     pod 'CocoaLumberjack', '~> 2.0'
     pod 'SQLCipher/fts', '~> 3.1.0' if ENV["encrypted"]
     pod 'GoogleToolboxForMac/NSData+zlib', '~> 2.1.1'
+    pod 'OTFToolBox/Core', '~> 0.0.1'
 
     target :CDTDatastore do
-        platform :ios, '8.0'
+        platform :ios, '13.0'
     end
-    target :CDTDatastoreOSX do
-        platform :osx, '10.9'
-    end
+#    target :CDTDatastoreOSX do
+#        platform :osx, '10.9'
+#    end
 
     abstract_target 'tests' do
 
@@ -31,12 +34,12 @@ abstract_target 'base' do
         pod MRDatabaseContentChecker, :git => 'https://github.com/rhyshort/MRDatabaseContentChecker.git'
 
         target :CDTDatastoreTests do
-            platform :ios, '8.0'
+            platform :ios, '13.0'
         end
 
-        target :CDTDatastoreTestsOSX do
-            platform :osx, '10.9'
-        end
+#        target :CDTDatastoreTestsOSX do
+#            platform :osx, '10.9'
+#        end
 
     end
 
@@ -45,12 +48,12 @@ abstract_target 'base' do
         pod 'TRVSMonitor'
         pod 'NSData+Base64'
 
-        target :CDTDatastoreReplicationAcceptanceTestsOSX do
-            platform :osx, '10.9'
-        end
+#        target :CDTDatastoreReplicationAcceptanceTestsOSX do
+#            platform :osx, '10.9'
+#        end
 
         target :CDTDatastoreReplicationAcceptanceTests do
-          platform :ios, '8.0'
+          platform :ios, '13.0'
         end
     end
 

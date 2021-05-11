@@ -32,7 +32,7 @@
 @property BOOL createTarget;
 
 /** Block called to filter document revisions that are pushed to the remote server. */
-@property (nonatomic, copy) TD_FilterBlock filter;
+@property (nonatomic, copy) TD_FilterBlock _Nullable filter;
 
 /** Completion Block to return results. It returns two values Response and Error. Both are optional objects and can have nil value.*/
 typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response, NSError* __nullable error);

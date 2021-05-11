@@ -289,4 +289,10 @@ typedef void(^ __nonnull ReplicatorTestCompletionHandler)(id __nullable response
  */
 -(void)testUploadBulkDocs: (ReplicatorTestCompletionHandler) completionHandler;
 
+/**
+ This test function will be used to test end point _local/{docId} .
+ We're assuming to get an response in return of this api. and not an error.
+ @param completionHandler A completion hanlder to return the response we got from the API call.
+ */
+-(void)testBulkGet:(NSDictionary* _Nullable)requestBody handler:(ReplicatorTestCompletionHandler) completionHandler;
 @end
