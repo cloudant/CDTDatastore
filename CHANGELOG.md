@@ -3,6 +3,7 @@
 ## Unreleased
 - [FIXED] Set latest=true when fetching remote document revisions.
 - [UPGRADED] iOS target platform to 8.0
+- [DEPRECATED] This library is now deprecated and will be EOL on Dec 31 2021.
 
 ## 2.1.1 (2018-09-19)
 - [FIXED] Unknown type and undeclared identifier issues with common crypto includes.
