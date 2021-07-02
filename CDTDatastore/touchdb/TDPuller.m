@@ -452,9 +452,21 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                                                __strong TDPuller* strongSelf = weakSelf;
                                                // OK, now we've got the response revision:
                                                if (error) {
-                                                   strongSelf.error = error;
-                                                   [strongSelf revisionFailed];
-                                                   strongSelf.changesProcessed++;
+                                                   if ([error.domain isEqualToString: TDHTTPErrorDomain] &&
+                                                       error.code == kTDStatusNotFound) {
+                                                       // The revision could not be found
+                                                       // this is the end of the line for fetching it.
+                                                       CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
+                                                                  @"%@ permanent failure fetching revision with docid=%@, revid=%@",
+                                                                  self,
+                                                                  rev.docID,
+                                                                  rev.revID);
+                                                   } else {
+                                                       // This could be a transient error queue for retrying.
+                                                       strongSelf.error = error;
+                                                       [strongSelf revisionFailed];
+                                                       strongSelf.changesProcessed++;
+                                                   }
                                                } else {
                                                    TD_Revision* gotRev =
                                                        [TD_Revision revisionWithProperties:dl.document];
@@ -537,6 +549,9 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                                       [self asyncTaskStarted];
                                   }
                               } else {
+                                  // Error case - could be eventual consistency or doc is gone
+                                  // Since we can't tell we'll leave it in remainingRevs and
+                                  // queue all those remaining for individual retries later.
                                   CDTLogWarn(CDTREPLICATION_LOG_CONTEXT,
                                              @"%@ no \"ok\" revision found in _bulk_get response for docid=%@, revid=%@",
                                              self,
@@ -545,6 +560,16 @@ static NSString* joinQuotedEscaped(NSArray* strings);
                               }
                           }
                       }
+                  }
+                  
+                  // Any leftover revisions will be fetched individually, allowing a retry
+                  // for possibly eventually consistent cases
+                  if (remainingRevs.count) {
+                      CDTLogInfo(CDTREPLICATION_LOG_CONTEXT,
+                                 @"%@ bulk-fetch didn't work for %u of %u revs; getting individually",
+                                 self, (unsigned)remainingRevs.count, (unsigned)nRevs);
+                      for (TD_Revision* rev in remainingRevs) [self queueRemoteRevision:rev];
+                      [self pullRemoteRevisions];
                   }
                   
                   [self asyncTasksFinished:1];
