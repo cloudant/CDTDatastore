@@ -1,6 +1,7 @@
 # CDTDatastore CHANGELOG
 
 ## Unreleased
+- [DEPRECATED] This library is end-of-life and no longer supported.
 - [FIXED] Set latest=true when fetching remote document revisions.
 - [UPGRADED] iOS target platform to 8.0
 - [DEPRECATED] This library is now deprecated and will be EOL on Dec 31 2021.
